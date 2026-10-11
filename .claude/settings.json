@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "claude-lib": {
+      "source": {
+        "source": "github",
+        "repo": "SwiftFaze/claude-lib"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "devflow@claude-lib": true
+  }
+}

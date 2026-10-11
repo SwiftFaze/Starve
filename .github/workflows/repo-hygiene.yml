@@ -1,0 +1,94 @@
+name: Repo hygiene
+
+# Mechanises rules that were previously prose an agent had to remember.
+# Every job here replaced a bullet in CLAUDE.md or .claude/workflow.md - see
+# docs/instruction-files.md, "Rules that became tooling", which is the record of
+# what moved so the same rule does not get re-added as prose later.
+
+on:
+  pull_request:
+    branches: [master, develop]
+    # edited: re-check the PR body after a fix; labeled/unlabeled: the
+    # release-reset label below must take effect without a new push.
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+
+jobs:
+  # Was: CLAUDE.md and .claude/workflow.md growing without bound as one-off
+  # fixes were appended. Budgets are tiered by how often a file is loaded.
+  instruction-budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check instruction file size budgets
+        run: bash .claude/tools/check-instruction-budget.sh --verbose
+
+  # Was: CLAUDE.md "Always put `Closes #N` in the PR body". Load-bearing, not
+  # cosmetic - GitHub's own auto-close never fires because PRs merge into
+  # develop rather than the default branch, so close-linked-issues.yml does it
+  # on merge, but only if the reference is actually present.
+  pr-body-closes-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require "Closes #N" in the PR body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          # Release Please's own PRs and the develop -> master promotion carry no
+          # single linked issue, by design.
+          case "$HEAD_REF" in
+            release-please--branches--*|develop)
+              echo "Exempt branch '$HEAD_REF' - skipping."; exit 0 ;;
+          esac
+
+          if printf '%s' "$PR_BODY" | grep -qiE '\b(closes|fixes|resolves) +#[0-9]+'; then
+            echo "Found an issue reference."
+            exit 0
+          fi
+
+          echo "::error::PR body must contain 'Closes #N' (or Fixes/Resolves)."
+          echo "GitHub will not auto-close the issue: this PR targets develop, not the"
+          echo "default branch, so .github/workflows/close-linked-issues.yml does it on"
+          echo "merge - and only if the reference is present. See CLAUDE.md."
+          exit 1
+
+  # Was: CLAUDE.md "Never hand-edit the project version or CHANGELOG.md".
+  # Release Please derives both from Conventional Commits; a manual edit puts
+  # the repo and the release tooling out of step.
+  # A deliberate reset of the release history (e.g. a project cut from a
+  # template) carries the `release-reset` label instead: visible on the PR,
+  # and nobody adds it by accident (docs/release.md).
+  no-manual-release-edits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject hand-edits to the version or changelog
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+          RELEASE_RESET: ${{ contains(github.event.pull_request.labels.*.name, 'release-reset') }}
+        run: |
+          case "$HEAD_REF" in
+            release-please--branches--*|develop)
+              echo "Exempt branch '$HEAD_REF' - skipping."; exit 0 ;;
+          esac
+          if [ "$RELEASE_RESET" = "true" ]; then
+            echo "::notice::'release-reset' label present - release files may change in this PR."
+            exit 0
+          fi
+
+          # TEMPLATE: if release-please-config.json bumps a version inside a
+          # build file (pom.xml, package.json...), add that check here too.
+          status=0
+          for f in CHANGELOG.md version.txt .release-please-manifest.json .release-please-manifest-beta.json; do
+            if ! git diff --quiet "origin/$BASE_REF"...HEAD -- "$f"; then
+              echo "::error file=$f::$f is maintained by Release Please - do not hand-edit it (docs/release.md)."
+              status=1
+            fi
+          done
+
+          [ "$status" -eq 0 ] && echo "No manual release edits found."
+          exit $status

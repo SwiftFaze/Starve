@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    branches: [master, develop]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# RELEASE_PLEASE_TOKEN (a fine-grained PAT, Contents + Pull requests:
+# read/write on this repo) is used instead of the default GITHUB_TOKEN
+# for release-please-action and the auto-merge step below. GitHub
+# suppresses further workflow-triggering events from a push/merge made
+# with GITHUB_TOKEN (to prevent recursive runs), so a GITHUB_TOKEN-merged
+# release PR never fired the follow-up push that would let
+# release-please-action notice the release commit and actually cut the
+# tag/GitHub Release — the merge landed but nothing downstream ran. A PAT
+# isn't subject to that suppression. It also avoids GitHub's fork-PR
+# workflow-approval gate catching the bot-authored release PR's checks.
+jobs:
+  # master = stable releases (vX.Y.Z)
+  release-please-stable:
+    if: github.event_name == 'push' && github.ref_name == 'master'
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: master
+      - name: Auto-merge the release PR once required checks pass
+        if: steps.release.outputs.release_created != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          pr_number=$(gh pr list --repo "${{ github.repository }}" \
+            --head "release-please--branches--master" --base master \
+            --state open --json number --jq '.[0].number')
+          if [ -n "$pr_number" ]; then
+            gh pr merge "$pr_number" --repo "${{ github.repository }}" --auto --merge \
+              || echo "Auto-merge request failed or was already set on PR #$pr_number — not fatal, skipping."
+          else
+            echo "No open release PR found for master; nothing to auto-merge."
+          fi
+
+  # develop = beta prereleases (vX.Y.Z-beta.N), promoted to a stable release
+  # once develop is merged into master.
+  release-please-beta:
+    if: github.event_name == 'push' && github.ref_name == 'develop'
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config-beta.json
+          manifest-file: .release-please-manifest-beta.json
+          target-branch: develop
+      - name: Auto-merge the release PR once required checks pass
+        if: steps.release.outputs.release_created != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          pr_number=$(gh pr list --repo "${{ github.repository }}" \
+            --head "release-please--branches--develop" --base develop \
+            --state open --json number --jq '.[0].number')
+          if [ -n "$pr_number" ]; then
+            gh pr merge "$pr_number" --repo "${{ github.repository }}" --auto --merge \
+              || echo "Auto-merge request failed or was already set on PR #$pr_number — not fatal, skipping."
+          else
+            echo "No open release PR found for develop; nothing to auto-merge."
+          fi
+
+  # TEMPLATE: to publish build artifacts, add a job here that
+  # `needs: [release-please-stable, release-please-beta]`, runs with
+  # `if: always() && (needs.release-please-stable.outputs.release_created == 'true' || needs.release-please-beta.outputs.release_created == 'true')`
+  # (always(), because the channel job that didn't match this push is skipped),
+  # builds the project, and uploads with
+  # `gh release upload "$TAG_NAME" <files> --clobber`, where TAG_NAME is
+  # `needs.release-please-stable.outputs.tag_name || needs.release-please-beta.outputs.tag_name`.

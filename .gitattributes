@@ -1,0 +1,5 @@
+# Shell scripts must keep LF endings regardless of the committer's platform.
+# A .sh checked in with CRLF fails on Linux CI with "bad interpreter: /bin/bash^M",
+# which is a confusing failure a long way from its cause.
+*.sh text eol=lf
+*.env text eol=lf

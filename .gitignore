@@ -1,0 +1,21 @@
+# Build output (add your stack's: /target/, /build/, /dist/, node_modules/, __pycache__/ ...)
+/target/
+
+# IDE / OS
+/.idea/
+/.vscode/
+/.clj-kondo/
+/.lsp/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Claude Code: per-user settings and devflow's parallel-work worktrees
+/.claude/settings.local.json
+/.claude/worktrees/
+
+# Intent docs are local scratch (see specs/intent/README.md) — never committed except the two
+# files the pipeline itself depends on.
+/specs/intent/*
+!/specs/intent/README.md
+!/specs/intent/TEMPLATE.md
