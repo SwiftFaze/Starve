@@ -29,7 +29,7 @@
     <jacoco.version>0.8.15</jacoco.version>
     
     <pitest.version>1.30.0</pitest.version>
-    <pitest.targetClasses>dev.starve.*</pitest.targetClasses>
+    <targetClasses>dev.starve.*</targetClasses>
     <detekt-plugin.version>1.23.8</detekt-plugin.version>
     <ktlint-plugin.version>3.7.1</ktlint-plugin.version>
     <coverage.minimum>0.85</coverage.minimum>
@@ -265,9 +265,6 @@
         <artifactId>pitest-maven</artifactId>
         <version>${pitest.version}</version>
         <configuration>
-          <targetClasses>
-            <param>${pitest.targetClasses}</param>
-          </targetClasses>
           <excludedClasses>
             <param>dev.starve.StarveApplication*</param>
           </excludedClasses>

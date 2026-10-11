@@ -86,4 +86,13 @@ class TimelineServiceTest {
 
         assertEquals(cutoff to now, items.markAllCall)
     }
+
+    @Test
+    fun `mark all read reports how many items the repository marked`() {
+        val items = TimelineItems(markedAllCount = 4)
+
+        val marked = TimelineService(items, MemorySources(), clock).markAllRead(now)
+
+        assertEquals(4, marked)
+    }
 }

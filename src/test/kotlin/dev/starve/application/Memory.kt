@@ -98,6 +98,7 @@ open class MemoryItems(
 class TimelineItems(
     private val rows: List<TimelineItem> = emptyList(),
     private val links: Map<Long, String?> = emptyMap(),
+    private val markedAllCount: Int = 0,
 ) : MemoryItems() {
     var requested: Triple<Cursor?, Boolean, Int>? = null
     val readCalls = mutableListOf<Pair<Long, Instant>>()
@@ -127,6 +128,6 @@ class TimelineItems(
         at: Instant,
     ): Int {
         markAllCall = firstSeenCutoff to at
-        return 0
+        return markedAllCount
     }
 }

@@ -8,8 +8,10 @@ import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -40,10 +42,25 @@ class HomeControllerTest {
         val expected =
             TimelineItemView(1, "A", "T1", "2026-10-10 08:05 UTC", published.toString(), "http://img.test/1", true)
         assertEquals(expected, item)
+        assertEquals(1L, item.id)
+        assertEquals("T1", item.title)
+        assertEquals("2026-10-10 08:05 UTC", item.published)
+        assertEquals(published.toString(), item.publishedIso)
+        assertTrue(item.read)
         assertEquals(now.toEpochMilli(), model.getAttribute("renderedAt"))
         assertEquals(false, model.getAttribute("showAll"))
         assertEquals(true, model.getAttribute("hasSources"))
         assertNull(model.getAttribute("moreHref"))
+    }
+
+    @Test
+    fun `an unread row is presented as unread`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(listOf(row(2)))).home(null, null, null, model)
+
+        val item = (model.getAttribute("items") as List<*>).single() as TimelineItemView
+        assertFalse(item.read)
     }
 
     @Test
