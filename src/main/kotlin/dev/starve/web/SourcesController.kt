@@ -87,7 +87,9 @@ class SourcesController(
         when (result) {
             is GroupResult.Saved -> "redirect:/sources"
             GroupResult.Missing -> throw notFound()
-            else -> render(model, groupMessage(result))
+            GroupResult.Blank -> render(model, "group name is required")
+            GroupResult.TooLong -> render(model, "at most ${GroupRules.MAX_NAME_LENGTH} characters")
+            GroupResult.Duplicate -> render(model, "a group with that name already exists")
         }
 
     private fun render(
@@ -119,11 +121,3 @@ private fun Source.toView(): SourceView {
     val fetched = lastFetchedAt?.let { TIME_FORMAT.format(it) }
     return SourceView(id, title, url, fetched, lastError, groupId)
 }
-
-private fun groupMessage(result: GroupResult): String =
-    when (result) {
-        GroupResult.Blank -> "group name is required"
-        GroupResult.TooLong -> "at most ${GroupRules.MAX_NAME_LENGTH} characters"
-        GroupResult.Duplicate -> "a group with that name already exists"
-        else -> error("no message for $result")
-    }

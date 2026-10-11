@@ -14,8 +14,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 class GroupSteps {
     private val app = World.app
 
-    /** Set once a When step has run, so the shared "is in the group" phrase asserts instead of arranging. */
-    private var acted = false
+    /**
+     * The feature uses one phrase, `the source "X" is in the group "Y"`, both to arrange (Given) and to assert (Then),
+     * and Cucumber cannot tell them apart. Every When step sets this, so the phrase arranges before the first action
+     * and asserts afterwards.
+     */
+    private var actionHasRun = false
 
     @Before
     fun resetSourcesPage() {
@@ -29,7 +33,7 @@ class GroupSteps {
 
     @When("I create the group {string}")
     fun createGroup(name: String) {
-        acted = true
+        actionHasRun = true
         postGroup(name)
     }
 
@@ -42,13 +46,13 @@ class GroupSteps {
         name: String,
         newName: String,
     ) {
-        acted = true
+        actionHasRun = true
         World.sourcesPage = app.postForm("/groups/${groupId(name)}/rename", "name" to newName).body()
     }
 
     @When("I delete the group {string}")
     fun deleteGroup(name: String) {
-        acted = true
+        actionHasRun = true
         app.postForm("/groups/${groupId(name)}/delete")
     }
 
@@ -58,7 +62,7 @@ class GroupSteps {
         source: String,
         group: String,
     ) {
-        if (acted) assertEquals(group, groupNameOf(source)) else assign(source, groupId(group).toString())
+        if (actionHasRun) assertEquals(group, groupNameOf(source)) else assign(source, groupId(group).toString())
     }
 
     @When("I assign the source {string} to the group {string}")
@@ -66,7 +70,7 @@ class GroupSteps {
         source: String,
         group: String,
     ) {
-        acted = true
+        actionHasRun = true
         assign(source, groupId(group).toString())
     }
 
@@ -76,7 +80,7 @@ class GroupSteps {
         option: String,
     ) {
         assertEquals("Ungrouped", option)
-        acted = true
+        actionHasRun = true
         assign(source, "")
     }
 
