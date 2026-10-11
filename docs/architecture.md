@@ -74,7 +74,7 @@ resolves `GET /items/{id}/player`, marks the item read and, for YouTube, asks th
 `EmbedChecker` port. `YouTubeEmbedChecker` (infra) calls oEmbed: 401/403 means
 embedding is disabled, anything else fails open. All outbound HTTP (feed fetch,
 feed location, oEmbed) goes through the shared `BoundedHttp` helper, which bounds
-time and body size.
+the whole exchange, body included, by one timeout.
 
 ## Dependency rule
 
