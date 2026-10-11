@@ -7,6 +7,7 @@ import dev.starve.domain.FeedItem
 import dev.starve.domain.TimelineItem
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
+import java.sql.ResultSet
 import java.time.Instant
 
 @Repository
@@ -46,16 +47,8 @@ class JdbcItemRepository(
                     "i.read_at IS NOT NULL AS is_read FROM items i JOIN sources s ON s.id = i.source_id " +
                     "$where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
             ).params(params + limit)
-            .query { rs, _ ->
-                TimelineItem(
-                    rs.getLong("id"),
-                    rs.getString("source_title"),
-                    rs.getString("title"),
-                    Instant.ofEpochMilli(rs.getLong("published_at")),
-                    rs.getString("thumbnail_url"),
-                    rs.getInt("is_read") == 1,
-                )
-            }.list()
+            .query { rs, _ -> rs.toTimelineItem() }
+            .list()
     }
 
     override fun findLink(id: Long): ItemLink? =
@@ -83,6 +76,16 @@ class JdbcItemRepository(
             .sql("UPDATE items SET read_at = ? WHERE read_at IS NULL AND first_seen_at <= ?")
             .params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli())
             .update()
+
+    private fun ResultSet.toTimelineItem() =
+        TimelineItem(
+            getLong("id"),
+            getString("source_title"),
+            getString("title"),
+            Instant.ofEpochMilli(getLong("published_at")),
+            getString("thumbnail_url"),
+            getInt("is_read") == 1,
+        )
 
     private fun insertIfAbsent(
         sourceId: Long,
