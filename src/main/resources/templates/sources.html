@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sources - Starve</title>
+  <script src="/htmx.min.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Sources</h1>
+    <p><a href="/">Home</a></p>
+
+    <p id="message" role="status" th:if="${message}" th:text="${message}"></p>
+
+    <form method="post" action="/sources">
+      <label>Feed URL <input type="text" name="url" required></label>
+      <button type="submit">Add</button>
+    </form>
+
+    <p th:if="${#lists.isEmpty(sources)}">No subscriptions yet</p>
+    <ul id="source-list">
+      <li class="source" th:each="source : ${sources}" th:attr="data-title=${source.title}">
+        <strong class="title" th:text="${source.title}">Title</strong>
+        <span class="url" th:text="${source.url}">url</span>
+        <span class="last-fetched" th:if="${source.lastFetched}" th:text="${source.lastFetched}">time</span>
+        <span class="error" th:if="${source.error}" th:text="${source.error}">error</span>
+        <form method="post" th:action="@{/sources/{id}/delete(id=${source.id})}">
+          <button type="submit">Remove</button>
+        </form>
+      </li>
+    </ul>
+  </main>
+</body>
+</html>

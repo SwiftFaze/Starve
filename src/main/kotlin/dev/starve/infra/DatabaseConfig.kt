@@ -18,7 +18,7 @@ class DatabaseConfig {
         ensureParentDirectory(Path.of(dbPath))
         val config =
             HikariConfig().apply {
-                jdbcUrl = "jdbc:sqlite:$dbPath"
+                jdbcUrl = "jdbc:sqlite:$dbPath?foreign_keys=on"
                 // SQLite allows one writer; a single connection avoids "database is locked".
                 maximumPoolSize = 1
             }
