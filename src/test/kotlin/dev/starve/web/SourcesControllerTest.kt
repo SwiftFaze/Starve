@@ -41,13 +41,12 @@ class SourcesControllerTest {
         val view = controller.sources(model)
 
         assertEquals("sources", view)
-        assertEquals(
-            listOf(
-                SourceView(4, "Title", "http://a.test/feed", "2026-10-11 12:30:45 UTC", "oops"),
-                SourceView(5, "Other", "http://b.test/feed", null, null),
-            ),
-            model.getAttribute("sources"),
-        )
+        val views = (model.getAttribute("sources") as List<*>).map { it as SourceView }
+        assertEquals(listOf(4L, 5L), views.map { it.id })
+        assertEquals(listOf("Title", "Other"), views.map { it.title })
+        assertEquals(listOf("http://a.test/feed", "http://b.test/feed"), views.map { it.url })
+        assertEquals(listOf("2026-10-11 12:30:45 UTC", null), views.map { it.lastFetched })
+        assertEquals(listOf("oops", null), views.map { it.error })
         assertEquals(null, model.getAttribute("message"))
     }
 
