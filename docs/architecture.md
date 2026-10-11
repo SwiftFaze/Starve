@@ -35,6 +35,17 @@ parsing, one timeout over the whole exchange) and the `Jdbc*Repository` classes;
 retention on `@Scheduled` timers. Items are unique per `(source, key)` where key
 is the guid, else the link.
 
+## Timeline and read state
+
+`domain/Timeline.kt` holds `TimelineItem`, the keyset `Cursor` and `TimelineRules`
+(page size, look-ahead split). Paging is keyset on `(published_at, id)`, not
+offset, so new arrivals never shift a page; the repository fetches one extra row
+to learn whether a next page exists. Read state is the nullable `items.read_at`
+(migration V3). "Mark all read" carries the page's render timestamp and marks
+only items with `first_seen_at` at or before it, so items ingested after the
+page was rendered stay unread. `TimelineService` orchestrates; `HomeController`
+only translates requests and formats views.
+
 ## Dependency rule
 
 Dependencies point inward: `web`/`infra` -> `application` -> `domain`. Nothing

@@ -48,25 +48,36 @@ class ApplicationHarness {
         start()
     }
 
-    fun get(path: String): HttpResponse<String> {
+    fun get(
+        path: String,
+        headers: Map<String, String> = emptyMap(),
+    ): HttpResponse<String> {
         val port = running().environment.getProperty("local.server.port")
-        val request = HttpRequest.newBuilder(URI.create("http://localhost:$port$path")).GET().build()
+        val builder = HttpRequest.newBuilder(URI.create("http://localhost:$port$path")).GET()
+        headers.forEach { (k, v) -> builder.header(k, v) }
+        val request = builder.build()
         return client.send(request, HttpResponse.BodyHandlers.ofString())
     }
 
     fun postForm(
         path: String,
         vararg fields: Pair<String, String>,
+    ): HttpResponse<String> = postForm(path, emptyMap(), *fields)
+
+    fun postForm(
+        path: String,
+        headers: Map<String, String>,
+        vararg fields: Pair<String, String>,
     ): HttpResponse<String> {
         val port = running().environment.getProperty("local.server.port")
         val body = fields.joinToString("&") { (k, v) -> "${enc(k)}=${enc(v)}" }
-        val request =
+        val builder =
             HttpRequest
                 .newBuilder(URI.create("http://localhost:$port$path"))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build()
-        return client.send(request, HttpResponse.BodyHandlers.ofString())
+        headers.forEach { (k, v) -> builder.header(k, v) }
+        return client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
     }
 
     fun <T : Any> bean(type: Class<T>): T = running().getBean(type)

@@ -5,12 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title th:text="${appName}">Starve</title>
   <script src="/htmx.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 0 0.75rem; line-height: 1.4; }
+    main { max-width: 40rem; margin: 0 auto; }
+    img { max-width: 100%; height: auto; }
+    .item { display: flex; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #ddd; }
+    .item.read { opacity: 0.55; }
+    .thumb { width: 5rem; height: 5rem; object-fit: cover; flex: none; }
+    .body { min-width: 0; overflow-wrap: anywhere; }
+    .meta { font-size: 0.85rem; color: #555; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+    button, .load-more { font: inherit; padding: 0.5rem 0.75rem; }
+  </style>
 </head>
 <body>
   <main>
     <h1 th:text="${appName}">Starve</h1>
-    <p>No sources yet</p>
-    <nav><a href="/sources">Manage sources</a></nav>
+    <nav class="toolbar">
+      <a href="/sources">Manage sources</a>
+      <a th:if="${showAll}" href="/">Hide read</a>
+      <a th:unless="${showAll}" href="/?show=all">Show read</a>
+      <form th:if="${hasSources}" method="post" action="/read-all">
+        <input type="hidden" name="before" th:value="${renderedAt}">
+        <button type="submit">Mark all read</button>
+      </form>
+    </nav>
+
+    <p th:unless="${hasSources}">No sources yet. <a href="/sources">Add a source</a> to get started.</p>
+
+    <div id="timeline" th:if="${hasSources}">
+      <th:block th:fragment="more">
+        <article th:each="item : ${items}" th:class="${item.read} ? 'item read' : 'item'"
+                 th:attr="data-title=${item.title}">
+          <img class="thumb" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="" loading="lazy">
+          <div class="body">
+            <a class="title" th:href="@{/items/{id}/open(id=${item.id})}" th:text="${item.title}">Title</a>
+            <div class="meta">
+              <span class="source" th:text="${item.sourceTitle}">Source</span>
+              <time th:datetime="${item.publishedIso}" th:text="${item.published}">date</time>
+            </div>
+            <form th:unless="${item.read}" method="post" th:action="@{/items/{id}/read(id=${item.id})}"
+                  th:attr="hx-post=@{/items/{id}/read(id=${item.id})}" hx-target="closest article" hx-swap="outerHTML">
+              <button type="submit">Mark read</button>
+            </form>
+          </div>
+        </article>
+        <a th:if="${moreHref}" class="load-more" th:href="${moreHref}"
+           th:attr="hx-get=${moreHref}" hx-swap="outerHTML">Load more</a>
+        <p th:unless="${moreHref}" class="caught-up">You're all caught up</p>
+      </th:block>
+    </div>
   </main>
 </body>
 </html>

@@ -1,5 +1,7 @@
 package dev.starve.infra
 
+import dev.starve.application.ItemLink
+import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Validators
 import org.flywaydb.core.Flyway
@@ -96,6 +98,77 @@ class JdbcRepositoriesTest {
         assertEquals(1, removed)
         assertEquals(listOf("edge"), jdbc.sql("SELECT item_key FROM items").query(String::class.java).list())
     }
+
+    @Test
+    fun `the timeline is newest first with ties by id, hides read items and pages by cursor`() {
+        val source = sources.insert("http://a.test/f", "Src")
+        val seen = Instant.parse("2026-10-11T12:00:00Z")
+        val same = seen.minusSeconds(60)
+        items.insertNew(source.id, listOf(dated("a", same), dated("b", same), dated("c", seen)), seen)
+        val ids = jdbc.sql("SELECT id FROM items ORDER BY item_key").query(Long::class.java).list()
+
+        val all = items.timeline(null, false, 10)
+
+        assertEquals(listOf("c", "b", "a"), all.map { it.title })
+        assertEquals("Src", all.first().sourceTitle)
+        val next = items.timeline(Cursor(all[0].publishedAt, all[0].id), false, 10)
+        assertEquals(listOf("b", "a"), next.map { it.title })
+        val afterTie = items.timeline(Cursor(same, ids[1]), false, 10)
+        assertEquals(listOf("a"), afterTie.map { it.title })
+        assertEquals(1, items.timeline(null, false, 1).size)
+
+        assertEquals(true, items.markRead(ids[2], seen))
+        assertEquals(listOf("b", "a"), items.timeline(null, false, 10).map { it.title })
+        assertEquals(listOf("c", "b", "a"), items.timeline(null, true, 10).map { it.title })
+        assertEquals(listOf(true, false, false), items.timeline(null, true, 10).map { it.read })
+    }
+
+    @Test
+    fun `marking read keeps the first read time and unknown items are reported`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
+        val id = jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
+
+        assertEquals(true, items.markRead(id, Instant.ofEpochMilli(100)))
+        assertEquals(true, items.markRead(id, Instant.ofEpochMilli(200)))
+        assertEquals(false, items.markRead(id + 1, Instant.ofEpochMilli(300)))
+
+        assertEquals(100L, jdbc.sql("SELECT read_at FROM items").query(Long::class.java).single())
+    }
+
+    @Test
+    fun `finding a link distinguishes a missing item from an item without a link`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(
+            source.id,
+            listOf(item("k", "t"), FeedItem("l", "u", "http://x.test/a", null, null, null)),
+            Instant.EPOCH,
+        )
+        val ids = jdbc.sql("SELECT id FROM items ORDER BY id").query(Long::class.java).list()
+
+        assertEquals(ItemLink(null), items.findLink(ids[0]))
+        assertEquals(ItemLink("http://x.test/a"), items.findLink(ids[1]))
+        assertNull(items.findLink(ids[1] + 1))
+    }
+
+    @Test
+    fun `mark all read only covers unread items first seen at or before the cutoff`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val cutoff = Instant.parse("2026-10-11T12:00:00Z")
+        items.insertNew(source.id, listOf(item("old", "old")), cutoff.minusSeconds(1))
+        items.insertNew(source.id, listOf(item("edge", "edge")), cutoff)
+        items.insertNew(source.id, listOf(item("late", "late")), cutoff.plusSeconds(1))
+
+        assertEquals(2, items.markAllRead(cutoff, cutoff.plusSeconds(5)))
+        assertEquals(0, items.markAllRead(cutoff, cutoff.plusSeconds(9)))
+
+        assertEquals(listOf("late"), items.timeline(null, false, 10).map { it.title })
+    }
+
+    private fun dated(
+        key: String,
+        at: Instant,
+    ) = FeedItem(key, key, null, at, null, null)
 
     private fun item(
         key: String,
