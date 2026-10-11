@@ -22,6 +22,19 @@ All under `dev.starve`.
 | `web` | controllers and templates | `application`, `domain` |
 | `infra` | persistence and external adapters | `application`, `domain` |
 
+## Feed ingestion
+
+`domain` holds `Source`, `Feed`/`FeedItem` and `FeedRules` (item identity, URL
+validity, retention cutoff). `application` defines the ports `FeedFetcher`,
+`SourceRepository` and `ItemRepository`, and the services `SubscriptionService`
+(subscribe/unsubscribe), `PollService` (poll all, isolating per-source failures),
+`FeedIngestor` (records one fetch outcome) and `RetentionService`. `infra`
+implements the ports: `RomeFeedFetcher` (JDK `HttpClient`, conditional GET, ROME
+parsing, one timeout over the whole exchange) and the `Jdbc*Repository` classes;
+`FeedConfig` wires the services and `SchedulingConfig` runs polling and
+retention on `@Scheduled` timers. Items are unique per `(source, key)` where key
+is the guid, else the link.
+
 ## Dependency rule
 
 Dependencies point inward: `web`/`infra` -> `application` -> `domain`. Nothing
