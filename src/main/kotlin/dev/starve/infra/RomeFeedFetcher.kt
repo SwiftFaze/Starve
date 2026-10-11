@@ -20,6 +20,9 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /** Fetches feeds over HTTP with a conditional GET and parses RSS/Atom with ROME. */
 class RomeFeedFetcher(
@@ -55,15 +58,23 @@ class RomeFeedFetcher(
         return builder.GET().build()
     }
 
-    private fun send(request: HttpRequest): HttpResponse<ByteArray> =
-        try {
-            client.send(request, HttpResponse.BodyHandlers.ofByteArray())
-        } catch (e: IOException) {
-            throw FeedFetchException(e.message ?: e.javaClass.simpleName, e)
+    /** Bounds the whole exchange, body included, by [timeout]; cancels the request when it expires. */
+    @Suppress("ThrowsCount") // one mapping per distinct failure of the future
+    private fun send(request: HttpRequest): HttpResponse<ByteArray> {
+        val future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+        return try {
+            future.get(timeout.toMillis(), TimeUnit.MILLISECONDS)
+        } catch (e: TimeoutException) {
+            future.cancel(true)
+            throw FeedFetchException("timed out after $timeout", e)
+        } catch (e: ExecutionException) {
+            throw FeedFetchException(e.cause?.message ?: e.javaClass.simpleName, e)
         } catch (e: InterruptedException) {
+            future.cancel(true)
             Thread.currentThread().interrupt()
             throw FeedFetchException("interrupted", e)
         }
+    }
 
     private fun responseValidators(response: HttpResponse<*>) =
         Validators(

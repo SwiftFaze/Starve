@@ -33,6 +33,9 @@ sealed interface Route {
     ) : Route
 
     data object Stall : Route
+
+    /** Sends headers and a little body, then stalls. */
+    data object StallBody : Route
 }
 
 data class RecordedRequest(
@@ -80,6 +83,7 @@ class FeedServer {
             is Route.Raw -> respond(exchange, 200, route.contentType, resource(route.resource))
             is Route.Feed -> serveFeed(exchange, path, route.spec, ifNoneMatch)
             Route.Stall -> stall(exchange)
+            Route.StallBody -> stallBody(exchange)
         }
     }
 
@@ -95,6 +99,13 @@ class FeedServer {
         } else {
             respond(exchange, 200, "application/xml", FeedXml.render(baseUrl, path, spec))
         }
+    }
+
+    private fun stallBody(exchange: HttpExchange) {
+        exchange.sendResponseHeaders(200, BODY_CLAIM)
+        exchange.responseBody.write("<rss".toByteArray())
+        exchange.responseBody.flush()
+        stall(exchange)
     }
 
     private fun stall(exchange: HttpExchange) {
@@ -126,5 +137,6 @@ class FeedServer {
     companion object {
         const val ETAG = "\"v1\""
         private const val STALL_MILLIS = 5_000L
+        private const val BODY_CLAIM = 100_000L
     }
 }
