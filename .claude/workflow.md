@@ -10,18 +10,18 @@ hard-coding a stack, a repo or a board. Replace every `<placeholder>`.
 |---------------------|-----------------------------------------------------------------------------------|
 | Base branch         | `develop`: feature branches fork from it and PR back into it                      |
 | Release branch      | `master`: receives the base branch when a milestone ships                           |
-| Verify command      | `<build + every test suite + coverage/lint gates, e.g. mvn verify, npm run verify>` |
-| Scenario command    | `<runs one acceptance scenario by name>`                                          |
-| Run command         | `<launches the app for the human playtest, e.g. npm start>`                       |
-| Mutation command    | `<e.g. mvn pitest:mutationCoverage, npx stryker run>`, or none                    |
+| Verify command      | `./mvnw -B verify` (unit + Cucumber + ArchUnit + JaCoCo + detekt + ktlint) |
+| Scenario command    | `./mvnw -B verify -Dcucumber.filter.name="<scenario name>"`                       |
+| Run command         | `./mvnw spring-boot:run` (or `docker compose up`)                                 |
+| Mutation command    | `./mvnw -B org.pitest:pitest-maven:mutationCoverage`                              |
 | QA command          | none, or a scripted replay per `.feature` (see `.claude/tools/check-qa-coverage.sh`) |
 | Clean Code gate     | `bash .claude/tools/check-clean.sh` (commands in `.claude/tools/clean.env`)       |
-| Project board       | GitHub project `<number>`, owner `<owner>`; fields `Status`, `Priority` (`P0`/`P1`/`P2`) |
+| Project board       | GitHub project `4`, owner `SwiftFaze`; fields `Status` (`Todo`/`In Progress`/`Done`), `Priority` (`P0`/`P1`/`P2`) |
 | Issue labels        | `bug` → `fix/`, `documentation` → `docs/`, anything else → `feat/`                |
 | High-risk triggers  | auth, payments, data integrity / persistence formats, public APIs or contracts third parties depend on |
 | Architecture doc    | `docs/architecture.md`                                                            |
-| UI verification doc | `<docs/ui-verification.md>`, or none if the project has no UI                     |
-| User-facing docs    | `<where user-visible behavior is documented, e.g. the GitHub wiki>`, or none      |
+| UI verification doc | none: fetch the rendered HTML and assert/inspect its text                         |
+| User-facing docs    | `README.md`                                                                       |
 
 Board fields are set with `bash .claude/tools/set-project-field.sh`, which adds
 the issue to the board if needed and reads the value back.
@@ -107,10 +107,10 @@ The project's static-analysis and coverage configuration defines the hard
 limits. They fail the build, so don't re-derive them by eye. Record the
 project's actual values here:
 
-- Max function length `<n>` lines; max cyclomatic complexity `<n>`; max
-  parameters `<n>`.
-- Minimum line coverage `<n>%` repo-wide.
-- Module dependency direction: `<the test that enforces it>`.
+- detekt (`config/detekt.yml`): max function length 30 lines; cyclomatic
+  complexity 10; parameters 5 (function) / 7 (constructor).
+- JaCoCo: minimum line coverage 85% repo-wide (only the `main` class excluded).
+- Module dependency direction: `ArchitectureTest` (ArchUnit).
 
 If a change can't meet a limit, stop and propose a decomposition rather than
 disabling the check. **One narrow exception:** a method overriding a

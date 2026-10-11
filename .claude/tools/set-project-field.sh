@@ -18,8 +18,8 @@
 
 set -uo pipefail
 
-PROJECT_NUMBER="${PROJECT_NUMBER:-}"
-PROJECT_OWNER="${PROJECT_OWNER:-}"
+PROJECT_NUMBER="${PROJECT_NUMBER:-4}"
+PROJECT_OWNER="${PROJECT_OWNER:-SwiftFaze}"
 
 if [ $# -ne 3 ]; then
   sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'

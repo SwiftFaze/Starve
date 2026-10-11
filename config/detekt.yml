@@ -1,0 +1,11 @@
+complexity:
+  LongMethod:
+    active: true
+    threshold: 30
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 10
+  LongParameterList:
+    active: true
+    functionThreshold: 5
+    constructorThreshold: 7
