@@ -4,6 +4,7 @@ import dev.starve.application.ItemLink
 import dev.starve.application.ItemRepository
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
+import dev.starve.domain.Playable
 import dev.starve.domain.TimelineItem
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
@@ -48,7 +49,7 @@ class JdbcItemRepository(
         val where = if (conditions.isEmpty()) "" else "WHERE " + conditions.joinToString(" AND ")
         return jdbc
             .sql(
-                "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, " +
+                "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, " +
                     "i.read_at IS NOT NULL AS is_read FROM items i JOIN sources s ON s.id = i.source_id " +
                     "$where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
             ).params(params + limit)
@@ -93,6 +94,7 @@ class JdbcItemRepository(
             Instant.ofEpochMilli(getLong("published_at")),
             getString("thumbnail_url"),
             getInt("is_read") == 1,
+            Playable.of(getString("link")) != null,
         )
 
     private fun insertIfAbsent(

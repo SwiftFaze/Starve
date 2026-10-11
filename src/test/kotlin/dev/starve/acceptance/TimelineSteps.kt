@@ -245,13 +245,7 @@ class TimelineSteps {
 
     private fun titles(): List<String> = TITLE.findAll(World.pages.joinToString("")).map { it.groupValues[1] }.toList()
 
-    private fun entry(title: String): String =
-        World.pages
-            .joinToString("")
-            .split("<article")
-            .drop(1)
-            .firstOrNull { it.contains("data-title=\"$title\"") }
-            ?: error("no timeline entry '$title'")
+    private fun entry(title: String): String = World.entry(title)
 
     private fun isReadEntry(title: String): Boolean = READ_CLASS.containsMatchIn(entry(title).substringBefore('>'))
 

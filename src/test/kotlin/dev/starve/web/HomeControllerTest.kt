@@ -95,6 +95,17 @@ class HomeControllerTest {
     }
 
     @Test
+    fun `a playable row is presented as playable`() {
+        val model = ConcurrentModel()
+        val playable = row(3).copy(playable = true)
+
+        controller(TimelineItems(listOf(playable, row(4)))).home(null, null, null, model)
+
+        val views = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).playable }
+        assertEquals(listOf(true, false), views)
+    }
+
+    @Test
     fun `opening redirects to the link or home when there is none`() {
         val c = controller(TimelineItems(links = mapOf(1L to "http://x.test/a", 2L to null)))
 

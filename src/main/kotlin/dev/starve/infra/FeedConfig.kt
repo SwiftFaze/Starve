@@ -1,11 +1,13 @@
 package dev.starve.infra
 
+import dev.starve.application.EmbedChecker
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FeedLocator
 import dev.starve.application.GroupRepository
 import dev.starve.application.GroupService
 import dev.starve.application.ItemRepository
+import dev.starve.application.PlayerService
 import dev.starve.application.PollService
 import dev.starve.application.RetentionService
 import dev.starve.application.SourceRepository
@@ -51,6 +53,19 @@ class FeedConfig {
         @Value("\${starve.soundcloud.hosts:soundcloud.com,m.soundcloud.com}") hosts: List<String>,
         @Value("\${starve.soundcloud.feed-url-template:$SOUNDCLOUD_FEED_TEMPLATE}") template: String,
     ): FeedLocator = HttpFeedLocator(http, hosts.map { it.trim().lowercase() }.toSet(), template)
+
+    @Bean
+    fun embedChecker(
+        http: BoundedHttp,
+        @Value("\${starve.youtube.oembed-url:https://www.youtube.com/oembed}") oembedUrl: String,
+    ): EmbedChecker = YouTubeEmbedChecker(http, oembedUrl)
+
+    @Bean
+    fun playerService(
+        items: ItemRepository,
+        embeds: EmbedChecker,
+        clock: Clock,
+    ) = PlayerService(items, embeds, clock)
 
     @Bean
     fun feedIngestor(

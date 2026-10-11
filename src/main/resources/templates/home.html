@@ -16,6 +16,10 @@
     .meta { font-size: 0.85rem; color: #555; }
     .toolbar a[aria-current] { font-weight: bold; }
     .toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+    .player-slot { width: 100%; }
+    .ratio-16x9 { position: relative; width: 100%; padding-top: 56.25%; }
+    .ratio-16x9 iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+    .player iframe { width: 100%; border: 0; }
     button, .load-more { font: inherit; padding: 0.5rem 0.75rem; }
   </style>
 </head>
@@ -50,6 +54,11 @@
               <span class="source" th:text="${item.sourceTitle}">Source</span>
               <time th:datetime="${item.publishedIso}" th:text="${item.published}">date</time>
             </div>
+            <button type="button" class="play" th:if="${item.playable}"
+                    th:attr="hx-get=@{/items/{id}/player(id=${item.id})},hx-target=${'#player-slot-' + item.id}"
+                    hx-swap="innerHTML"
+                    hx-on::before-request="document.querySelectorAll('.player').forEach(function (p) { p.remove() })">Play</button>
+            <div class="player-slot" th:id="'player-slot-' + ${item.id}"></div>
             <form th:unless="${item.read}" method="post" th:action="@{/items/{id}/read(id=${item.id})}"
                   th:attr="hx-post=@{/items/{id}/read(id=${item.id})}" hx-target="closest article" hx-swap="outerHTML">
               <button type="submit">Mark read</button>

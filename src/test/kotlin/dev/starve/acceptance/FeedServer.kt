@@ -46,6 +46,8 @@ sealed interface Route {
 data class RecordedRequest(
     val path: String,
     val ifNoneMatch: String?,
+    val query: String? = null,
+    val userAgent: String? = null,
 )
 
 /** An in-process HTTP server on an ephemeral port serving feed fixtures. */
@@ -71,6 +73,14 @@ class FeedServer {
         routes[path] = route
     }
 
+    /** Answers the YouTube oEmbed query for [videoId] (served at /oembed) with [status]. */
+    fun routeOembed(
+        videoId: String,
+        status: Int,
+    ) = route("$OEMBED_PATH/$videoId", Route.Status(status))
+
+    fun clearRoutes() = routes.clear()
+
     fun routeOf(path: String): Route? = routes[path]
 
     fun stop() {
@@ -81,8 +91,9 @@ class FeedServer {
     private fun handle(exchange: HttpExchange) {
         val path = exchange.requestURI.path
         val ifNoneMatch = exchange.requestHeaders.getFirst("If-None-Match")
-        seen += RecordedRequest(path, ifNoneMatch)
-        when (val route = routes[path]) {
+        val userAgent = exchange.requestHeaders.getFirst("User-Agent")
+        seen += RecordedRequest(path, ifNoneMatch, exchange.requestURI.query, userAgent)
+        when (val route = routes[routeKey(exchange)]) {
             null -> respond(exchange, 404, "text/plain", "not found")
             is Route.Status -> respond(exchange, route.code, "text/plain", "status ${route.code}")
             is Route.Html -> respond(exchange, 200, "text/html; charset=utf-8", route.body)
@@ -91,6 +102,13 @@ class FeedServer {
             Route.Stall -> stall(exchange)
             Route.StallBody -> stallBody(exchange)
         }
+    }
+
+    /** oEmbed queries are routed per video; everything else by path. */
+    private fun routeKey(exchange: HttpExchange): String {
+        val path = exchange.requestURI.path
+        val videoId = OEMBED_VIDEO.find(exchange.requestURI.rawQuery.orEmpty())?.groupValues?.get(1)
+        return if (path == OEMBED_PATH && videoId != null) "$OEMBED_PATH/$videoId" else path
     }
 
     private fun serveFeed(
@@ -142,6 +160,8 @@ class FeedServer {
 
     companion object {
         const val ETAG = "\"v1\""
+        const val OEMBED_PATH = "/oembed"
+        private val OEMBED_VIDEO = Regex("""url=[^&]*watch%3Fv%3D([A-Za-z0-9_-]+)""")
         private const val STALL_MILLIS = 5_000L
         private const val BODY_CLAIM = 100_000L
     }

@@ -30,6 +30,7 @@ data class TimelineItemView(
     val publishedIso: String,
     val thumbnailUrl: String?,
     val read: Boolean,
+    val playable: Boolean = false,
 )
 
 /** One link of the group navigation, e.g. label "Music (12)". */
@@ -146,6 +147,7 @@ class HomeController(
             publishedAt.toString(),
             thumbnailUrl,
             read,
+            playable,
         )
 
     private companion object {

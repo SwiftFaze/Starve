@@ -130,6 +130,18 @@ class JdbcRepositoriesTest {
     }
 
     @Test
+    fun `the timeline flags items whose link is playable`() {
+        val source = sources.insert("http://a.test/f", "Src")
+        val at = Instant.parse("2026-10-11T12:00:00Z")
+        val video = dated("v", at).copy(link = "https://youtu.be/dQw4w9WgXcQ")
+        val story = dated("s", at.minusSeconds(1)).copy(link = "https://example.com/s")
+        val linkless = dated("n", at.minusSeconds(2)).copy(link = null)
+        items.insertNew(source.id, listOf(video, story, linkless), at)
+
+        assertEquals(listOf(true, false, false), items.timeline(null, true, 10).map { it.playable })
+    }
+
+    @Test
     fun `marking read keeps the first read time and unknown items are reported`() {
         val source = sources.insert("http://a.test/f", "T")
         items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)

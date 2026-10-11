@@ -14,7 +14,9 @@ import java.nio.file.Path
 import javax.sql.DataSource
 
 /** Starts, stops and queries the real application against one temporary SQLite file. */
-class ApplicationHarness {
+class ApplicationHarness(
+    private val oembedUrl: () -> String,
+) {
     private var dbFile: Path = newDbFile()
     private var context: ConfigurableApplicationContext? = null
     private var extraArgs: List<String> = emptyList()
@@ -37,6 +39,7 @@ class ApplicationHarness {
                     "--starve.db.path=$dbFile",
                     "--starve.scheduling.enabled=false",
                     "--starve.fetch.timeout=PT1S",
+                    "--starve.youtube.oembed-url=${oembedUrl()}",
                     *extraArgs.toTypedArray(),
                 )
     }
