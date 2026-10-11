@@ -124,7 +124,9 @@ class RomeFeedFetcherTest {
         server.route("/ok.xml", Route.Feed(dev.starve.acceptance.FeedSpec()))
         Thread.currentThread().interrupt()
 
-        val error = assertThrows(FeedFetchException::class.java) { fetcher.fetch("${server.baseUrl}/ok.xml", Validators()) }
+        val url = "${server.baseUrl}/ok.xml"
+
+        val error = assertThrows(FeedFetchException::class.java) { fetcher.fetch(url, Validators()) }
 
         assertEquals("interrupted", error.message)
         assertTrue(Thread.interrupted())
