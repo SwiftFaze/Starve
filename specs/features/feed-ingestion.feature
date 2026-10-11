@@ -10,6 +10,9 @@ Feature: Feed ingestion
   error with failure isolation; validation of added URLs; deletion of a
   source's items on removal; retention of items by first-seen age (90 days).
   Supersedes: nothing.
+  Note: the message for an HTML page without a feed link ("no feed found at
+  this address") is owned by smart-add.feature, which superseded this file's
+  earlier "not a valid RSS or Atom feed" expectation for that case.
   Out of scope: timeline UI and read state (#3; so "never delete unread items
   from the last 7 days" holds trivially, as nothing under 90 days is deleted);
   smart-add of non-feed URLs such as YouTube channel pages (#4); groups (#5);
@@ -130,7 +133,7 @@ Feature: Feed ingestion
   Scenario: A URL that is not a feed is rejected and not stored
     Given the feed server serves "/page.html" as an HTML page
     When I add the feed URL "/page.html"
-    Then the sources page shows the message "not a valid RSS or Atom feed"
+    Then the sources page shows the message "no feed found at this address"
     And there are no subscriptions
 
   Scenario: An unreachable URL is rejected and not stored

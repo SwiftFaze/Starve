@@ -16,12 +16,11 @@ Feature: Smart-add
   Covers: resolving page URLs to feed URLs; storing the resolved feed URL;
   deduplicating on the resolved feed URL; the "no feed found at this address"
   failure message.
-  Supersedes: nothing in feed-ingestion.feature's scenario set, with one
-  consequence: an HTML page without any feed link is now reported as "no feed
-  found at this address" instead of "not a valid RSS or Atom feed", so the
-  feed-ingestion scenario "A URL that is not a feed is rejected and not
-  stored" (served as an HTML page) must be updated by the implementer. Raw
-  feed URLs and the other validation messages keep working as specified there.
+  Supersedes: one expectation of feed-ingestion.feature: an HTML page without
+  any feed link is now reported as "no feed found at this address" instead of
+  "not a valid RSS or Atom feed" (the feed-ingestion scenario "A URL that is
+  not a feed is rejected and not stored" was updated accordingly). Raw feed
+  URLs and the other validation messages keep working as specified there.
   Out of scope: bulk import (#6, which reuses the resolver); X/Instagram URLs;
   API keys; headless browsers; scraping channel ids out of YouTube markup.
 
@@ -159,8 +158,8 @@ Feature: Smart-add
 #     overridden to the fixture server by the step "SoundCloud is configured
 #     to use the feed server as its host". The template takes the numeric id
 #     as a placeholder.
-#   - The existing feed-ingestion scenario for an HTML page changes message
-#     (see Supersedes above).
+#   - The feed-ingestion scenario for an HTML page changed message (see
+#     Supersedes above); it was updated in the same spec commit.
 #   - Outbound fetching of user-supplied URLs (SSRF) stays accepted for a
 #     single-user self-hosted app.
 #   - New steps and FeedServer fixtures are needed (HTML pages with alternate
