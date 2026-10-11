@@ -65,6 +65,17 @@ uniqueness and the navigation counts. The group filter is an optional group id
 passed through `TimelineService` to `ItemRepository.timeline` and `markAllRead`,
 which restrict by `sources.group_id`; the render-timestamp cutoff still applies.
 
+## Inline playback
+
+`domain/Playable.kt` is a sealed type (`YouTube`, `SoundCloud`) derived from an
+item's link by `Playable.of`; the strict host and id checks live there, and
+`TimelineItem.playable` tells the view whether to show Play. `PlayerService`
+resolves `GET /items/{id}/player`, marks the item read and, for YouTube, asks the
+`EmbedChecker` port. `YouTubeEmbedChecker` (infra) calls oEmbed: 401/403 means
+embedding is disabled, anything else fails open. All outbound HTTP (feed fetch,
+feed location, oEmbed) goes through the shared `BoundedHttp` helper, which bounds
+time and body size.
+
 ## Dependency rule
 
 Dependencies point inward: `web`/`infra` -> `application` -> `domain`. Nothing

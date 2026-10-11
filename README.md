@@ -55,6 +55,16 @@ unread count, e.g. `Music (12)`. Choosing a group (`/?group=<id>`) shows only it
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.
 
+## Playing items inline
+
+Items whose link is a YouTube video (`watch?v=`, `youtu.be`, `/shorts/`) or a
+SoundCloud track show a **Play** control. It opens the player in place, without
+leaving the timeline, and marks the item read. YouTube plays from
+`youtube-nocookie.com`, SoundCloud through its widget. When the video owner has
+disabled embedding, a message and a link to watch it on YouTube replace the
+player. If YouTube cannot be asked, Starve assumes embedding is allowed. Other
+items keep the open-link behavior only.
+
 ## Configuration
 
 Set as Spring properties (`--starve.poll.interval=PT15M`) or environment
@@ -67,6 +77,7 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | `starve.fetch.timeout` | `PT10S` | limit for one whole feed fetch, body included |
 | `starve.soundcloud.hosts` | `soundcloud.com,m.soundcloud.com` | hosts whose single-segment URLs are treated as SoundCloud profiles |
 | `starve.soundcloud.feed-url-template` | `https://feeds.soundcloud.com/users/soundcloud:users:{id}/sounds.rss` | feed URL for a profile; `{id}` is its numeric user id |
+| `starve.youtube.oembed-url` | `https://www.youtube.com/oembed` | oEmbed endpoint used to check whether a video may be embedded |
 | `starve.retention.max-age` | `P90D` | items first seen longer ago are purged |
 | `starve.retention.interval` | `PT24H` | delay between retention purges |
 | `starve.scheduling.enabled` | `true` | `false` turns off background polling and purging |
