@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master, develop]
+  push:
+    branches: [master, develop]
+
+jobs:
+  branch-name:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        run: |
+          branch="${{ github.head_ref }}"
+          if [[ "$branch" == release-please--branches--* ]]; then
+            echo "Branch name '$branch' OK (Release Please's own branch, exempt)"
+            exit 0
+          fi
+          if [[ "$branch" == "develop" ]]; then
+            echo "Branch name '$branch' OK (develop promotion into master)"
+            exit 0
+          fi
+          if [[ ! "$branch" =~ ^(fix|feat|hotfix|chore|docs|refactor|test)/[a-zA-Z0-9._/-]+$ ]]; then
+            echo "::error::Branch name '$branch' isn't allowed. Use one of: feat/, fix/, hotfix/, chore/, docs/, refactor/, test/, followed by a slug."
+            exit 1
+          fi
+          echo "Branch name '$branch' OK"
+
+  master-source-check:
+    if: github.event_name == 'pull_request' && github.base_ref == 'master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR source branch
+        run: |
+          branch="${{ github.head_ref }}"
+          case "$branch" in
+            develop)                        echo "Branch '$branch' OK (develop promotion)"; exit 0 ;;
+            hotfix/*)                       echo "Branch '$branch' OK (hotfix)"; exit 0 ;;
+            release-please--branches--master) echo "Branch '$branch' OK (Release Please's release branch)"; exit 0 ;;
+          esac
+          echo "::error::PRs into master are only allowed from 'develop' (a release promotion) or 'hotfix/*' (got '$branch')."
+          exit 1
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # TEMPLATE: set up your toolchain and run the verify command from
+      # .claude/workflow.md. Examples:
+      #
+      #   Java/Maven:
+      #     - uses: actions/setup-java@v4
+      #       with: { distribution: temurin, java-version: '21', cache: maven }
+      #     - run: mvn -B verify
+      #
+      #   Angular/Node:
+      #     - uses: actions/setup-node@v4
+      #       with: { node-version: '22', cache: npm }
+      #     - run: npm ci
+      #     - run: npx ng lint && npx ng test --watch=false --browsers=ChromeHeadless && npx ng build
+      - name: Build and test (not configured yet)
+        run: |
+          echo "::warning::build-and-test is still the template placeholder - nothing was built or tested. Edit .github/workflows/ci.yml."
