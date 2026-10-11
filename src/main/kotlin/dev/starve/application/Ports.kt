@@ -5,6 +5,7 @@ import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
+import dev.starve.domain.Playable
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
@@ -157,3 +158,8 @@ interface ItemRepository {
 data class ItemLink(
     val link: String?,
 )
+
+interface EmbedChecker {
+    /** Whether [video] may be embedded; true whenever that cannot be determined. */
+    fun allowsEmbedding(video: Playable.YouTube): Boolean
+}

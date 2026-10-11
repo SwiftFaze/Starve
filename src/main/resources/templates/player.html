@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="content">
+<div class="player" th:if="${kind == 'youtube'}">
+  <div class="ratio-16x9">
+    <iframe th:src="${embedUrl}" title="YouTube video player"
+            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</div>
+<div class="player" th:if="${kind == 'soundcloud'}">
+  <iframe th:src="${embedUrl}" title="SoundCloud player" height="166" scrolling="no"
+          allow="autoplay"></iframe>
+</div>
+<div class="player" th:if="${kind == 'disabled'}">
+  <p>This video can't be played here</p>
+  <a th:href="${watchUrl}" rel="noopener noreferrer">Watch on YouTube</a>
+</div>
+</th:block>
+</body>
+</html>

@@ -2,7 +2,7 @@ package dev.starve.domain
 
 import java.time.Instant
 
-/** One entry of the timeline, with the title of the source it came from. */
+/** One entry of the timeline, with the title of the source it came from. [playable]: its link can play inline. */
 data class TimelineItem(
     val id: Long,
     val sourceTitle: String,
@@ -10,6 +10,7 @@ data class TimelineItem(
     val publishedAt: Instant,
     val thumbnailUrl: String?,
     val read: Boolean,
+    val playable: Boolean = false,
 )
 
 /** Keyset position in the timeline: the next page holds items strictly older than this. */
