@@ -26,7 +26,10 @@ actually costs — a line in `CLAUDE.md` is paid on every task, a line in a
 | `docs/*.md` | on demand | 250 lines |
 
 The devflow plugin's own skills and agents live in the plugin repo and are
-budgeted there, not here.
+budgeted there, not here. Vendored third-party skills (`impeccable`, under
+`.claude/skills/impeccable/` and `.claude/agents/impeccable-*.md`) are exempt
+(`VENDORED` in the script): their installer rewrites them, so trimming them here
+would be lost on the next update.
 
 These numbers are **baselines, not targets** — set at each file's size when the
 template was cut, so the gate stops growth immediately and can be tightened

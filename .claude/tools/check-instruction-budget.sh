@@ -47,6 +47,22 @@ BUDGETS=(
   "docs/*.md:250"
 )
 
+# Vendored third-party skills/agents: their installer rewrites them, so trimming
+# them here would be lost on the next update. Budgets are for our own prose.
+VENDORED=(
+  ".claude/agents/impeccable-*.md"
+  ".claude/skills/impeccable/*"
+)
+
+is_vendored() {
+  local glob
+  for glob in "${VENDORED[@]}"; do
+    # shellcheck disable=SC2053
+    [[ "$1" == $glob ]] && return 0
+  done
+  return 1
+}
+
 status=0
 over_budget=()
 
@@ -56,6 +72,7 @@ for entry in "${BUDGETS[@]}"; do
 
   for file in $pattern; do
     [ -f "$file" ] || continue
+    is_vendored "$file" && continue
     lines=$(wc -l < "$file" | tr -d ' ')
     pct=$(( lines * 100 / max ))
 
