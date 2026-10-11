@@ -10,6 +10,7 @@ data class Source(
     val validators: Validators,
     val lastFetchedAt: Instant?,
     val lastError: String?,
+    val groupId: Long? = null,
 )
 
 /** HTTP cache validators remembered from the last successful fetch, for conditional GET. */

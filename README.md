@@ -29,6 +29,13 @@ Last-Modified), so unchanged feeds cost almost nothing. One failing feed never
 stops the others. Items older than the retention age (measured from when Starve
 first saw them) are deleted daily.
 
+## Grouping sources
+
+On **Sources** you can create groups (1 to 50 characters, unique ignoring case),
+rename and delete them. Each source belongs to at most one group, chosen from the
+selector beside it; "Ungrouped" clears it. Deleting a group ungroups its sources
+and keeps their items.
+
 ## Reading the timeline
 
 The home page (`/`) lists every unread item from all sources, newest first, 50 at
@@ -37,6 +44,11 @@ link; the mark-read button marks it without opening. **Mark all read** marks
 everything shown when the page was rendered, so items that arrive meanwhile stay
 unread. **Show read** adds already-read items back to the list. Read items are
 kept until the retention age removes them.
+
+Above the list, a navigation shows **All** and each group (alphabetical) with its
+unread count, e.g. `Music (12)`. Choosing a group (`/?group=<id>`) shows only its
+sources' items with the same order, paging and read state; **Mark all read** and
+**Load more** stay within the group. Unknown group ids give a 404.
 
 ## Configuration
 

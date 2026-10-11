@@ -3,15 +3,20 @@ package dev.starve.web
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FetchResult
+import dev.starve.application.GroupService
+import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
 import dev.starve.application.SubscriptionService
 import dev.starve.domain.Feed
+import dev.starve.domain.Group
 import dev.starve.domain.Source
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.springframework.ui.ConcurrentModel
+import org.springframework.web.server.ResponseStatusException
 import java.time.Clock
 import java.time.Instant
 
@@ -22,6 +27,7 @@ class SourcesControllerTest {
             Source(5, "http://b.test/feed", "Other", Validators(), null, null),
         )
     private val sources = MemorySources(stored)
+    private val groups = MemoryGroups(mutableListOf(Group(1, "Music")))
     private val fetcher =
         object : FeedFetcher {
             override fun fetch(
@@ -32,6 +38,7 @@ class SourcesControllerTest {
     private val controller =
         SourcesController(
             SubscriptionService(sources, fetcher, FeedIngestor(sources, MemoryItems(), Clock.systemUTC())),
+            GroupService(groups, sources),
         )
 
     @Test
@@ -74,5 +81,48 @@ class SourcesControllerTest {
 
         assertEquals("redirect:/sources", redirect)
         assertEquals(listOf(5L), sources.findAll().map { it.id })
+    }
+
+    @Test
+    fun `creating a group redirects, and invalid names re-render the page with a message`() {
+        assertEquals("redirect:/sources", controller.createGroup("News", ConcurrentModel()))
+        val messages =
+            listOf("  ", "x".repeat(51), "music").map {
+                ConcurrentModel().also { model -> assertEquals("sources", controller.createGroup(it, model)) }
+            }
+
+        assertEquals(
+            listOf("group name is required", "at most 50 characters", "a group with that name already exists"),
+            messages.map { it.getAttribute("message") },
+        )
+        assertEquals(listOf("Music", "News"), groups.findAll().map { it.name })
+    }
+
+    @Test
+    fun `renaming redirects, rejects clashes and reports an unknown group as not found`() {
+        assertEquals("redirect:/sources", controller.renameGroup(1, "Tunes", ConcurrentModel()))
+        assertEquals("redirect:/sources", controller.createGroup("News", ConcurrentModel()))
+        val model = ConcurrentModel()
+
+        controller.renameGroup(2, "tunes", model)
+
+        assertEquals("a group with that name already exists", model.getAttribute("message"))
+        assertThrows(ResponseStatusException::class.java) { controller.renameGroup(9, "x", ConcurrentModel()) }
+    }
+
+    @Test
+    fun `deleting a group redirects to the list`() {
+        assertEquals("redirect:/sources", controller.deleteGroup(1))
+        assertEquals(listOf(1L), groups.deleted)
+    }
+
+    @Test
+    fun `assigning a source sets its group, blank means ungrouped and unknown groups are not found`() {
+        assertEquals("redirect:/sources", controller.assignGroup(4, "1"))
+        assertEquals("redirect:/sources", controller.assignGroup(4, ""))
+        assertEquals("redirect:/sources", controller.assignGroup(5, null))
+        assertEquals(listOf<Pair<Long, Long?>>(4L to 1L, 4L to null, 5L to null), sources.assignments)
+        assertThrows(ResponseStatusException::class.java) { controller.assignGroup(4, "9") }
+        assertThrows(ResponseStatusException::class.java) { controller.assignGroup(4, "abc") }
     }
 }

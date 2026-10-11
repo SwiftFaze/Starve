@@ -18,6 +18,24 @@
       <button type="submit">Add</button>
     </form>
 
+    <h2>Groups</h2>
+    <form method="post" action="/groups">
+      <label>New group <input type="text" name="name" maxlength="200"></label>
+      <button type="submit">Create group</button>
+    </form>
+    <ul id="group-list">
+      <li class="group" th:each="group : ${groups}" th:attr="data-group=${group.name}">
+        <form method="post" th:action="@{/groups/{id}/rename(id=${group.id})}">
+          <input type="text" name="name" th:value="${group.name}" aria-label="Group name">
+          <button type="submit">Rename</button>
+        </form>
+        <form method="post" th:action="@{/groups/{id}/delete(id=${group.id})}">
+          <button type="submit">Delete</button>
+        </form>
+      </li>
+    </ul>
+
+    <h2>Subscriptions</h2>
     <p th:if="${#lists.isEmpty(sources)}">No subscriptions yet</p>
     <ul id="source-list">
       <li class="source" th:each="source : ${sources}" th:attr="data-title=${source.title}">
@@ -25,6 +43,14 @@
         <span class="url" th:text="${source.url}">url</span>
         <span class="last-fetched" th:if="${source.lastFetched}" th:text="${source.lastFetched}">time</span>
         <span class="error" th:if="${source.error}" th:text="${source.error}">error</span>
+        <form method="post" th:action="@{/sources/{id}/group(id=${source.id})}">
+          <select name="group" aria-label="Group">
+            <option value="">Ungrouped</option>
+            <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
+                    th:selected="${group.id == source.groupId}">Group</option>
+          </select>
+          <button type="submit">Set group</button>
+        </form>
         <form method="post" th:action="@{/sources/{id}/delete(id=${source.id})}">
           <button type="submit">Remove</button>
         </form>

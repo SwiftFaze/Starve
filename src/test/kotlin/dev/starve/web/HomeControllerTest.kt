@@ -1,8 +1,11 @@
 package dev.starve.web
 
+import dev.starve.application.GroupService
+import dev.starve.application.MemoryGroups
 import dev.starve.application.MemorySources
 import dev.starve.application.TimelineItems
 import dev.starve.application.TimelineService
+import dev.starve.domain.Group
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
@@ -24,10 +27,15 @@ import java.time.ZoneOffset
 class HomeControllerTest {
     private val now = Instant.parse("2026-10-11T12:00:00Z")
     private val published = Instant.parse("2026-10-10T08:05:00Z")
+    private val music = Group(1, "music")
+    private val news = Group(2, "News")
     private val source = Source(1, "http://a.test/f", "A", Validators(), null, null)
 
     private fun controller(items: TimelineItems) =
-        HomeController(TimelineService(items, MemorySources(mutableListOf(source)), Clock.fixed(now, ZoneOffset.UTC)))
+        HomeController(
+            TimelineService(items, MemorySources(mutableListOf(source)), Clock.fixed(now, ZoneOffset.UTC)),
+            GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources()),
+        )
 
     private fun row(id: Long) = TimelineItem(id, "A", "T$id", published, "http://img.test/$id", id == 1L)
 
@@ -35,7 +43,7 @@ class HomeControllerTest {
     fun `home renders formatted views and the render timestamp`() {
         val model = ConcurrentModel()
 
-        val view = controller(TimelineItems(listOf(row(1)))).home(null, null, null, model)
+        val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(), null, model)
 
         assertEquals("home", view)
         val item = (model.getAttribute("items") as List<*>).single() as TimelineItemView
@@ -57,7 +65,7 @@ class HomeControllerTest {
     fun `an unread row is presented as unread`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems(listOf(row(2)))).home(null, null, null, model)
+        controller(TimelineItems(listOf(row(2)))).home(TimelineQuery(), null, model)
 
         val item = (model.getAttribute("items") as List<*>).single() as TimelineItemView
         assertFalse(item.read)
@@ -68,7 +76,7 @@ class HomeControllerTest {
         val items = TimelineItems((1L..TimelineRules.PAGE_SIZE + 1).map { row(it) })
         val model = ConcurrentModel()
 
-        controller(items).home("all", null, null, model)
+        controller(items).home(TimelineQuery(show = "all"), null, model)
 
         assertEquals(true, items.requested!!.second)
         assertEquals("/?after=${published.toEpochMilli()}_50&show=all", model.getAttribute("moreHref"))
@@ -76,14 +84,14 @@ class HomeControllerTest {
 
     @Test
     fun `an htmx request with a cursor returns only the fragment`() {
-        val view = controller(TimelineItems()).home(null, "1_2", "true", ConcurrentModel())
+        val view = controller(TimelineItems()).home(TimelineQuery(after = "1_2"), "true", ConcurrentModel())
 
         assertEquals("home :: more", view)
     }
 
     @Test
     fun `an htmx request without a cursor returns the full page`() {
-        assertEquals("home", controller(TimelineItems()).home(null, null, "true", ConcurrentModel()))
+        assertEquals("home", controller(TimelineItems()).home(TimelineQuery(), "true", ConcurrentModel()))
     }
 
     @Test
@@ -123,9 +131,63 @@ class HomeControllerTest {
     fun `mark all read hands the render time to the service and redirects home`() {
         val items = TimelineItems()
 
-        val view = controller(items).markAllRead(published.toEpochMilli())
+        val view = controller(items).markAllRead(published.toEpochMilli(), null)
 
         assertEquals("redirect:/", view)
         assertEquals(published to now, items.markAllCall)
+    }
+
+    @Test
+    fun `a group filter reaches the service and is kept by the cursor link and the toggle`() {
+        val items = TimelineItems((1L..TimelineRules.PAGE_SIZE + 1).map { row(it) })
+        val model = ConcurrentModel()
+
+        controller(items).home(TimelineQuery(show = "all", group = "2"), null, model)
+
+        assertEquals(2L, items.requestedGroup)
+        assertEquals("/?after=${published.toEpochMilli()}_50&show=all&group=2", model.getAttribute("moreHref"))
+        assertEquals("/?group=2", model.getAttribute("toggleHref"))
+        assertEquals(2L, model.getAttribute("groupId"))
+    }
+
+    @Test
+    fun `the navigation lists All then groups alphabetically with unread counts and marks the current one`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).home(TimelineQuery(group = "1"), null, model)
+
+        val expected =
+            listOf(
+                NavEntryView("All (5)", "/", false),
+                NavEntryView("music (3)", "/?group=1", true),
+                NavEntryView("News (0)", "/?group=2", false),
+            )
+        assertEquals(expected, model.getAttribute("nav"))
+
+        val all = ConcurrentModel()
+        controller(TimelineItems()).home(TimelineQuery(), null, all)
+        assertEquals("/?show=all", all.getAttribute("toggleHref"))
+    }
+
+    @Test
+    fun `unknown or non-numeric groups are not found`() {
+        listOf("99", "abc", "").forEach { raw ->
+            val e =
+                assertThrows(ResponseStatusException::class.java) {
+                    controller(TimelineItems()).home(TimelineQuery(group = raw), null, ConcurrentModel())
+                }
+
+            assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
+        }
+    }
+
+    @Test
+    fun `mark all read inside a group is scoped and redirects back to the group`() {
+        val items = TimelineItems()
+
+        val view = controller(items).markAllRead(published.toEpochMilli(), 2)
+
+        assertEquals("redirect:/?group=2", view)
+        assertEquals(2L, items.markAllGroup)
     }
 }

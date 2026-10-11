@@ -31,9 +31,10 @@ class TimelineService(
     fun page(
         after: Cursor?,
         showRead: Boolean,
+        groupId: Long? = null,
     ): TimelinePage {
         val renderedAt = clock.instant()
-        val rows = items.timeline(after, showRead, TimelineRules.PAGE_SIZE + 1)
+        val rows = items.timeline(after, showRead, TimelineRules.PAGE_SIZE + 1, groupId)
         val (shown, next) = TimelineRules.paginate(rows)
         return TimelinePage(shown, next, renderedAt, sources.findAll().isNotEmpty())
     }
@@ -47,6 +48,12 @@ class TimelineService(
         return OpenResult.Opened(target.link)
     }
 
-    /** Marks read everything first seen at or before [renderedAt], leaving later arrivals unread. */
-    fun markAllRead(renderedAt: Instant): Int = items.markAllRead(renderedAt, clock.instant())
+    /**
+     * Marks read everything (in [groupId] if given) first seen at or before [renderedAt];
+     * later arrivals stay unread.
+     */
+    fun markAllRead(
+        renderedAt: Instant,
+        groupId: Long? = null,
+    ): Int = items.markAllRead(renderedAt, clock.instant(), groupId)
 }

@@ -2,6 +2,8 @@ package dev.starve.application
 
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
+import dev.starve.domain.Group
+import dev.starve.domain.GroupSummary
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
@@ -35,6 +37,15 @@ class MemorySources(
 
     override fun delete(id: Long) {
         stored.removeIf { it.id == id }
+    }
+
+    val assignments = mutableListOf<Pair<Long, Long?>>()
+
+    override fun assignGroup(
+        sourceId: Long,
+        groupId: Long?,
+    ) {
+        assignments += sourceId to groupId
     }
 
     override fun recordSuccess(
@@ -79,6 +90,7 @@ open class MemoryItems(
         after: Cursor?,
         showRead: Boolean,
         limit: Int,
+        groupId: Long?,
     ): List<TimelineItem> = emptyList()
 
     override fun findLink(id: Long): ItemLink? = null
@@ -91,6 +103,7 @@ open class MemoryItems(
     override fun markAllRead(
         firstSeenCutoff: Instant,
         at: Instant,
+        groupId: Long?,
     ) = 0
 }
 
@@ -101,6 +114,8 @@ class TimelineItems(
     private val markedAllCount: Int = 0,
 ) : MemoryItems() {
     var requested: Triple<Cursor?, Boolean, Int>? = null
+    var requestedGroup: Long? = null
+    var markAllGroup: Long? = null
     val readCalls = mutableListOf<Pair<Long, Instant>>()
     var markAllCall: Pair<Instant, Instant>? = null
 
@@ -108,8 +123,10 @@ class TimelineItems(
         after: Cursor?,
         showRead: Boolean,
         limit: Int,
+        groupId: Long?,
     ): List<TimelineItem> {
         requested = Triple(after, showRead, limit)
+        requestedGroup = groupId
         return rows
     }
 
@@ -126,8 +143,43 @@ class TimelineItems(
     override fun markAllRead(
         firstSeenCutoff: Instant,
         at: Instant,
+        groupId: Long?,
     ): Int {
         markAllCall = firstSeenCutoff to at
+        markAllGroup = groupId
         return markedAllCount
     }
+}
+
+/** An in-memory group store; names are matched ignoring case. */
+class MemoryGroups(
+    private val stored: MutableList<Group> = mutableListOf(),
+    private val unread: Map<Long, Int> = emptyMap(),
+    private val total: Int = 0,
+) : GroupRepository {
+    val deleted = mutableListOf<Long>()
+
+    override fun findAll(): List<Group> = stored.sortedBy { it.name.lowercase() }
+
+    override fun findById(id: Long): Group? = stored.firstOrNull { it.id == id }
+
+    override fun findByName(name: String): Group? = stored.firstOrNull { it.name.equals(name, ignoreCase = true) }
+
+    override fun insert(name: String): Group = Group(stored.size + 1L, name).also { stored += it }
+
+    override fun rename(
+        id: Long,
+        name: String,
+    ) {
+        stored.replaceAll { if (it.id == id) it.copy(name = name) else it }
+    }
+
+    override fun delete(id: Long) {
+        deleted += id
+        stored.removeIf { it.id == id }
+    }
+
+    override fun unreadCounts(): List<GroupSummary> = findAll().map { GroupSummary(it, unread[it.id] ?: 0) }
+
+    override fun totalUnread(): Int = total
 }

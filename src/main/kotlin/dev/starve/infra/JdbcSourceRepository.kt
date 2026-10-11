@@ -50,6 +50,13 @@ class JdbcSourceRepository(
         jdbc.sql("DELETE FROM sources WHERE id = ?").param(id).update()
     }
 
+    override fun assignGroup(
+        sourceId: Long,
+        groupId: Long?,
+    ) {
+        jdbc.sql("UPDATE sources SET group_id = ? WHERE id = ?").params(groupId, sourceId).update()
+    }
+
     override fun recordSuccess(
         id: Long,
         title: String,
@@ -84,4 +91,5 @@ private fun ResultSet.toSource() =
         validators = Validators(getString("etag"), getString("last_modified")),
         lastFetchedAt = getString("last_fetched_at")?.let { Instant.ofEpochMilli(it.toLong()) },
         lastError = getString("last_error"),
+        groupId = getLong("group_id").takeUnless { wasNull() },
     )
