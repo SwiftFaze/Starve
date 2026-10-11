@@ -46,6 +46,16 @@ only items with `first_seen_at` at or before it, so items ingested after the
 page was rendered stay unread. `TimelineService` orchestrates; `HomeController`
 only translates requests and formats views.
 
+## Source groups
+
+`domain/Group.kt` holds `Group` and `GroupRules.checkName` (trim, 1 to 50 chars).
+Groups live in the `groups` table with a nullable `sources.group_id`
+(`ON DELETE SET NULL`, migration V4), so a source has at most one group and
+deleting a group ungroups it. `GroupService` owns the name rules, case-insensitive
+uniqueness and the navigation counts. The group filter is an optional group id
+passed through `TimelineService` to `ItemRepository.timeline` and `markAllRead`,
+which restrict by `sources.group_id`; the render-timestamp cutoff still applies.
+
 ## Dependency rule
 
 Dependencies point inward: `web`/`infra` -> `application` -> `domain`. Nothing
