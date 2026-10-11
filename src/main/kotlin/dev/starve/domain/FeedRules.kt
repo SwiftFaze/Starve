@@ -5,37 +5,7 @@ import java.net.URISyntaxException
 import java.time.Duration
 import java.time.Instant
 
-/** A subscription to one feed URL, with the outcome of its latest fetch attempt. */
-data class Source(
-    val id: Long,
-    val url: String,
-    val title: String,
-    val validators: Validators,
-    val lastFetchedAt: Instant?,
-    val lastError: String?,
-)
-
-/** HTTP cache validators remembered from the last successful fetch, for conditional GET. */
-data class Validators(
-    val etag: String? = null,
-    val lastModified: String? = null,
-)
-
-/** One parsed feed entry. [key] is its per-source identity (guid, else link). */
-data class FeedItem(
-    val key: String,
-    val title: String,
-    val link: String?,
-    val publishedAt: Instant?,
-    val author: String?,
-    val thumbnailUrl: String?,
-)
-
-data class Feed(
-    val title: String?,
-    val items: List<FeedItem>,
-)
-
+/** Rules for feed identity, subscription URLs and retention. */
 object FeedRules {
     /** Identity of an entry within its source: the guid, else the link; null when it has neither. */
     fun itemKey(
