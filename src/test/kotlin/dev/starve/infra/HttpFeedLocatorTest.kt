@@ -68,6 +68,12 @@ class HttpFeedLocatorTest {
     }
 
     @Test
+    fun `the highest success status is still located`() {
+        server.route("/edge", Route.Status(299))
+        assertEquals(LocateResult.Found(server.baseUrl + "/edge"), locate("/edge"))
+    }
+
+    @Test
     fun `error statuses and stalls are unreachable`() {
         server.route("/gone", Route.Status(404))
         server.route("/slow", Route.StallBody)

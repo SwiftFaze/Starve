@@ -49,6 +49,16 @@ class FeedDiscoveryTest {
     }
 
     @Test
+    fun `language alternates and typed feeds with parameters are told apart`() {
+        val html =
+            """
+            <link rel="alternate" hreflang="fr" href="/fr/">
+            <link rel="alternate stylesheet" type="application/rss+xml; charset=utf-8" href="/feed.xml">
+            """.trimIndent()
+        assertEquals("http://a.test/feed.xml", alt(html))
+    }
+
+    @Test
     fun `links without a usable href are skipped`() {
         val html =
             """
