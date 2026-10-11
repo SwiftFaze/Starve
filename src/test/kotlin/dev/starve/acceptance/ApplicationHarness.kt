@@ -2,6 +2,7 @@ package dev.starve.acceptance
 
 import dev.starve.StarveApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.jdbc.core.simple.JdbcClient
 import java.net.URI
@@ -20,6 +21,11 @@ class ApplicationHarness(
     private var dbFile: Path = newDbFile()
     private var context: ConfigurableApplicationContext? = null
     private var extraArgs: List<String> = emptyList()
+
+    /** Holds the post-import polls of the running application until a step releases them. */
+    var importRunner = ManualRunner()
+        private set
+
     private val client = HttpClient.newHttpClient()
 
     val dbPath: Path get() = dbFile
@@ -32,8 +38,10 @@ class ApplicationHarness(
 
     fun start() {
         check(context == null) { "application already running" }
+        val runner = ManualRunner().also { importRunner = it }
         context =
             SpringApplicationBuilder(StarveApplication::class.java)
+                .initializers(useRunner(runner))
                 .run(
                     "--server.port=0",
                     "--starve.db.path=$dbFile",
@@ -92,6 +100,27 @@ class ApplicationHarness(
         return client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
     }
 
+    /** Uploads [content] as the multipart file field [field] named [filename]. */
+    fun postFile(
+        path: String,
+        field: String,
+        filename: String,
+        content: ByteArray,
+    ): HttpResponse<String> {
+        val port = running().environment.getProperty("local.server.port")
+        val boundary = "starve-boundary-${System.nanoTime()}"
+        val head = "--$boundary\r\nContent-Disposition: form-data; name=\"$field\"; filename=\"$filename\"\r\n"
+        val part = "Content-Type: application/octet-stream\r\n\r\n"
+        val body = (head + part).toByteArray() + content + "\r\n--$boundary--\r\n".toByteArray()
+        val request =
+            HttpRequest
+                .newBuilder(URI.create("http://localhost:$port$path"))
+                .header("Content-Type", "multipart/form-data; boundary=$boundary")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+                .build()
+        return client.send(request, HttpResponse.BodyHandlers.ofString())
+    }
+
     fun <T : Any> bean(type: Class<T>): T = running().getBean(type)
 
     fun jdbc(): JdbcClient = JdbcClient.create(running().getBean(DataSource::class.java))
@@ -100,6 +129,11 @@ class ApplicationHarness(
         stop()
         Files.deleteIfExists(dbFile)
     }
+
+    private fun useRunner(runner: ManualRunner) =
+        ApplicationContextInitializer<ConfigurableApplicationContext> {
+            it.beanFactory.registerSingleton("backgroundRunner", runner)
+        }
 
     private fun enc(value: String) = URLEncoder.encode(value, Charsets.UTF_8)
 

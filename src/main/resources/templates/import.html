@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Import - Starve</title>
+  <link rel="stylesheet" href="/starve.css">
+  <script src="/htmx.min.js"></script>
+</head>
+<body>
+  <header class="bar" id="bar">
+    <p class="wordmark"><a href="/">Starve</a></p>
+    <nav class="pages" aria-label="Pages">
+      <a class="tab" href="/">Timeline</a>
+      <a class="tab" href="/sources">Sources</a>
+    </nav>
+  </header>
+
+  <div class="label">
+    <aside class="sleeve" aria-label="Upload a subscription file">
+      <div class="series-block">
+        <h1 class="series roster-name">Import subscriptions</h1>
+      </div>
+
+      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Not a Takeout CSV or OPML file</p>
+
+      <form class="add" method="post" action="/import" enctype="multipart/form-data">
+        <label class="field-label" for="import-file">Subscription file</label>
+        <div class="field-row">
+          <input class="field" id="import-file" type="file" name="file" aria-describedby="import-hint" required>
+          <button type="submit">Import</button>
+        </div>
+        <p class="hint" id="import-hint">YouTube subscriptions.csv (Google Takeout) or OPML file, up to 1 MB</p>
+      </form>
+    </aside>
+
+    <main class="sheet" id="sheet">
+      <section id="summary" th:if="${summary}">
+        <h2 class="sheet-title">Import summary</h2>
+        <ul class="roster">
+          <li>Added: <span id="added" th:text="${summary.added}">0</span></li>
+          <li>Already subscribed: <span id="already-subscribed" th:text="${summary.alreadySubscribed}">0</span></li>
+          <li>Failed: <span id="failed" th:text="${summary.failed}">0</span></li>
+        </ul>
+        <ul id="failures" class="roster" th:if="${summary.failed > 0}">
+          <li class="failure error" th:each="failure : ${summary.failures}" th:text="${failure}">reason</li>
+        </ul>
+        <p class="sheet-note">New subscriptions are fetched in the background; their items appear on the timeline shortly.</p>
+      </section>
+      <p class="sheet-note" th:unless="${summary}">Upload a file to see what was added, what you already had, and anything that failed.</p>
+    </main>
+  </div>
+</body>
+</html>

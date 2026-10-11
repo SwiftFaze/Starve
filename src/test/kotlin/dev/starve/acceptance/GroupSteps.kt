@@ -14,16 +14,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 class GroupSteps {
     private val app = World.app
 
-    /**
-     * The feature uses one phrase, `the source "X" is in the group "Y"`, both to arrange (Given) and to assert (Then),
-     * and Cucumber cannot tell them apart. Every When step sets this, so the phrase arranges before the first action
-     * and asserts afterwards.
-     */
-    private var actionHasRun = false
-
     @Before
     fun resetSourcesPage() {
         World.sourcesPage = ""
+        World.actionHasRun = false
     }
 
     // ---- actions -------------------------------------------------------------------------
@@ -33,7 +27,7 @@ class GroupSteps {
 
     @When("I create the group {string}")
     fun createGroup(name: String) {
-        actionHasRun = true
+        World.actionHasRun = true
         postGroup(name)
     }
 
@@ -46,13 +40,13 @@ class GroupSteps {
         name: String,
         newName: String,
     ) {
-        actionHasRun = true
+        World.actionHasRun = true
         World.sourcesPage = app.postForm("/groups/${groupId(name)}/rename", "name" to newName).body()
     }
 
     @When("I delete the group {string}")
     fun deleteGroup(name: String) {
-        actionHasRun = true
+        World.actionHasRun = true
         app.postForm("/groups/${groupId(name)}/delete")
     }
 
@@ -62,7 +56,7 @@ class GroupSteps {
         source: String,
         group: String,
     ) {
-        if (actionHasRun) assertEquals(group, groupNameOf(source)) else assign(source, groupId(group).toString())
+        if (World.actionHasRun) assertEquals(group, groupNameOf(source)) else assign(source, groupId(group).toString())
     }
 
     @When("I assign the source {string} to the group {string}")
@@ -70,7 +64,7 @@ class GroupSteps {
         source: String,
         group: String,
     ) {
-        actionHasRun = true
+        World.actionHasRun = true
         assign(source, groupId(group).toString())
     }
 
@@ -80,7 +74,7 @@ class GroupSteps {
         option: String,
     ) {
         assertEquals("Ungrouped", option)
-        actionHasRun = true
+        World.actionHasRun = true
         assign(source, "")
     }
 
@@ -100,6 +94,9 @@ class GroupSteps {
 
     @Then("the sources page lists the groups in this order")
     fun sourcesPageGroupOrder(table: DataTable) = assertEquals(table.asList(), sourcesPageGroups())
+
+    @Then("there are {int} groups")
+    fun groupCountPlural(count: Int) = groupCount(count)
 
     @Then("there is {int} group")
     fun groupCount(count: Int) = assertEquals(count.toLong(), scalar("SELECT COUNT(*) FROM groups"))

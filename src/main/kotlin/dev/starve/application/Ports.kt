@@ -5,6 +5,7 @@ import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
+import dev.starve.domain.ParsedImport
 import dev.starve.domain.Playable
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
@@ -166,4 +167,14 @@ data class ItemRef(
 interface EmbedChecker {
     /** Whether [video] may be embedded; true whenever that cannot be determined. */
     fun allowsEmbedding(video: Playable.YouTube): Boolean
+}
+
+fun interface OpmlReader {
+    /** Reads [text] as OPML, or returns null when it is not an OPML document (a DOCTYPE counts as not OPML). */
+    fun read(text: String): ParsedImport?
+}
+
+/** Runs work off the calling thread. */
+fun interface BackgroundRunner {
+    fun run(task: Runnable)
 }
