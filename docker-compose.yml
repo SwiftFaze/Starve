@@ -8,7 +8,15 @@ services:
     volumes:
       - starve-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health || wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      # The JRE image is not guaranteed to ship curl or wget; bash's /dev/tcp always works.
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/localhost/8080 &&
+          printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 &&
+          grep -q '"status":"UP"' <&3
       interval: 30s
       timeout: 5s
       retries: 3
