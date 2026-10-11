@@ -13,5 +13,8 @@ object World {
     /** The page bodies making up the timeline as loaded so far: the first page, then each loaded fragment. */
     var pages: List<String> = emptyList()
 
+    /** The latest rendering of the sources page, however it was reached. */
+    var sourcesPage: String = ""
+
     fun feedServer(): FeedServer = requireNotNull(feeds) { "feed server not running" }
 }

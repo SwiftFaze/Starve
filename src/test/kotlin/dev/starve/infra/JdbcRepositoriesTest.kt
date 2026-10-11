@@ -3,14 +3,18 @@ package dev.starve.infra
 import dev.starve.application.ItemLink
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
+import dev.starve.domain.Group
+import dev.starve.domain.GroupSummary
 import dev.starve.domain.Validators
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.simple.JdbcClient
 import java.nio.file.Path
 import java.time.Instant
@@ -24,6 +28,7 @@ class JdbcRepositoriesTest {
     private lateinit var jdbc: JdbcClient
     private lateinit var sources: JdbcSourceRepository
     private lateinit var items: JdbcItemRepository
+    private lateinit var groups: JdbcGroupRepository
 
     @BeforeEach
     fun setUp() {
@@ -36,6 +41,7 @@ class JdbcRepositoriesTest {
         jdbc = JdbcClient.create(dataSource)
         sources = JdbcSourceRepository(jdbc)
         items = JdbcItemRepository(jdbc)
+        groups = JdbcGroupRepository(jdbc)
     }
 
     @AfterEach
@@ -107,20 +113,20 @@ class JdbcRepositoriesTest {
         items.insertNew(source.id, listOf(dated("a", same), dated("b", same), dated("c", seen)), seen)
         val ids = jdbc.sql("SELECT id FROM items ORDER BY item_key").query(Long::class.java).list()
 
-        val all = items.timeline(null, false, 10)
+        val all = items.timeline(null, false, 10, null)
 
         assertEquals(listOf("c", "b", "a"), all.map { it.title })
         assertEquals("Src", all.first().sourceTitle)
-        val next = items.timeline(Cursor(all[0].publishedAt, all[0].id), false, 10)
+        val next = items.timeline(Cursor(all[0].publishedAt, all[0].id), false, 10, null)
         assertEquals(listOf("b", "a"), next.map { it.title })
-        val afterTie = items.timeline(Cursor(same, ids[1]), false, 10)
+        val afterTie = items.timeline(Cursor(same, ids[1]), false, 10, null)
         assertEquals(listOf("a"), afterTie.map { it.title })
-        assertEquals(1, items.timeline(null, false, 1).size)
+        assertEquals(1, items.timeline(null, false, 1, null).size)
 
         assertEquals(true, items.markRead(ids[2], seen))
-        assertEquals(listOf("b", "a"), items.timeline(null, false, 10).map { it.title })
-        assertEquals(listOf("c", "b", "a"), items.timeline(null, true, 10).map { it.title })
-        assertEquals(listOf(true, false, false), items.timeline(null, true, 10).map { it.read })
+        assertEquals(listOf("b", "a"), items.timeline(null, false, 10, null).map { it.title })
+        assertEquals(listOf("c", "b", "a"), items.timeline(null, true, 10, null).map { it.title })
+        assertEquals(listOf(true, false, false), items.timeline(null, true, 10, null).map { it.read })
     }
 
     @Test
@@ -159,10 +165,49 @@ class JdbcRepositoriesTest {
         items.insertNew(source.id, listOf(item("edge", "edge")), cutoff)
         items.insertNew(source.id, listOf(item("late", "late")), cutoff.plusSeconds(1))
 
-        assertEquals(2, items.markAllRead(cutoff, cutoff.plusSeconds(5)))
-        assertEquals(0, items.markAllRead(cutoff, cutoff.plusSeconds(9)))
+        assertEquals(2, items.markAllRead(cutoff, cutoff.plusSeconds(5), null))
+        assertEquals(0, items.markAllRead(cutoff, cutoff.plusSeconds(9), null))
 
-        assertEquals(listOf("late"), items.timeline(null, false, 10).map { it.title })
+        assertEquals(listOf("late"), items.timeline(null, false, 10, null).map { it.title })
+    }
+
+    @Test
+    fun `groups are unique ignoring case, listed alphabetically and renamed in place`() {
+        val zebra = groups.insert("zebra")
+        val apple = groups.insert("Apple")
+
+        assertEquals(listOf("Apple", "zebra"), groups.findAll().map { it.name })
+        assertEquals(apple, groups.findByName("APPLE"))
+        assertNull(groups.findByName("pear"))
+        groups.rename(zebra.id, "Mango")
+        assertEquals(Group(zebra.id, "Mango"), groups.findById(zebra.id))
+        assertEquals(listOf("Apple", "Mango"), groups.findAll().map { it.name })
+        assertThrows(DataAccessException::class.java) { groups.insert("apple") }
+    }
+
+    @Test
+    fun `a group filter scopes the timeline and mark all read, and deleting a group ungroups its sources`() {
+        val music = groups.insert("Music")
+        val alpha = sources.insert("http://a.test/f", "Alpha")
+        val beta = sources.insert("http://b.test/f", "Beta")
+        val seen = Instant.parse("2026-10-11T12:00:00Z")
+        items.insertNew(alpha.id, listOf(dated("a", seen)), seen)
+        items.insertNew(beta.id, listOf(dated("b", seen)), seen)
+        sources.assignGroup(alpha.id, music.id)
+
+        assertEquals(music.id, sources.findById(alpha.id)?.groupId)
+        assertNull(sources.findById(beta.id)?.groupId)
+        assertEquals(listOf("a"), items.timeline(null, false, 10, music.id).map { it.title })
+        assertEquals(listOf(GroupSummary(music, 1)), groups.unreadCounts())
+        assertEquals(2, groups.totalUnread())
+        assertEquals(1, items.markAllRead(seen, seen, music.id))
+        assertEquals(listOf("b"), items.timeline(null, false, 10, null).map { it.title })
+        assertEquals(listOf(GroupSummary(music, 0)), groups.unreadCounts())
+
+        groups.delete(music.id)
+
+        assertNull(sources.findById(alpha.id)?.groupId)
+        assertEquals(2, sources.findAll().size)
     }
 
     private fun dated(

@@ -32,10 +32,15 @@ class JdbcItemRepository(
         after: Cursor?,
         showRead: Boolean,
         limit: Int,
+        groupId: Long?,
     ): List<TimelineItem> {
         val conditions = mutableListOf<String>()
         val params = mutableListOf<Any>()
         if (!showRead) conditions += "i.read_at IS NULL"
+        if (groupId != null) {
+            conditions += "s.group_id = ?"
+            params += groupId
+        }
         if (after != null) {
             conditions += "(i.published_at < ? OR (i.published_at = ? AND i.id < ?))"
             params.addAll(listOf(after.publishedAt.toEpochMilli(), after.publishedAt.toEpochMilli(), after.id))
@@ -71,10 +76,13 @@ class JdbcItemRepository(
     override fun markAllRead(
         firstSeenCutoff: Instant,
         at: Instant,
+        groupId: Long?,
     ): Int =
         jdbc
-            .sql("UPDATE items SET read_at = ? WHERE read_at IS NULL AND first_seen_at <= ?")
-            .params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli())
+            .sql(
+                "UPDATE items SET read_at = ? WHERE read_at IS NULL AND first_seen_at <= ? " +
+                    "AND (? IS NULL OR source_id IN (SELECT id FROM sources WHERE group_id = ?))",
+            ).params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli(), groupId, groupId)
             .update()
 
     private fun ResultSet.toTimelineItem() =

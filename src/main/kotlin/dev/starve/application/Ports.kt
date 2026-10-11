@@ -3,6 +3,8 @@ package dev.starve.application
 import dev.starve.domain.Cursor
 import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
+import dev.starve.domain.Group
+import dev.starve.domain.GroupSummary
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
@@ -51,6 +53,12 @@ interface SourceRepository {
 
     fun delete(id: Long)
 
+    /** Puts the source in [groupId], or ungroups it when null. */
+    fun assignGroup(
+        sourceId: Long,
+        groupId: Long?,
+    )
+
     fun recordSuccess(
         id: Long,
         title: String,
@@ -65,6 +73,32 @@ interface SourceRepository {
     )
 }
 
+interface GroupRepository {
+    /** All groups, alphabetical ignoring case. */
+    fun findAll(): List<Group>
+
+    fun findById(id: Long): Group?
+
+    /** The group with this name, ignoring case. */
+    fun findByName(name: String): Group?
+
+    fun insert(name: String): Group
+
+    fun rename(
+        id: Long,
+        name: String,
+    )
+
+    /** Deletes the group; its sources become ungrouped. */
+    fun delete(id: Long)
+
+    /** Every group (alphabetical ignoring case) with its unread item count. */
+    fun unreadCounts(): List<GroupSummary>
+
+    /** Unread items across all sources, grouped or not. */
+    fun totalUnread(): Int
+}
+
 interface ItemRepository {
     /** Stores items whose key is new for the source; existing keys are left untouched. */
     fun insertNew(
@@ -76,11 +110,15 @@ interface ItemRepository {
     /** Deletes items first seen before [cutoff]; returns how many were removed. */
     fun deleteFirstSeenBefore(cutoff: Instant): Int
 
-    /** Newest-first items older than [after] (all when null); at most [limit]; read ones only when [showRead]. */
+    /**
+     * Newest-first items older than [after] (all when null); at most [limit]; read ones only when [showRead];
+     * only those of group [groupId] when it is given.
+     */
     fun timeline(
         after: Cursor?,
         showRead: Boolean,
         limit: Int,
+        groupId: Long?,
     ): List<TimelineItem>
 
     fun findLink(id: Long): ItemLink?
@@ -91,10 +129,11 @@ interface ItemRepository {
         at: Instant,
     ): Boolean
 
-    /** Marks every unread item first seen at or before [firstSeenCutoff] as read at [at]. */
+    /** Marks every unread item first seen at or before [firstSeenCutoff] as read at [at], within [groupId] if given. */
     fun markAllRead(
         firstSeenCutoff: Instant,
         at: Instant,
+        groupId: Long?,
     ): Int
 }
 

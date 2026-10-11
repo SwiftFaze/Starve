@@ -14,7 +14,7 @@ import java.time.Instant
 
 class IngestionSteps {
     private val app = World.app
-    private var lastPage = ""
+    private var lastPage: String by World::sourcesPage
     private var removedSourceId = 0L
     private val itemIdByAgeDays = mutableMapOf<Int, Long>()
 

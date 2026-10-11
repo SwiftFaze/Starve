@@ -151,6 +151,11 @@ class RomeFeedFetcherTest {
 
         override fun delete(id: Long) = error("unused")
 
+        override fun assignGroup(
+            sourceId: Long,
+            groupId: Long?,
+        ) = error("unused")
+
         override fun recordSuccess(
             id: Long,
             title: String,

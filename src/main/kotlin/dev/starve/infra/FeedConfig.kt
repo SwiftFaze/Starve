@@ -2,6 +2,8 @@ package dev.starve.infra
 
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
+import dev.starve.application.GroupRepository
+import dev.starve.application.GroupService
 import dev.starve.application.ItemRepository
 import dev.starve.application.PollService
 import dev.starve.application.RetentionService
@@ -65,6 +67,12 @@ class FeedConfig {
         sources: SourceRepository,
         clock: Clock,
     ) = TimelineService(items, sources, clock)
+
+    @Bean
+    fun groupService(
+        groups: GroupRepository,
+        sources: SourceRepository,
+    ) = GroupService(groups, sources)
 
     @Bean
     fun retentionService(

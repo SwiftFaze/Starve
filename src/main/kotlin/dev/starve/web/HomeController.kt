@@ -1,15 +1,18 @@
 package dev.starve.web
 
+import dev.starve.application.GroupService
 import dev.starve.application.OpenResult
 import dev.starve.application.TimelinePage
 import dev.starve.application.TimelineService
 import dev.starve.domain.Cursor
+import dev.starve.domain.Group
 import dev.starve.domain.TimelineItem
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -29,26 +32,45 @@ data class TimelineItemView(
     val read: Boolean,
 )
 
+/** One link of the group navigation, e.g. label "Music (12)". */
+data class NavEntryView(
+    val label: String,
+    val href: String,
+    val current: Boolean,
+)
+
+/** The timeline's query parameters; a malformed or unknown [group] is answered with 404. */
+data class TimelineQuery(
+    val show: String? = null,
+    val after: String? = null,
+    val group: String? = null,
+)
+
 @Controller
 class HomeController(
     private val timeline: TimelineService,
+    private val groups: GroupService,
 ) {
     @GetMapping("/")
     fun home(
-        @RequestParam(required = false) show: String?,
-        @RequestParam(required = false) after: String?,
+        @ModelAttribute query: TimelineQuery,
         @RequestHeader("HX-Request", required = false) htmx: String?,
         model: Model,
     ): String {
-        val showAll = show == "all"
-        val page = timeline.page(Cursor.parse(after), showAll)
+        val showAll = query.show == "all"
+        val groupId = query.group?.let { resolveGroup(it).id }
+        val page = timeline.page(Cursor.parse(query.after), showAll, groupId)
         model.addAttribute("appName", "Starve")
         model.addAttribute("showAll", showAll)
         model.addAttribute("items", page.items.map { it.toView() })
         model.addAttribute("hasSources", page.hasSources)
         model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
-        model.addAttribute("moreHref", moreHref(page, showAll))
-        return if (htmx != null && after != null) "home :: more" else "home"
+        model.addAttribute("moreHref", moreHref(page, showAll, groupId))
+        if (htmx != null && query.after != null) return "home :: more"
+        model.addAttribute("groupId", groupId)
+        model.addAttribute("nav", navigation(groupId, showAll))
+        model.addAttribute("toggleHref", href(groupId, if (showAll) null else "all", null))
+        return "home"
     }
 
     @GetMapping("/items/{id}/open")
@@ -72,17 +94,48 @@ class HomeController(
     @PostMapping("/read-all")
     fun markAllRead(
         @RequestParam before: Long,
+        @RequestParam(required = false) group: Long?,
     ): String {
-        timeline.markAllRead(Instant.ofEpochMilli(before))
-        return "redirect:/"
+        timeline.markAllRead(Instant.ofEpochMilli(before), group)
+        return "redirect:" + href(group, null, null)
     }
 
     private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
 
+    private fun resolveGroup(raw: String): Group = raw.toLongOrNull()?.let { groups.find(it) } ?: throw notFound()
+
+    private fun navigation(
+        current: Long?,
+        showAll: Boolean,
+    ): List<NavEntryView> {
+        val nav = groups.navigation()
+        val show = if (showAll) "all" else null
+        val all = NavEntryView("All (${nav.totalUnread})", href(null, show, null), current == null)
+        return listOf(all) +
+            nav.groups.map {
+                NavEntryView("${it.group.name} (${it.unread})", href(it.group.id, show, null), it.group.id == current)
+            }
+    }
+
     private fun moreHref(
         page: TimelinePage,
         showAll: Boolean,
-    ): String? = page.next?.let { "/?after=${it.encode()}" + if (showAll) "&show=all" else "" }
+        groupId: Long?,
+    ): String? = page.next?.let { href(groupId, if (showAll) "all" else null, it.encode()) }
+
+    private fun href(
+        groupId: Long?,
+        show: String?,
+        after: String?,
+    ): String {
+        val query =
+            listOfNotNull(
+                after?.let { "after=$it" },
+                show?.let { "show=$it" },
+                groupId?.let { "group=$it" },
+            )
+        return if (query.isEmpty()) "/" else "/?" + query.joinToString("&")
+    }
 
     private fun TimelineItem.toView() =
         TimelineItemView(

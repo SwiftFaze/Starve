@@ -30,9 +30,10 @@ class TimelineServiceTest {
         val service = TimelineService(items, MemorySources(mutableListOf(source)), clock)
         val after = Cursor(Instant.EPOCH, 9)
 
-        val page = service.page(after, true)
+        val page = service.page(after, true, 3)
 
         assertEquals(Triple<Cursor?, Boolean, Int>(after, true, TimelineRules.PAGE_SIZE + 1), items.requested)
+        assertEquals(3L, items.requestedGroup)
         assertEquals(TimelineRules.PAGE_SIZE, page.items.size)
         assertEquals(Cursor(Instant.ofEpochMilli(50), 50), page.next)
         assertEquals(now, page.renderedAt)
@@ -82,9 +83,10 @@ class TimelineServiceTest {
         val items = TimelineItems()
         val cutoff = now.minusSeconds(30)
 
-        TimelineService(items, MemorySources(), clock).markAllRead(cutoff)
+        TimelineService(items, MemorySources(), clock).markAllRead(cutoff, 7)
 
         assertEquals(cutoff to now, items.markAllCall)
+        assertEquals(7L, items.markAllGroup)
     }
 
     @Test
