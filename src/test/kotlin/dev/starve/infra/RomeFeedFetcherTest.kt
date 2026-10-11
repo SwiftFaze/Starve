@@ -7,7 +7,6 @@ import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FetchResult
 import dev.starve.application.InvalidFeedException
-import dev.starve.application.ItemRepository
 import dev.starve.application.PollService
 import dev.starve.application.SourceRepository
 import dev.starve.domain.FeedItem
@@ -23,6 +22,7 @@ import java.net.http.HttpClient
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import dev.starve.application.MemoryItems as BaseMemoryItems
 
 class RomeFeedFetcherTest {
     private lateinit var server: FeedServer
@@ -169,7 +169,7 @@ class RomeFeedFetcherTest {
         }
     }
 
-    private class MemoryItems : ItemRepository {
+    private class MemoryItems : BaseMemoryItems() {
         var stored = 0
 
         override fun insertNew(
@@ -179,7 +179,5 @@ class RomeFeedFetcherTest {
         ) {
             stored += items.size
         }
-
-        override fun deleteFirstSeenBefore(cutoff: Instant) = 0
     }
 }

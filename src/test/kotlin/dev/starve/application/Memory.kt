@@ -1,7 +1,9 @@
 package dev.starve.application
 
+import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Source
+import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
 import java.time.Instant
 
@@ -54,7 +56,7 @@ class MemorySources(
 }
 
 /** Records the items and cutoffs passed to the item repository. */
-class MemoryItems(
+open class MemoryItems(
     private val deleted: Int = 0,
 ) : ItemRepository {
     val inserted = mutableListOf<FeedItem>()
@@ -71,5 +73,60 @@ class MemoryItems(
     override fun deleteFirstSeenBefore(cutoff: Instant): Int {
         this.cutoff = cutoff
         return deleted
+    }
+
+    override fun timeline(
+        after: Cursor?,
+        showRead: Boolean,
+        limit: Int,
+    ): List<TimelineItem> = emptyList()
+
+    override fun findLink(id: Long): ItemLink? = null
+
+    override fun markRead(
+        id: Long,
+        at: Instant,
+    ) = false
+
+    override fun markAllRead(
+        firstSeenCutoff: Instant,
+        at: Instant,
+    ) = 0
+}
+
+/** An item repository with canned timeline rows that records read-state calls. */
+class TimelineItems(
+    private val rows: List<TimelineItem> = emptyList(),
+    private val links: Map<Long, String?> = emptyMap(),
+) : MemoryItems() {
+    var requested: Triple<Cursor?, Boolean, Int>? = null
+    val readCalls = mutableListOf<Pair<Long, Instant>>()
+    var markAllCall: Pair<Instant, Instant>? = null
+
+    override fun timeline(
+        after: Cursor?,
+        showRead: Boolean,
+        limit: Int,
+    ): List<TimelineItem> {
+        requested = Triple(after, showRead, limit)
+        return rows
+    }
+
+    override fun findLink(id: Long): ItemLink? = if (links.containsKey(id)) ItemLink(links[id]) else null
+
+    override fun markRead(
+        id: Long,
+        at: Instant,
+    ): Boolean {
+        readCalls += id to at
+        return links.containsKey(id)
+    }
+
+    override fun markAllRead(
+        firstSeenCutoff: Instant,
+        at: Instant,
+    ): Int {
+        markAllCall = firstSeenCutoff to at
+        return 0
     }
 }

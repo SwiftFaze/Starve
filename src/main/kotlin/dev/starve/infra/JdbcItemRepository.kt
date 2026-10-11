@@ -1,7 +1,10 @@
 package dev.starve.infra
 
+import dev.starve.application.ItemLink
 import dev.starve.application.ItemRepository
+import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
+import dev.starve.domain.TimelineItem
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
 import java.time.Instant
@@ -22,6 +25,63 @@ class JdbcItemRepository(
         jdbc
             .sql("DELETE FROM items WHERE first_seen_at < ?")
             .param(cutoff.toEpochMilli())
+            .update()
+
+    override fun timeline(
+        after: Cursor?,
+        showRead: Boolean,
+        limit: Int,
+    ): List<TimelineItem> {
+        val conditions = mutableListOf<String>()
+        val params = mutableListOf<Any>()
+        if (!showRead) conditions += "i.read_at IS NULL"
+        if (after != null) {
+            conditions += "(i.published_at < ? OR (i.published_at = ? AND i.id < ?))"
+            params.addAll(listOf(after.publishedAt.toEpochMilli(), after.publishedAt.toEpochMilli(), after.id))
+        }
+        val where = if (conditions.isEmpty()) "" else "WHERE " + conditions.joinToString(" AND ")
+        return jdbc
+            .sql(
+                "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, " +
+                    "i.read_at IS NOT NULL AS is_read FROM items i JOIN sources s ON s.id = i.source_id " +
+                    "$where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
+            ).params(params + limit)
+            .query { rs, _ ->
+                TimelineItem(
+                    rs.getLong("id"),
+                    rs.getString("source_title"),
+                    rs.getString("title"),
+                    Instant.ofEpochMilli(rs.getLong("published_at")),
+                    rs.getString("thumbnail_url"),
+                    rs.getInt("is_read") == 1,
+                )
+            }.list()
+    }
+
+    override fun findLink(id: Long): ItemLink? =
+        jdbc
+            .sql("SELECT link FROM items WHERE id = ?")
+            .param(id)
+            .query { rs, _ -> ItemLink(rs.getString("link")) }
+            .optional()
+            .orElse(null)
+
+    override fun markRead(
+        id: Long,
+        at: Instant,
+    ): Boolean =
+        jdbc
+            .sql("UPDATE items SET read_at = COALESCE(read_at, ?) WHERE id = ?")
+            .params(at.toEpochMilli(), id)
+            .update() > 0
+
+    override fun markAllRead(
+        firstSeenCutoff: Instant,
+        at: Instant,
+    ): Int =
+        jdbc
+            .sql("UPDATE items SET read_at = ? WHERE read_at IS NULL AND first_seen_at <= ?")
+            .params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli())
             .update()
 
     private fun insertIfAbsent(

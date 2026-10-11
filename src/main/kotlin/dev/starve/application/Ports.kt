@@ -1,8 +1,10 @@
 package dev.starve.application
 
+import dev.starve.domain.Cursor
 import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Source
+import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
 import java.time.Instant
 
@@ -73,4 +75,30 @@ interface ItemRepository {
 
     /** Deletes items first seen before [cutoff]; returns how many were removed. */
     fun deleteFirstSeenBefore(cutoff: Instant): Int
+
+    /** Newest-first items older than [after] (all when null); at most [limit]; read ones only when [showRead]. */
+    fun timeline(
+        after: Cursor?,
+        showRead: Boolean,
+        limit: Int,
+    ): List<TimelineItem>
+
+    fun findLink(id: Long): ItemLink?
+
+    /** Marks the item read at [at] unless already read; returns false when no such item exists. */
+    fun markRead(
+        id: Long,
+        at: Instant,
+    ): Boolean
+
+    /** Marks every unread item first seen at or before [firstSeenCutoff] as read at [at]. */
+    fun markAllRead(
+        firstSeenCutoff: Instant,
+        at: Instant,
+    ): Int
 }
+
+/** The target of an item, as needed to open it. */
+data class ItemLink(
+    val link: String?,
+)

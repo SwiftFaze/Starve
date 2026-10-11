@@ -7,6 +7,7 @@ import dev.starve.application.PollService
 import dev.starve.application.RetentionService
 import dev.starve.application.SourceRepository
 import dev.starve.application.SubscriptionService
+import dev.starve.application.TimelineService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -57,6 +58,13 @@ class FeedConfig {
         fetcher: FeedFetcher,
         ingestor: FeedIngestor,
     ) = SubscriptionService(sources, fetcher, ingestor)
+
+    @Bean
+    fun timelineService(
+        items: ItemRepository,
+        sources: SourceRepository,
+        clock: Clock,
+    ) = TimelineService(items, sources, clock)
 
     @Bean
     fun retentionService(

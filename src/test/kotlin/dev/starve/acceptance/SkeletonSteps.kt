@@ -8,12 +8,10 @@ import io.cucumber.java.en.When
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import java.net.http.HttpResponse
 import java.nio.file.Files
 
 class SkeletonSteps {
     private val app = World.app
-    private var response: HttpResponse<String>? = null
     private var historyBeforeRestart: List<String> = emptyList()
 
     @Before
@@ -36,18 +34,19 @@ class SkeletonSteps {
 
     @When("I request {string}")
     fun request(path: String) {
-        response = app.get(path)
+        World.response = app.get(path)
+        World.pages = listOf(World.response.body())
     }
 
     @Then("the response status is {int}")
-    fun responseStatusIs(status: Int) = assertEquals(status, response!!.statusCode())
+    fun responseStatusIs(status: Int) = assertEquals(status, World.response.statusCode())
 
     @Then("the page contains {string}")
-    fun pageContains(text: String) = assertTrue(response!!.body().contains(text), "page lacks '$text'")
+    fun pageContains(text: String) = assertTrue(World.response.body().contains(text), "page lacks '$text'")
 
     @Then("the health status is {string}")
     fun healthStatusIs(status: String) {
-        val body = response!!.body()
+        val body = World.response.body()
         assertTrue(body.contains("\"status\":\"$status\""), body)
     }
 
