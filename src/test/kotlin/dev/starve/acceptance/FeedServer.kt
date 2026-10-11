@@ -32,6 +32,11 @@ sealed interface Route {
         val contentType: String,
     ) : Route
 
+    /** An HTML page with the given markup. */
+    data class Html(
+        val body: String,
+    ) : Route
+
     data object Stall : Route
 
     /** Sends headers and a little body, then stalls. */
@@ -80,6 +85,7 @@ class FeedServer {
         when (val route = routes[path]) {
             null -> respond(exchange, 404, "text/plain", "not found")
             is Route.Status -> respond(exchange, route.code, "text/plain", "status ${route.code}")
+            is Route.Html -> respond(exchange, 200, "text/html; charset=utf-8", route.body)
             is Route.Raw -> respond(exchange, 200, route.contentType, resource(route.resource))
             is Route.Feed -> serveFeed(exchange, path, route.spec, ifNoneMatch)
             Route.Stall -> stall(exchange)

@@ -17,12 +17,14 @@ import javax.sql.DataSource
 class ApplicationHarness {
     private var dbFile: Path = newDbFile()
     private var context: ConfigurableApplicationContext? = null
+    private var extraArgs: List<String> = emptyList()
     private val client = HttpClient.newHttpClient()
 
     val dbPath: Path get() = dbFile
 
     fun freshDatabase() {
         stop()
+        extraArgs = emptyList()
         dbFile = newDbFile()
     }
 
@@ -35,12 +37,19 @@ class ApplicationHarness {
                     "--starve.db.path=$dbFile",
                     "--starve.scheduling.enabled=false",
                     "--starve.fetch.timeout=PT1S",
+                    *extraArgs.toTypedArray(),
                 )
     }
 
     fun stop() {
         context?.close()
         context = null
+    }
+
+    /** Restarts on the same database with extra `--property=value` arguments, kept until the next fresh database. */
+    fun restartWith(vararg args: String) {
+        extraArgs = args.toList()
+        restart()
     }
 
     fun restart() {

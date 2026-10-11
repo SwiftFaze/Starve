@@ -22,6 +22,22 @@ class InvalidFeedException(
     cause: Throwable? = null,
 ) : Exception(message, cause)
 
+/** What resolving a pasted URL to a feed URL found. */
+sealed interface LocateResult {
+    data class Found(
+        val feedUrl: String,
+    ) : LocateResult
+
+    data object NoFeed : LocateResult
+
+    data object Unreachable : LocateResult
+}
+
+interface FeedLocator {
+    /** Resolves a pasted page or feed [url] to the URL of the feed it stands for. */
+    fun locate(url: String): LocateResult
+}
+
 sealed interface FetchResult {
     data class Fetched(
         val feed: Feed,

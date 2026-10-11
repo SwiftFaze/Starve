@@ -2,6 +2,7 @@ package dev.starve.infra
 
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
+import dev.starve.application.FeedLocator
 import dev.starve.application.GroupRepository
 import dev.starve.application.GroupService
 import dev.starve.application.ItemRepository
@@ -20,6 +21,8 @@ import java.net.http.HttpClient
 import java.time.Clock
 import java.time.Duration
 
+private const val SOUNDCLOUD_FEED_TEMPLATE = "https://feeds.soundcloud.com/users/soundcloud:users:{id}/sounds.rss"
+
 /** Wires the framework-free application services to their infrastructure adapters. */
 @Configuration
 class FeedConfig {
@@ -27,18 +30,27 @@ class FeedConfig {
     fun clock(): Clock = Clock.systemUTC()
 
     @Bean
-    fun feedFetcher(
+    fun boundedHttp(
         @Value("\${starve.fetch.timeout:PT10S}") timeout: Duration,
-    ): FeedFetcher =
-        RomeFeedFetcher(
-            HttpClient
-                .newBuilder()
-                .connectTimeout(timeout)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build(),
-            timeout,
-            "Starve/0.1",
-        )
+    ) = BoundedHttp(
+        HttpClient
+            .newBuilder()
+            .connectTimeout(timeout)
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build(),
+        timeout,
+        "Starve/0.1",
+    )
+
+    @Bean
+    fun feedFetcher(http: BoundedHttp): FeedFetcher = RomeFeedFetcher(http)
+
+    @Bean
+    fun feedLocator(
+        http: BoundedHttp,
+        @Value("\${starve.soundcloud.hosts:soundcloud.com,m.soundcloud.com}") hosts: List<String>,
+        @Value("\${starve.soundcloud.feed-url-template:$SOUNDCLOUD_FEED_TEMPLATE}") template: String,
+    ): FeedLocator = HttpFeedLocator(http, hosts.map { it.trim().lowercase() }.toSet(), template)
 
     @Bean
     fun feedIngestor(
@@ -57,9 +69,10 @@ class FeedConfig {
     @Bean
     fun subscriptionService(
         sources: SourceRepository,
+        locator: FeedLocator,
         fetcher: FeedFetcher,
         ingestor: FeedIngestor,
-    ) = SubscriptionService(sources, fetcher, ingestor)
+    ) = SubscriptionService(sources, locator, fetcher, ingestor)
 
     @Bean
     fun timelineService(

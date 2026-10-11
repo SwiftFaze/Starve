@@ -108,6 +108,7 @@ class SourcesController(
             SubscribeResult.NotHttpUrl -> "The feed URL must be an http or https URL"
             SubscribeResult.AlreadySubscribed -> "You are already subscribed to that feed"
             SubscribeResult.NotAFeed -> "That URL is not a valid RSS or Atom feed"
+            SubscribeResult.NoFeedFound -> "Cannot subscribe: no feed found at this address"
             SubscribeResult.Unreachable -> "That URL could not be fetched"
         }
 }

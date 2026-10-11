@@ -31,7 +31,7 @@ class RomeFeedFetcherTest {
     @BeforeEach
     fun setUp() {
         server = FeedServer()
-        fetcher = RomeFeedFetcher(HttpClient.newHttpClient(), Duration.ofMillis(500), "test")
+        fetcher = RomeFeedFetcher(BoundedHttp(HttpClient.newHttpClient(), Duration.ofMillis(500), "test"))
     }
 
     @AfterEach
