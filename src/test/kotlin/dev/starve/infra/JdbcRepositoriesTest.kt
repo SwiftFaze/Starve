@@ -138,7 +138,7 @@ class JdbcRepositoriesTest {
         val linkless = dated("n", at.minusSeconds(2)).copy(link = null)
         items.insertNew(source.id, listOf(video, story, linkless), at)
 
-        assertEquals(listOf(true, false, false), items.timeline(null, true, 10).map { it.playable })
+        assertEquals(listOf(true, false, false), items.timeline(null, true, 10, null).map { it.playable })
     }
 
     @Test

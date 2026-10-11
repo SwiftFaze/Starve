@@ -99,7 +99,7 @@ class HomeControllerTest {
         val model = ConcurrentModel()
         val playable = row(3).copy(playable = true)
 
-        controller(TimelineItems(listOf(playable, row(4)))).home(null, null, null, model)
+        controller(TimelineItems(listOf(playable, row(4)))).home(TimelineQuery(), null, model)
 
         val views = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).playable }
         assertEquals(listOf(true, false), views)
