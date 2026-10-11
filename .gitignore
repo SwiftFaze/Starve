@@ -22,3 +22,6 @@ Thumbs.db
 
 # Local SQLite data
 /data/
+
+# impeccable skill: platform binary is installed per machine, not versioned (19 MB, Windows-only)
+/.claude/skills/impeccable/scripts/bin/
