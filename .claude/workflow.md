@@ -13,7 +13,7 @@ hard-coding a stack, a repo or a board. Replace every `<placeholder>`.
 | Verify command      | `./mvnw -B verify` (unit + Cucumber + ArchUnit + JaCoCo + detekt + ktlint) |
 | Scenario command    | `./mvnw -B verify -Dcucumber.filter.name="<scenario name>"`                       |
 | Run command         | `./mvnw spring-boot:run` (or `docker compose up`)                                 |
-| Mutation command    | `./mvnw -B org.pitest:pitest-maven:mutationCoverage`                              |
+| Mutation command    | `bash .claude/tools/pit-changed.sh` (changed classes vs `develop`, unit tests only) |
 | QA command          | none, or a scripted replay per `.feature` (see `.claude/tools/check-qa-coverage.sh`) |
 | Clean Code gate     | `bash .claude/tools/check-clean.sh` (commands in `.claude/tools/clean.env`)       |
 | Project board       | GitHub project `4`, owner `SwiftFaze`; fields `Status` (`Todo`/`In Progress`/`Done`), `Priority` (`P0`/`P1`/`P2`) |

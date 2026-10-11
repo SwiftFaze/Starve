@@ -15,11 +15,14 @@ sealed interface SubscribeResult {
 
     data object NotAFeed : SubscribeResult
 
+    data object NoFeedFound : SubscribeResult
+
     data object Unreachable : SubscribeResult
 }
 
 class SubscriptionService(
     private val sources: SourceRepository,
+    private val locator: FeedLocator,
     private val fetcher: FeedFetcher,
     private val ingestor: FeedIngestor,
 ) {
@@ -27,15 +30,34 @@ class SubscriptionService(
 
     fun unsubscribe(id: Long) = sources.delete(id)
 
-    /** Validates and fetches [rawUrl]; stores the subscription only if it yields a feed. */
+    /** Resolves [rawUrl] to a feed and fetches it; stores the subscription only if it yields a feed. */
     fun subscribe(rawUrl: String): SubscribeResult {
         val url = rawUrl.trim()
         return when {
             !FeedRules.isHttpUrl(url) -> SubscribeResult.NotHttpUrl
             sources.existsByUrl(url) -> SubscribeResult.AlreadySubscribed
-            else -> fetchAndStore(url)
+            else -> subscribeResolved(url)
         }
     }
+
+    private fun subscribeResolved(url: String): SubscribeResult =
+        when (val located = locator.locate(url)) {
+            LocateResult.NoFeed -> {
+                SubscribeResult.NoFeedFound
+            }
+
+            LocateResult.Unreachable -> {
+                SubscribeResult.Unreachable
+            }
+
+            is LocateResult.Found -> {
+                if (sources.existsByUrl(located.feedUrl)) {
+                    SubscribeResult.AlreadySubscribed
+                } else {
+                    fetchAndStore(located.feedUrl)
+                }
+            }
+        }
 
     private fun fetchAndStore(url: String): SubscribeResult =
         try {

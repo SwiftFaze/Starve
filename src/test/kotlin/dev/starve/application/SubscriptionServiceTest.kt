@@ -36,14 +36,114 @@ class SubscriptionServiceTest {
         assertEquals(reread, (result as SubscribeResult.Subscribed).source)
     }
 
-    private fun subscribe(feed: Feed): SubscribeResult {
+    @Test
+    fun `the resolved feed url is fetched and stored instead of the pasted one`() {
+        val fetched = mutableListOf<String>()
+
+        val result = subscribe(Feed("Named", emptyList()), LocateResult.Found("http://a.test/real.xml"), fetched)
+
+        assertEquals("http://a.test/real.xml", (result as SubscribeResult.Subscribed).source.url)
+        assertEquals(listOf("http://a.test/real.xml"), fetched)
+    }
+
+    @Test
+    fun `a resolved feed that is already subscribed is not fetched again`() {
+        sources.insert("http://a.test/real.xml", "Existing")
+        val fetched = mutableListOf<String>()
+
+        val result = subscribe(Feed("Named", emptyList()), LocateResult.Found("http://a.test/real.xml"), fetched)
+
+        assertEquals(SubscribeResult.AlreadySubscribed, result)
+        assertEquals(emptyList<String>(), fetched)
+    }
+
+    @Test
+    fun `a pasted url that is already subscribed is not even located`() {
+        sources.insert("http://a.test/feed", "Existing")
+        val located = mutableListOf<String>()
+        val locator =
+            object : FeedLocator {
+                override fun locate(url: String): LocateResult {
+                    located += url
+                    return LocateResult.NoFeed
+                }
+            }
+
+        val service = SubscriptionService(sources, locator, fetcherOf(Feed(null, emptyList())), ingestor)
+
+        val result = service.subscribe(PASTED)
+
+        assertEquals(SubscribeResult.AlreadySubscribed, result)
+        assertEquals(emptyList<String>(), located)
+    }
+
+    @Test
+    fun `location failures map to their results`() {
+        assertEquals(SubscribeResult.NoFeedFound, subscribe(Feed(null, emptyList()), LocateResult.NoFeed))
+        assertEquals(SubscribeResult.Unreachable, subscribe(Feed(null, emptyList()), LocateResult.Unreachable))
+    }
+
+    @Test
+    fun `a non http url is rejected before locating`() {
+        val result = SubscriptionService(sources, FailingLocator, fetcherOf(Feed(null, emptyList())), ingestor)
+        assertEquals(SubscribeResult.NotHttpUrl, result.subscribe("ftp://a.test/x"))
+    }
+
+    @Test
+    fun `fetch failures of the resolved feed are reported`() {
+        val failing = { error: Exception ->
+            object : FeedFetcher {
+                override fun fetch(
+                    url: String,
+                    validators: Validators,
+                ): FetchResult = throw error
+            }
+        }
+        val locator = locatorOf(LocateResult.Found("http://a.test/real.xml"))
+
+        val unreachable = SubscriptionService(sources, locator, failing(FeedFetchException("x")), ingestor)
+        val invalid = SubscriptionService(sources, locator, failing(InvalidFeedException("x")), ingestor)
+
+        assertEquals(SubscribeResult.Unreachable, unreachable.subscribe(PASTED))
+        assertEquals(SubscribeResult.NotAFeed, invalid.subscribe(PASTED))
+    }
+
+    private fun subscribe(
+        feed: Feed,
+        located: LocateResult = LocateResult.Found(PASTED),
+        fetched: MutableList<String> = mutableListOf(),
+    ): SubscribeResult {
         val fetcher =
             object : FeedFetcher {
                 override fun fetch(
                     url: String,
                     validators: Validators,
-                ) = FetchResult.Fetched(feed, Validators())
+                ): FetchResult {
+                    fetched += url
+                    return FetchResult.Fetched(feed, Validators())
+                }
             }
-        return SubscriptionService(sources, fetcher, ingestor).subscribe("http://a.test/feed")
+        return SubscriptionService(sources, locatorOf(located), fetcher, ingestor).subscribe(PASTED)
+    }
+
+    private fun fetcherOf(feed: Feed) =
+        object : FeedFetcher {
+            override fun fetch(
+                url: String,
+                validators: Validators,
+            ) = FetchResult.Fetched(feed, Validators())
+        }
+
+    private fun locatorOf(result: LocateResult) =
+        object : FeedLocator {
+            override fun locate(url: String) = result
+        }
+
+    private object FailingLocator : FeedLocator {
+        override fun locate(url: String): LocateResult = error("must not be called")
+    }
+
+    private companion object {
+        const val PASTED = "http://a.test/feed"
     }
 }

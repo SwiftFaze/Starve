@@ -15,27 +15,17 @@ import dev.starve.domain.FeedRules
 import dev.starve.domain.Validators
 import java.io.ByteArrayInputStream
 import java.io.IOException
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.time.Duration
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 /** Fetches feeds over HTTP with a conditional GET and parses RSS/Atom with ROME. */
 class RomeFeedFetcher(
-    private val client: HttpClient,
-    private val timeout: Duration,
-    private val userAgent: String,
+    private val http: BoundedHttp,
 ) : FeedFetcher {
     override fun fetch(
         url: String,
         validators: Validators,
     ): FetchResult {
-        val response = send(request(url, validators))
+        val response = http.get(url, ACCEPT, conditionalHeaders(validators))
         val status = response.statusCode()
         return when {
             status == NOT_MODIFIED -> FetchResult.NotModified
@@ -44,43 +34,11 @@ class RomeFeedFetcher(
         }
     }
 
-    private fun request(
-        url: String,
-        validators: Validators,
-    ): HttpRequest {
-        val builder =
-            HttpRequest
-                .newBuilder(URI.create(url))
-                .timeout(timeout)
-                .header("User-Agent", userAgent)
-                .header("Accept", "application/rss+xml, application/atom+xml, application/xml, text/xml, */*")
-        validators.etag?.let { builder.header("If-None-Match", it) }
-        validators.lastModified?.let { builder.header("If-Modified-Since", it) }
-        return builder.GET().build()
-    }
-
-    /** Bounds the whole exchange, body included, by [timeout]; cancels the request when it expires. */
-    private fun send(request: HttpRequest): HttpResponse<ByteArray> {
-        val future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-        return try {
-            await(future)
-        } catch (e: TimeoutException) {
-            future.cancel(true)
-            throw FeedFetchException("timed out after $timeout", e)
-        } catch (e: ExecutionException) {
-            throw FeedFetchException(e.cause?.message ?: e.javaClass.simpleName, e)
-        }
-    }
-
-    /** Waits for the response; an interrupt is restored to the thread and reported as a failed fetch. */
-    private fun await(future: Future<HttpResponse<ByteArray>>): HttpResponse<ByteArray> =
-        try {
-            future.get(timeout.toMillis(), TimeUnit.MILLISECONDS)
-        } catch (e: InterruptedException) {
-            future.cancel(true)
-            Thread.currentThread().interrupt()
-            throw FeedFetchException("interrupted", e)
-        }
+    private fun conditionalHeaders(validators: Validators): Map<String, String> =
+        listOfNotNull(
+            validators.etag?.let { "If-None-Match" to it },
+            validators.lastModified?.let { "If-Modified-Since" to it },
+        ).toMap()
 
     private fun responseValidators(response: HttpResponse<*>) =
         Validators(
@@ -125,6 +83,7 @@ class RomeFeedFetcher(
     }
 
     private companion object {
+        const val ACCEPT = "application/rss+xml, application/atom+xml, application/xml, text/xml, */*"
         const val NOT_MODIFIED = 304
         val HTTP_OK_RANGE = 200..299
     }

@@ -26,8 +26,15 @@ require identical results. A scenario filter skips the coverage gate (profile
 ## Gates
 
 - Coverage: JaCoCo, minimum 85% line (`.claude/workflow.md`, Constraints).
-- Mutation testing: PIT, `./mvnw -B org.pitest:pitest-maven:mutationCoverage`
-  against new/changed code (Step 6).
+- Mutation testing: PIT via `bash .claude/tools/pit-changed.sh` (Step 6). It
+  derives `targetClasses` from the Kotlin files changed since `origin/develop`
+  (`PIT_BASE_REF` overrides) and excludes the Cucumber suite. Per class, not
+  per line: only survivors on lines the change added need action. `--print`
+  shows the classes without running. (`withHistory` needs the commercial
+  Arcmutate plugin in PIT 1.30, so every run is a full one.)
+  Why: whole-project runs that re-booted Spring per scenario for every mutant
+  took ~45 min. With parallel worktrees, wrap it in devflow's `mutation-lock.sh`.
+  A full run is still `./mvnw -B org.pitest:pitest-maven:mutationCoverage`.
 - Lint / static analysis: detekt (`config/detekt.yml`) and ktlint both run in
   verify; `LINT_CMD` in `.claude/tools/clean.env` runs ktlint alone.
   `./mvnw com.github.gantsign.maven:ktlint-maven-plugin:format` fixes style.

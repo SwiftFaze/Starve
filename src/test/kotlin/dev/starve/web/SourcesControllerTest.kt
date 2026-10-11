@@ -2,8 +2,10 @@ package dev.starve.web
 
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
+import dev.starve.application.FeedLocator
 import dev.starve.application.FetchResult
 import dev.starve.application.GroupService
+import dev.starve.application.LocateResult
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
@@ -35,9 +37,13 @@ class SourcesControllerTest {
                 validators: Validators,
             ) = FetchResult.Fetched(Feed("New", emptyList()), Validators())
         }
+    private val locator =
+        object : FeedLocator {
+            override fun locate(url: String) = LocateResult.Found(url)
+        }
     private val controller =
         SourcesController(
-            SubscriptionService(sources, fetcher, FeedIngestor(sources, MemoryItems(), Clock.systemUTC())),
+            SubscriptionService(sources, locator, fetcher, FeedIngestor(sources, MemoryItems(), Clock.systemUTC())),
             GroupService(groups, sources),
         )
 

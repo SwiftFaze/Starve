@@ -14,7 +14,8 @@
     <p id="message" role="status" th:if="${message}" th:text="${message}"></p>
 
     <form method="post" action="/sources">
-      <label>Feed URL <input type="text" name="url" required></label>
+      <label>Feed, YouTube channel, SoundCloud profile or website URL
+        <input type="text" name="url" placeholder="https://example.com or a feed, YouTube or SoundCloud URL" required></label>
       <button type="submit">Add</button>
     </form>
 
