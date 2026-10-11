@@ -12,7 +12,7 @@ import java.net.http.HttpResponse
 import java.nio.file.Files
 
 class SkeletonSteps {
-    private val app = ApplicationHarness()
+    private val app = World.app
     private var response: HttpResponse<String>? = null
     private var historyBeforeRestart: List<String> = emptyList()
 
