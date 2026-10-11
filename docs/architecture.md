@@ -1,30 +1,39 @@
 # Architecture
 
-<!-- TEMPLATE: replace each section. Keep this an overview that links to
-area docs (docs/architecture-<area>.md) once it outgrows one page. The
-devflow coder agent reads this file on every run, so keep it short. -->
-
 ## Overview
 
-`<What the system is, its entry point(s), and the main runtime flow in a few
-sentences.>`
+Starve is a single deployable Spring Boot (Kotlin) application: one jar, one
+container. `dev.starve.StarveApplication` is the entry point. Controllers in
+`web` render Thymeleaf templates (htmx is vendored at
+`src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
+(`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
+accessed with Spring `JdbcClient` (no JPA). Flyway applies
+`src/main/resources/db/migration/V*.sql` on startup. Actuator exposes only
+`/actuator/health`. There is no authentication (single user, self-hosted).
 
 ## Modules
 
-| Module / package | Responsibility | May depend on |
+All under `dev.starve`.
+
+| Package | Responsibility | May depend on |
 |---|---|---|
-| `<domain>` | `<business rules, no framework code>` | nothing |
-| `<application>` | `<use cases, orchestration>` | `<domain>` |
-| `<ui / api / infra>` | `<delivery and adapters>` | `<application>`, `<domain>` |
+| `domain` | business rules, no framework code | nothing (JDK + Kotlin only) |
+| `application` | use cases, orchestration | `domain` |
+| `web` | controllers and templates | `application`, `domain` |
+| `infra` | persistence and external adapters | `application`, `domain` |
 
 ## Dependency rule
 
-`<Which direction dependencies may point, and the test or lint rule that
-enforces it (e.g. an ArchUnit test, eslint-plugin-boundaries,
-dependency-cruiser).>` A violation is fixed by inverting the dependency or
-extracting an interface, never by weakening the rule (`.claude/workflow.md`).
+Dependencies point inward: `web`/`infra` -> `application` -> `domain`. Nothing
+depends on `web`, and `web` does not touch `infra`. `ArchitectureTest`
+(ArchUnit) enforces this under the verify command. A violation is fixed by
+inverting the dependency or extracting an interface, never by weakening the
+rule (`.claude/workflow.md`).
 
 ## Key decisions
 
-`<Non-obvious design decisions and why they were made. One bullet each, with
-the date or PR.>`
+- SQLite uses a single-connection pool (one writer, avoids "database is
+  locked"); the parent directory of the DB file is created at startup.
+- Kotlin targets JVM 21 bytecode so CI (Temurin 21) and newer local JDKs agree.
+- Feature files stay in `specs/features/`; the build copies them onto the test
+  classpath for Cucumber (see `docs/testing.md`).

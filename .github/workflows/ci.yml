@@ -47,20 +47,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Build and test
+        run: ./mvnw -B verify
 
-      # TEMPLATE: set up your toolchain and run the verify command from
-      # .claude/workflow.md. Examples:
-      #
-      #   Java/Maven:
-      #     - uses: actions/setup-java@v4
-      #       with: { distribution: temurin, java-version: '21', cache: maven }
-      #     - run: mvn -B verify
-      #
-      #   Angular/Node:
-      #     - uses: actions/setup-node@v4
-      #       with: { node-version: '22', cache: npm }
-      #     - run: npm ci
-      #     - run: npx ng lint && npx ng test --watch=false --browsers=ChromeHeadless && npx ng build
-      - name: Build and test (not configured yet)
-        run: |
-          echo "::warning::build-and-test is still the template placeholder - nothing was built or tested. Edit .github/workflows/ci.yml."
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build .

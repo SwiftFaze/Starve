@@ -1,0 +1,19 @@
+services:
+  starve:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      STARVE_DB_PATH: /data/starve.db
+    volumes:
+      - starve-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health || wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  starve-data:

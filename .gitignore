@@ -19,3 +19,6 @@ Thumbs.db
 /specs/intent/*
 !/specs/intent/README.md
 !/specs/intent/TEMPLATE.md
+
+# Local SQLite data
+/data/

@@ -1,9 +1,6 @@
 # CLAUDE.md
 
-<!-- TEMPLATE: replace this paragraph. One or two sentences: what the project
-is, its stack, and anything an agent would get wrong without being told
-(e.g. "no ORM, raw SQL only"). -->
-`<Project name>` is a `<one-line description>` built with `<stack>`.
+Starve is a self-hosted, single-user personal feed aggregator built with Kotlin, Spring Boot, Thymeleaf/htmx and SQLite.
 
 ## Editing this file
 
@@ -43,13 +40,10 @@ Re-audit monthly — checklist in `docs/instruction-files.md`.
 
 ## Build & run
 
-<!-- TEMPLATE: replace with the project's real commands, and keep them in step
-with the Project configuration table in .claude/workflow.md. -->
-
-- `<build command>` — build. `<test command>` — unit + acceptance tests.
-  `<verify command>` — everything CI runs.
-- Single test: `<command to run one test / one scenario>`.
-- Run the app: `<run command>`.
+- `./mvnw -B package -DskipTests` — build. `./mvnw -B test` — unit + acceptance
+  tests. `./mvnw -B verify` — everything CI runs.
+- Single scenario: `./mvnw -B verify -Dcucumber.filter.name="<scenario name>"`.
+- Run the app: `./mvnw spring-boot:run` (or `docker compose up`).
 - Clean Code gate: `bash .claude/tools/check-clean.sh` (commands in
   `.claude/tools/clean.env`).
 - Test-layer rationale and troubleshooting: `docs/testing.md`.
@@ -60,7 +54,6 @@ with the Project configuration table in .claude/workflow.md. -->
 
 - Any test work → `docs/testing.md`.
 - Architecture / module boundaries → `docs/architecture.md`.
-<!-- TEMPLATE: add one line per area doc, e.g. "Any UI component → docs/ui-styling.md". -->
 
 ## Spec-first workflow
 

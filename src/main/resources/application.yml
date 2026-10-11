@@ -1,0 +1,16 @@
+starve:
+  db:
+    path: ./data/starve.db
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+spring:
+  flyway:
+    locations: classpath:db/migration
