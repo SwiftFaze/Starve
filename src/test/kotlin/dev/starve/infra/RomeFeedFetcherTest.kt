@@ -6,6 +6,7 @@ import dev.starve.application.FeedFetchException
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FetchResult
+import dev.starve.application.InvalidFeedException
 import dev.starve.application.ItemRepository
 import dev.starve.application.PollService
 import dev.starve.application.SourceRepository
@@ -64,6 +65,69 @@ class RomeFeedFetcherTest {
         server.route("/ok.xml", Route.Feed(dev.starve.acceptance.FeedSpec(title = "Ok", entries = 1)))
         val result = fetcher.fetch("${server.baseUrl}/ok.xml", Validators()) as FetchResult.Fetched
         assertEquals("Ok", result.feed.title)
+    }
+
+    @Test
+    fun `entries are mapped with trimmed titles, update dates, authors and thumbnails`() {
+        server.route("/rich.xml", Route.Raw("atom-rich.xml", "application/atom+xml"))
+
+        val feed = (fetcher.fetch("${server.baseUrl}/rich.xml", Validators()) as FetchResult.Fetched).feed
+
+        assertEquals("Spaced Title", feed.title)
+        val (first, second, third) = feed.items
+        assertEquals("First", first.title)
+        assertEquals("http://example.test/1", first.link)
+        assertEquals(Instant.parse("2026-01-02T10:00:00Z"), first.publishedAt)
+        assertEquals("Ann", first.author)
+        assertEquals("http://example.test/t1.jpg", first.thumbnailUrl)
+        assertEquals("(untitled)", second.title)
+        assertEquals(null, second.link)
+        assertEquals(null, second.author)
+        assertEquals(null, second.thumbnailUrl)
+        assertEquals("http://example.test/e3.png", third.thumbnailUrl)
+    }
+
+    @Test
+    fun `blank titles and authors are treated as absent`() {
+        server.route("/blank.xml", Route.Raw("rss-blank.xml", "application/rss+xml"))
+
+        val feed = (fetcher.fetch("${server.baseUrl}/blank.xml", Validators()) as FetchResult.Fetched).feed
+
+        assertEquals(null, feed.title)
+        assertEquals("(untitled)", feed.items.single().title)
+        assertEquals(null, feed.items.single().author)
+    }
+
+    @Test
+    fun `any 2xx status is parsed as a feed and other statuses are fetch errors`() {
+        server.route("/200", Route.Status(200))
+        server.route("/299", Route.Status(299))
+        server.route("/300", Route.Status(300))
+
+        assertThrows(InvalidFeedException::class.java) { fetcher.fetch("${server.baseUrl}/200", Validators()) }
+        assertThrows(InvalidFeedException::class.java) { fetcher.fetch("${server.baseUrl}/299", Validators()) }
+        assertThrows(FeedFetchException::class.java) { fetcher.fetch("${server.baseUrl}/300", Validators()) }
+    }
+
+    @Test
+    fun `an unreachable server is a fetch error with a message`() {
+        val url = "${server.baseUrl}/gone.xml"
+        server.stop()
+
+        val error = assertThrows(FeedFetchException::class.java) { fetcher.fetch(url, Validators()) }
+
+        assertTrue(error.message!!.isNotBlank())
+    }
+
+    @Test
+    fun `an interrupted fetch fails and keeps the interrupt flag`() {
+        server.route("/ok.xml", Route.Feed(dev.starve.acceptance.FeedSpec()))
+        Thread.currentThread().interrupt()
+
+        val error = assertThrows(FeedFetchException::class.java) { fetcher.fetch("${server.baseUrl}/ok.xml", Validators()) }
+
+        assertEquals("interrupted", error.message)
+        assertTrue(Thread.interrupted())
     }
 
     private class MemorySources(
