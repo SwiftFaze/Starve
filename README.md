@@ -3,7 +3,8 @@
 A self-hosted, single-user personal feed aggregator (RSS-first: YouTube,
 SoundCloud, news). Built with Kotlin, Spring Boot, Thymeleaf/htmx and SQLite.
 Feed features are tracked in the GitHub issues. Today you can subscribe to
-RSS/Atom feeds; Starve fetches them in the background and stores their items.
+RSS/Atom feeds; Starve fetches them in the background and shows their items in
+a single chronological timeline.
 
 ## Run locally
 
@@ -27,6 +28,15 @@ Subscriptions are polled in the background with conditional GET (ETag /
 Last-Modified), so unchanged feeds cost almost nothing. One failing feed never
 stops the others. Items older than the retention age (measured from when Starve
 first saw them) are deleted daily.
+
+## Reading the timeline
+
+The home page (`/`) lists every unread item from all sources, newest first, 50 at
+a time with a **Load more** link. Opening an item marks it read and goes to its
+link; the mark-read button marks it without opening. **Mark all read** marks
+everything shown when the page was rendered, so items that arrive meanwhile stay
+unread. **Show read** adds already-read items back to the list. Read items are
+kept until the retention age removes them.
 
 ## Configuration
 
