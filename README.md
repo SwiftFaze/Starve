@@ -19,9 +19,14 @@ Open <http://localhost:8080>. The database is `./data/starve.db` (override with
 
 ## Subscribing to feeds
 
-Open **Sources** (<http://localhost:8080/sources>) and paste a feed URL
-(`http` or `https`). Starve fetches it once to confirm it is a valid RSS or Atom
-feed before saving, and rejects duplicates. Each source shows its title, when it
+Open **Sources** (<http://localhost:8080/sources>) and paste a feed URL, or just
+the address of a page: a YouTube channel, a SoundCloud profile or any website that
+advertises its feed (`http` or `https`). Starve fetches the URL, follows the page's
+RSS/Atom `<link rel="alternate">` (or, for a SoundCloud profile, its public feed)
+and subscribes to that feed. A page with no discoverable feed is rejected with a
+message asking for the feed URL. Starve fetches the feed once to confirm it is
+valid RSS or Atom before saving, and rejects duplicates (including a page whose
+feed you already follow). Each source shows its title, when it
 was last fetched and its last error, if any; unsubscribe from the same page.
 
 Subscriptions are polled in the background with conditional GET (ETag /
@@ -60,6 +65,8 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | `starve.db.path` | `./data/starve.db` | SQLite file |
 | `starve.poll.interval` | `PT30M` | delay between polls of all sources |
 | `starve.fetch.timeout` | `PT10S` | limit for one whole feed fetch, body included |
+| `starve.soundcloud.hosts` | `soundcloud.com,m.soundcloud.com` | hosts whose single-segment URLs are treated as SoundCloud profiles |
+| `starve.soundcloud.feed-url-template` | `https://feeds.soundcloud.com/users/soundcloud:users:{id}/sounds.rss` | feed URL for a profile; `{id}` is its numeric user id |
 | `starve.retention.max-age` | `P90D` | items first seen longer ago are purged |
 | `starve.retention.interval` | `PT24H` | delay between retention purges |
 | `starve.scheduling.enabled` | `true` | `false` turns off background polling and purging |

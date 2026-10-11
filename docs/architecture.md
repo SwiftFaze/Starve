@@ -35,6 +35,15 @@ parsing, one timeout over the whole exchange) and the `Jdbc*Repository` classes;
 retention on `@Scheduled` timers. Items are unique per `(source, key)` where key
 is the guid, else the link.
 
+Subscribing first resolves the pasted URL through the `FeedLocator` port
+(`HttpFeedLocator`, sharing `BoundedHttp` with `RomeFeedFetcher`). Resolution
+order: a non-HTML response is the feed itself; for HTML, the first RSS/Atom
+`<link rel="alternate">` (YouTube pages carry one); else, on a configured
+SoundCloud host with a one-segment path, the numeric user id in the page is
+substituted into the feed URL template; else `NoFeedFound`. The HTML rules are
+pure and live in `domain/FeedDiscovery`. The resolved URL is then fetched and
+validated as before.
+
 ## Timeline and read state
 
 `domain/Timeline.kt` holds `TimelineItem`, the keyset `Cursor` and `TimelineRules`
