@@ -41,6 +41,15 @@ class PlayerControllerTest {
     }
 
     @Test
+    fun `the player names the playing item with its catalogue number`() {
+        val model = ConcurrentModel()
+
+        controller(mapOf(7L to "https://soundcloud.com/a/b")).player(7, model)
+
+        assertEquals(NowPlayingView("STV 0007", "Item 7", "Source", null), model.getAttribute("item"))
+    }
+
+    @Test
     fun `a soundcloud item renders the soundcloud player`() {
         val model = ConcurrentModel()
 

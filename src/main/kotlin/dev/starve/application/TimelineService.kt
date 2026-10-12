@@ -43,7 +43,7 @@ class TimelineService(
     fun markRead(id: Long): Boolean = items.markRead(id, clock.instant())
 
     fun open(id: Long): OpenResult {
-        val target = items.findLink(id) ?: return OpenResult.Missing
+        val target = items.find(id) ?: return OpenResult.Missing
         items.markRead(id, clock.instant())
         return OpenResult.Opened(target.link)
     }

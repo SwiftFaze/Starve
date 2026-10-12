@@ -162,6 +162,18 @@ class HomeControllerTest {
     }
 
     @Test
+    fun `the series is the current group with its unread count, or All with the total`() {
+        val group = ConcurrentModel()
+        val all = ConcurrentModel()
+
+        controller(TimelineItems()).home(TimelineQuery(group = "1"), null, group)
+        controller(TimelineItems()).home(TimelineQuery(), null, all)
+
+        assertEquals(SeriesView("music", 3), group.getAttribute("series"))
+        assertEquals(SeriesView("All", 5), all.getAttribute("series"))
+    }
+
+    @Test
     fun `the navigation lists All then groups alphabetically with unread counts and marks the current one`() {
         val model = ConcurrentModel()
 

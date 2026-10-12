@@ -16,7 +16,8 @@ object FeedXml {
         val title = spec.title?.let { "<title>$it</title>" } ?: ""
         val items = (1..spec.entries).joinToString("") { rssItem(baseUrl, path, spec, it) }
         return """<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"><channel>$title<link>$baseUrl$path</link><description>fixture</description>$items</channel></rss>"""
+<rss version="2.0" xmlns:itunes="$ITUNES"><channel>$title<link>$baseUrl$path</link>""" +
+            """<description>fixture</description>$items</channel></rss>"""
     }
 
     private fun rssItem(
@@ -28,7 +29,8 @@ object FeedXml {
         val link = "$baseUrl$path/item-$n"
         val guid = if (spec.noGuid) "" else "<guid isPermaLink=\"false\">guid-$path-$n</guid>"
         val date = if (spec.noDate) "" else "<pubDate>${pubDate(n)}</pubDate>"
-        return "<item><title>Entry $n</title><link>$link</link>$guid$date<author>a$n@example.com</author></item>"
+        val art = if (spec.coverArt) "<itunes:image href=\"${spec.coverArtUrl ?: "$baseUrl/art-$n.jpg"}\"/>" else ""
+        return "<item><title>Entry $n</title><link>$link</link>$guid$date<author>a$n@example.com</author>$art</item>"
     }
 
     private fun atom(
@@ -63,4 +65,6 @@ object FeedXml {
     private fun pubDate(n: Int) = "Mon, 0$n Jun 2026 10:00:00 GMT".replace("Mon", WEEKDAYS[(n - 1) % WEEKDAYS.size])
 
     private val WEEKDAYS = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+    private const val ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd"
 }

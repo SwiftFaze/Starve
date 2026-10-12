@@ -88,6 +88,17 @@ class RomeFeedFetcherTest {
     }
 
     @Test
+    fun `a per-item itunes image becomes the thumbnail and the channel image is ignored`() {
+        server.route("/itunes.xml", Route.Raw("rss-itunes.xml", "application/rss+xml"))
+
+        val feed = (fetcher.fetch("${server.baseUrl}/itunes.xml", Validators()) as FetchResult.Fetched).feed
+
+        val (first, second) = feed.items
+        assertEquals("https://i1.sndcdn.com/artworks-one-t500x500.jpg", first.thumbnailUrl)
+        assertEquals(null, second.thumbnailUrl)
+    }
+
+    @Test
     fun `blank titles and authors are treated as absent`() {
         server.route("/blank.xml", Route.Raw("rss-blank.xml", "application/rss+xml"))
 

@@ -1,9 +1,11 @@
 package dev.starve.web
 
+import dev.starve.application.GroupNavigation
 import dev.starve.application.GroupService
 import dev.starve.application.OpenResult
 import dev.starve.application.TimelinePage
 import dev.starve.application.TimelineService
+import dev.starve.domain.Catalogue
 import dev.starve.domain.Cursor
 import dev.starve.domain.Group
 import dev.starve.domain.TimelineItem
@@ -31,7 +33,9 @@ data class TimelineItemView(
     val thumbnailUrl: String?,
     val read: Boolean,
     val playable: Boolean = false,
-)
+) {
+    val catalogueNumber: String get() = Catalogue.number(id)
+}
 
 /** One link of the group navigation, e.g. label "Music (12)". */
 data class NavEntryView(
@@ -39,6 +43,24 @@ data class NavEntryView(
     val href: String,
     val current: Boolean,
 )
+
+/** The series the timeline is showing: "All" or one group, with its unread count. */
+data class SeriesView(
+    val name: String,
+    val unread: Int,
+) {
+    companion object {
+        /** The group [current] from [nav], or "All" when no group is selected. */
+        fun of(
+            nav: GroupNavigation,
+            current: Long?,
+        ): SeriesView =
+            nav.groups
+                .firstOrNull { it.group.id == current }
+                ?.let { SeriesView(it.group.name, it.unread) }
+                ?: SeriesView("All", nav.totalUnread)
+    }
+}
 
 /** The timeline's query parameters; a malformed or unknown [group] is answered with 404. */
 data class TimelineQuery(
@@ -68,8 +90,10 @@ class HomeController(
         model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
         model.addAttribute("moreHref", moreHref(page, showAll, groupId))
         if (htmx != null && query.after != null) return "home :: more"
+        val nav = groups.navigation()
         model.addAttribute("groupId", groupId)
-        model.addAttribute("nav", navigation(groupId, showAll))
+        model.addAttribute("nav", navigation(nav, groupId, showAll))
+        model.addAttribute("series", SeriesView.of(nav, groupId))
         model.addAttribute("toggleHref", href(groupId, if (showAll) null else "all", null))
         return "home"
     }
@@ -106,10 +130,10 @@ class HomeController(
     private fun resolveGroup(raw: String): Group = raw.toLongOrNull()?.let { groups.find(it) } ?: throw notFound()
 
     private fun navigation(
+        nav: GroupNavigation,
         current: Long?,
         showAll: Boolean,
     ): List<NavEntryView> {
-        val nav = groups.navigation()
         val show = if (showAll) "all" else null
         val all = NavEntryView("All (${nav.totalUnread})", href(null, show, null), current == null)
         return listOf(all) +

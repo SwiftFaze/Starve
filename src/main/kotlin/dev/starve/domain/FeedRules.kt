@@ -21,9 +21,19 @@ object FeedRules {
             false
         }
 
+    /**
+     * The thumbnail to store for an image URL. SoundCloud cover art arrives at up to 3000x3000; the
+     * timeline shows it a few dozen pixels wide, so it is stored as SoundCloud's 500x500 variant.
+     */
+    fun thumbnailUrl(raw: String): String =
+        if (SOUNDCLOUD_ART_HOST.containsMatchIn(raw)) raw.replace(SOUNDCLOUD_ART_SIZE, "-t500x500.") else raw
+
     /** Items first seen strictly before this instant are expired. */
     fun retentionCutoff(
         now: Instant,
         maxAge: Duration,
     ): Instant = now.minus(maxAge)
+
+    private val SOUNDCLOUD_ART_HOST = Regex("""^https?://i\d*\.sndcdn\.com/""")
+    private val SOUNDCLOUD_ART_SIZE = Regex("""-(?:t\d+x\d+|original|large)\.(?=[a-z]+$)""")
 }

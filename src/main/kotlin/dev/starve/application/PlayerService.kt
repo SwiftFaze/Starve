@@ -9,11 +9,13 @@ sealed interface PlayerResult {
 
     data class Embed(
         val playable: Playable,
+        val item: ItemRef,
     ) : PlayerResult
 
     /** The video owner disabled embedding; offer [watchUrl] instead. */
     data class EmbeddingDisabled(
         val watchUrl: String,
+        val item: ItemRef,
     ) : PlayerResult
 }
 
@@ -24,12 +26,14 @@ class PlayerService(
 ) {
     /** Resolves the player of an item and marks the item read when it is playable. */
     fun player(id: Long): PlayerResult {
-        val playable = Playable.of(items.findLink(id)?.link) ?: return PlayerResult.NotPlayable
+        val item = items.find(id)
+        val playable = Playable.of(item?.link)
+        if (item == null || playable == null) return PlayerResult.NotPlayable
         items.markRead(id, clock.instant())
         return if (playable is Playable.YouTube && !embeds.allowsEmbedding(playable)) {
-            PlayerResult.EmbeddingDisabled(playable.watchUrl)
+            PlayerResult.EmbeddingDisabled(playable.watchUrl, item)
         } else {
-            PlayerResult.Embed(playable)
+            PlayerResult.Embed(playable, item)
         }
     }
 }

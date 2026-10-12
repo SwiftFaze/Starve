@@ -32,4 +32,19 @@ class FeedRulesTest {
         val now = Instant.parse("2026-10-11T00:00:00Z")
         assertEquals(Instant.parse("2026-07-13T00:00:00Z"), FeedRules.retentionCutoff(now, Duration.ofDays(90)))
     }
+
+    @Test
+    fun `soundcloud cover art is sized to 500x500 and other thumbnails are kept`() {
+        assertEquals(
+            "https://i1.sndcdn.com/artworks-abc-t500x500.jpg",
+            FeedRules.thumbnailUrl("https://i1.sndcdn.com/artworks-abc-t3000x3000.jpg"),
+        )
+        assertEquals(
+            "https://i1.sndcdn.com/artworks-abc-t500x500.png",
+            FeedRules.thumbnailUrl("https://i1.sndcdn.com/artworks-abc-original.png"),
+        )
+        listOf("http://example.test/t-3000x3000.jpg", "https://i.ytimg.com/vi/x/hqdefault.jpg").forEach {
+            assertEquals(it, FeedRules.thumbnailUrl(it))
+        }
+    }
 }

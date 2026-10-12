@@ -53,17 +53,6 @@ class PlayerSteps {
     @Then("the timeline entry {string} has no Play control")
     fun hasNoPlayControl(title: String) = assertTrue(playButton(title) == null, "Play control in ${World.entry(title)}")
 
-    @Then("the Play control of {string} removes any existing {string} element before its request")
-    fun playControlRemovesPlayers(
-        title: String,
-        selector: String,
-    ) {
-        val button = requireNotNull(playButton(title)) { "no Play control" }
-        val hook = requireNotNull(HOOK.find(button)) { "no before-request hook in $button" }.groupValues[1]
-        assertTrue(hook.contains("querySelectorAll('$selector')") && hook.contains("remove()"), hook)
-        assertTrue(button.contains("hx-get=\"/items/"), button)
-    }
-
     @Then("the response contains an iframe whose source is {string}")
     fun iframeSource(source: String) = assertEquals(source, attribute("src"), World.response.body())
 
@@ -110,6 +99,5 @@ class PlayerSteps {
         val WRAPPER = Regex("""class="ratio-16x9"[^>]*>\s*<iframe""")
         val IFRAME = Regex("<iframe[^>]*>")
         val PLAY = Regex("<button[^>]*class=\"play\"[^>]*>")
-        val HOOK = Regex("hx-on::before-request=\"([^\"]*)\"")
     }
 }

@@ -1,6 +1,8 @@
 Feature: Embedded playback for YouTube and SoundCloud items
-  Playable items on the timeline get a "Play" control that expands an inline
-  player inside the item, so I can watch or listen without leaving my feed.
+  Playable items on the timeline get a "Play" control that opens an embedded
+  player, so I can watch or listen without leaving my feed. Where that player
+  appears (the timeline's dock) and how it keeps playing while I browse is
+  owned by docked-player.feature.
 
   Covers: detecting playable items by their link (YouTube watch / youtu.be /
   shorts links, SoundCloud track links); the "Play" control on the timeline
@@ -8,11 +10,13 @@ Feature: Embedded playback for YouTube and SoundCloud items
   (youtube-nocookie.com) and the SoundCloud widget iframe; playing marks the
   item read; 404 for unknown and non-playable items; the embedding-disabled
   fallback via YouTube oEmbed (HTTP 401/403) with a link out; fail-open when
-  oEmbed is unavailable; the one-player-at-a-time htmx hook on the control.
+  oEmbed is unavailable. One player at a time is owned by
+  docked-player.feature (Play replaces the dock's content).
   Supersedes: nothing. Opening via /items/{id}/open from
   chronological-feed.feature is unchanged and remains the no-JS path.
-  Out of scope: a background or queued player that keeps playing across
-  navigation; downloading media; platforms other than YouTube and SoundCloud.
+  Out of scope: the dock and playback across timeline navigation
+  (docked-player.feature); downloading media; platforms other than YouTube
+  and SoundCloud.
 
   Background:
     Given a fresh SQLite database file
@@ -86,14 +90,9 @@ Feature: Embedded playback for YouTube and SoundCloud items
     Then the response status is 200
     And the response contains an iframe whose source is "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"
 
-  Scenario: The Play control removes any existing player before loading a new one
-    Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
-    Then the Play control of "Clip" removes any existing ".player" element before its request
-
 # Non-goals:
-#   - Background or queued player surviving navigation, downloads, other
-#     platforms (Vimeo, Spotify, etc.).
+#   - Downloads, other platforms (Vimeo, Spotify, etc.). The dock is
+#     docked-player.feature.
 #   - A standalone player page for no-JS browsers; /items/{id}/open remains
 #     the no-JS path.
 #   - Caching oEmbed results.

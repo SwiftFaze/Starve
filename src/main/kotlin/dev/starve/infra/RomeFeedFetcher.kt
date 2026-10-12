@@ -78,13 +78,17 @@ class RomeFeedFetcher(
 
     private fun thumbnail(entry: SyndEntry): String? {
         val media = entry.foreignMarkup.flatMap { if (it.name == "group") it.children else listOf(it) }
-        return media.firstOrNull { it.name == "thumbnail" }?.getAttributeValue("url")
-            ?: entry.enclosures.firstOrNull { it.type?.startsWith("image/") == true }?.url
+        val found =
+            media.firstOrNull { it.name == "thumbnail" }?.getAttributeValue("url")
+                ?: entry.enclosures.firstOrNull { it.type?.startsWith("image/") == true }?.url
+                ?: media.firstOrNull { it.name == "image" && it.namespaceURI == ITUNES }?.getAttributeValue("href")
+        return found?.let(FeedRules::thumbnailUrl)
     }
 
     private companion object {
         const val ACCEPT = "application/rss+xml, application/atom+xml, application/xml, text/xml, */*"
         const val NOT_MODIFIED = 304
+        const val ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd"
         val HTTP_OK_RANGE = 200..299
     }
 }

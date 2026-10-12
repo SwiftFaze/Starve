@@ -75,6 +75,26 @@ class IngestionSteps {
         entries: Int,
     ) = serve(path, FeedSpec(atom = true, title = title, entries = entries, thumbnails = true))
 
+    @Given(
+        "the feed server serves {string} as an RSS 2.0 feed titled {string} with {int} entries having iTunes cover art",
+    )
+    fun serveRssWithCoverArt(
+        path: String,
+        title: String,
+        entries: Int,
+    ) = serve(path, FeedSpec(title = title, entries = entries, coverArt = true))
+
+    @Given(
+        "the feed server serves {string} as an RSS 2.0 feed titled {string} " +
+            "with {int} entries having the iTunes cover art {string}",
+    )
+    fun serveRssWithGivenCoverArt(
+        path: String,
+        title: String,
+        entries: Int,
+        art: String,
+    ) = serve(path, FeedSpec(title = title, entries = entries, coverArt = true, coverArtUrl = art))
+
     @Given("the feed server serves {string} as an HTML page")
     fun serveHtml(path: String) = World.feedServer().route(path, Route.Raw("page.html", "text/html"))
 
@@ -188,6 +208,12 @@ class IngestionSteps {
         assertEveryItem(title, "i.title <> '' AND i.link IS NOT NULL AND i.published_at > 0")
     }
 
+    @Then("every stored item of {string} has the thumbnail URL {string}")
+    fun itemsHaveThumbnail(
+        title: String,
+        url: String,
+    ) = assertEquals(listOf(url), thumbnails(title).distinct())
+
     @Then("every stored item of {string} has a thumbnail URL")
     fun itemsHaveThumbnails(title: String) = assertEveryItem(title, "i.thumbnail_url LIKE 'http%'")
 
@@ -275,6 +301,14 @@ class IngestionSteps {
             )
         assertEquals(total.toLong(), matching)
     }
+
+    private fun thumbnails(title: String): List<String?> =
+        app
+            .jdbc()
+            .sql("SELECT i.thumbnail_url FROM items i JOIN sources s ON s.id = i.source_id WHERE s.title = ?")
+            .param(title)
+            .query { rs, _ -> rs.getString(1) }
+            .list()
 
     private fun subscriptionCount() = count("SELECT COUNT(*) FROM sources")
 
