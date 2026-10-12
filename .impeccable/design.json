@@ -353,6 +353,22 @@
           "oklch(95% 0.09 183)"
         ],
         "cssVar": "--cyan (light)"
+      },
+      "obi-ink-light": {
+        "canonical": "oklch(100% 0 0)",
+        "cssVar": "--on-obi",
+        "displayName": "Obi Ink (light)",
+        "role": "neutral",
+        "darkCounterpart": "ink",
+        "note": "Text on the obi and the shutter in the light theme; the dark theme uses ink."
+      },
+      "stripe-light": {
+        "canonical": "oklch(93% 0.01 85)",
+        "cssVar": "--stripe",
+        "displayName": "Chevron Stripe (light)",
+        "role": "neutral",
+        "darkCounterpart": "ink",
+        "note": "The theme switch chevrons in the light theme; ink in the dark theme."
       }
     },
     "typographyMeta": {

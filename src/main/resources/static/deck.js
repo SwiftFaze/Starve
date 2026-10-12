@@ -486,9 +486,12 @@
     body.style.setProperty('--deck-h', deck ? deck.offsetHeight + 'px' : '0px');
   }
 
+  var observer = null;
+
   function trackHeights() {
     if (!window.ResizeObserver) return;
-    var observer = new ResizeObserver(function () {
+    if (observer) observer.disconnect();
+    observer = new ResizeObserver(function () {
       var bar = document.getElementById('bar');
       if (bar) body.style.setProperty('--bar-h', bar.offsetHeight + 'px');
       trackDeck();
@@ -497,6 +500,13 @@
     var target = dock();
     if (target) observer.observe(target);
   }
+
+  // The shutter swapped a whole page in place: whatever played went with the old content.
+  document.addEventListener('starve:page', function () {
+    state = null;
+    trackHeights();
+    markPlaying();
+  });
 
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && body.dataset.list === 'strip') sizeList(LIST_MIN + 180, true);

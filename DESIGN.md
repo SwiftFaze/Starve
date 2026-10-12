@@ -23,6 +23,8 @@ colors:
   paper-red: "#ef3326"
   paper-red-text: "#c0231a"
   deep-cyan: "#0a6f67"
+  obi-ink-light: "#ffffff"
+  stripe-light: "#ebe8e0"
 typography:
   wordmark:
     fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
@@ -282,7 +284,14 @@ Outlined mono controls that read as printed spec labels.
 - **Top bar:** sticky on desktop and static on phones. Tabs and group links are mono uppercase in the dim color and turn to the text color on hover. The current page or group is marked by a 0.5rem square before the label. The build draws it in red, which falls outside the Obi Red Rule; don't copy that use of red.
 
 ### The Obi (signature)
-The red spine. It holds the series name, set vertically in Akira and reading bottom to top. Mono meta below it gives "n unread", the sort order and the STV range. Caution chevrons sit at its foot. On Sources it carries a failing count as an inverted ink block. It is full height between bar and deck and never scrolls with the list.
+The red spine. It holds the series name, set vertically in Akira and reading bottom to top. Mono meta below it gives "n unread", the sort order and the STV range, semibold. Its text is the obi ink: dark ink on red in the dark theme, white in the light theme (`--on-obi`). On Sources it carries a failing count as a block inverted in that ink. It is full height between bar and deck and never scrolls with the list.
+- **Theme switch:** the caution chevrons at its foot are a button that flips dark and light. The choice is stored in localStorage (`starve.theme`) and applied from `<head>` before the first paint; with nothing stored, the OS decides. The stripes sit on a 1rem square tile (`--stripe`: ink in dark, bone in light) and march sideways on hover. On phones the chevrons end the horizontal band.
+
+### The Shutter (signature)
+Every theme change and every Timeline/Sources switch runs behind one red panel that sweeps across the whole viewport: 1.25s in, a 0.4s hold while covered, 1.25s out, all `cubic-bezier(0.65, 0, 0.35, 1)`. Chevron bands lead and trail it. It is dressed as an obi spec sheet: an inset hairline frame with registration crosses, mono corner captions (STARVE, NO ALGORITHM, `[ THEME ]` or `[ PAGE ]`), a barcode with a code derived from the label, a chevron strip, the destination in Akira over a thin rule and a mono caption, and a faint scanline. On a theme change it wears the destination theme's obi ink from the start, so it never flips colour mid-cover.
+- **Page switches never reload:** the next page is fetched while the panel sweeps in, swapped in place under it, the URL pushed, and the same panel sweeps out, so nothing blinks. Modified clicks, back/forward and a failed fetch fall back to an ordinary page load. Leaving the timeline this way stops whatever plays, as a page load does.
+- **The page you are on:** clicking its tab glides back to the top, or, already at the top, blinks the tab's red marker twice. No reload.
+- Under reduced motion there is no panel: the theme or page changes at once.
 
 ### Release Row
 Its parts are the STV number, the art cell (empty if no art), the title over source, the date and the actions (Play, Mark read). On hover the row moves to the raised surface. A read row turns its number and title to the faint tier, with the title struck through in a strong hairline. The playing row stays raised, its STV number becomes a red cell, and its Play button fills red.
@@ -306,12 +315,13 @@ A flash status line in the tool panel, with a 1px border and the text wrapped in
 ### Do:
 - **Do** set the wordmark, obi series name, sheet headings, the deck STV number and "caught up" in Akira Expanded 800, uppercase, at `font-stretch: 125%`.
 - **Do** set every title and all body text in Archivo, mixed case. Set STV/SRC numbers, dates, sources and control labels in Martian Mono.
-- **Do** ship every color in both themes, following `prefers-color-scheme`.
+- **Do** ship every color in both themes, following `prefers-color-scheme` unless the obi switch has set `data-theme` on the root.
 - **Do** keep row dates aligned with the fixed 13.5rem actions column, and keep an empty art cell when a row has no art.
 - **Do** let rows respond to the sheet's container width (64rem fold, 34rem buttons-under-title), not the viewport.
 - **Do** keep state changes at 150ms (`cubic-bezier(0.16, 1, 0.3, 1)`), placement moves at 240ms and the list fold at 280ms. Under `prefers-reduced-motion`, use no transitions, no fold animation and no ticker.
 - **Do** move only the video's box between placements, never the iframe, so playback never restarts.
 - **Do** give phones a single placement: video full width above the deck.
+- **Do** run theme changes and page switches through the shutter, at one speed, and keep the scrollbar gutter reserved (`scrollbar-gutter: stable`) so switching pages never changes the page width.
 
 ### Don't:
 - **Don't** use Akira for reading text, and don't set reading text in all caps.
@@ -320,3 +330,4 @@ A flash status line in the tool panel, with a 1px border and the text wrapped in
 - **Don't** round corners, use pill buttons or cards, or add shadows.
 - **Don't** use the faint text tier (`bone-faint` / `ink-faint`) as the main voice: it clears 4.5:1 on every ground (≥4.68:1) but exists to recede, for read rows and placeholders.
 - **Don't** commit the Akira font files. They are personal-use and gitignored.
+- **Don't** colour the page scrollbar: it stays the strong hairline on the ground (tried in red and rejected).
