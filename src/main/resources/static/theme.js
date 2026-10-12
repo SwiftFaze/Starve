@@ -113,39 +113,11 @@
     }).then(function () { busy = false; }, function () { busy = false; });
   });
 
-  // Pages: the page switch fetches the next page while the panel sweeps in, swaps the content
-  // in place underneath it, updates the address bar, and sweeps out. The panel is one element
-  // the whole way, so nothing blinks the way a full page load would. Modified clicks,
-  // back/forward and a failed fetch fall back to an ordinary page load.
-  function load(src) {
-    return new Promise(function (resolve) {
-      var script = document.createElement('script');
-      script.src = src;
-      script.onload = script.onerror = resolve;
-      document.head.appendChild(script);
-    });
-  }
-
-  function swap(html, href) {
-    var next = new DOMParser().parseFromString(html, 'text/html');
-    document.title = next.title;
-    var body = document.body;
-    var panel = body.querySelector('.shutter');
-    Array.prototype.slice.call(body.attributes).forEach(function (a) { body.removeAttribute(a.name); });
-    Array.prototype.slice.call(next.body.attributes).forEach(function (a) { body.setAttribute(a.name, a.value); });
-    body.innerHTML = next.body.innerHTML;
-    if (panel) body.appendChild(panel);
-    history.pushState({ starve: true }, '', href);
-    window.scrollTo(0, 0);
-    var missing = Array.prototype.slice.call(next.head.querySelectorAll('script[src]'))
-      .map(function (script) { return script.getAttribute('src'); })
-      .filter(function (src) { return !document.head.querySelector('script[src="' + src + '"]'); });
-    return Promise.all(missing.map(load)).then(function () {
-      if (window.htmx) window.htmx.process(body);
-      document.dispatchEvent(new CustomEvent('starve:page'));
-      label();
-    });
-  }
+  // Pages: the Timeline and Sources tabs are htmx requests that swap the page around the dock,
+  // so the player is never replaced and whatever plays keeps playing. The panel sweeps in first,
+  // then the request goes out, then the panel sweeps out once the new page has settled. Without
+  // JavaScript, with reduced motion, or after a failed request the tab is an ordinary link.
+  var pending = null;
 
   // The page you are already on: glide back to the top instead of reloading, or, already at
   // the top, blink the tab's marker to say "you are here".
@@ -160,37 +132,91 @@
     setTimeout(function () { link.classList.remove('here'); }, 700);
   }
 
+  // Capture phase, so htmx never sees a click that is not a plain request for another page.
   document.addEventListener('click', function (event) {
     var link = event.target.closest('a.tab');
-    if (!link || busy) return;
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    if (link.href === window.location.href) {
-      event.preventDefault();
-      here(link);
+    if (!link) return;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      event.stopPropagation();
       return;
     }
-    if (still() || !window.fetch) return;
+    if (busy || link.href === window.location.href) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!busy) here(link);
+    }
+  }, true);
+
+  function fallBack() {
+    if (!pending) return;
+    var failed = pending;
+    pending = null;
+    failed.panel.remove();
+    busy = false;
+    window.location.href = failed.href;
+  }
+
+  document.addEventListener('htmx:confirm', function (event) {
+    var link = event.detail.elt;
+    if (!link.matches || !link.matches('a.tab') || still()) return;
     event.preventDefault();
     busy = true;
-    var href = link.getAttribute('href');
-    var panel = shutter(link.textContent.trim(), '-130%', 'Page', '\u2192 ' + href);
-    var page = fetch(link.href, { credentials: 'same-origin' }).then(function (response) {
-      if (!response.ok) throw new Error(response.status);
-      return response.text();
-    });
-    Promise.all([page, sweepIn(panel)])
-      .then(function (done) { return swap(done[0], href); })
-      .then(function () { return sweepOut(panel); })
-      .then(function () { busy = false; }, function () { window.location.href = link.href; });
+    var panel = shutter(link.textContent.trim(), '-130%', 'Page', '\u2192 ' + link.getAttribute('href'));
+    pending = { elt: link, panel: panel, href: link.href };
+    sweepIn(panel).then(function () { event.detail.issueRequest(true); }, fallBack);
   });
 
-  // Back and forward after an in-place switch load the page normally.
-  window.addEventListener('popstate', function () { window.location.reload(); });
+  document.addEventListener('htmx:afterSettle', function (event) {
+    var config = event.detail.requestConfig;
+    if (!pending || !config || config.elt !== pending.elt) return;
+    var panel = pending.panel;
+    pending = null;
+    window.scrollTo(0, 0);
+    sweepOut(panel).then(function () { busy = false; }, function () { busy = false; });
+  });
+
+  // Back and forward between pages swapped in place: ask for the page again into the same
+  // places, rather than restoring a snapshot of the whole body (which would replace the dock) or
+  // reloading. htmx's own history restore is switched off for the same reason.
+  var shown = window.location.pathname + window.location.search;
+  var restorer = null;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.htmx) window.htmx.config.historyCacheSize = 0;
+  });
+
+  document.addEventListener('htmx:pushedIntoHistory', function () {
+    shown = window.location.pathname + window.location.search;
+  });
+
+  window.addEventListener('popstate', function (event) {
+    event.stopImmediatePropagation();
+    var now = window.location.pathname + window.location.search;
+    if (now === shown) return;
+    if (!window.htmx) { window.location.reload(); return; }
+    shown = now;
+    if (!restorer) {
+      restorer = document.createElement('span');
+      restorer.hidden = true;
+      restorer.setAttribute('hx-select-oob', '#bar,#series,#panel');
+      document.body.appendChild(restorer);
+      window.htmx.process(restorer);
+    }
+    window.htmx.ajax('GET', now, { source: restorer, target: '#sheet', select: '#sheet', swap: 'outerHTML' });
+  }, true);
+
+  ['htmx:responseError', 'htmx:sendError', 'htmx:swapError'].forEach(function (name) {
+    document.addEventListener(name, function (event) {
+      if (event.detail.elt === restorer) window.location.reload();
+      else if (pending && event.detail.requestConfig && event.detail.requestConfig.elt === pending.elt) fallBack();
+    });
+  });
 
   // A page restored from the back/forward cache may still hold a panel.
   window.addEventListener('pageshow', function (event) {
     if (!event.persisted) return;
     document.querySelectorAll('.shutter').forEach(function (panel) { panel.remove(); });
+    pending = null;
     busy = false;
   });
 
