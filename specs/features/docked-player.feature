@@ -14,6 +14,8 @@ Feature: Docked player that keeps playing while I browse the timeline
   their URL to the browser history.
   Superseded in part by player-deck.feature: the dock is now a deck along the
   bottom of the timeline, not the sidebar; everything else here still holds.
+  Superseded in part by sources-keeps-playing.feature: visiting Sources through
+  the page tabs, and the Sources page's own forms, no longer interrupt playback.
   Supersedes: the "expands an inline player inside the item" behavior, the
   "keeps playing across navigation" exclusion and the one-player-at-a-time
   htmx hook of embedded-playback.feature. Everything else there (detection,
@@ -76,8 +78,9 @@ Feature: Docked player that keeps playing while I browse the timeline
 
 # Non-goals:
 #   - A queue, autoplay of the next item, or playback history.
-#   - Keeping playback across full page loads (Sources, opening an item,
-#     reload); that needs a persistent shell, not this dock.
+#   - Keeping playback across full page loads (opening an item,
+#     reload); that needs a persistent shell, not this dock. Sources is now
+#     covered by sources-keeps-playing.feature.
 #
 # Risks:
 #   - That the music really keeps playing (the dock's iframe is never moved or
