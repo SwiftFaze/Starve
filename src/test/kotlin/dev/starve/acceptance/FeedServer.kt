@@ -18,6 +18,8 @@ data class FeedSpec(
     val etag: Boolean = false,
     val coverArt: Boolean = false,
     val coverArtUrl: String? = null,
+    /** Raw XML text for every item title; `null` keeps the default "Entry n". */
+    val itemTitle: String? = null,
 )
 
 sealed interface Route {
