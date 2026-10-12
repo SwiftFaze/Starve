@@ -239,7 +239,7 @@ A stark print palette: two inks on off-white paper, with orange as the only colo
 
 **The Licensed Fallback Rule.** Akira Expanded and its outline cut are user-supplied personal-use fonts (Typologic). They are self-hosted from `/fonts/` but gitignored and never committed, because the repository is public. Archivo (committed, OFL) is the declared fallback, set at 125% width with weights 900 / 600 / 400 so a fresh clone or Docker image renders a wide Archivo with a working hierarchy. Every font stack ends in Archivo; nothing loads from a CDN.
 
-**The Catalogue Number Rule.** Every item is identified by "STV " plus its id zero-padded to four digits, set in the Catalogue style as the first column of its row and in the Dock Number style in the dock. Ranges use an en dash ("STV 0106–0155").
+**The Catalogue Number Rule.** Every item is identified by "STV " plus its id zero-padded to four digits, set in the Catalogue style as the first column of its row and in the Dock Number style in the dock. Ranges use an en dash ("STV 0106–0155"). Sources take the same form with "SRC " plus their id ("SRC 0007"), first in each roster row.
 
 ## Layout
 
@@ -278,13 +278,13 @@ Rectangular, outlined, typographic. Controls are words, never icons.
 - **Hover:** inverts to an ink ground with on-ink text over 150ms. On ink grounds (playing row, dock) outlined controls fill on-ink with ink text instead.
 - **Focus:** 2px ink outline offset 2px on paper; the outline turns orange on ink grounds (bar, playing row, dock).
 - **Busy / disabled:** 55% opacity with a progress cursor while an htmx request is in flight.
-- **Bar filled (Mark all read):** on-ink ground with ink text; the bar's one filled control. Hover inverts to ink with an on-ink stroke.
+- **Sheet filled (Mark all read):** ink ground with on-ink text, right of the sheet heading beside the outlined Show read / Hide read toggle; the sheet's one filled control. Hover drops to an outline. The sleeve's filled control on the Sources page (Add) follows the same pattern.
 - **Playing:** in the playing row the Play control fills orange with ink text and its label changes to "Playing" (`aria-pressed="true"`).
 - **Stop:** an outlined control on the dock card's ink ground, start-aligned under the embed (beside the now-playing line on phones).
 - **Load more:** a full-width outlined block, 3.5rem tall, 2px stroke, 0.875rem text, 1.5rem margin above and below; inverts like any button.
 
 ### Navigation
-- **Top bar:** ink ground, on-ink text, min 4rem tall, gutters at 2.5rem, sticky on desktop and static below 60rem. Wordmark left, group tabs next, the read toggle and Manage sources links and the filled control pushed right.
+- **Top bar:** ink ground, on-ink text, min 4rem tall, gutters at 2.5rem, sticky on desktop and static below 60rem. The bar is navigation only and never changes shape between pages: wordmark, then the Timeline / Sources page switch in the same place on every page (current page marked like the current group tab), then on the timeline the group tabs behind a 1px On-Ink Muted divider. View controls (Show read, Mark all read) live in the sheet head, not the bar. Below 60rem the wordmark and page switch share the first line and the group tabs take the second.
 - **Group tabs:** On-Ink Muted Nav type with a 3px transparent bottom border; hover brightens to on-ink; the current tab (`aria-current`) is on-ink with an orange 3px underline. Tabs scroll horizontally without a scrollbar when they overflow.
 - **Links:** plain underlined text (1px underline, 2px on hover, 0.2em offset).
 
@@ -300,18 +300,25 @@ One item per row on paper, 1px ink rule above (2px for the first row), catalogue
 ### End of Sheet
 Either the Load more block or the Closing statement ("You're all caught up") in caps under a 2px rule. The sheet always ends on one of the two.
 
+### Source Roster (Sources page)
+The label's roster on the same sheet. The sleeve holds SOURCES (Display type, sized down to 2.125rem so the fixed word fits on one line), the counts (sources, groups, and "n failing" as a solid ink tag when any fail), the outcome of the last action as an ink slip (ink ground, on-ink 600 text, 1rem padding, like the dock card), and the Add a source form under a 2px ink rule, whose filled ink Add is the sleeve's one filled control. The sheet carries two outline headings, Subscriptions and Groups. Source rows: SRC number, title over URL (Meta, Muted Grey, breaking anywhere), status, then group select with Set group, and Remove. Below a 68rem sheet the status folds under the URL. A failing source shows a solid ink "Failed" tag (on-ink 900) before its error message in ink 600: state by inversion, never by a second hue. Group rows: a rename field and Rename, the member count right-aligned in Meta, then Delete. Below 60rem rows stack and the controls go to 2.75rem.
+
 ### Inputs / Fields
-Not yet built in this world. A future surface (the Sources page) should derive fields from the button language: square, 1.5px ink stroke, paper ground, Body type, ink focus outline at 2px offset 2px. Treat this as provisional until a built field confirms it.
+Derived from the button language and built on the Sources page.
+- **Field:** square, 1.5px ink stroke, paper ground, ink text and caret, 400 0.875rem (1rem below 60rem so phones do not zoom), min height 2.5rem (2.75rem narrow), padding 0.5rem 0.75rem. Placeholder in Muted Grey. Focus is the shared 2px ink outline offset 2px.
+- **Select:** the same field with the native arrow replaced by a drawn 1.5px ink chevron.
+- **Field label:** Label type above the field, 0.5rem gap. A hint under the field runs at 0.75rem in ink (never Muted Grey on orange, which fails contrast).
+- **Field row:** field and its submit control side by side with a 0.5rem gap; the field takes the remaining width.
 
 ### Named Rules
-**The One Filled Control Rule.** Each region has at most one filled control: Mark all read in the bar, Playing in the playing row. Every other control is outlined and fills only on hover.
+**The One Filled Control Rule.** Each region has at most one filled control: Mark all read in the sheet head, Add in the Sources sleeve, Playing in the playing row. Every other control is outlined and fills only on hover.
 
 **The Docked Player Rule.** Playback lives in the sleeve, not in the sheet. Navigation, filters and bulk actions swap only the sheet, bar and series block, so the dock and its embed are never re-rendered while something plays.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reuse the ink top bar (with its group tabs and filled bar control), the outline-cut sheet heading, the orange sleeve column, the ruled row grid with the catalogue number first, the outlined controls and the 2px end-of-sheet rule on every new surface; the Sources page should be a sheet of ruled source rows beside the same sleeve, so the whole app reads as one catalogue.
+- **Do** reuse the ink top bar (wordmark and page switch fixed in place, group tabs on the timeline), the outline-cut sheet heading, the orange sleeve column, the ruled row grid with the catalogue number first, the outlined controls and the 2px end-of-sheet rule on every new surface; the Sources page is built this way (a roster of ruled source rows beside the same sleeve), so the whole app reads as one catalogue.
 - **Do** keep orange to the sleeve and to current or live state (current tab underline, playing row, dock number, focus on ink, selection).
 - **Do** show state by inverting ink and paper, with 150ms colour transitions (`cubic-bezier(0.16, 1, 0.3, 1)`); the sleeve's 320ms widening is the only longer motion, and none of it runs under reduced motion.
 - **Do** separate rows with 1px ink rules and mark structure with 2px ink rules.

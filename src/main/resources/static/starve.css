@@ -104,7 +104,8 @@ a:hover {
 /* ---- Controls: square, outlined, filled on hover ------------------------------------- */
 
 button,
-.load-more {
+.load-more,
+.read-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -124,7 +125,8 @@ button,
 }
 
 button:hover,
-.load-more:hover {
+.load-more:hover,
+.read-toggle:hover {
   background: var(--ink);
   border-color: var(--ink);
   color: var(--on-ink);
@@ -186,7 +188,8 @@ form {
   scrollbar-width: none;
 }
 
-.group-link {
+.group-link,
+.tab {
   display: flex;
   align-items: center;
   border-bottom: 3px solid transparent;
@@ -199,38 +202,35 @@ form {
   transition: color var(--quick), border-color var(--quick);
 }
 
-.group-link:hover {
+.group-link:hover,
+.tab:hover {
   color: var(--on-ink);
 }
 
-.group-link[aria-current] {
+.group-link[aria-current],
+.tab[aria-current] {
   color: var(--on-ink);
   border-bottom-color: var(--orange);
 }
 
-.bar-actions {
+.pages {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.5rem;
-  margin-left: auto;
-  font-size: 0.75rem;
+  align-items: stretch;
+  gap: 1.75rem;
 }
 
-.bar-actions a {
-  white-space: nowrap;
+/* The page switch never moves; the timeline's group tabs follow it behind a 1px rule. */
+.pages:has(+ .groups) {
+  position: relative;
 }
 
-.bar-actions button {
-  background: var(--on-ink);
-  border-color: var(--on-ink);
-  color: var(--ink);
-}
-
-.bar-actions button:hover {
-  background: var(--ink);
-  border-color: var(--on-ink);
-  color: var(--on-ink);
+.pages:has(+ .groups)::after {
+  content: "";
+  position: absolute;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  right: -1.25rem;
+  border-left: 1px solid var(--on-ink-muted);
 }
 
 /* ---- Label layout: sleeve column + release sheet ------------------------------------ */
@@ -314,6 +314,36 @@ form {
   text-transform: uppercase;
 }
 
+.sheet-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.sheet-head .sheet-title {
+  margin: 0;
+}
+
+.view-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* The sheet's one filled control. */
+.view-actions button {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+
+.view-actions button:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
 .sheet-note {
   max-width: 40rem;
   margin: 0;
@@ -388,7 +418,7 @@ form {
   text-decoration: underline;
 }
 
-.source {
+.item .source {
   display: block;
   margin-top: 0.125rem;
   font-size: 0.75rem;
@@ -591,6 +621,235 @@ form {
   text-transform: uppercase;
 }
 
+/* ---- Fields: drawn from the button language, square with an ink stroke on paper ----- */
+
+.field {
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  caret-color: var(--ink);
+  font: 400 0.875rem/1.2 var(--font);
+  font-stretch: var(--display-stretch);
+}
+
+.field::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+select.field {
+  appearance: none;
+  padding-right: 2.25rem;
+  background: var(--paper)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23111111' stroke-width='1.5'/%3E%3C/svg%3E")
+    no-repeat right 0.875rem center;
+  cursor: pointer;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.field-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.field-row .field {
+  flex: 1;
+}
+
+/* ---- Sources: the label's roster, ruled like the release sheet ---------------------- */
+
+/* A fixed word, so it is sized to fit the sleeve on one line instead of breaking. */
+.roster-name {
+  font-size: 2.125rem;
+}
+
+.series-meta .failing-count {
+  display: inline-block;
+  margin-top: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--ink);
+  color: var(--on-ink);
+  line-height: 1;
+}
+
+/* The outcome of the last action is filed in the sleeve like the dock card: an ink slip. */
+.message {
+  margin: 0;
+  padding: 1rem;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.add {
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--ink);
+}
+
+/* The sleeve's one filled control. */
+.add button {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+
+.add button:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.roster {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 2px solid var(--ink);
+}
+
+.roster > li {
+  display: grid;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  padding: var(--row-pad) 0.75rem;
+  margin: 0 -0.75rem;
+  border-top: 1px solid var(--ink);
+}
+
+.roster > li:first-child {
+  border-top-width: 2px;
+}
+
+.roster > .source {
+  grid-template-columns: 7rem minmax(0, 1fr) minmax(12rem, 17rem) auto;
+  grid-template-areas: "cat body status actions";
+}
+
+.source .cat {
+  grid-area: cat;
+}
+
+.source .body {
+  grid-area: body;
+}
+
+.source .status {
+  grid-area: status;
+}
+
+.source .actions {
+  grid-area: actions;
+}
+
+.url,
+.last-fetched,
+.not-fetched {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.url {
+  margin-top: 0.125rem;
+}
+
+.error {
+  margin: 0 0 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* A failing source is marked by inversion, never by a second hue. */
+.tag {
+  display: inline-block;
+  margin-right: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.regroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.regroup .field {
+  width: 11rem;
+  font-size: 0.75rem;
+}
+
+.group-sheet {
+  margin-top: 4rem;
+}
+
+.new-group {
+  max-width: 36rem;
+  margin-bottom: 1.5rem;
+}
+
+.group-sheet .sheet-note {
+  margin-bottom: 0;
+}
+
+.roster > .group {
+  grid-template-columns: minmax(0, 1fr) 8rem auto;
+}
+
+.rename {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 36rem;
+}
+
+.rename .field {
+  flex: 1;
+  font-weight: 600;
+}
+
+.members {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* Below this width the fetch status folds under the source's title and URL. */
+@container sheet (max-width: 68rem) {
+  .roster > .source {
+    grid-template-columns: 7rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "cat body actions"
+      "cat status actions";
+  }
+
+  .source .cat {
+    align-self: start;
+    padding-top: 0.125rem;
+  }
+}
+
 /* ---- A narrow sheet (a docked video beside it) folds the date under the title ------ */
 
 @container sheet (max-width: 56rem) {
@@ -639,21 +898,21 @@ form {
   }
 
   .groups {
-    order: 3;
     flex-basis: 100%;
     min-height: 3rem;
   }
 
-  .bar-actions {
-    order: 2;
-    flex-basis: 100%;
-    gap: 1rem;
-    margin-left: 0;
-    padding-bottom: 0.5rem;
+  .pages:has(+ .groups)::after {
+    content: none;
   }
 
-  .bar-actions form {
-    margin-left: auto;
+  .sheet-head {
+    align-items: flex-start;
+  }
+
+  .view-actions .read-toggle,
+  .view-actions button {
+    min-height: 2.75rem;
   }
 
   .label,
@@ -790,6 +1049,86 @@ form {
 
   .caught-up {
     font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 60rem) {
+  .sleeve:has(.add) .series-block {
+    align-items: start;
+  }
+
+  .roster > li {
+    margin: 0 -0.5rem;
+    padding: 1rem 0.5rem;
+  }
+
+  .roster > .source {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "cat"
+      "body"
+      "status"
+      "actions";
+    gap: 0.375rem;
+  }
+
+  .source .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .source .regroup {
+    display: contents;
+  }
+
+  .source .regroup .field {
+    grid-column: 1 / -1;
+    width: auto;
+  }
+
+  .source .actions button {
+    width: 100%;
+  }
+
+  .roster .title {
+    font-size: 1.125rem;
+  }
+
+  .roster .field,
+  .roster button,
+  .field-row .field,
+  .field-row button {
+    min-height: 2.75rem;
+  }
+
+  .roster > .group {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "rename rename"
+      "members delete";
+    gap: 0.5rem 1rem;
+  }
+
+  .rename {
+    grid-area: rename;
+    max-width: none;
+  }
+
+  .members {
+    grid-area: members;
+    text-align: left;
+  }
+
+  .group form:last-child {
+    grid-area: delete;
+  }
+
+  /* 16px keeps iOS from zooming into a focused field. */
+  .field,
+  .regroup .field {
+    font-size: 1rem;
   }
 }
 

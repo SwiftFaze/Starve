@@ -282,6 +282,15 @@
         ],
         "createdAt": "2026-10-11T20:00:24.771Z",
         "reason": "model: Thymeleaf th:src sets the cover art at render; the img only renders when thumbnailUrl exists"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/sources.html"
+        ],
+        "createdAt": "2026-10-12T15:51:48.403Z",
+        "reason": "Claude, false positive: the type scale lives in starve.css (3rem outline sheet heading, 2.125rem sleeve display, 0.875rem body), not in the template; verified in screenshots"
       }
     ]
   }
