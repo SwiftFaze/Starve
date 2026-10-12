@@ -53,24 +53,16 @@
 <body>
   <header class="bar" id="bar">
     <h1 class="wordmark"><a href="/" th:text="${appName}">Starve</a></h1>
+    <nav class="pages" aria-label="Pages">
+      <a class="tab" href="/" aria-current="page">Timeline</a>
+      <a class="tab" href="/sources">Sources</a>
+    </nav>
     <nav class="groups" aria-label="Groups">
       <a class="group-link" th:each="entry : ${nav}" th:href="${entry.href}" th:text="${entry.label}"
          th:attr="aria-current=${entry.current} ? 'page',hx-get=${entry.href}"
          hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
          hx-push-url="true">All</a>
     </nav>
-    <div class="bar-actions">
-      <a class="read-toggle" th:href="${toggleHref}" th:attr="hx-get=${toggleHref}"
-         hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
-         hx-push-url="true" th:text="${showAll} ? 'Hide read' : 'Show read'">Show read</a>
-      <a href="/sources">Manage sources</a>
-      <form th:if="${hasSources}" method="post" action="/read-all" hx-post="/read-all"
-            hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML">
-        <input type="hidden" name="before" th:value="${renderedAt}">
-        <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
-        <button type="submit">Mark all read</button>
-      </form>
-    </div>
   </header>
 
   <div class="label">
@@ -88,7 +80,20 @@
     </aside>
 
     <main class="sheet" id="sheet" tabindex="-1">
-      <h2 class="sheet-title" th:text="${showAll} ? 'All releases' : 'New releases'">New releases</h2>
+      <div class="sheet-head">
+        <h2 class="sheet-title" th:text="${showAll} ? 'All releases' : 'New releases'">New releases</h2>
+        <div class="view-actions" th:if="${hasSources}">
+          <a class="read-toggle" th:href="${toggleHref}" th:attr="hx-get=${toggleHref}"
+             hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
+             hx-push-url="true" th:text="${showAll} ? 'Hide read' : 'Show read'">Show read</a>
+          <form method="post" action="/read-all" hx-post="/read-all"
+                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML">
+            <input type="hidden" name="before" th:value="${renderedAt}">
+            <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
+            <button type="submit">Mark all read</button>
+          </form>
+        </div>
+      </div>
 
       <p class="sheet-note" th:unless="${hasSources}">No sources yet. <a href="/sources">Add a source</a> to start your catalogue.</p>
 

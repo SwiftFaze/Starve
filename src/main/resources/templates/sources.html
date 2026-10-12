@@ -4,59 +4,101 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sources - Starve</title>
+  <link rel="stylesheet" href="/starve.css">
   <script src="/htmx.min.js"></script>
 </head>
 <body>
-  <main>
-    <h1>Sources</h1>
-    <p><a href="/">Home</a></p>
+  <header class="bar" id="bar">
+    <p class="wordmark"><a href="/">Starve</a></p>
+    <nav class="pages" aria-label="Pages">
+      <a class="tab" href="/">Timeline</a>
+      <a class="tab" href="/sources" aria-current="page">Sources</a>
+    </nav>
+  </header>
 
-    <p id="message" role="status" th:if="${message}" th:text="${message}"></p>
+  <div class="label">
+    <aside class="sleeve" aria-label="Roster and add a source"
+           th:with="failing=${#lists.size(sources.?[error != null])},total=${#lists.size(sources)},grouped=${#lists.size(groups)}">
+      <div class="series-block">
+        <h1 class="series roster-name">Sources</h1>
+        <p class="series-meta">
+          <th:block th:text="${total == 1} ? '1 source' : |${total} sources|">24 sources</th:block>
+          <span th:text="${grouped == 1} ? 'In 1 group' : |In ${grouped} groups|">In 3 groups</span>
+          <strong class="failing-count" th:if="${failing > 0}" th:text="|${failing} failing|">1 failing</strong>
+        </p>
+      </div>
 
-    <form method="post" action="/sources">
-      <label>Feed, YouTube channel, SoundCloud profile or website URL
-        <input type="text" name="url" placeholder="https://example.com or a feed, YouTube or SoundCloud URL" required></label>
-      <button type="submit">Add</button>
-    </form>
+      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Subscribed to Boiler Room</p>
 
-    <h2>Groups</h2>
-    <form method="post" action="/groups">
-      <label>New group <input type="text" name="name" maxlength="200"></label>
-      <button type="submit">Create group</button>
-    </form>
-    <ul id="group-list">
-      <li class="group" th:each="group : ${groups}" th:attr="data-group=${group.name}">
-        <form method="post" th:action="@{/groups/{id}/rename(id=${group.id})}">
-          <input type="text" name="name" th:value="${group.name}" aria-label="Group name">
-          <button type="submit">Rename</button>
-        </form>
-        <form method="post" th:action="@{/groups/{id}/delete(id=${group.id})}">
-          <button type="submit">Delete</button>
-        </form>
-      </li>
-    </ul>
+      <form class="add" method="post" action="/sources">
+        <label class="field-label" for="add-url">Add a source</label>
+        <div class="field-row">
+          <input class="field" id="add-url" type="text" name="url" inputmode="url" autocomplete="off"
+                 spellcheck="false" placeholder="https://" aria-describedby="add-hint" required>
+          <button type="submit">Add</button>
+        </div>
+        <p class="hint" id="add-hint">Feed, YouTube channel, SoundCloud profile or website URL</p>
+      </form>
+    </aside>
 
-    <h2>Subscriptions</h2>
-    <p th:if="${#lists.isEmpty(sources)}">No subscriptions yet</p>
-    <ul id="source-list">
-      <li class="source" th:each="source : ${sources}" th:attr="data-title=${source.title}">
-        <strong class="title" th:text="${source.title}">Title</strong>
-        <span class="url" th:text="${source.url}">url</span>
-        <span class="last-fetched" th:if="${source.lastFetched}" th:text="${source.lastFetched}">time</span>
-        <span class="error" th:if="${source.error}" th:text="${source.error}">error</span>
-        <form method="post" th:action="@{/sources/{id}/group(id=${source.id})}">
-          <select name="group" aria-label="Group">
-            <option value="">Ungrouped</option>
-            <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
-                    th:selected="${group.id == source.groupId}">Group</option>
-          </select>
-          <button type="submit">Set group</button>
+    <main class="sheet" id="sheet">
+      <h2 class="sheet-title">Subscriptions</h2>
+      <p class="sheet-note" th:if="${#lists.isEmpty(sources)}">No subscriptions yet. Paste a URL under Add a source to start the roster.</p>
+
+      <ul id="source-list" class="roster" th:unless="${#lists.isEmpty(sources)}">
+        <li class="source" th:each="source : ${sources}" th:attr="data-title=${source.title}">
+          <span class="cat" th:text="|SRC ${#numbers.formatInteger(source.id, 4)}|">SRC 0007</span>
+          <div class="body">
+            <strong class="title" th:text="${source.title}">Title</strong>
+            <span class="url" th:text="${source.url}">url</span>
+          </div>
+          <div class="status">
+            <p class="error" th:if="${source.error}"><span class="tag">Failed</span>
+              <th:block th:text="${source.error}">HTTP 404 Not Found</th:block></p>
+            <span class="last-fetched" th:if="${source.lastFetched}" th:text="${source.error} ? |Last tried ${source.lastFetched}| : |Fetched ${source.lastFetched}|">Fetched 2026-10-12 14:30:00 UTC</span>
+            <span class="not-fetched" th:unless="${source.lastFetched}">Not fetched yet</span>
+          </div>
+          <div class="actions">
+            <form class="regroup" method="post" th:action="@{/sources/{id}/group(id=${source.id})}">
+              <select class="field" name="group" aria-label="Group">
+                <option value="">Ungrouped</option>
+                <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
+                        th:selected="${group.id == source.groupId}">Group</option>
+              </select>
+              <button type="submit">Set group</button>
+            </form>
+            <form method="post" th:action="@{/sources/{id}/delete(id=${source.id})}">
+              <button type="submit">Remove</button>
+            </form>
+          </div>
+        </li>
+      </ul>
+
+      <section class="group-sheet" aria-labelledby="groups-title">
+        <h2 class="sheet-title" id="groups-title">Groups</h2>
+        <form class="new-group" method="post" action="/groups">
+          <label class="field-label" for="new-group">New group</label>
+          <div class="field-row">
+            <input class="field" id="new-group" type="text" name="name" maxlength="200" autocomplete="off">
+            <button type="submit">Create group</button>
+          </div>
         </form>
-        <form method="post" th:action="@{/sources/{id}/delete(id=${source.id})}">
-          <button type="submit">Remove</button>
-        </form>
-      </li>
-    </ul>
-  </main>
+        <p class="sheet-note" th:if="${#lists.isEmpty(groups)}">No groups yet. Create one to filter the timeline by it.</p>
+        <ul id="group-list" class="roster" th:unless="${#lists.isEmpty(groups)}">
+          <li class="group" th:each="group : ${groups}" th:attr="data-group=${group.name}">
+            <form class="rename" method="post" th:action="@{/groups/{id}/rename(id=${group.id})}">
+              <input class="field" type="text" name="name" maxlength="200" th:value="${group.name}" aria-label="Group name">
+              <button type="submit">Rename</button>
+            </form>
+            <span class="members" th:with="n=${#lists.size(sources.?[groupId == __${group.id}__])}"
+                  th:text="${n == 1} ? '1 source' : |${n} sources|">3 sources</span>
+            <form method="post" th:action="@{/groups/{id}/delete(id=${group.id})}">
+              <button type="submit">Delete</button>
+            </form>
+          </li>
+        </ul>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
