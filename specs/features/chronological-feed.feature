@@ -17,6 +17,9 @@ Feature: Chronological feed with read state
   expectations (status 200, "Starve", "No sources yet" when there are no
   sources), so that scenario is not changed; the home page is now the timeline,
   with "No sources yet" as its no-sources state.
+  Superseded in part by reader-pane.feature: with JavaScript, a blog post's title
+  now opens the in-app reader; /items/{id}/open (mark read, 302) remains the
+  no-JS path and the behaviour for YouTube and SoundCloud items.
   Out of scope: groups and folder filtering (#5); inline playback (#7);
   smart-add (#4); mute/keyword rules; authentication.
 

@@ -20,7 +20,8 @@ Feature: Player deck along the bottom of the timeline
   Out of scope: what the browser does with the controls (seeking, volume,
   moving the video, resizing, folding the list to the STV strip, the title
   ticker): browser behaviour HTTP-level tests cannot see, covered by the human
-  playtest; reading article text in the pane.
+  playtest. (Reading article text in the pane was out of scope here; it is
+  now covered by reader-pane.feature.)
 
   Background:
     Given a fresh SQLite database file
