@@ -34,6 +34,16 @@ Last-Modified), so unchanged feeds cost almost nothing. One failing feed never
 stops the others. Items older than the retention age (measured from when Starve
 first saw them) are deleted daily.
 
+## Importing subscriptions
+
+**Sources** also has an **Import** page (`/import`) that takes a YouTube Google
+Takeout `subscriptions.csv` or an OPML file (up to 1 MB), detected from its
+content. Each channel or outline becomes a subscription; feeds you already follow
+are counted, not duplicated. OPML folders become groups (matched ignoring case,
+created when missing), and a feed that already has a group keeps it. Unusable
+rows are listed with their reason while the rest import. Imported feeds are not
+fetched during the upload; they are polled in the background afterwards.
+
 ## Grouping sources
 
 On **Sources** you can create groups (1 to 50 characters, unique ignoring case),
@@ -78,6 +88,7 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | `starve.soundcloud.hosts` | `soundcloud.com,m.soundcloud.com` | hosts whose single-segment URLs are treated as SoundCloud profiles |
 | `starve.soundcloud.feed-url-template` | `https://feeds.soundcloud.com/users/soundcloud:users:{id}/sounds.rss` | feed URL for a profile; `{id}` is its numeric user id |
 | `starve.youtube.oembed-url` | `https://www.youtube.com/oembed` | oEmbed endpoint used to check whether a video may be embedded |
+| `starve.youtube.feed-url-template` | `https://www.youtube.com/feeds/videos.xml?channel_id={id}` | feed URL for an imported Takeout channel; `{id}` is its channel id |
 | `starve.retention.max-age` | `P90D` | items first seen longer ago are purged |
 | `starve.retention.interval` | `PT24H` | delay between retention purges |
 | `starve.scheduling.enabled` | `true` | `false` turns off background polling and purging |
