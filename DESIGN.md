@@ -1,335 +1,322 @@
 ---
 name: Starve
-description: A personal feed set as a record label's release sheet. Black ink, off-white paper, one signal orange.
+description: A personal feed set as a 90s OVA cassette cover. A red obi strip, a spec-panel release list, a tape-transport player deck; dark on ink, light on bone paper.
 colors:
-  signal-orange: "#ff5a1f"
-  ink: "#111111"
-  paper: "#f2f2ee"
-  muted-grey: "#5f5f5a"
-  on-ink: "#f2f2ee"
-  on-ink-muted: "#b4b4ad"
+  ink: "#0c0c12"
+  ink-raised: "#14141c"
+  ink-sunk: "#08080c"
+  ink-line: "#2a2a36"
+  ink-line-strong: "#454556"
+  bone: "#f0ece4"
+  bone-dim: "#a3a2b3"
+  bone-faint: "#85849a"
+  obi-red: "#ff3b2f"
+  obi-red-text: "#ff5a4f"
+  scan-cyan: "#2fd2c4"
+  paper: "#ebe8e0"
+  paper-raised: "#f5f3ee"
+  paper-sunk: "#dedad0"
+  paper-line: "#cdc8bc"
+  paper-line-strong: "#a39d90"
+  ink-dim: "#4c4b5a"
+  ink-faint: "#5e5c6a"
+  paper-red: "#ef3326"
+  paper-red-text: "#c0231a"
+  deep-cyan: "#0a6f67"
 typography:
+  wordmark:
+    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontSize: "1.125rem"
+    fontWeight: 800
+    lineHeight: 1
+    letterSpacing: "0.01em"
   display:
     fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
     fontSize: "2.75rem"
-    fontWeight: 900
-    lineHeight: 1.05
-    letterSpacing: "0"
-    fontVariation: "'wdth' 125"
+    fontWeight: 800
+    lineHeight: 1
   headline:
-    fontFamily: "Akira Expanded Outline, Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "3rem"
-    fontWeight: 900
-    lineHeight: 0.95
-    fontVariation: "'wdth' 125"
-  dock-number:
     fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
     fontSize: "1.75rem"
-    fontWeight: 900
+    fontWeight: 800
     lineHeight: 1
-    fontFeature: "tnum"
-    fontVariation: "'wdth' 125"
   closing:
     fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "1.625rem"
-    fontWeight: 900
-    lineHeight: 1
-    fontVariation: "'wdth' 125"
-  wordmark:
+    fontSize: "1.5rem"
+    fontWeight: 800
+    lineHeight: 1.05
+  deck-number:
     fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "1.375rem"
-    fontWeight: 900
+    fontSize: "1.125rem"
+    fontWeight: 800
     lineHeight: 1
-    letterSpacing: "0"
-    fontVariation: "'wdth' 125"
-  range:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 900
-    lineHeight: 1
-    fontFeature: "tnum"
-    fontVariation: "'wdth' 125"
-  catalogue:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "0.9375rem"
-    fontWeight: 900
-    lineHeight: 1
-    fontFeature: "tnum"
-    fontVariation: "'wdth' 125"
   title:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "0.875rem"
+    fontFamily: "Archivo, system-ui, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 500
+    lineHeight: 1.35
+  deck-title:
+    fontFamily: "Archivo, system-ui, sans-serif"
+    fontSize: "0.9375rem"
     fontWeight: 600
-    lineHeight: 1.3
-    fontVariation: "'wdth' 125"
+    lineHeight: 1.25
   body:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "0.875rem"
+    fontFamily: "Archivo, system-ui, sans-serif"
+    fontSize: "0.9375rem"
     fontWeight: 400
-    lineHeight: 1.6
+    lineHeight: 1.55
     fontFeature: "tnum"
-    fontVariation: "'wdth' 125"
-  nav:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
-    fontSize: "0.8125rem"
-    fontWeight: 600
-    lineHeight: 1
-    fontVariation: "'wdth' 125"
-  label:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+  catalogue:
+    fontFamily: "Martian Mono, ui-monospace, Menlo, Consolas, monospace"
     fontSize: "0.75rem"
-    fontWeight: 600
-    lineHeight: 1
-    letterSpacing: "0.01em"
-    fontVariation: "'wdth' 125"
+    fontWeight: 500
+    lineHeight: 1.2
+    letterSpacing: "0.04em"
   meta:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontFamily: "Martian Mono, ui-monospace, Menlo, Consolas, monospace"
     fontSize: "0.75rem"
     fontWeight: 400
-    lineHeight: 1.6
-    fontFeature: "tnum"
-    fontVariation: "'wdth' 125"
+    lineHeight: 1.3
+  nav:
+    fontFamily: "Martian Mono, ui-monospace, Menlo, Consolas, monospace"
+    fontSize: "0.75rem"
+    fontWeight: 500
+    lineHeight: 1
+    letterSpacing: "0.06em"
+  label:
+    fontFamily: "Martian Mono, ui-monospace, Menlo, Consolas, monospace"
+    fontSize: "0.6875rem"
+    fontWeight: 500
+    lineHeight: 1
+    letterSpacing: "0.06em"
 rounded:
   none: "0"
 spacing:
-  row-pad: "1.125rem"
-  gutter: "2.5rem"
+  xs: "0.25rem"
+  sm: "0.5rem"
+  row: "0.875rem"
+  md: "1.25rem"
+  lg: "1.75rem"
+  gutter: "2rem"
   gutter-narrow: "1rem"
-  bar-h: "4rem"
-  sleeve-w: "22.5rem"
-  sleeve-w-docked: "clamp(22.5rem, 40vw, 44rem)"
-  art: "4.5rem"
 components:
-  button:
+  button-outline:
     backgroundColor: "transparent"
+    textColor: "{colors.bone}"
+    typography: "{typography.label}"
+    rounded: "{rounded.none}"
+    padding: "0.5rem 0.875rem"
+    height: "2.25rem"
+  button-outline-hover:
+    backgroundColor: "{colors.bone}"
+    textColor: "{colors.ink}"
+  button-filled:
+    backgroundColor: "{colors.bone}"
     textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.none}"
-    padding: "0.5rem 1rem"
-    height: "2.5rem"
-  button-hover:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
-  button-bar:
-    backgroundColor: "{colors.on-ink}"
-    textColor: "{colors.ink}"
-    typography: "{typography.label}"
-    rounded: "{rounded.none}"
-    padding: "0.5rem 1rem"
-    height: "2.5rem"
-  button-bar-hover:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
+    padding: "0.5rem 0.875rem"
+    height: "2.25rem"
+  button-filled-hover:
+    backgroundColor: "transparent"
+    textColor: "{colors.bone}"
   button-playing:
-    backgroundColor: "{colors.signal-orange}"
+    backgroundColor: "{colors.obi-red}"
     textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.none}"
-    padding: "0.5rem 1rem"
-    height: "2.5rem"
-  button-on-ink-hover:
-    backgroundColor: "{colors.on-ink}"
-    textColor: "{colors.ink}"
-  load-more:
+  placement-active:
     backgroundColor: "transparent"
-    textColor: "{colors.ink}"
+    textColor: "{colors.scan-cyan}"
+    typography: "{typography.label}"
     rounded: "{rounded.none}"
-    width: "100%"
-    height: "3.5rem"
-  group-tab:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink-muted}"
-    typography: "{typography.nav}"
-  group-tab-current:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
-  top-bar:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
-    padding: "0 2.5rem"
-    height: "4rem"
-  sleeve:
-    backgroundColor: "{colors.signal-orange}"
-    textColor: "{colors.ink}"
-    padding: "{spacing.gutter}"
-    width: "{spacing.sleeve-w}"
-  sleeve-docked:
-    width: "{spacing.sleeve-w-docked}"
-  dock-card:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
+  field:
+    backgroundColor: "{colors.ink-sunk}"
+    textColor: "{colors.bone}"
+    typography: "{typography.body}"
     rounded: "{rounded.none}"
-    padding: "1rem"
-  dock-art-blank:
-    backgroundColor: "{colors.signal-orange}"
+    padding: "0.5rem 0.75rem"
+    height: "2.5rem"
+  obi:
+    backgroundColor: "{colors.obi-red}"
     textColor: "{colors.ink}"
-    size: "{spacing.art}"
+    typography: "{typography.display}"
+    width: "5.5rem"
   release-row:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    padding: "1.125rem 0.75rem"
-  release-row-playing:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
+    backgroundColor: "transparent"
+    textColor: "{colors.bone}"
+    typography: "{typography.title}"
+    padding: "0.875rem 0.75rem"
+  release-row-hover:
+    backgroundColor: "{colors.ink-raised}"
+  player-deck:
+    backgroundColor: "{colors.ink-raised}"
+    textColor: "{colors.bone}"
+    height: "5.5rem"
 ---
 
 # Design System: Starve
 
 ## Overview
 
-**Creative North Star: "The Label Catalogue"**
+**Creative North Star: "The Obi Deck"**
 
-Starve is set as a record label's release sheet. The timeline is the label's current releases: each item carries a catalogue number (STV plus its four-digit id), rows are ruled off like a printed sheet, and the series being browsed sits on an orange sleeve beside it. It is a document you work through to the end, not a feed of cards. What is playing is pulled out of the sheet and filed in the sleeve as a black sleeve card, so the release you are listening to stays in view while the sheet scrolls and swaps.
+Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Akira caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. A playing video sits in a theatre pane beside the list, in a floating mini window, or in a 16:9 slot standing up out of the deck.
 
-The world is three inks on paper. Black ink carries text, rules, the top bar and anything live; the off-white paper is the sheet; one signal orange marks the series sleeve and whatever is current or playing. One extended, heavy face, Akira Expanded, sets every word on the page; its outline cut sets the sheet heading. Corners are square everywhere. Structure comes from ink rules at two weights, not from boxes, shadows or tints.
+The same drawing exists twice. Dark is the cover on ink and light is the cover on bone paper, chosen by `prefers-color-scheme`. Both keep square corners, outlined mono controls, and a fine film grain over everything. Display type is loud and expanded, but reading text stays in mixed-case Archivo at reading sizes. The poster attitude belongs to the frame. The list itself is for reading.
 
-Density is a working sheet: one row per item with generous vertical padding, catalogue number first, so the eye scans numbers and titles in a column. State is shown by inversion, not decoration: the playing row turns black with an orange number and its Play control reads "Playing". Motion is 150ms colour changes plus one 320ms widening of the sleeve when a player docks; all of it disappears under reduced motion.
+The world rejects the reader/music-app default of a grey sidebar, rounded cards and pill buttons. It also rejects all-caps reading text.
 
 **Key Characteristics:**
-- Black, off-white and one signal orange; no other hues, no gradients, no tints.
-- Akira Expanded for all text, Akira Expanded Outline for the sheet heading; Archivo at 125% width is the shipped fallback.
-- Square corners on every element.
-- 1px ink rules between rows, 2px ink rules for structure.
-- Outlined rectangular controls that invert on hover; one filled control per region.
-- Live state shown by inverting a whole row to ink and docking a black sleeve card in the orange column.
+- A full-height red obi band (5.5rem) at the left on desktop, a horizontal red band under the top bar on phones.
+- A spec-panel list: STV number, art cell, title over source, date, actions, all on hairline rules.
+- A fixed player deck with a red top rule and a waveform seek bar.
+- Three type voices with strict jobs: Akira for display, Archivo for reading, Martian Mono for numbers and controls.
+- Square corners everywhere, with no shadows. Depth comes from tone, rules and grain.
+- Red means obi or live. Cyan means current placement, focus or active splitter.
 
 ## Colors
 
-A stark print palette: two inks on off-white paper, with orange as the only colour and a rationed one.
+Ink, bone and two signals: an obi red that says "this is the series / this is playing" and a scanline cyan that says "this is where focus or the video is". Every color has a dark value and a light value; the light palette is the same drawing on paper.
 
 ### Primary
-- **Signal Orange**: the series sleeve's ground, the 3px underline under the current group tab, the catalogue number and filled "Playing" control of the playing row, the large STV number in the dock card, the numbered square standing in for missing cover art in the dock, the "Watch on YouTube" link in the refused-embed notice, focus outlines on ink grounds, and text selection. Ink text sits on it; it never carries paper-coloured text.
+- **Obi Red** (dark `obi-red`, light `paper-red`): the obi band, the deck's top rule and waveform fill, the playing row's number cell and Play button, the video frame's border, the resize grip, and the "no art" block in the deck. Text on it is always ink (`ink`), in both themes.
+- **Obi Red Text** (dark `obi-red-text`, light `paper-red-text`): red used *as text*. It covers the deck's STV number, the "Watch on YouTube" fallback link and failure lines. It is lighter than Obi Red on ink and darker on paper so it reads at body sizes.
+
+### Secondary
+- **Scan Cyan** (dark `scan-cyan`, light `deep-cyan`): the focus outline (2px, offset 2px), the focused field border, the pressed Pane/Mini/Deck button, and the splitter handle while it is hovered, focused or dragged.
 
 ### Neutral
-- **Ink**: body text, all rules, control strokes, the top bar, the playing row, the dock card, and the focus outline on paper.
-- **Paper**: the page and sheet ground.
-- **Muted Grey**: secondary text on paper (source names, dates) and the catalogue number and title of read items.
-- **On-Ink**: text and the filled bar control on ink grounds; the hover fill of outlined controls sitting on ink. Same value as Paper, kept as its own role so ink regions can be reasoned about separately.
-- **On-Ink Muted**: secondary text on ink (inactive group tabs, source and date in the playing row, source in the dock card).
+- **Ink** (`ink`): the dark ground. It is also the text color in light mode and the text on red in both themes.
+- **Ink Raised / Paper Raised** (`ink-raised`, `paper-raised`): row hover, the playing row and the player deck.
+- **Ink Sunk / Paper Sunk** (`ink-sunk`, `paper-sunk`): field wells and empty thumbnail backing.
+- **Hairline / Strong Hairline** (`ink-line`, `ink-line-strong`; light `paper-line`, `paper-line-strong`): row rules, region dividers, unplayed waveform bars, the volume track, unpressed placement borders and the scrollbar.
+- **Bone** (`bone`): dark-mode text, the button outline color (the outline always matches the text), and the fill of the filled button.
+- **Bone Dim / Ink Dim** (`bone-dim`, `ink-dim`): secondary text such as sources, dates, field labels, hints, times and inactive tabs.
+- **Bone Faint / Ink Faint** (`bone-faint`, `ink-faint`): the most muted tier, for read rows, placeholders and registration crosses; still AA on every ground, but meant to recede (see Do's and Don'ts).
 
 ### Named Rules
-**The Signal Rule.** Orange means "the series you are in" or "live now". It appears on the sleeve and on current or playing state only; a static row, heading or control at rest on the sheet never turns orange.
+**The Obi Red Rule.** Red is for the obi and for live/playing state only, meaning what plays now and the video that is playing. Never use it as a general accent, link color or emphasis.
 
-**The Inversion Rule.** State is shown by swapping ink and paper, not by tinting. Hovered controls fill with ink (with on-ink on ink grounds); the playing row becomes an ink row with on-ink text. There are no grey hover washes or translucent overlays.
+**The Scanline Rule.** Cyan means current placement, focus or active splitter, nothing else. If it isn't telling you where focus is or where the video lives, it isn't cyan.
+
+**The Same Drawing Rule.** Every surface ships in both themes from the same tokens. A new color needs a dark value and a light value, or it doesn't ship.
 
 ## Typography
 
-**Display Font:** Akira Expanded Outline (sheet heading only), falling back to Akira Expanded, then Archivo
-**Body Font:** Akira Expanded (Super Bold, a single weight) for everything else, with Archivo (variable, self-hosted WOFF2, OFL) at `font-stretch: 125%`, then system-ui, sans-serif
-**Label/Mono Font:** none distinct; figures are tabular across the page (`font-variant-numeric: tabular-nums` on body)
+**Display Font:** Akira Expanded (800, `font-stretch: 125%` so the Archivo fallback widens too), with Archivo, system-ui fallback. The font is user-supplied and personal-use only. It is gitignored and never committed.
+**Body Font:** Archivo (variable 100–900, width 62–125%), self-hosted OFL WOFF2, latin + latin-ext.
+**Label/Mono Font:** Martian Mono (variable 100–800), self-hosted OFL WOFF2.
 
-**Character:** One wide, heavy grotesque at every size: the label speaks in a single voice, and hierarchy comes from size, colour and inversion rather than from a second face. The outline cut is reserved for the sheet heading so the biggest words on the sheet read as a printed mark, not a shout. The CSS still declares weights 900 / 600 / 400 per role; Akira renders all of them at its one Super Bold, and those weights exist so the Archivo fallback keeps a real hierarchy. Sizes are stepped down from the earlier condensed scale because the extended face sets roughly twice as wide.
+**Character:** A loud expanded poster face used only for names and headings, a plain grotesque that carries every word you actually read, and a technical mono that turns catalogue numbers, dates and controls into spec-sheet data. Tabular figures are on globally.
 
 ### Hierarchy
-- **Headline** (outline cut, 3rem desktop / 2rem narrow, line-height 0.95, uppercase): the sheet heading ("New releases" / "All releases"). One per page.
-- **Display** (2.75rem / 1.75rem narrow, line-height 1.05, uppercase, balanced wrap, breaks anywhere): the series name on the sleeve.
-- **Dock Number** (1.75rem / 1rem narrow, line-height 1, Signal Orange, tabular): the STV number in the dock card.
-- **Closing** (1.625rem / 1.25rem narrow, line-height 1, uppercase): "You're all caught up".
-- **Wordmark** (1.375rem, line-height 1, uppercase): STARVE in the top bar.
-- **Range** (1rem, line-height 1, tabular): the STV range on the sleeve, under a 2px ink rule.
-- **Catalogue** (0.9375rem / 0.875rem narrow, line-height 1, tabular, no wrap): the STV number in each row.
-- **Title** (600, 0.875rem, line-height 1.3): item titles in rows and the dock; underlined on hover only.
-- **Body** (400, 0.875rem, line-height 1.6): page default; the empty-state note runs at 0.9375rem, max 40rem. Series meta is 0.8125rem at line-height 1.4.
-- **Nav** (600, 0.8125rem): group tabs.
-- **Label** (600, 0.75rem, line-height 1, 0.01em): control text. Load more runs at 0.875rem.
-- **Meta** (400, 0.75rem, Muted Grey or On-Ink Muted): source names and dates.
+- **Display** (Akira 800, 2.75rem; 2.125rem for Sources/Import obi names; `clamp(1.25rem, 7vw, 1.75rem)` on the horizontal phone obi; uppercase, vertical-rl rotated 180deg on desktop, ellipsis at 70% of the band): the series name on the obi.
+- **Headline** (Akira 800, 1.75rem, 1; 1.25rem below 60rem; uppercase, balanced): the sheet heading.
+- **Closing** (Akira 800, 1.5rem, 1.05; uppercase, under a full-weight rule): "You're all caught up".
+- **Wordmark** (Akira 800, 1.125rem, uppercase, 0.01em): STARVE in the top bar.
+- **Deck Number** (Akira 800, 1.125rem; 0.875rem below 60rem; Obi Red Text): the playing STV number in the deck.
+- **Title** (Archivo 500, 1rem, 1.35, mixed case): release and source titles; underline only on hover; wraps anywhere rather than overflow.
+- **Deck Title** (Archivo 600, 0.9375rem, 1.25): the playing title, one line, ticker when too long.
+- **Body** (Archivo 400, 0.9375rem, 1.55): page default; notes at 1rem, hints at 0.8125rem/1.45. Sheet notes cap at 40rem.
+- **Catalogue** (Martian Mono 500, 0.75rem, 0.04em): STV/SRC numbers at the head of each row.
+- **Meta** (Martian Mono 400, 0.75rem, 1.3): source names, dates, URLs, fetch times, elapsed/total.
+- **Nav** (Martian Mono 500, 0.75rem, 0.06em, uppercase): Timeline/Sources tabs and group links.
+- **Label** (Martian Mono 500, 0.6875rem, 0.06em, uppercase): every button and field label (field labels 0.08em). Obi meta runs at 0.14em.
 
 ### Named Rules
-**The One Face Rule.** Every word on every surface is set in Akira Expanded; the only other cut is Akira Expanded Outline, and it belongs to the page heading alone. Do not introduce a second family for reading text or controls.
-
-**The Licensed Fallback Rule.** Akira Expanded and its outline cut are user-supplied personal-use fonts (Typologic). They are self-hosted from `/fonts/` but gitignored and never committed, because the repository is public. Archivo (committed, OFL) is the declared fallback, set at 125% width with weights 900 / 600 / 400 so a fresh clone or Docker image renders a wide Archivo with a working hierarchy. Every font stack ends in Archivo; nothing loads from a CDN.
-
-**The Catalogue Number Rule.** Every item is identified by "STV " plus its id zero-padded to four digits, set in the Catalogue style as the first column of its row and in the Dock Number style in the dock. Ranges use an en dash ("STV 0106–0155"). Sources take the same form with "SRC " plus their id ("SRC 0007"), first in each roster row.
+**The Three Voices Rule.** Akira is for display only: the wordmark, the obi series name, sheet headings, the deck STV number and "caught up". Archivo, in mixed case, carries every title and all body text. Martian Mono carries STV/SRC numbers, dates, sources and control labels. Never set reading text in Akira, and never set reading text in all caps.
 
 ## Layout
 
-The desktop page is an ink top bar (min 4rem, sticky at the top) over a two-column grid: a 22.5rem sleeve column on the left and the release sheet filling the rest. The sleeve is sticky under the bar and exactly the viewport height minus the bar, scrolling internally if its contents overflow, so the series and the dock stay in view while the sheet scrolls. Horizontal gutter is 2.5rem; the sheet pads 2.25rem top and 4rem bottom.
+**Desktop grid.** A sticky top bar (3.5rem) holds the wordmark, the page tabs and the scrolling group tabs, which are separated by a hairline. Below it is a two-column label grid. The first column is the sleeve: the obi band (5.5rem) pinned full height between bar and deck. On Sources and Import a 22rem tool panel sits beside the obi. The second column is the sheet, padded 1.75rem top, 2rem gutter, 4rem bottom. The deck is fixed to the viewport bottom, and the page reserves its height through `--deck-h`, which the script measures.
 
-The sleeve stacks the series block above the dock with a 1.5rem gap. While a player is docked the sleeve column widens to clamp(22.5rem, 40vw, 44rem), animated over 320ms; the embed iframe is never moved in the DOM, only its column grows.
+**Release rows.** The wide row is five columns: number 7rem, art 4rem, title flexible, date 12.5rem, actions 13.5rem fixed. The fixed date and action columns keep every date aligned no matter which buttons a row has. A row with no art keeps an empty art cell so every row stays aligned. Rows are 0.875rem by 0.75rem, bleed into the gutter with a negative margin, and sit on a hairline.
 
-A release row is a five-column grid: catalogue number (9.5rem), art (4.5rem square), title and source (flexible), date (9rem), actions (13rem, right-aligned), with 1.25rem column gaps and 1.125rem vertical padding. Rows bleed 0.75rem past the sheet edge so an inverted row reads as a full band. The sheet is a size container: when it is narrower than 56rem (typically because a docked player has widened the sleeve), each row drops to four columns and the date folds under the title.
+**The sheet is a container** (`container: sheet / inline-size`), so rows respond to the sheet's width rather than the viewport. That matters when the video pane narrows the list.
+- Below 68rem, source rows move status under the title.
+- Below 64rem, rows fold. Art (3.5rem) sits on the left, number and date share the top line, the title goes under the number, and the buttons go under the date on the right.
+- Below 44rem, the sheet head wraps and its actions take a full line.
+- Below 34rem, the buttons drop under the title, left-aligned.
 
-Below 60rem the gutter drops to 1rem, the bar turns static and wraps (wordmark and actions on one line, group tabs scrolling horizontally on a second line of min 3rem), the sleeve becomes a static orange band with the series name left and meta right-aligned, and each row restacks: 4rem art on the left spanning catalogue number, title block and date, with actions on their own line beneath at 2.75rem min height. The dock becomes a fixed bar along the bottom of the viewport (now-playing line and Stop on one row, embed beneath, video capped at 40dvh tall, safe-area padding); the page reserves bottom padding equal to the measured dock height.
+**Video placements.** Play opens a YouTube item in the theatre pane. A desktop user can switch between Pane, Mini and Deck. Only the video's box moves; the iframe is never re-parented, so playback never restarts.
+- **Pane:** the label grid gains a third column. The list sits at a list width that defaults to 720px and is remembered. The video fills the rest, inset 1.75rem from bar and deck.
+- **Splitter:** a 0.75rem drag zone on the list's right edge, with a 0.25rem × 3rem handle that grows to 5rem in cyan when active. Below 610px the list folds to an STV strip (8.5rem) of catalogue numbers only. Double-clicking resets it to 720px. Arrow keys step it 32px.
+- **Mini:** a 16:9 window above the deck's right end, starting at 320px and resizable from 240 to 720px.
+- **Deck:** a 16:9 slot standing up out of the deck's right end, starting at 384px and resizable from 288 to 640px. The deck's own columns tighten to make room, and the sheet's bottom padding clears the slot.
+- Mini and deck video sizes are remembered per placement by a top-left grip.
 
-Spacing rhythm is built on rem steps rather than a strict scale: 0.5rem between controls, 1-1.5rem inside regions, 2.5rem for gutters and bar gaps.
+**Below 60rem (phones).** The gutter drops to 1rem. The bar wraps, with group tabs on their own scrolling line. The obi turns horizontal as a red band under the bar, with the series on the left, meta on the right and no chevrons. The deck goes to two lines: art, text and Stop on top, transport below. Phones get no placement choice. The video always sits full width directly above the deck (16:9, max 40dvh), and the splitter and grip are hidden. Touch targets for row actions and fields rise to 2.75rem.
 
 ## Elevation & Depth
 
-The system is flat. There are no shadows anywhere. Depth and grouping come from ink: the top bar, the playing row and the dock card are solid ink grounds, the sleeve is a solid orange ground, and everything else is separated by rules. The only layering is positional: the sticky bar, the sticky sleeve, and on phones the fixed dock bar, each of which is an opaque ground sitting over the sheet.
+The system is flat, with no shadows anywhere. Depth comes from three things. The first is tone: ground, a raised surface for hover, the playing row and the deck, and a sunk surface for fields. The second is rules: hairlines between rows, a full-weight text-colored rule under sheet heads and above "caught up", and a red rule on the deck's top edge and around the video. The third is z-order of fixed layers: video 25, splitter 26, deck 30, grain 50. A fractal-noise grain covers everything at 6% opacity in dark and 8% in light, overlay-blended, and never catches the pointer.
 
 ### Named Rules
-**The Flat Sheet Rule.** Nothing floats. If a region needs to stand apart, give it an ink or orange ground or a 2px rule, never a shadow or a raised card.
+**The Hairline Rule.** Regions are separated by 1px rules, never by shadows or cards. The strongest separation is a 1px rule in the text color.
 
 ## Shapes
 
-Every corner is square (radius 0): controls, art, the sleeve, the dock card, the embed. Form is drawn with ink rules at fixed weights. 1px rules separate rows; 2px rules mark structure (the top of the first row, the foot of the timeline, the rule above the sleeve's catalogue range, the empty-state note and the caught-up statement) and stroke the full-width Load more control. Controls are stroked at 1.5px in the current text colour. The current group tab is marked by a 3px orange underline.
-
-Item art is a 4.5rem square (4rem narrow), cropped to cover; YouTube thumbnails and SoundCloud cover art both use it. A row without art keeps an empty, unframed cell of the same size so the title column stays aligned. In the dock, missing art becomes a solid orange square carrying the STV number in ink, set bottom-left.
-
-### Named Rules
-**The Rule Weight Rule.** 1px separates like from like; 2px closes or opens a structure. Do not introduce a third rule weight for separation.
+Every corner is square (`border-radius: 0`), including buttons, fields, the volume thumb, thumbnails, the video frame and the grip. The recurring cover geometry has four parts. Caution chevrons are 45deg stripes of ink on red that close the obi. Registration crosses are 0.75rem hairline crosses outside the sheet head's top corners. Small solid squares are the 0.5rem current-tab marker and the square volume thumb. Number cells are solid blocks behind the playing STV number. Adjacent segmented buttons overlap by 1px so they share one rule.
 
 ## Components
 
 ### Buttons
-Rectangular, outlined, typographic. Controls are words, never icons.
-- **Shape:** square corners (0), 1.5px stroke in currentColor, min height 2.5rem (2.75rem in narrow row actions), padding 0.5rem 1rem.
-- **Default:** transparent ground, ink text and stroke, Label type.
-- **Hover:** inverts to an ink ground with on-ink text over 150ms. On ink grounds (playing row, dock) outlined controls fill on-ink with ink text instead.
-- **Focus:** 2px ink outline offset 2px on paper; the outline turns orange on ink grounds (bar, playing row, dock).
-- **Busy / disabled:** 55% opacity with a progress cursor while an htmx request is in flight.
-- **Sheet filled (Mark all read):** ink ground with on-ink text, right of the sheet heading beside the outlined Show read / Hide read toggle; the sheet's one filled control. Hover drops to an outline. The sleeve's filled control on the Sources page (Add) follows the same pattern.
-- **Playing:** in the playing row the Play control fills orange with ink text and its label changes to "Playing" (`aria-pressed="true"`).
-- **Stop:** an outlined control on the dock card's ink ground, start-aligned under the embed (beside the now-playing line on phones).
-- **Load more:** a full-width outlined block, 3.5rem tall, 2px stroke, 0.875rem text, 1.5rem margin above and below; inverts like any button.
+Outlined mono controls that read as printed spec labels.
+- **Shape:** square (0), 1px border in the text color, min-height 2.25rem (2.75rem in row actions on phones), padding 0.5rem 0.875rem.
+- **Outline (default):** transparent with text-color label. Hover inverts to a text-color fill with ground-color label (150ms).
+- **Filled:** the one filled control on a surface, inverting on hover. Examples are Mark all read on the sheet head and Add/Import in the tool panel.
+- **Playing:** the playing row's Play button fills with Obi Red, label in ink.
+- **Disabled / busy:** 45% opacity when disabled, with no hover. During an htmx request the opacity is 55% with a progress cursor.
+- **Load more:** a full-width outline bar 3.25rem tall.
 
-### Navigation
-- **Top bar:** ink ground, on-ink text, min 4rem tall, gutters at 2.5rem, sticky on desktop and static below 60rem. The bar is navigation only and never changes shape between pages: wordmark, then the Timeline / Sources page switch in the same place on every page (current page marked like the current group tab), then on the timeline the group tabs behind a 1px On-Ink Muted divider. View controls (Show read, Mark all read) live in the sheet head, not the bar. Below 60rem the wordmark and page switch share the first line and the group tabs take the second.
-- **Group tabs:** On-Ink Muted Nav type with a 3px transparent bottom border; hover brightens to on-ink; the current tab (`aria-current`) is on-ink with an orange 3px underline. Tabs scroll horizontally without a scrollbar when they overflow.
-- **Links:** plain underlined text (1px underline, 2px on hover, 0.2em offset).
-
-### Series Sleeve (signature)
-An orange column holding the series name in Display type, then the unread count (600), a sort note (400), and the catalogue range in Range type set off by a 2px ink rule above; the dock sits beneath. Sticky and full height on desktop; a compact horizontal band on narrow screens.
-
-### Dock Card (signature)
-The playing release filed as a black sleeve inside the orange column: ink ground, 1rem padding, 1rem gaps. Top line: 4.5rem cover art (or the orange numbered square), then the STV number in Dock Number type, the title, and the source in On-Ink Muted Meta. Below: the embed (16:9 for YouTube; the 166px SoundCloud widget; or a plain sentence and an orange "Watch on YouTube" link when embedding is refused), then Stop. The dock is empty and hidden until something plays, and it survives every swap of the sheet. On phones it is the fixed bottom bar described in Layout, with 3rem art and a 1rem number.
-
-### Release Row (signature)
-One item per row on paper, 1px ink rule above (2px for the first row), catalogue number first, art cell, title over source, date, then actions (Play when playable, Mark read when unread). Read items drop the number and title to Muted Grey. The playing row inverts: ink ground, on-ink text, orange catalogue number, On-Ink Muted source and date, and the filled orange "Playing" control. The player itself lives in the dock, never under the row.
-
-### End of Sheet
-Either the Load more block or the Closing statement ("You're all caught up") in caps under a 2px rule. The sheet always ends on one of the two.
-
-### Source Roster (Sources page)
-The label's roster on the same sheet. The sleeve holds SOURCES (Display type, sized down to 2.125rem so the fixed word fits on one line), the counts (sources, groups, and "n failing" as a solid ink tag when any fail), the outcome of the last action as an ink slip (ink ground, on-ink 600 text, 1rem padding, like the dock card), and the Add a source form under a 2px ink rule, whose filled ink Add is the sleeve's one filled control. The sheet carries two outline headings, Subscriptions and Groups. Source rows: SRC number, title over URL (Meta, Muted Grey, breaking anywhere), status, then group select with Set group, and Remove. Below a 68rem sheet the status folds under the URL. A failing source shows a solid ink "Failed" tag (on-ink 900) before its error message in ink 600: state by inversion, never by a second hue. Group rows: a rename field and Rename, the member count right-aligned in Meta, then Delete. Below 60rem rows stack and the controls go to 2.75rem.
+### Chips
+- **Failing tag:** a solid red block with an ink mono label, uppercase, padded 0.25rem by 0.375rem, ahead of a failing source's error. This predates the Obi Red Rule and falls outside it; don't extend it to new surfaces.
 
 ### Inputs / Fields
-Derived from the button language and built on the Sources page.
-- **Field:** square, 1.5px ink stroke, paper ground, ink text and caret, 400 0.875rem (1rem below 60rem so phones do not zoom), min height 2.5rem (2.75rem narrow), padding 0.5rem 0.75rem. Placeholder in Muted Grey. Focus is the shared 2px ink outline offset 2px.
-- **Select:** the same field with the native arrow replaced by a drawn 1.5px ink chevron.
-- **Field label:** Label type above the field, 0.5rem gap. A hint under the field runs at 0.75rem in ink (never Muted Grey on orange, which fails contrast).
-- **Field row:** field and its submit control side by side with a 0.5rem gap; the field takes the remaining width.
+- **Style:** a sunk well with a 1px strong hairline, square, Archivo body text, a red caret, and faint placeholders. Min-height is 2.5rem (2.75rem and 1rem text on phones). Selects draw their own two-triangle chevron in the text color. File inputs use a mono body with an outlined mono selector button.
+- **Focus:** the border turns cyan, along with the global 2px cyan outline.
+- **Labels:** mono uppercase field labels in the dim text color, and hints in body 0.8125rem.
 
-### Named Rules
-**The One Filled Control Rule.** Each region has at most one filled control: Mark all read in the sheet head, Add in the Sources sleeve, Playing in the playing row. Every other control is outlined and fills only on hover.
+### Navigation
+- **Top bar:** sticky on desktop and static on phones. Tabs and group links are mono uppercase in the dim color and turn to the text color on hover. The current page or group is marked by a 0.5rem square before the label. The build draws it in red, which falls outside the Obi Red Rule; don't copy that use of red.
 
-**The Docked Player Rule.** Playback lives in the sleeve, not in the sheet. Navigation, filters and bulk actions swap only the sheet, bar and series block, so the dock and its embed are never re-rendered while something plays.
+### The Obi (signature)
+The red spine. It holds the series name, set vertically in Akira and reading bottom to top. Mono meta below it gives "n unread", the sort order and the STV range. Caution chevrons sit at its foot. On Sources it carries a failing count as an inverted ink block. It is full height between bar and deck and never scrolls with the list.
+
+### Release Row
+Its parts are the STV number, the art cell (empty if no art), the title over source, the date and the actions (Play, Mark read). On hover the row moves to the raised surface. A read row turns its number and title to the faint tier, with the title struck through in a strong hairline. The playing row stays raised, its STV number becomes a red cell, and its Play button fills red.
+
+### Player Deck (signature)
+A fixed bottom bar with a minimum height of 5.5rem, on the raised surface with a 1px red top rule. From left to right it holds the art (5.5rem square, or a red block with the STV number in mono when there is no art), the text stack (red Akira STV number, Archivo title and mono source), the transport, the placement switch for YouTube only, and Stop.
+- **Transport:** a 2.5rem square play/pause, the elapsed time, the waveform and the total time.
+- **Waveform:** 3rem tall, with bars in the strong hairline color. A second red copy is revealed by a clip-path as playback progresses. A transparent range input over it seeks on release. Its focus shows as a cyan outline offset 4px.
+- **Volume:** a 2px level line with a square 0.75rem thumb, 6rem wide. The level is remembered in localStorage.
+- **Ticker:** a title too long for the deck holds at the start, slides to show the end, holds and returns. The cycle is at least 6s, ease-in-out, and pauses on hover. Under reduced motion it falls back to an ellipsis with no animation.
+- **SoundCloud fallback:** if the widget's handshake never arrives, the transport hides and SoundCloud's own player shows above the deck in a red frame.
+
+### Video Box
+A black 16:9 box with a 1px red border that moves between placements over 240ms. The YouTube embed runs with `controls=0`. A transparent shield over the video blocks YouTube's hover overlay. A click on the shield plays or pauses, and a double-click goes fullscreen, which drops the border. The grip is a 1.75rem red square at the top-left of the mini and deck placements. It inverts on hover and resizes by pointer or arrow keys. While resizing, the iframe ignores the pointer and nothing animates. YouTube's title bar reappearing after a seek is an accepted platform limitation, not something to design around.
+
+### Message
+A flash status line in the tool panel, with a 1px border and the text wrapped in mono brackets.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reuse the ink top bar (wordmark and page switch fixed in place, group tabs on the timeline), the outline-cut sheet heading, the orange sleeve column, the ruled row grid with the catalogue number first, the outlined controls and the 2px end-of-sheet rule on every new surface; the Sources page is built this way (a roster of ruled source rows beside the same sleeve), so the whole app reads as one catalogue.
-- **Do** keep orange to the sleeve and to current or live state (current tab underline, playing row, dock number, focus on ink, selection).
-- **Do** show state by inverting ink and paper, with 150ms colour transitions (`cubic-bezier(0.16, 1, 0.3, 1)`); the sleeve's 320ms widening is the only longer motion, and none of it runs under reduced motion.
-- **Do** separate rows with 1px ink rules and mark structure with 2px ink rules.
-- **Do** set every word in Akira Expanded, the page heading in Akira Expanded Outline, and end every font stack in the self-hosted Archivo at 125% width.
-- **Do** keep the Akira files out of git; the public repository ships only Archivo and its OFL licence.
-- **Do** keep figures tabular and catalogue numbers zero-padded to four digits.
+- **Do** set the wordmark, obi series name, sheet headings, the deck STV number and "caught up" in Akira Expanded 800, uppercase, at `font-stretch: 125%`.
+- **Do** set every title and all body text in Archivo, mixed case. Set STV/SRC numbers, dates, sources and control labels in Martian Mono.
+- **Do** ship every color in both themes, following `prefers-color-scheme`.
+- **Do** keep row dates aligned with the fixed 13.5rem actions column, and keep an empty art cell when a row has no art.
+- **Do** let rows respond to the sheet's container width (64rem fold, 34rem buttons-under-title), not the viewport.
+- **Do** keep state changes at 150ms (`cubic-bezier(0.16, 1, 0.3, 1)`), placement moves at 240ms and the list fold at 280ms. Under `prefers-reduced-motion`, use no transitions, no fold animation and no ticker.
+- **Do** move only the video's box between placements, never the iframe, so playback never restarts.
+- **Do** give phones a single placement: video full width above the deck.
 
 ### Don't:
-- **Don't** round corners, add shadows, or lift anything onto a card.
-- **Don't** introduce a second accent hue, gradients, or tinted surfaces.
-- **Don't** put more than one filled control in a region.
-- **Don't** add `text-transform` to content (titles, sources, notes, control labels); only the label's own marks (wordmark, series name, sheet heading, closing statement) are uppercased in CSS, so the Archivo fallback still reads content in its own case.
-- **Don't** replace control words with icons.
-- **Don't** add engagement chrome (avatars, counts of likes or views, recommendation rails); the sheet lists only what the owner subscribed to.
+- **Don't** use Akira for reading text, and don't set reading text in all caps.
+- **Don't** use red for anything but the obi and live/playing state.
+- **Don't** use cyan for anything but current placement, focus or the active splitter.
+- **Don't** round corners, use pill buttons or cards, or add shadows.
+- **Don't** use the faint text tier (`bone-faint` / `ink-faint`) as the main voice: it clears 4.5:1 on every ground (≥4.68:1) but exists to recede, for read rows and placeholders.
+- **Don't** commit the Akira font files. They are personal-use and gitignored.

@@ -6,49 +6,7 @@
   <title th:text="${appName}">Starve</title>
   <link rel="stylesheet" href="/starve.css">
   <script src="/htmx.min.js"></script>
-  <script>
-    // The dock outlives every swap of the sheet, so the playing row is re-marked after each one.
-    function markPlaying() {
-      var player = document.querySelector('#dock .player');
-      document.querySelectorAll('.item.playing').forEach(function (row) {
-        row.classList.remove('playing');
-        var play = row.querySelector('.play');
-        if (play) { play.textContent = 'Play'; play.setAttribute('aria-pressed', 'false'); }
-      });
-      if (!player) return;
-      var row = document.querySelector('.item[data-item="' + player.dataset.item + '"]');
-      if (!row) return;
-      row.classList.add('playing');
-      var play = row.querySelector('.play');
-      if (play) { play.textContent = 'Playing'; play.setAttribute('aria-pressed', 'true'); }
-    }
-
-    // Stop removes the focused button, so focus goes back to the row it was playing.
-    function stopPlayer(button) {
-      var target = document.querySelector('.item.playing .play') || document.getElementById('sheet');
-      button.closest('.player').remove();
-      markPlaying();
-      target.focus();
-    }
-
-    // The phone dock is a fixed bar, so the page keeps that much room free below the sheet; the
-    // sleeve sticks below the bar, whose height grows when the group tabs wrap.
-    function trackHeights() {
-      if (!window.ResizeObserver) return;
-      var observer = new ResizeObserver(function () {
-        var dock = document.getElementById('dock');
-        var bar = document.getElementById('bar');
-        if (dock) document.body.style.setProperty('--dock-h', dock.offsetHeight + 'px');
-        if (bar) document.body.style.setProperty('--bar-h', bar.offsetHeight + 'px');
-      });
-      observer.observe(document.body);
-      var dock = document.getElementById('dock');
-      if (dock) observer.observe(dock);
-    }
-
-    document.addEventListener('htmx:afterSettle', markPlaying);
-    document.addEventListener('DOMContentLoaded', trackHeights);
-  </script>
+  <script src="/deck.js" defer></script>
 </head>
 <body>
   <header class="bar" id="bar">
@@ -126,6 +84,8 @@
         </th:block>
       </div>
     </main>
+    <div class="splitter" role="separator" aria-orientation="vertical" aria-controls="sheet"
+         aria-label="Resize list" tabindex="0"></div>
   </div>
 </body>
 </html>

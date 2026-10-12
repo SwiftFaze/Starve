@@ -12,6 +12,8 @@ Feature: Docked player that keeps playing while I browse the timeline
   htmx and replacing only the release sheet, the group navigation and the
   series heading, never the dock; group links and the read toggle pushing
   their URL to the browser history.
+  Superseded in part by player-deck.feature: the dock is now a deck along the
+  bottom of the timeline, not the sidebar; everything else here still holds.
   Supersedes: the "expands an inline player inside the item" behavior, the
   "keeps playing across navigation" exclusion and the one-player-at-a-time
   htmx hook of embedded-playback.feature. Everything else there (detection,

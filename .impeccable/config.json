@@ -300,6 +300,591 @@
         ],
         "createdAt": "2026-10-12T16:09:18.864Z",
         "reason": "Claude: page reuses starve.css classes (.series 2.75rem, .sheet-title 3rem vs body 0.875rem); hook cannot see the external stylesheet's scale"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-assigned.html"
+        ],
+        "createdAt": "2026-10-12T16:24:58.315Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-assigned.html"
+        ],
+        "createdAt": "2026-10-12T16:24:59.055Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-assigned.html"
+        ],
+        "createdAt": "2026-10-12T16:24:59.332Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-assigned.html"
+        ],
+        "createdAt": "2026-10-12T16:24:59.549Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-assigned.html"
+        ],
+        "createdAt": "2026-10-12T16:24:59.793Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-pick.html"
+        ],
+        "createdAt": "2026-10-12T16:25:00.104Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-pick.html"
+        ],
+        "createdAt": "2026-10-12T16:25:00.376Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-pick.html"
+        ],
+        "createdAt": "2026-10-12T16:25:00.650Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-pick.html"
+        ],
+        "createdAt": "2026-10-12T16:25:00.870Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-pick.html"
+        ],
+        "createdAt": "2026-10-12T16:25:01.084Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-whitelabel.html"
+        ],
+        "createdAt": "2026-10-12T16:25:01.324Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-whitelabel.html"
+        ],
+        "createdAt": "2026-10-12T16:25:01.642Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-whitelabel.html"
+        ],
+        "createdAt": "2026-10-12T16:25:01.915Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-whitelabel.html"
+        ],
+        "createdAt": "2026-10-12T16:25:02.147Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-whitelabel.html"
+        ],
+        "createdAt": "2026-10-12T16:25:02.339Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-obi.html"
+        ],
+        "createdAt": "2026-10-12T16:25:02.547Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-obi.html"
+        ],
+        "createdAt": "2026-10-12T16:25:02.782Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-obi.html"
+        ],
+        "createdAt": "2026-10-12T16:25:02.993Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-obi.html"
+        ],
+        "createdAt": "2026-10-12T16:25:03.206Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-obi.html"
+        ],
+        "createdAt": "2026-10-12T16:25:03.424Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-metro.html"
+        ],
+        "createdAt": "2026-10-12T16:25:03.635Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-metro.html"
+        ],
+        "createdAt": "2026-10-12T16:25:03.851Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-metro.html"
+        ],
+        "createdAt": "2026-10-12T16:25:04.107Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-metro.html"
+        ],
+        "createdAt": "2026-10-12T16:25:04.340Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-metro.html"
+        ],
+        "createdAt": "2026-10-12T16:25:04.596Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-boarding.html"
+        ],
+        "createdAt": "2026-10-12T16:25:04.825Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-boarding.html"
+        ],
+        "createdAt": "2026-10-12T16:25:05.143Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-boarding.html"
+        ],
+        "createdAt": "2026-10-12T16:25:05.389Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-boarding.html"
+        ],
+        "createdAt": "2026-10-12T16:25:05.615Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-boarding.html"
+        ],
+        "createdAt": "2026-10-12T16:25:05.814Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-canon.html"
+        ],
+        "createdAt": "2026-10-12T16:25:06.039Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-canon.html"
+        ],
+        "createdAt": "2026-10-12T16:25:06.276Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-canon.html"
+        ],
+        "createdAt": "2026-10-12T16:25:06.557Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-canon.html"
+        ],
+        "createdAt": "2026-10-12T16:25:06.826Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r3-canon.html"
+        ],
+        "createdAt": "2026-10-12T16:25:07.037Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-liner.html"
+        ],
+        "createdAt": "2026-10-12T16:25:07.257Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-liner.html"
+        ],
+        "createdAt": "2026-10-12T16:25:07.456Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-liner.html"
+        ],
+        "createdAt": "2026-10-12T16:25:07.680Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-liner.html"
+        ],
+        "createdAt": "2026-10-12T16:25:07.903Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-liner.html"
+        ],
+        "createdAt": "2026-10-12T16:25:08.153Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-threepane.html"
+        ],
+        "createdAt": "2026-10-12T16:25:08.407Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-threepane.html"
+        ],
+        "createdAt": "2026-10-12T16:25:08.618Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-threepane.html"
+        ],
+        "createdAt": "2026-10-12T16:25:08.820Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-threepane.html"
+        ],
+        "createdAt": "2026-10-12T16:25:09.012Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-threepane.html"
+        ],
+        "createdAt": "2026-10-12T16:25:09.243Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-takeover.html"
+        ],
+        "createdAt": "2026-10-12T16:25:09.510Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-takeover.html"
+        ],
+        "createdAt": "2026-10-12T16:25:09.734Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-takeover.html"
+        ],
+        "createdAt": "2026-10-12T16:25:09.942Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-takeover.html"
+        ],
+        "createdAt": "2026-10-12T16:25:10.159Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r4-takeover.html"
+        ],
+        "createdAt": "2026-10-12T16:25:10.397Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-pane.html"
+        ],
+        "createdAt": "2026-10-12T16:30:30.444Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-pane.html"
+        ],
+        "createdAt": "2026-10-12T16:30:30.639Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-pane.html"
+        ],
+        "createdAt": "2026-10-12T16:30:30.832Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-pane.html"
+        ],
+        "createdAt": "2026-10-12T16:30:31.036Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-pane.html"
+        ],
+        "createdAt": "2026-10-12T16:30:31.231Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-deck.html"
+        ],
+        "createdAt": "2026-10-12T16:30:31.450Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-deck.html"
+        ],
+        "createdAt": "2026-10-12T16:30:31.653Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-deck.html"
+        ],
+        "createdAt": "2026-10-12T16:30:31.848Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-deck.html"
+        ],
+        "createdAt": "2026-10-12T16:30:32.054Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-deck.html"
+        ],
+        "createdAt": "2026-10-12T16:30:32.257Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-theatre.html"
+        ],
+        "createdAt": "2026-10-12T16:30:32.476Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-theatre.html"
+        ],
+        "createdAt": "2026-10-12T16:30:32.691Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-theatre.html"
+        ],
+        "createdAt": "2026-10-12T16:30:32.888Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-theatre.html"
+        ],
+        "createdAt": "2026-10-12T16:30:33.100Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r5-theatre.html"
+        ],
+        "createdAt": "2026-10-12T16:30:33.292Z",
+        "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
       }
     ]
   }

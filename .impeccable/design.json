@@ -1,157 +1,693 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T18:00:00Z",
+  "generatedAt": "2026-10-12T00:00:00Z",
   "title": "Design System: Starve",
   "extensions": {
     "colorMeta": {
-      "signal-orange": { "role": "primary", "displayName": "Signal Orange", "canonical": "#ff5a1f", "tonalRamp": ["oklch(15% 0.06 37)", "oklch(26% 0.1 37)", "oklch(37% 0.14 37)", "oklch(48% 0.18 37)", "oklch(59% 0.2 37)", "oklch(68% 0.21 37)", "oklch(82% 0.11 37)", "oklch(95% 0.03 37)"] },
-      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#111111", "tonalRamp": ["oklch(15% 0 0)", "oklch(26% 0 0)", "oklch(37% 0 0)", "oklch(48% 0 0)", "oklch(59% 0 0)", "oklch(70% 0 0)", "oklch(82% 0 0)", "oklch(95% 0 0)"] },
-      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#f2f2ee", "tonalRamp": ["oklch(15% 0.006 107)", "oklch(26% 0.006 107)", "oklch(37% 0.006 107)", "oklch(48% 0.006 107)", "oklch(59% 0.006 107)", "oklch(70% 0.006 107)", "oklch(82% 0.006 107)", "oklch(96% 0.006 107)"] },
-      "muted-grey": { "role": "neutral", "displayName": "Muted Grey", "canonical": "#5f5f5a", "tonalRamp": ["oklch(15% 0.007 107)", "oklch(26% 0.007 107)", "oklch(37% 0.007 107)", "oklch(46% 0.007 107)", "oklch(59% 0.007 107)", "oklch(70% 0.007 107)", "oklch(82% 0.007 107)", "oklch(95% 0.007 107)"] },
-      "on-ink": { "role": "neutral", "displayName": "On-Ink", "canonical": "#f2f2ee", "tonalRamp": ["oklch(15% 0.006 107)", "oklch(26% 0.006 107)", "oklch(37% 0.006 107)", "oklch(48% 0.006 107)", "oklch(59% 0.006 107)", "oklch(70% 0.006 107)", "oklch(82% 0.006 107)", "oklch(96% 0.006 107)"] },
-      "on-ink-muted": { "role": "neutral", "displayName": "On-Ink Muted", "canonical": "#b4b4ad", "tonalRamp": ["oklch(15% 0.009 107)", "oklch(26% 0.009 107)", "oklch(37% 0.009 107)", "oklch(48% 0.009 107)", "oklch(59% 0.009 107)", "oklch(70% 0.009 107)", "oklch(76% 0.009 107)", "oklch(95% 0.009 107)"] }
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(15% 0.012 285)",
+        "tonalRamp": [
+          "oklch(15% 0.012 285)",
+          "oklch(26% 0.012 285)",
+          "oklch(37% 0.012 285)",
+          "oklch(48% 0.012 285)",
+          "oklch(59% 0.012 285)",
+          "oklch(70% 0.012 285)",
+          "oklch(82% 0.012 285)",
+          "oklch(95% 0.012 285)"
+        ],
+        "cssVar": "--ground / --on-red",
+        "lightCounterpart": "paper",
+        "note": "Dark ground; also light-mode text and the text on red in both themes."
+      },
+      "ink-raised": {
+        "role": "neutral",
+        "displayName": "Ink Raised",
+        "canonical": "oklch(19% 0.014 285)",
+        "tonalRamp": [
+          "oklch(15% 0.014 285)",
+          "oklch(26% 0.014 285)",
+          "oklch(37% 0.014 285)",
+          "oklch(48% 0.014 285)",
+          "oklch(59% 0.014 285)",
+          "oklch(70% 0.014 285)",
+          "oklch(82% 0.014 285)",
+          "oklch(95% 0.014 285)"
+        ],
+        "cssVar": "--raised",
+        "lightCounterpart": "paper-raised"
+      },
+      "ink-sunk": {
+        "role": "neutral",
+        "displayName": "Ink Sunk",
+        "canonical": "oklch(12% 0.01 285)",
+        "tonalRamp": [
+          "oklch(15% 0.01 285)",
+          "oklch(26% 0.01 285)",
+          "oklch(37% 0.01 285)",
+          "oklch(48% 0.01 285)",
+          "oklch(59% 0.01 285)",
+          "oklch(70% 0.01 285)",
+          "oklch(82% 0.01 285)",
+          "oklch(95% 0.01 285)"
+        ],
+        "cssVar": "--sunk",
+        "lightCounterpart": "paper-sunk"
+      },
+      "ink-line": {
+        "role": "neutral",
+        "displayName": "Hairline (dark)",
+        "canonical": "oklch(30% 0.02 285)",
+        "tonalRamp": [
+          "oklch(15% 0.02 285)",
+          "oklch(26% 0.02 285)",
+          "oklch(37% 0.02 285)",
+          "oklch(48% 0.02 285)",
+          "oklch(59% 0.02 285)",
+          "oklch(70% 0.02 285)",
+          "oklch(82% 0.02 285)",
+          "oklch(95% 0.02 285)"
+        ],
+        "cssVar": "--line",
+        "lightCounterpart": "paper-line"
+      },
+      "ink-line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline (dark)",
+        "canonical": "oklch(42% 0.025 285)",
+        "tonalRamp": [
+          "oklch(15% 0.025 285)",
+          "oklch(26% 0.025 285)",
+          "oklch(37% 0.025 285)",
+          "oklch(48% 0.025 285)",
+          "oklch(59% 0.025 285)",
+          "oklch(70% 0.025 285)",
+          "oklch(82% 0.025 285)",
+          "oklch(95% 0.025 285)"
+        ],
+        "cssVar": "--line-strong",
+        "lightCounterpart": "paper-line-strong"
+      },
+      "bone": {
+        "role": "neutral",
+        "displayName": "Bone",
+        "canonical": "oklch(94% 0.011 85)",
+        "tonalRamp": [
+          "oklch(15% 0.011 85)",
+          "oklch(26% 0.011 85)",
+          "oklch(37% 0.011 85)",
+          "oklch(48% 0.011 85)",
+          "oklch(59% 0.011 85)",
+          "oklch(70% 0.011 85)",
+          "oklch(82% 0.011 85)",
+          "oklch(95% 0.011 85)"
+        ],
+        "cssVar": "--text",
+        "lightCounterpart": "ink"
+      },
+      "bone-dim": {
+        "role": "neutral",
+        "displayName": "Bone Dim",
+        "canonical": "oklch(72% 0.025 290)",
+        "tonalRamp": [
+          "oklch(15% 0.025 290)",
+          "oklch(26% 0.025 290)",
+          "oklch(37% 0.025 290)",
+          "oklch(48% 0.025 290)",
+          "oklch(59% 0.025 290)",
+          "oklch(70% 0.025 290)",
+          "oklch(82% 0.025 290)",
+          "oklch(95% 0.025 290)"
+        ],
+        "cssVar": "--text-2",
+        "lightCounterpart": "ink-dim"
+      },
+      "bone-faint": {
+        "role": "neutral",
+        "displayName": "Bone Faint",
+        "canonical": "oklch(54% 0.03 290)",
+        "tonalRamp": [
+          "oklch(15% 0.03 290)",
+          "oklch(26% 0.03 290)",
+          "oklch(37% 0.03 290)",
+          "oklch(48% 0.03 290)",
+          "oklch(59% 0.03 290)",
+          "oklch(70% 0.03 290)",
+          "oklch(82% 0.03 290)",
+          "oklch(95% 0.03 290)"
+        ],
+        "cssVar": "--text-3",
+        "lightCounterpart": "ink-faint",
+        "note": "3.9:1 on ink, 3.7:1 on ink-raised: de-emphasis only, not reading text."
+      },
+      "obi-red": {
+        "role": "primary",
+        "displayName": "Obi Red",
+        "canonical": "oklch(65% 0.23 30)",
+        "tonalRamp": [
+          "oklch(15% 0.2 30)",
+          "oklch(26% 0.2 30)",
+          "oklch(37% 0.2 30)",
+          "oklch(48% 0.2 30)",
+          "oklch(59% 0.2 30)",
+          "oklch(70% 0.2 30)",
+          "oklch(82% 0.2 30)",
+          "oklch(95% 0.2 30)"
+        ],
+        "cssVar": "--red",
+        "lightCounterpart": "paper-red"
+      },
+      "obi-red-text": {
+        "role": "primary",
+        "displayName": "Obi Red Text",
+        "canonical": "oklch(68% 0.2 27)",
+        "tonalRamp": [
+          "oklch(15% 0.19 27)",
+          "oklch(26% 0.19 27)",
+          "oklch(37% 0.19 27)",
+          "oklch(48% 0.19 27)",
+          "oklch(59% 0.19 27)",
+          "oklch(70% 0.19 27)",
+          "oklch(82% 0.19 27)",
+          "oklch(95% 0.19 27)"
+        ],
+        "cssVar": "--red-text",
+        "lightCounterpart": "paper-red-text"
+      },
+      "scan-cyan": {
+        "role": "secondary",
+        "displayName": "Scan Cyan",
+        "canonical": "oklch(78% 0.13 183)",
+        "tonalRamp": [
+          "oklch(15% 0.11 183)",
+          "oklch(26% 0.11 183)",
+          "oklch(37% 0.11 183)",
+          "oklch(48% 0.11 183)",
+          "oklch(59% 0.11 183)",
+          "oklch(70% 0.11 183)",
+          "oklch(82% 0.11 183)",
+          "oklch(95% 0.11 183)"
+        ],
+        "cssVar": "--cyan",
+        "lightCounterpart": "deep-cyan"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Bone Paper",
+        "canonical": "oklch(93% 0.011 90)",
+        "tonalRamp": [
+          "oklch(15% 0.011 90)",
+          "oklch(26% 0.011 90)",
+          "oklch(37% 0.011 90)",
+          "oklch(48% 0.011 90)",
+          "oklch(59% 0.011 90)",
+          "oklch(70% 0.011 90)",
+          "oklch(82% 0.011 90)",
+          "oklch(95% 0.011 90)"
+        ],
+        "cssVar": "--ground (light)"
+      },
+      "paper-raised": {
+        "role": "neutral",
+        "displayName": "Paper Raised",
+        "canonical": "oklch(96% 0.007 90)",
+        "tonalRamp": [
+          "oklch(15% 0.007 90)",
+          "oklch(26% 0.007 90)",
+          "oklch(37% 0.007 90)",
+          "oklch(48% 0.007 90)",
+          "oklch(59% 0.007 90)",
+          "oklch(70% 0.007 90)",
+          "oklch(82% 0.007 90)",
+          "oklch(95% 0.007 90)"
+        ],
+        "cssVar": "--raised (light)"
+      },
+      "paper-sunk": {
+        "role": "neutral",
+        "displayName": "Paper Sunk",
+        "canonical": "oklch(89% 0.014 90)",
+        "tonalRamp": [
+          "oklch(15% 0.014 90)",
+          "oklch(26% 0.014 90)",
+          "oklch(37% 0.014 90)",
+          "oklch(48% 0.014 90)",
+          "oklch(59% 0.014 90)",
+          "oklch(70% 0.014 90)",
+          "oklch(82% 0.014 90)",
+          "oklch(95% 0.014 90)"
+        ],
+        "cssVar": "--sunk (light)"
+      },
+      "paper-line": {
+        "role": "neutral",
+        "displayName": "Hairline (light)",
+        "canonical": "oklch(83% 0.017 88)",
+        "tonalRamp": [
+          "oklch(15% 0.017 88)",
+          "oklch(26% 0.017 88)",
+          "oklch(37% 0.017 88)",
+          "oklch(48% 0.017 88)",
+          "oklch(59% 0.017 88)",
+          "oklch(70% 0.017 88)",
+          "oklch(82% 0.017 88)",
+          "oklch(95% 0.017 88)"
+        ],
+        "cssVar": "--line (light)"
+      },
+      "paper-line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline (light)",
+        "canonical": "oklch(69% 0.02 85)",
+        "tonalRamp": [
+          "oklch(15% 0.02 85)",
+          "oklch(26% 0.02 85)",
+          "oklch(37% 0.02 85)",
+          "oklch(48% 0.02 85)",
+          "oklch(59% 0.02 85)",
+          "oklch(70% 0.02 85)",
+          "oklch(82% 0.02 85)",
+          "oklch(95% 0.02 85)"
+        ],
+        "cssVar": "--line-strong (light)"
+      },
+      "ink-dim": {
+        "role": "neutral",
+        "displayName": "Ink Dim",
+        "canonical": "oklch(42% 0.025 285)",
+        "tonalRamp": [
+          "oklch(15% 0.025 285)",
+          "oklch(26% 0.025 285)",
+          "oklch(37% 0.025 285)",
+          "oklch(48% 0.025 285)",
+          "oklch(59% 0.025 285)",
+          "oklch(70% 0.025 285)",
+          "oklch(82% 0.025 285)",
+          "oklch(95% 0.025 285)"
+        ],
+        "cssVar": "--text-2 (light)"
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Ink Faint",
+        "canonical": "oklch(54% 0.025 290)",
+        "tonalRamp": [
+          "oklch(15% 0.025 290)",
+          "oklch(26% 0.025 290)",
+          "oklch(37% 0.025 290)",
+          "oklch(48% 0.025 290)",
+          "oklch(59% 0.025 290)",
+          "oklch(70% 0.025 290)",
+          "oklch(82% 0.025 290)",
+          "oklch(95% 0.025 290)"
+        ],
+        "cssVar": "--text-3 (light)",
+        "note": "4.3:1 on paper: de-emphasis only, not reading text."
+      },
+      "paper-red": {
+        "role": "primary",
+        "displayName": "Obi Red on Paper",
+        "canonical": "oklch(62% 0.22 30)",
+        "tonalRamp": [
+          "oklch(15% 0.2 30)",
+          "oklch(26% 0.2 30)",
+          "oklch(37% 0.2 30)",
+          "oklch(48% 0.2 30)",
+          "oklch(59% 0.2 30)",
+          "oklch(70% 0.2 30)",
+          "oklch(82% 0.2 30)",
+          "oklch(95% 0.2 30)"
+        ],
+        "cssVar": "--red (light)"
+      },
+      "paper-red-text": {
+        "role": "primary",
+        "displayName": "Obi Red Text on Paper",
+        "canonical": "oklch(51% 0.19 29)",
+        "tonalRamp": [
+          "oklch(15% 0.18 29)",
+          "oklch(26% 0.18 29)",
+          "oklch(37% 0.18 29)",
+          "oklch(48% 0.18 29)",
+          "oklch(59% 0.18 29)",
+          "oklch(70% 0.18 29)",
+          "oklch(82% 0.18 29)",
+          "oklch(95% 0.18 29)"
+        ],
+        "cssVar": "--red-text (light)"
+      },
+      "deep-cyan": {
+        "role": "secondary",
+        "displayName": "Deep Cyan",
+        "canonical": "oklch(52% 0.09 183)",
+        "tonalRamp": [
+          "oklch(15% 0.09 183)",
+          "oklch(26% 0.09 183)",
+          "oklch(37% 0.09 183)",
+          "oklch(48% 0.09 183)",
+          "oklch(59% 0.09 183)",
+          "oklch(70% 0.09 183)",
+          "oklch(82% 0.09 183)",
+          "oklch(95% 0.09 183)"
+        ],
+        "cssVar": "--cyan (light)"
+      }
     },
     "typographyMeta": {
-      "headline": { "displayName": "Headline", "purpose": "The sheet heading in Akira Expanded Outline; one per page. 2rem below 60rem." },
-      "display": { "displayName": "Display", "purpose": "The series name on the sleeve, uppercase, balanced wrap. 1.75rem below 60rem." },
-      "dock-number": { "displayName": "Dock Number", "purpose": "The STV number in the dock card, in Signal Orange. 1rem below 60rem." },
-      "closing": { "displayName": "Closing", "purpose": "The end-of-sheet statement (You're all caught up). 1.25rem below 60rem." },
-      "wordmark": { "displayName": "Wordmark", "purpose": "STARVE in the top bar." },
-      "range": { "displayName": "Range", "purpose": "The STV range on the sleeve, under a 2px ink rule." },
-      "catalogue": { "displayName": "Catalogue", "purpose": "The STV number as the first column of each row. 0.875rem below 60rem." },
-      "title": { "displayName": "Title", "purpose": "Item titles in rows and the dock; underlined on hover only." },
-      "body": { "displayName": "Body", "purpose": "Page default; notes and series meta." },
-      "nav": { "displayName": "Nav", "purpose": "Group tabs in the top bar." },
-      "label": { "displayName": "Label", "purpose": "Control text. Load more runs at 0.875rem." },
-      "meta": { "displayName": "Meta", "purpose": "Source names and dates, in Muted Grey on paper or On-Ink Muted on ink." }
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "STARVE in the top bar.",
+        "fontStretch": "125%",
+        "textTransform": "uppercase"
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "The series name on the obi; vertical on desktop, 2.125rem for Sources/Import, clamp(1.25rem, 7vw, 1.75rem) horizontal on phones.",
+        "fontStretch": "125%",
+        "textTransform": "uppercase"
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The sheet heading; 1.25rem below 60rem.",
+        "fontStretch": "125%",
+        "textTransform": "uppercase"
+      },
+      "closing": {
+        "displayName": "Closing",
+        "purpose": "You're all caught up, under a full-weight rule.",
+        "fontStretch": "125%",
+        "textTransform": "uppercase"
+      },
+      "deck-number": {
+        "displayName": "Deck Number",
+        "purpose": "The playing STV number in the deck, in Obi Red Text; 0.875rem below 60rem.",
+        "fontStretch": "125%",
+        "textTransform": "uppercase"
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Release and source titles; mixed case, underline on hover only."
+      },
+      "deck-title": {
+        "displayName": "Deck Title",
+        "purpose": "The playing title; one line, ticker when too long."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Page default with tabular figures; notes 1rem, hints 0.8125rem."
+      },
+      "catalogue": {
+        "displayName": "Catalogue",
+        "purpose": "STV/SRC numbers heading each row."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Sources, dates, URLs, fetch times, elapsed/total."
+      },
+      "nav": {
+        "displayName": "Nav",
+        "purpose": "Page tabs and group links, uppercase."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Every button and field label, uppercase."
+      }
     },
     "fonts": {
-      "akira-expanded": { "file": "/fonts/akira-expanded.ttf", "weight": 800, "licence": "Typologic personal-use; user-supplied, gitignored, never committed (public repo)." },
-      "akira-expanded-outline": { "file": "/fonts/akira-expanded-outline.otf", "licence": "Typologic personal-use; user-supplied, gitignored, never committed (public repo)." },
-      "archivo": { "file": "/fonts/archivo-latin.woff2, /fonts/archivo-latin-ext.woff2", "weight": "100 900", "stretch": "62% 125%", "licence": "OFL, committed; the declared fallback, rendered at font-stretch 125%." }
+      "akira-expanded": {
+        "file": "/fonts/akira-expanded.ttf",
+        "weight": 800,
+        "licence": "Personal-use; user-supplied, gitignored, never committed."
+      },
+      "akira-expanded-outline": {
+        "file": "/fonts/akira-expanded-outline.otf",
+        "licence": "Personal-use; user-supplied, gitignored, never committed. Declared (--outline) but used by no rule."
+      },
+      "archivo": {
+        "file": "/fonts/archivo-latin.woff2, /fonts/archivo-latin-ext.woff2",
+        "weight": "100 900",
+        "stretch": "62% 125%",
+        "licence": "OFL, committed."
+      },
+      "martian-mono": {
+        "file": "/fonts/martian-mono-latin.woff2",
+        "weight": "100 800",
+        "stretch": "75% 112.5%",
+        "licence": "OFL, committed."
+      }
+    },
+    "themes": {
+      "switch": "prefers-color-scheme",
+      "dark": "default :root",
+      "light": "@media (prefers-color-scheme: light) :root"
     },
     "shadows": [],
+    "effects": [
+      {
+        "name": "film-grain",
+        "value": "fractalNoise SVG, baseFrequency .9, 160px tile, mix-blend-mode overlay, opacity 0.06 dark / 0.08 light, fixed, z-index 50, pointer-events none",
+        "purpose": "Fine print grain over the whole page."
+      },
+      {
+        "name": "caution-chevrons",
+        "value": "repeating-linear-gradient(-45deg, var(--on-red) 0 0.375rem, transparent 0.375rem 0.75rem); 3rem x 1.5rem",
+        "purpose": "Closes the foot of the vertical obi; hidden on the horizontal phone obi."
+      },
+      {
+        "name": "registration-cross",
+        "value": "0.75rem hairline cross in --text-3, 1.125rem outside the sheet head's top corners",
+        "purpose": "Spec-panel corner marks; hidden below 60rem and in the STV strip."
+      }
+    ],
     "motion": [
-      { "name": "quick", "value": "150ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Colour and ink/paper inversion on controls, tabs and rows. Removed under prefers-reduced-motion." },
-      { "name": "expand", "value": "320ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The sleeve column widening to clamp(22.5rem, 40vw, 44rem) when a player docks. The only motion beyond 150ms; removed under prefers-reduced-motion." }
+      {
+        "name": "quick",
+        "value": "150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "State changes: hover fills, color, splitter handle."
+      },
+      {
+        "name": "move",
+        "value": "240ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Video box moving between pane, mini and deck."
+      },
+      {
+        "name": "fold",
+        "value": "280ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "List folding to and from the STV strip: list width, video left edge and splitter slide together; rows fade in from -0.75rem."
+      },
+      {
+        "name": "ticker",
+        "value": "max(6s, overflow/30 + 4s) ease-in-out infinite; holds 0-18% and 50-68%",
+        "purpose": "Deck title too long to fit; pauses on hover."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "All transitions off, no fold animation, ticker replaced by ellipsis."
+      }
     ],
     "breakpoints": [
-      { "name": "narrow", "value": "max-width: 60rem" },
-      { "name": "sheet-narrow (container query on the sheet)", "value": "max-width: 56rem" }
-    ]
+      {
+        "name": "narrow",
+        "value": "60rem",
+        "kind": "media max-width",
+        "purpose": "Phone layout: horizontal obi, two-line deck, single video placement, 1rem gutter."
+      },
+      {
+        "name": "roster-fold",
+        "value": "68rem",
+        "kind": "container sheet max-width",
+        "purpose": "Source rows move status under the title."
+      },
+      {
+        "name": "row-fold",
+        "value": "64rem",
+        "kind": "container sheet max-width",
+        "purpose": "Release rows fold: art left, number+date top, buttons under the date."
+      },
+      {
+        "name": "head-wrap",
+        "value": "44rem",
+        "kind": "container sheet max-width",
+        "purpose": "Sheet head actions take their own line."
+      },
+      {
+        "name": "row-narrow",
+        "value": "34rem",
+        "kind": "container sheet max-width",
+        "purpose": "Buttons go under the title."
+      },
+      {
+        "name": "list-strip",
+        "value": "610px",
+        "kind": "script (list width beside the pane)",
+        "purpose": "Below this the list folds to the 8.5rem STV strip."
+      },
+      {
+        "name": "list-default",
+        "value": "720px",
+        "kind": "script",
+        "purpose": "Default list width beside the pane; double-click on the splitter resets to it."
+      }
+    ],
+    "layout": {
+      "barHeight": "3.5rem",
+      "obiWidth": "5.5rem",
+      "panelWidth": "22rem",
+      "stripWidth": "8.5rem",
+      "gutter": "2rem (1rem below 60rem)",
+      "rowColumns": "7rem 4rem minmax(0,1fr) 12.5rem 13.5rem",
+      "deckMinHeight": "5.5rem",
+      "videoSizesPx": {
+        "mini": {
+          "min": 240,
+          "max": 720,
+          "start": 320
+        },
+        "deck": {
+          "min": 288,
+          "max": 640,
+          "start": 384
+        }
+      },
+      "splitterKeyStepPx": 32,
+      "localStorage": [
+        "starve.list",
+        "starve.video.mini",
+        "starve.video.deck",
+        "starve.volume"
+      ],
+      "zIndex": {
+        "bar": 20,
+        "video": 25,
+        "splitter": 26,
+        "deck": 30,
+        "grain": 50
+      }
+    }
   },
   "components": [
     {
-      "name": "Outlined Button",
+      "name": "Outline Button",
       "kind": "button",
-      "refersTo": "button",
-      "description": "The default control: square, 1.5px currentColor stroke, inverts to ink on hover.",
+      "refersTo": "button-outline",
+      "description": "The default control: outlined mono label that inverts on hover.",
       "html": "<button class=\"ds-btn\">Mark read</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: var(--ink, #111111); font: 600 0.75rem/1 var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; letter-spacing: 0.01em; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn:hover { background: var(--ink, #111111); border-color: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-btn:focus-visible { outline: 2px solid var(--ink, #111111); outline-offset: 2px; }"
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:transparent;color:var(--text,#f0ece4)}.ds-btn:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-btn:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
-      "name": "Bar Filled Button",
+      "name": "Filled Button",
       "kind": "button",
-      "refersTo": "button-bar",
-      "description": "Mark all read: the top bar's one filled control.",
-      "html": "<div class=\"ds-bar-ground\"><button class=\"ds-btn-bar\">Mark all read</button></div>",
-      "css": ".ds-bar-ground { background: var(--ink, #111111); padding: 1rem; } .ds-btn-bar { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid var(--on-ink, #f2f2ee); border-radius: 0; background: var(--on-ink, #f2f2ee); color: var(--ink, #111111); font: 600 0.75rem/1 var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; letter-spacing: 0.01em; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-bar:hover { background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-btn-bar:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
+      "refersTo": "button-filled",
+      "description": "The one filled control on a surface (Mark all read, Add, Import).",
+      "html": "<button class=\"ds-btn-filled\">Mark all read</button>",
+      "css": ".ds-btn-filled{display:inline-flex;align-items:center;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-btn-filled:hover{background:transparent;color:var(--text,#f0ece4)}.ds-btn-filled:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
-      "name": "Top Bar with Group Tabs",
+      "name": "Placement Switch",
+      "kind": "chip",
+      "refersTo": "placement-active",
+      "description": "Pane / Mini / Deck segmented control in the deck; pressed state in cyan. Desktop only.",
+      "html": "<div class=\"ds-place\"><button aria-pressed=\"true\">Pane</button><button aria-pressed=\"false\">Mini</button><button aria-pressed=\"false\">Deck</button></div>",
+      "css": ".ds-place{display:flex}.ds-place button{min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--line-strong,#454556);background:transparent;color:var(--text,#f0ece4)}.ds-place button+button{margin-left:-1px}.ds-place button:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-place button[aria-pressed=true]{position:relative;border-color:var(--cyan,#2fd2c4);color:var(--cyan,#2fd2c4)}.ds-place button[aria-pressed=true]:hover{background:var(--cyan,#2fd2c4);color:var(--ground,#0c0c12)}.ds-place button:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Sunk square well with a red caret and cyan focus border.",
+      "html": "<label class=\"ds-label\" for=\"ds-f\">Add a source</label><input class=\"ds-field\" id=\"ds-f\" placeholder=\"Paste a URL\">",
+      "css": ".ds-label{display:block;margin-bottom:.5rem;font:500 .6875rem/1.2 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2,#a3a2b3)}.ds-field{width:100%;min-height:2.5rem;padding:.5rem .75rem;border:1px solid var(--line-strong,#454556);border-radius:0;background:var(--sunk,#08080c);color:var(--text,#f0ece4);caret-color:var(--red,#ff3b2f);font:400 .9375rem/1.3 Archivo,system-ui,sans-serif}.ds-field::placeholder{color:var(--text-3,#85849a)}.ds-field:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px;border-color:var(--cyan,#2fd2c4)}"
+    },
+    {
+      "name": "Top Bar Navigation",
       "kind": "nav",
-      "refersTo": "top-bar",
-      "description": "Ink bar, sticky on desktop: wordmark, group tabs with an orange underline on the current tab.",
-      "html": "<header class=\"ds-bar\"><span class=\"ds-wordmark\">Starve</span><nav class=\"ds-groups\"><a class=\"ds-tab\" href=\"#\" aria-current=\"page\">All (48)</a><a class=\"ds-tab\" href=\"#\">Music (40)</a><a class=\"ds-tab\" href=\"#\">Tech (8)</a></nav></header>",
-      "css": ".ds-bar { position: sticky; top: 0; display: flex; align-items: stretch; gap: 0 2.5rem; min-height: 4rem; padding: 0 2.5rem; background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; } .ds-wordmark { display: flex; align-items: center; font-size: 1.375rem; font-weight: 900; line-height: 1; text-transform: uppercase; } .ds-groups { display: flex; align-items: stretch; gap: 1.75rem; } .ds-tab { display: flex; align-items: center; padding-top: 3px; border-bottom: 3px solid transparent; color: var(--on-ink-muted, #b4b4ad); font-weight: 600; font-size: 0.8125rem; white-space: nowrap; text-decoration: none; transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-tab:hover { color: var(--on-ink, #f2f2ee); } .ds-tab[aria-current] { color: var(--on-ink, #f2f2ee); border-bottom-color: var(--orange, #ff5a1f); } .ds-tab:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
+      "description": "Akira wordmark, mono uppercase tabs; current page marked by a 0.5rem square.",
+      "html": "<header class=\"ds-bar\"><span class=\"ds-wordmark\">Starve</span><nav class=\"ds-tabs\"><a href=\"#\" aria-current=\"page\">Timeline</a><a href=\"#\">Sources</a></nav></header>",
+      "css": ".ds-bar{display:flex;align-items:center;gap:2rem;min-height:3.5rem;padding:0 2rem;border-bottom:1px solid var(--line,#2a2a36);background:var(--ground,#0c0c12)}.ds-wordmark{font:800 1.125rem/1 \"Akira Expanded\",Archivo,system-ui,sans-serif;font-stretch:125%;letter-spacing:.01em;text-transform:uppercase;color:var(--text,#f0ece4)}.ds-tabs{display:flex;align-self:stretch;gap:1.5rem}.ds-tabs a{display:inline-flex;align-items:center;gap:.5rem;font:500 .75rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2,#a3a2b3);text-decoration:none;transition:color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-tabs a:hover,.ds-tabs a[aria-current]{color:var(--text,#f0ece4)}.ds-tabs a[aria-current]::before{content:\"\";width:.5rem;height:.5rem;background:currentColor}.ds-tabs a:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
-      "name": "Series Sleeve",
+      "name": "Obi Strip",
       "kind": "custom",
-      "refersTo": "sleeve",
-      "description": "Orange column naming the current series, unread count and catalogue range; the dock sits beneath.",
-      "html": "<aside class=\"ds-sleeve\"><h2 class=\"ds-series\">All</h2><p class=\"ds-series-meta\">48 unread<span>Newest first</span><span class=\"ds-range\">STV 0106–0155</span></p></aside>",
-      "css": ".ds-sleeve { display: flex; flex-direction: column; gap: 1.5rem; width: 22.5rem; padding: 2.5rem; background: var(--orange, #ff5a1f); color: var(--ink, #111111); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-variant-numeric: tabular-nums; } .ds-series { margin: 0; font-size: 2.75rem; font-weight: 900; line-height: 1.05; text-transform: uppercase; overflow-wrap: anywhere; text-wrap: balance; } .ds-series-meta { margin: 0; font-size: 0.8125rem; font-weight: 600; line-height: 1.4; } .ds-series-meta span { display: block; font-weight: 400; } .ds-series-meta .ds-range { margin-top: 1rem; padding-top: 0.75rem; border-top: 2px solid var(--ink, #111111); font-size: 1rem; font-weight: 900; line-height: 1; }"
-    },
-    {
-      "name": "Dock Card",
-      "kind": "custom",
-      "refersTo": "dock-card",
-      "description": "The playing release as a black sleeve card inside the orange column: art or numbered orange square, large orange STV number, title, source, embed, Stop.",
-      "html": "<div class=\"ds-dock-ground\"><div class=\"ds-player\"><div class=\"ds-now\"><span class=\"ds-now-blank\" aria-hidden=\"true\">STV 0132</span><div class=\"ds-now-text\"><span class=\"ds-now-cat\">STV 0132</span><span class=\"ds-now-title\">XY diaries : may-september</span><span class=\"ds-now-source\">PIXY</span></div></div><div class=\"ds-embed\"></div><button class=\"ds-stop\">Stop</button></div></div>",
-      "css": ".ds-dock-ground { width: 30rem; padding: 2.5rem; background: var(--orange, #ff5a1f); } .ds-player { display: grid; gap: 1rem; padding: 1rem; background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-size: 0.875rem; font-variant-numeric: tabular-nums; } .ds-now { display: flex; align-items: center; gap: 0.875rem; min-width: 0; } .ds-now-blank { flex: none; display: flex; align-items: flex-end; width: 4.5rem; height: 4.5rem; padding: 0.375rem; background: var(--orange, #ff5a1f); color: var(--ink, #111111); font-size: 0.75rem; font-weight: 900; line-height: 0.9; } .ds-now-text { display: flex; flex-direction: column; min-width: 0; } .ds-now-cat { color: var(--orange, #ff5a1f); font-size: 1.75rem; font-weight: 900; line-height: 1; } .ds-now-title { margin-top: 0.25rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; } .ds-now-source { font-size: 0.75rem; color: var(--on-ink-muted, #b4b4ad); } .ds-embed { aspect-ratio: 16 / 9; background: #000; } .ds-stop { justify-self: start; min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-stop:hover { background: var(--on-ink, #f2f2ee); border-color: var(--on-ink, #f2f2ee); color: var(--ink, #111111); } .ds-stop:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
+      "refersTo": "obi",
+      "description": "Red spine with the series name set vertically in Akira, mono meta and caution chevrons.",
+      "html": "<div class=\"ds-obi\"><h2 class=\"ds-series\">Music</h2><p class=\"ds-meta\"><span>9 unread</span><span>Newest first</span></p></div>",
+      "css": ".ds-obi{display:flex;flex-direction:column;align-items:center;gap:1.25rem;width:5.5rem;height:28rem;padding:1.25rem 0;overflow:hidden;background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12)}.ds-series{margin:0;writing-mode:vertical-rl;transform:rotate(180deg);max-block-size:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:800 2.75rem/1 \"Akira Expanded\",Archivo,system-ui,sans-serif;font-stretch:125%;text-transform:uppercase}.ds-meta{display:flex;flex-direction:column;align-items:center;gap:1rem;margin:0;writing-mode:vertical-rl;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}.ds-obi::after{content:\"\";flex:none;width:3rem;height:1.5rem;margin-top:auto;background:repeating-linear-gradient(-45deg,var(--on-red,#0c0c12) 0 .375rem,transparent .375rem .75rem)}"
     },
     {
       "name": "Release Row",
       "kind": "card",
       "refersTo": "release-row",
-      "description": "One item on the sheet: catalogue number, art cell (empty and unframed when there is no art), title and source, date, actions; 1px ink rule above.",
-      "html": "<article class=\"ds-row\"><span class=\"ds-cat\">STV 0132</span><span class=\"ds-blank\"></span><div><a class=\"ds-title\" href=\"#\">PIXY - MADEBYGOD</a><span class=\"ds-meta\">PIXY</span></div><time class=\"ds-meta\">2026-10-07 16:00 UTC</time><button class=\"ds-row-btn\">Mark read</button></article>",
-      "css": ".ds-row { display: grid; grid-template-columns: 9.5rem 4.5rem minmax(0, 1fr) 9rem auto; align-items: center; gap: 0 1.25rem; padding: 1.125rem 0.75rem; border-top: 1px solid var(--ink, #111111); background: var(--paper, #f2f2ee); color: var(--ink, #111111); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-size: 0.875rem; font-variant-numeric: tabular-nums; } .ds-cat { font-size: 0.9375rem; font-weight: 900; line-height: 1; white-space: nowrap; } .ds-blank { display: block; width: 4.5rem; height: 4.5rem; } .ds-title { display: block; color: inherit; font-size: 0.875rem; font-weight: 600; line-height: 1.3; text-decoration: none; overflow-wrap: anywhere; } .ds-title:hover { text-decoration: underline; text-underline-offset: 0.2em; } .ds-meta { display: block; font-size: 0.75rem; color: var(--muted, #5f5f5a); } .ds-row-btn { min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-row-btn:hover { background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-row-btn:focus-visible { outline: 2px solid var(--ink, #111111); outline-offset: 2px; }"
+      "description": "Spec-panel row: STV number, art cell, title over source, aligned date, fixed actions column. Playing variant shown.",
+      "html": "<article class=\"ds-row ds-playing\"><span class=\"ds-cat\">STV 0132</span><span class=\"ds-art\"></span><div><a class=\"ds-title\" href=\"#\">Live from the warehouse</a><span class=\"ds-src\">Boiler Room</span></div><time class=\"ds-date\">2026-10-11</time><div class=\"ds-actions\"><button class=\"ds-play\">Play</button></div></article>",
+      "css": ".ds-row{display:grid;grid-template-columns:7rem 4rem minmax(0,1fr) 12.5rem 13.5rem;align-items:center;gap:.25rem 1.25rem;padding:.875rem .75rem;border-bottom:1px solid var(--line,#2a2a36);color:var(--text,#f0ece4);transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-row:hover,.ds-playing{background:var(--raised,#14141c)}.ds-cat{justify-self:start;font:500 .75rem/1.2 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.04em;white-space:nowrap}.ds-playing .ds-cat{padding:.25rem .375rem;background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12)}.ds-art{width:4rem;height:4rem}.ds-title{display:block;font:500 1rem/1.35 Archivo,system-ui,sans-serif;color:inherit;text-decoration:none}.ds-title:hover{text-decoration:underline}.ds-src,.ds-date{display:block;font:400 .75rem/1.3 \"Martian Mono\",ui-monospace,monospace;color:var(--text-2,#a3a2b3)}.ds-src{margin-top:.25rem}.ds-actions{display:flex;justify-content:flex-end;gap:.5rem}.ds-play{min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--red,#ff3b2f);background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12)}.ds-play:focus-visible,.ds-title:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
-      "name": "Playing Row",
-      "kind": "card",
-      "refersTo": "release-row-playing",
-      "description": "The playing release inverts to ink with an orange catalogue number and the filled orange Playing control; the player itself is in the dock.",
-      "html": "<article class=\"ds-row-live\"><span class=\"ds-cat-live\">STV 0131</span><div><span class=\"ds-title-live\">XY diaries : may-september</span><span class=\"ds-meta-live\">PIXY</span></div><button class=\"ds-play-live\" aria-pressed=\"true\">Playing</button><button class=\"ds-btn-live\">Mark read</button></article>",
-      "css": ".ds-row-live { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) auto auto; align-items: center; gap: 0 1.25rem; padding: 1.125rem 0.75rem; background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-size: 0.875rem; } .ds-cat-live { color: var(--orange, #ff5a1f); font-size: 0.9375rem; font-weight: 900; line-height: 1; white-space: nowrap; } .ds-title-live { display: block; font-weight: 600; line-height: 1.3; } .ds-meta-live { display: block; font-size: 0.75rem; color: var(--on-ink-muted, #b4b4ad); } .ds-play-live, .ds-btn-live { min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-play-live { background: var(--orange, #ff5a1f); border-color: var(--orange, #ff5a1f); color: var(--ink, #111111); } .ds-btn-live:hover { background: var(--on-ink, #f2f2ee); border-color: var(--on-ink, #f2f2ee); color: var(--ink, #111111); } .ds-play-live:focus-visible, .ds-btn-live:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
-    },
-    {
-      "name": "Load More",
-      "kind": "button",
-      "refersTo": "load-more",
-      "description": "Full-width outlined block ending a page of the sheet.",
-      "html": "<a class=\"ds-load-more\" href=\"#\">Load more</a>",
-      "css": ".ds-load-more { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 3.5rem; padding: 0.5rem 1rem; border: 2px solid var(--ink, #111111); border-radius: 0; color: var(--ink, #111111); font: 600 0.875rem/1 var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; text-decoration: none; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-load-more:hover { background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-load-more:focus-visible { outline: 2px solid var(--ink, #111111); outline-offset: 2px; }"
-    },
-    {
-      "name": "Sheet Heading and Caught-Up Statement",
+      "name": "Player Deck",
       "kind": "custom",
-      "refersTo": "headline",
-      "description": "The outline-cut sheet heading that opens the sheet and the caps statement under a 2px rule that closes it.",
-      "html": "<div class=\"ds-sheet\"><h2 class=\"ds-sheet-title\">New releases</h2><p class=\"ds-caught-up\">You're all caught up</p></div>",
-      "css": ".ds-sheet { color: var(--ink, #111111); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; } .ds-sheet-title { margin: 0 0 1.5rem; font-family: var(--outline, \"Akira Expanded Outline\", \"Akira Expanded\", Archivo, system-ui, sans-serif); font-size: 3rem; font-weight: 900; line-height: 0.95; text-transform: uppercase; } .ds-caught-up { margin: 0; padding: 2.5rem 0 1rem; border-top: 2px solid var(--ink, #111111); font-size: 1.625rem; font-weight: 900; line-height: 1; text-transform: uppercase; }"
+      "refersTo": "player-deck",
+      "description": "Tape-transport bar: red top rule, Akira STV number, a waveform that fills red as it plays and seeks on release.",
+      "html": "<div class=\"ds-deck\"><span class=\"ds-now-art\">STV 0132</span><div class=\"ds-now\"><span class=\"ds-now-cat\">STV 0132</span><span class=\"ds-now-title\">Live from the warehouse</span><span class=\"ds-now-src\">Boiler Room</span></div><div class=\"ds-transport\"><button class=\"ds-pause\" aria-label=\"Pause\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 2h3v12H4zM9 2h3v12H9z\"/></svg></button><time class=\"ds-t\">1:12</time><div class=\"ds-wave\" style=\"--progress:.4\"></div><time class=\"ds-t\">4:05</time></div><button class=\"ds-stop\">Stop</button></div>",
+      "css": ".ds-deck{display:grid;grid-template-columns:auto minmax(10rem,18rem) minmax(0,1fr) auto;align-items:center;gap:1.25rem;min-height:5.5rem;padding-right:1.25rem;border-top:1px solid var(--red,#ff3b2f);background:var(--raised,#14141c);color:var(--text,#f0ece4)}.ds-now-art{display:flex;align-items:flex-end;width:5.5rem;height:5.5rem;padding:.5rem;background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12);font:600 .625rem/1 \"Martian Mono\",ui-monospace,monospace}.ds-now{display:flex;flex-direction:column;gap:.2rem;min-width:0}.ds-now-cat{font:800 1.125rem/1 \"Akira Expanded\",Archivo,system-ui,sans-serif;font-stretch:125%;color:var(--red-text,#ff5a4f)}.ds-now-title{font:600 .9375rem/1.25 Archivo,system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ds-now-src,.ds-t{font:400 .75rem/1.2 \"Martian Mono\",ui-monospace,monospace;color:var(--text-2,#a3a2b3)}.ds-transport{display:flex;align-items:center;gap:.875rem;min-width:0}.ds-wave{flex:1;min-width:6rem;height:3rem;background:linear-gradient(90deg,var(--red,#ff3b2f) calc(var(--progress)*100%),var(--line-strong,#454556) 0);-webkit-mask:repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 5px);mask:repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 5px)}.ds-pause,.ds-stop{display:inline-flex;align-items:center;justify-content:center;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:transparent;color:var(--text,#f0ece4)}.ds-pause{width:2.5rem;height:2.5rem;padding:0}.ds-pause:hover,.ds-stop:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-pause:focus-visible,.ds-stop:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     }
   ],
   "narrative": {
-    "northStar": "The Label Catalogue",
-    "overview": "Starve is set as a record label's release sheet. The timeline is the label's current releases: each item carries a catalogue number (STV plus its four-digit id), rows are ruled off like a printed sheet, and the series being browsed sits on an orange sleeve beside it. It is a document you work through to the end, not a feed of cards. What is playing is pulled out of the sheet and filed in the sleeve as a black sleeve card, so the release you are listening to stays in view while the sheet scrolls and swaps.\n\nThe world is three inks on paper. Black ink carries text, rules, the top bar and anything live; the off-white paper is the sheet; one signal orange marks the series sleeve and whatever is current or playing. One extended, heavy face, Akira Expanded, sets every word on the page; its outline cut sets the sheet heading. Corners are square everywhere. Structure comes from ink rules at two weights, not from boxes, shadows or tints.\n\nDensity is a working sheet: one row per item with generous vertical padding, catalogue number first, so the eye scans numbers and titles in a column. State is shown by inversion, not decoration: the playing row turns black with an orange number and its Play control reads \"Playing\". Motion is 150ms colour changes plus one 320ms widening of the sleeve when a player docks; all of it disappears under reduced motion.",
+    "northStar": "The Obi Deck",
+    "overview": "Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Akira caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. A playing video sits in a theatre pane beside the list, in a floating mini window, or in a 16:9 slot standing up out of the deck.\n\nThe same drawing exists twice. Dark is the cover on ink and light is the cover on bone paper, chosen by `prefers-color-scheme`. Both keep square corners, outlined mono controls, and a fine film grain over everything. Display type is loud and expanded, but reading text stays in mixed-case Archivo at reading sizes. The poster attitude belongs to the frame. The list itself is for reading.\n\nThe world rejects the reader/music-app default of a grey sidebar, rounded cards and pill buttons. It also rejects all-caps reading text.",
     "keyCharacteristics": [
-      "Black, off-white and one signal orange; no other hues, no gradients, no tints.",
-      "Akira Expanded for all text, Akira Expanded Outline for the sheet heading; Archivo at 125% width is the shipped fallback.",
-      "Square corners on every element.",
-      "1px ink rules between rows, 2px ink rules for structure.",
-      "Outlined rectangular controls that invert on hover; one filled control per region.",
-      "Live state shown by inverting a whole row to ink and docking a black sleeve card in the orange column."
+      "A full-height red obi band (5.5rem) at the left on desktop, a horizontal red band under the top bar on phones.",
+      "A spec-panel list: STV number, art cell, title over source, date, actions, all on hairline rules.",
+      "A fixed player deck with a red top rule and a waveform seek bar.",
+      "Three type voices with strict jobs: Akira for display, Archivo for reading, Martian Mono for numbers and controls.",
+      "Square corners everywhere, with no shadows. Depth comes from tone, rules and grain.",
+      "Red means obi or live. Cyan means current placement, focus or active splitter."
     ],
     "rules": [
-      { "name": "The Signal Rule", "body": "Orange means \"the series you are in\" or \"live now\". It appears on the sleeve and on current or playing state only; a static row, heading or control at rest on the sheet never turns orange.", "section": "colors" },
-      { "name": "The Inversion Rule", "body": "State is shown by swapping ink and paper, not by tinting. Hovered controls fill with ink (with on-ink on ink grounds); the playing row becomes an ink row with on-ink text. There are no grey hover washes or translucent overlays.", "section": "colors" },
-      { "name": "The One Face Rule", "body": "Every word on every surface is set in Akira Expanded; the only other cut is Akira Expanded Outline, and it belongs to the page heading alone. Do not introduce a second family for reading text or controls.", "section": "typography" },
-      { "name": "The Licensed Fallback Rule", "body": "Akira Expanded and its outline cut are user-supplied personal-use fonts (Typologic). They are self-hosted from `/fonts/` but gitignored and never committed, because the repository is public. Archivo (committed, OFL) is the declared fallback, set at 125% width with weights 900 / 600 / 400 so a fresh clone or Docker image renders a wide Archivo with a working hierarchy. Every font stack ends in Archivo; nothing loads from a CDN.", "section": "typography" },
-      { "name": "The Catalogue Number Rule", "body": "Every item is identified by \"STV \" plus its id zero-padded to four digits, set in the Catalogue style as the first column of its row and in the Dock Number style in the dock. Ranges use an en dash (\"STV 0106–0155\").", "section": "typography" },
-      { "name": "The Flat Sheet Rule", "body": "Nothing floats. If a region needs to stand apart, give it an ink or orange ground or a 2px rule, never a shadow or a raised card.", "section": "elevation" },
-      { "name": "The Rule Weight Rule", "body": "1px separates like from like; 2px closes or opens a structure. Do not introduce a third rule weight for separation.", "section": "shapes" },
-      { "name": "The One Filled Control Rule", "body": "Each region has at most one filled control: Mark all read in the bar, Playing in the playing row. Every other control is outlined and fills only on hover.", "section": "components" },
-      { "name": "The Docked Player Rule", "body": "Playback lives in the sleeve, not in the sheet. Navigation, filters and bulk actions swap only the sheet, bar and series block, so the dock and its embed are never re-rendered while something plays.", "section": "components" }
+      {
+        "name": "The Obi Red Rule",
+        "body": "Red is for the obi and for live/playing state only, meaning what plays now and the video that is playing. Never use it as a general accent, link color or emphasis.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scanline Rule",
+        "body": "Cyan means current placement, focus or active splitter, nothing else. If it isn't telling you where focus is or where the video lives, it isn't cyan.",
+        "section": "colors"
+      },
+      {
+        "name": "The Same Drawing Rule",
+        "body": "Every surface ships in both themes from the same tokens. A new color needs a dark value and a light value, or it doesn't ship.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Voices Rule",
+        "body": "Akira is for display only: the wordmark, the obi series name, sheet headings, the deck STV number and \"caught up\". Archivo, in mixed case, carries every title and all body text. Martian Mono carries STV/SRC numbers, dates, sources and control labels. Never set reading text in Akira, and never set reading text in all caps.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Rule",
+        "body": "Regions are separated by 1px rules, never by shadows or cards. The strongest separation is a 1px rule in the text color.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do reuse the ink top bar (with its group tabs and filled bar control), the outline-cut sheet heading, the orange sleeve column, the ruled row grid with the catalogue number first, the outlined controls and the 2px end-of-sheet rule on every new surface; the Sources page should be a sheet of ruled source rows beside the same sleeve, so the whole app reads as one catalogue.",
-      "Do keep orange to the sleeve and to current or live state (current tab underline, playing row, dock number, focus on ink, selection).",
-      "Do show state by inverting ink and paper, with 150ms colour transitions (`cubic-bezier(0.16, 1, 0.3, 1)`); the sleeve's 320ms widening is the only longer motion, and none of it runs under reduced motion.",
-      "Do separate rows with 1px ink rules and mark structure with 2px ink rules.",
-      "Do set every word in Akira Expanded, the page heading in Akira Expanded Outline, and end every font stack in the self-hosted Archivo at 125% width.",
-      "Do keep the Akira files out of git; the public repository ships only Archivo and its OFL licence.",
-      "Do keep figures tabular and catalogue numbers zero-padded to four digits."
+      "**Do** set the wordmark, obi series name, sheet headings, the deck STV number and \"caught up\" in Akira Expanded 800, uppercase, at `font-stretch: 125%`.",
+      "**Do** set every title and all body text in Archivo, mixed case. Set STV/SRC numbers, dates, sources and control labels in Martian Mono.",
+      "**Do** ship every color in both themes, following `prefers-color-scheme`.",
+      "**Do** keep row dates aligned with the fixed 13.5rem actions column, and keep an empty art cell when a row has no art.",
+      "**Do** let rows respond to the sheet's container width (64rem fold, 34rem buttons-under-title), not the viewport.",
+      "**Do** keep state changes at 150ms (`cubic-bezier(0.16, 1, 0.3, 1)`), placement moves at 240ms and the list fold at 280ms. Under `prefers-reduced-motion`, use no transitions, no fold animation and no ticker.",
+      "**Do** move only the video's box between placements, never the iframe, so playback never restarts.",
+      "**Do** give phones a single placement: video full width above the deck."
     ],
     "donts": [
-      "Don't round corners, add shadows, or lift anything onto a card.",
-      "Don't introduce a second accent hue, gradients, or tinted surfaces.",
-      "Don't put more than one filled control in a region.",
-      "Don't add `text-transform` to content (titles, sources, notes, control labels); only the label's own marks (wordmark, series name, sheet heading, closing statement) are uppercased in CSS, so the Archivo fallback still reads content in its own case.",
-      "Don't replace control words with icons.",
-      "Don't add engagement chrome (avatars, counts of likes or views, recommendation rails); the sheet lists only what the owner subscribed to."
+      "**Don't** use Akira for reading text, and don't set reading text in all caps.",
+      "**Don't** use red for anything but the obi and live/playing state.",
+      "**Don't** use cyan for anything but current placement, focus or the active splitter.",
+      "**Don't** round corners, use pill buttons or cards, or add shadows.",
+      "**Don't** use the faint text tier (`bone-faint` / `ink-faint`) for text that must be read. It is below 4.5:1 on ink.",
+      "**Don't** commit the Akira font files. They are personal-use and gitignored."
     ]
   }
 }

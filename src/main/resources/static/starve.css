@@ -1,4 +1,6 @@
-/* Starve: the Label Catalogue world. Black, off-white and one signal orange for live state. */
+/* Starve: the Obi Deck world. A 90s OVA cassette cover: a red obi strip names the series, the
+   release list is the cover's spec panel, and the player deck runs along the bottom. Dark and
+   light are the same drawing on ink and on paper. */
 
 @font-face {
   font-family: "Archivo";
@@ -21,39 +23,79 @@
 }
 
 @font-face {
+  font-family: "Martian Mono";
+  src: url("/fonts/martian-mono-latin.woff2") format("woff2");
+  font-weight: 100 800;
+  font-stretch: 75% 112.5%;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Akira Expanded";
   src: url("/fonts/akira-expanded.ttf") format("truetype");
   font-weight: 800;
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Akira Expanded Outline";
-  src: url("/fonts/akira-expanded-outline.otf") format("opentype");
-  font-display: swap;
-}
+/* ---- Tokens ----------------------------------------------------------------------------- */
 
 :root {
-  --paper: #f2f2ee;
-  --ink: #111111;
-  --muted: #5f5f5a;
-  --orange: #ff5a1f;
-  --on-ink: #f2f2ee;
-  --on-ink-muted: #b4b4ad;
+  /* Dark: the cover on ink. */
+  --ground: #0c0c12;
+  --raised: #14141c;
+  --sunk: #08080c;
+  --line: #2a2a36;
+  --line-strong: #454556;
+  --text: #f0ece4;
+  --text-2: #a3a2b3;
+  --text-3: #85849a;
+  --red: #ff3b2f;
+  --on-red: #0c0c12;
+  --red-text: #ff5a4f;
+  --cyan: #2fd2c4;
+  --grain-opacity: 0.06;
 
-  --font: "Akira Expanded", "Archivo", system-ui, sans-serif;
-  --display: var(--font);
-  --outline: "Akira Expanded Outline", var(--font);
+  --display: "Akira Expanded", "Archivo", system-ui, sans-serif;
   --display-stretch: 125%;
+  --read: "Archivo", system-ui, sans-serif;
+  --mono: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
-  --bar-h: 4rem;
-  --sleeve-w: 22.5rem;
-  --gutter: 2.5rem;
-  --row-pad: 1.125rem;
+  --bar-h: 3.5rem;
+  --deck-h: 0px;
+  --obi-w: 5.5rem;
+  --panel-w: 22rem;
+  --list-w: 30rem;
+  --strip-w: 8.5rem;
+  --gutter: 2rem;
 
   --quick: 150ms cubic-bezier(0.16, 1, 0.3, 1);
-  --expand: 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  --move: 240ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
 }
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* Light: the same drawing on bone paper. */
+    --ground: #ebe8e0;
+    --raised: #f5f3ee;
+    --sunk: #dedad0;
+    --line: #cdc8bc;
+    --line-strong: #a39d90;
+    --text: #0c0c12;
+    --text-2: #4c4b5a;
+    --text-3: #5e5c6a;
+    --red: #ef3326;
+    --on-red: #0c0c12;
+    --red-text: #c0231a;
+    --cyan: #0a6f67;
+    --grain-opacity: 0.08;
+
+    color-scheme: light;
+  }
+}
+
+/* ---- Base ------------------------------------------------------------------------------- */
 
 *,
 *::before,
@@ -62,34 +104,42 @@
 }
 
 html {
-  color-scheme: light;
   -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--line-strong) var(--ground);
 }
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
-  font: 400 0.875rem/1.6 var(--font);
-  font-stretch: var(--display-stretch);
+  min-height: 100dvh;
+  background: var(--ground);
+  color: var(--text);
+  font: 400 0.9375rem/1.55 var(--read);
   font-variant-numeric: tabular-nums;
   text-rendering: optimizeLegibility;
+  padding-bottom: var(--deck-h);
+}
+
+/* Fine film grain over everything, never catching a pointer. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
 }
 
 ::selection {
-  background: var(--orange);
-  color: var(--ink);
-}
-
-img {
-  max-width: 100%;
-  height: auto;
+  background: var(--red);
+  color: var(--on-red);
 }
 
 a {
   color: inherit;
-  text-underline-offset: 0.2em;
   text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 a:hover {
@@ -97,566 +147,126 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--cyan);
   outline-offset: 2px;
 }
 
-/* ---- Controls: square, outlined, filled on hover ------------------------------------- */
+.icon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  flex: none;
+}
+
+/* ---- Controls --------------------------------------------------------------------------- */
 
 button,
-.load-more,
-.read-toggle {
+.read-toggle,
+.load-more {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.5rem;
-  padding: 0.5rem 1rem;
-  border: 1.5px solid currentColor;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--text);
   border-radius: 0;
   background: transparent;
-  color: inherit;
-  font: 600 0.75rem/1 var(--font);
-  font-stretch: var(--display-stretch);
-  letter-spacing: 0.01em;
-  white-space: nowrap;
+  color: var(--text);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--quick), color var(--quick), border-color var(--quick);
 }
 
 button:hover,
-.load-more:hover,
-.read-toggle:hover {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--on-ink);
+.read-toggle:hover,
+.load-more:hover {
+  background: var(--text);
+  color: var(--ground);
 }
 
-button:disabled,
-button.htmx-request,
-form.htmx-request button {
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button:disabled:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.htmx-request button,
+button.htmx-request {
   opacity: 0.55;
   cursor: progress;
 }
 
-form {
-  margin: 0;
-}
-
-/* ---- Top bar ------------------------------------------------------------------------ */
-
-.bar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 0 2.5rem;
-  min-height: var(--bar-h);
-  padding: 0 var(--gutter);
-  background: var(--ink);
-  color: var(--on-ink);
-}
-
-.bar :focus-visible {
-  outline-color: var(--orange);
-}
-
-.wordmark {
-  display: flex;
-  align-items: center;
-  margin: 0;
-  font-size: 1.375rem;
-  font-weight: 900;
-  font-family: var(--display);
-  font-stretch: var(--display-stretch);
-  line-height: 1;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.wordmark a {
-  text-decoration: none;
-}
-
-.groups {
-  display: flex;
-  align-items: stretch;
-  gap: 1.75rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.group-link,
-.tab {
-  display: flex;
-  align-items: center;
-  border-bottom: 3px solid transparent;
-  padding-top: 3px;
-  color: var(--on-ink-muted);
-  font-weight: 600;
-  font-size: 0.8125rem;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: color var(--quick), border-color var(--quick);
-}
-
-.group-link:hover,
-.tab:hover {
-  color: var(--on-ink);
-}
-
-.group-link[aria-current],
-.tab[aria-current] {
-  color: var(--on-ink);
-  border-bottom-color: var(--orange);
-}
-
-.pages {
-  display: flex;
-  align-items: stretch;
-  gap: 1.75rem;
-}
-
-/* The page switch never moves; the timeline's group tabs follow it behind a 1px rule. */
-.pages:has(+ .groups) {
-  position: relative;
-}
-
-.pages:has(+ .groups)::after {
-  content: "";
-  position: absolute;
-  top: 1.25rem;
-  bottom: 1.25rem;
-  right: -1.25rem;
-  border-left: 1px solid var(--on-ink-muted);
-}
-
-/* ---- Label layout: sleeve column + release sheet ------------------------------------ */
-
-.label {
-  display: grid;
-  grid-template-columns: var(--sleeve-w) minmax(0, 1fr);
-  align-items: start;
-  transition: grid-template-columns var(--expand);
-}
-
-/* A docked player needs room: the sleeve widens while one plays. The iframe is never moved. */
-.label:has(#dock .player) {
-  grid-template-columns: clamp(var(--sleeve-w), 40vw, 44rem) minmax(0, 1fr);
-}
-
-.sleeve {
-  position: sticky;
-  top: var(--bar-h);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 1.5rem;
-  height: calc(100dvh - var(--bar-h));
-  overflow-y: auto;
-  padding: var(--gutter);
-  background: var(--orange);
-  color: var(--ink);
-}
-
-.series {
-  margin: 0;
-  font-size: 2.75rem;
-  font-weight: 900;
-  font-family: var(--display);
-  font-stretch: var(--display-stretch);
-  line-height: 1.05;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  text-wrap: balance;
-}
-
-.series-meta {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.series-meta span {
-  display: block;
-  font-weight: 400;
-}
-
-.series-meta .range {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 2px solid var(--ink);
-  font-size: 1rem;
-  font-weight: 900;
-  font-family: var(--display);
-  font-stretch: var(--display-stretch);
-  line-height: 1;
-}
-
-.sheet {
-  container: sheet / inline-size;
-  padding: 2.25rem var(--gutter) 4rem;
-  min-width: 0;
-}
-
-.sheet-title {
-  margin: 0 0 1.5rem;
-  font-size: 3rem;
-  font-weight: 900;
-  font-family: var(--outline);
-  font-stretch: var(--display-stretch);
-  line-height: 0.95;
-  text-transform: uppercase;
-}
-
-.sheet-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem 2rem;
-  margin-bottom: 1.5rem;
-}
-
-.sheet-head .sheet-title {
-  margin: 0;
-}
-
-.view-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* The sheet's one filled control. */
-.view-actions button {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--on-ink);
-}
-
-.view-actions button:hover {
-  background: transparent;
-  color: var(--ink);
-}
-
-.sheet-note {
-  max-width: 40rem;
-  margin: 0;
-  padding-top: 1.25rem;
-  border-top: 2px solid var(--ink);
-  font-size: 0.9375rem;
-}
-
-/* ---- Release rows ------------------------------------------------------------------- */
-
-#timeline {
-  border-bottom: 2px solid var(--ink);
-}
-
-.item {
-  display: grid;
-  grid-template-columns: 9.5rem 4.5rem minmax(0, 1fr) 9rem 15rem;
-  align-items: center;
-  gap: 0 1.25rem;
-  padding: var(--row-pad) 0.75rem;
-  margin: 0 -0.75rem;
-  border-top: 1px solid var(--ink);
-  transition: background-color var(--quick), color var(--quick);
-}
-
-#timeline > .item:first-of-type {
-  border-top-width: 2px;
-}
-
-.cat {
-  font-size: 0.9375rem;
-  font-weight: 900;
-  font-family: var(--display);
-  font-stretch: var(--display-stretch);
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.thumb,
-.blank {
-  display: block;
-  width: 4.5rem;
-  height: 4.5rem;
-  object-fit: cover;
-}
-
-.sheet:focus {
-  outline: none;
-}
-
-.body {
-  min-width: 0;
-}
-
-.title {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.3;
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.title,
-.source,
-.date,
-.cat {
-  transition: color var(--quick);
-}
-
-.title:hover {
-  text-decoration: underline;
-}
-
-.item .source {
-  display: block;
-  margin-top: 0.125rem;
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-
-.date {
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-.item.read .cat,
-.item.read .title {
-  color: var(--muted);
-}
-
-/* The playing release inverts: black row, orange catalogue number. Its player sits in the dock. */
-.item.playing {
-  background: var(--ink);
-  color: var(--on-ink);
-}
-
-.item.playing .cat {
-  color: var(--orange);
-}
-
-.item.playing .title {
-  color: var(--on-ink);
-}
-
-.item.playing .source,
-.item.playing .date {
-  color: var(--on-ink-muted);
-}
-
-.item.playing button:hover {
-  background: var(--on-ink);
-  border-color: var(--on-ink);
-  color: var(--ink);
-}
-
-.item.playing .actions .play {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: var(--ink);
-}
-
-.item.playing :focus-visible {
-  outline-color: var(--orange);
-}
-
-/* ---- The dock: the playing release as a black sleeve inside the orange column -------- */
-
-.dock:empty {
-  display: none;
-}
-
-.player {
-  display: grid;
-  grid-template-areas:
-    "now"
-    "media"
-    "stop";
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--ink);
-  color: var(--on-ink);
-}
-
-.player :focus-visible {
-  outline-color: var(--orange);
-}
-
-.now {
-  grid-area: now;
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  min-width: 0;
-}
-
-.now-art {
-  flex: none;
-  width: 4.5rem;
-  height: 4.5rem;
-  object-fit: cover;
-}
-
-.now-blank {
-  display: flex;
-  align-items: flex-end;
-  padding: 0.375rem;
-  background: var(--orange);
-  color: var(--ink);
-  font-size: 0.75rem;
-  font-weight: 900;
-  font-family: var(--display);
-  font-stretch: var(--display-stretch);
-  line-height: 0.9;
-}
-
-.now-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.now-cat {
-  color: var(--orange);
-  font-size: 1.75rem;
-  font-weight: 900;
-  font-family: var(--display);
-  font-stretch: var(--display-stretch);
-  line-height: 1;
-}
-
-.now-title {
-  margin-top: 0.25rem;
-  font-weight: 600;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-
-.now-source {
-  font-size: 0.75rem;
-  color: var(--on-ink-muted);
-}
-
-.ratio-16x9,
-.player > iframe,
-.player-off {
-  grid-area: media;
-}
-
-.ratio-16x9 {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-}
-
-.ratio-16x9 iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.player > iframe {
-  display: block;
-  width: 100%;
-  border: 0;
-}
-
-.player-off p {
-  margin: 0 0 0.5rem;
-}
-
-.player-off a {
-  font-weight: 600;
-  color: var(--orange);
-}
-
-.stop {
-  grid-area: stop;
-  justify-self: start;
-}
-
-.stop:hover {
-  background: var(--on-ink);
-  border-color: var(--on-ink);
-  color: var(--ink);
-}
-
-/* ---- End of sheet ------------------------------------------------------------------- */
-
-.load-more {
-  width: 100%;
-  min-height: 3.5rem;
-  margin: 1.5rem 0;
-  border-width: 2px;
-  font-size: 0.875rem;
-}
-
-.caught-up {
-  margin: 0;
-  padding: 2.5rem 0 1rem;
-  border-top: 2px solid var(--ink);
-  font-size: 1.625rem;
-  font-weight: 900;
-  font-family: var(--display);
-  font-stretch: var(--display-stretch);
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-/* ---- Fields: drawn from the button language, square with an ink stroke on paper ----- */
-
 .field {
-  min-width: 0;
+  width: 100%;
   min-height: 2.5rem;
   padding: 0.5rem 0.75rem;
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--line-strong);
   border-radius: 0;
-  background: var(--paper);
-  color: var(--ink);
-  caret-color: var(--ink);
-  font: 400 0.875rem/1.2 var(--font);
-  font-stretch: var(--display-stretch);
+  background: var(--sunk);
+  color: var(--text);
+  caret-color: var(--red);
+  font: 400 0.9375rem/1.3 var(--read);
 }
 
 .field::placeholder {
-  color: var(--muted);
-  opacity: 1;
+  color: var(--text-3);
+}
+
+.field:focus-visible {
+  border-color: var(--cyan);
 }
 
 select.field {
   appearance: none;
-  padding-right: 2.25rem;
-  background: var(--paper)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23111111' stroke-width='1.5'/%3E%3C/svg%3E")
-    no-repeat right 0.875rem center;
-  cursor: pointer;
+  padding-right: 2rem;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text) 50%),
+    linear-gradient(-45deg, transparent 50%, var(--text) 50%);
+  background-position: calc(100% - 1rem) 50%, calc(100% - 0.65rem) 50%;
+  background-size: 0.35rem 0.35rem;
+  background-repeat: no-repeat;
+}
+
+.field-row:has(input[type="file"]) {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.field-row input[type="file"].field {
+  width: 100%;
+}
+
+input[type="file"].field {
+  padding: 0.4rem;
+  font: 400 0.8125rem/1.3 var(--mono);
+}
+
+input[type="file"].field::file-selector-button {
+  margin-right: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--text);
+  background: transparent;
+  color: var(--text);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .field-label {
   display: block;
   margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.01em;
+  font: 500 0.6875rem/1.2 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
 }
 
 .field-row {
@@ -666,80 +276,1041 @@ select.field {
 
 .field-row .field {
   flex: 1;
-}
-
-/* ---- Sources: the label's roster, ruled like the release sheet ---------------------- */
-
-/* A fixed word, so it is sized to fit the sleeve on one line instead of breaking. */
-.roster-name {
-  font-size: 2.125rem;
-}
-
-.series-meta .failing-count {
-  display: inline-block;
-  margin-top: 0.375rem;
-  padding: 0.25rem 0.5rem;
-  background: var(--ink);
-  color: var(--on-ink);
-  line-height: 1;
-}
-
-/* The outcome of the last action is filed in the sleeve like the dock card: an ink slip. */
-.message {
-  margin: 0;
-  padding: 1rem;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-weight: 600;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-
-.add {
-  padding-top: 1.25rem;
-  border-top: 2px solid var(--ink);
-}
-
-/* The sleeve's one filled control. */
-.add button {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--on-ink);
-}
-
-.add button:hover {
-  background: transparent;
-  color: var(--ink);
+  min-width: 0;
 }
 
 .hint {
   margin: 0.5rem 0 0;
-  font-size: 0.75rem;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-2);
 }
+
+/* ---- The top bar ------------------------------------------------------------------------ */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  min-height: 3.5rem;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--line);
+  background: var(--ground);
+}
+
+.wordmark {
+  margin: 0;
+  font: 800 1.125rem/1 var(--display);
+  font-stretch: var(--display-stretch);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.wordmark a {
+  text-decoration: none;
+}
+
+.pages,
+.groups {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 1.5rem;
+}
+
+.groups {
+  padding-left: 2rem;
+  border-left: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.groups::-webkit-scrollbar {
+  display: none;
+}
+
+.tab,
+.group-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: 500 0.75rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--quick);
+}
+
+.tab:hover,
+.group-link:hover {
+  color: var(--text);
+}
+
+/* The current page or group gets the obi's red square. */
+.tab[aria-current],
+.group-link[aria-current] {
+  color: var(--text);
+}
+
+.tab[aria-current]::before,
+.group-link[aria-current]::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--red);
+}
+
+/* ---- The label: obi, panel and sheet ---------------------------------------------------- */
+
+.label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+
+.sleeve {
+  position: sticky;
+  top: var(--bar-h);
+  display: grid;
+  grid-template-columns: var(--obi-w) auto;
+  grid-auto-rows: min-content;
+  height: calc(100dvh - var(--bar-h) - var(--deck-h));
+}
+
+/* The obi strip: a red spine with the series set vertically, like a tape cover's band. */
+.series-block {
+  grid-column: 1;
+  grid-row: 1 / span 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  height: calc(100dvh - var(--bar-h) - var(--deck-h));
+  padding: 1.25rem 0;
+  overflow: hidden;
+  background: var(--red);
+  color: var(--on-red);
+}
+
+.series {
+  margin: 0;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  max-block-size: 70%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 800 2.75rem/1 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+  text-wrap: nowrap;
+}
+
+.roster-name {
+  font-size: 2.125rem;
+}
+
+.series-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  writing-mode: vertical-rl;
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.series-meta > * {
+  display: block;
+}
+
+/* Caution chevrons close the obi. */
+.series-block::after {
+  content: "";
+  flex: none;
+  width: 3rem;
+  height: 1.5rem;
+  margin-top: auto;
+  background: repeating-linear-gradient(-45deg, var(--on-red) 0 0.375rem, transparent 0.375rem 0.75rem);
+}
+
+.failing-count {
+  padding: 0.5rem 0.25rem;
+  background: var(--on-red);
+  color: var(--red);
+  font-weight: 700;
+}
+
+/* The tool panel beside the obi on Sources and Import. */
+.sleeve > :not(.series-block):not(.dock) {
+  grid-column: 2;
+  width: var(--panel-w);
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.sleeve > .add {
+  margin-top: 1.75rem;
+  margin-bottom: 0;
+}
+
+.sleeve > .hint {
+  margin-top: 1rem;
+}
+
+.sleeve > .message {
+  margin-top: 1.5rem;
+  padding: 0.875rem 1rem;
+  width: calc(var(--panel-w) - 3rem);
+  margin-left: 1.5rem;
+  border: 1px solid var(--cyan);
+  font-weight: 500;
+}
+
+.sleeve > .message::before {
+  content: "[ ";
+  color: var(--cyan);
+}
+
+.sleeve > .message::after {
+  content: " ]";
+  color: var(--cyan);
+}
+
+.sleeve:has(.add) {
+  border-right: 1px solid var(--line);
+}
+
+.sleeve .add button {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.sleeve .add button:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.sleeve > .hint:last-child {
+  padding-bottom: 1.5rem;
+}
+
+/* ---- The sheet -------------------------------------------------------------------------- */
+
+.sheet {
+  container: sheet / inline-size;
+  min-width: 0;
+  padding: 1.75rem var(--gutter) 4rem;
+}
+
+.sheet:focus {
+  outline: none;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--text);
+  position: relative;
+}
+
+/* Registration crosses at the panel's top corners. */
+.sheet-head::before,
+.sheet-head::after {
+  content: "";
+  position: absolute;
+  top: -1.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: linear-gradient(var(--text-3), var(--text-3)) center / 1px 100% no-repeat,
+    linear-gradient(var(--text-3), var(--text-3)) center / 100% 1px no-repeat;
+}
+
+.sheet-head::before {
+  left: -1.125rem;
+}
+
+.sheet-head::after {
+  right: -1.125rem;
+}
+
+.sheet-title {
+  margin: 0;
+  text-wrap: balance;
+  font: 800 1.75rem/1 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+}
+
+.group-sheet .sheet-title,
+#summary .sheet-title {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--text);
+}
+
+.view-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.view-actions form {
+  margin: 0;
+}
+
+/* Mark all read is the sheet's one filled control. */
+.view-actions button {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.view-actions button:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.sheet-note {
+  max-width: 40rem;
+  margin: 1.5rem 0;
+  font-size: 1rem;
+  color: var(--text-2);
+}
+
+/* ---- Release rows ----------------------------------------------------------------------- */
+
+.item {
+  display: grid;
+  grid-template-columns: 7rem 4rem minmax(0, 1fr) 12.5rem 13.5rem;
+  grid-template-areas: "cat art body date actions";
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+  padding: 0.875rem 0.75rem;
+  margin: 0 -0.75rem;
+  border-bottom: 1px solid var(--line);
+  transition: background-color var(--quick);
+}
+
+.item:hover {
+  background: var(--raised);
+}
+
+.cat {
+  grid-area: cat;
+  font: 500 0.75rem/1.2 var(--mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.thumb,
+.blank {
+  grid-area: art;
+  width: 4rem;
+  height: 4rem;
+}
+
+.thumb {
+  object-fit: cover;
+  display: block;
+  background: var(--sunk);
+}
+
+.body {
+  grid-area: body;
+  min-width: 0;
+}
+
+.title {
+  display: block;
+  font: 500 1rem/1.35 var(--read);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+a.title:hover {
+  text-decoration: underline;
+}
+
+.item .source {
+  display: block;
+  margin-top: 0.25rem;
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
+}
+
+.date {
+  grid-area: date;
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.actions form {
+  margin: 0;
+}
+
+.item.read .title,
+.item.read .cat {
+  color: var(--text-3);
+}
+
+.item.read .title {
+  text-decoration: line-through;
+  text-decoration-color: var(--line-strong);
+}
+
+/* What plays is marked like the deck: a red number cell and a filled Playing control. */
+.item.playing {
+  background: var(--raised);
+}
+
+.item.playing .cat {
+  justify-self: start;
+  padding: 0.25rem 0.375rem;
+  background: var(--red);
+  color: var(--on-red);
+}
+
+.item.playing .play {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--on-red);
+}
+
+.load-more {
+  display: flex;
+  width: 100%;
+  min-height: 3.25rem;
+  margin: 1.5rem 0;
+  font-size: 0.75rem;
+}
+
+.caught-up {
+  margin: 2.5rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--text);
+  font: 800 1.5rem/1.05 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+}
+
+/* Narrow sheets (a smaller window, or the video pane beside it) fold the row: art left,
+   number and date on top, title full width, actions below. The fixed date and action columns
+   need about 37rem, so the fold comes before the title column gets squeezed. */
+@container sheet (max-width: 44rem) {
+  .sheet-head {
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+  }
+
+  .view-actions {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
+
+@container sheet (max-width: 64rem) {
+  /* Medium: number and title on the left, date with the buttons under it on the right. */
+  .item {
+    grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "art cat date"
+      "art body actions";
+    align-items: start;
+  }
+
+  .thumb,
+  .blank {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .date {
+    justify-self: end;
+  }
+
+  .actions {
+    justify-content: flex-end;
+    align-self: start;
+    margin-top: 0.375rem;
+  }
+}
+
+@container sheet (max-width: 34rem) {
+  /* Narrow: too tight for a right column, so the buttons go under the title. */
+  .item {
+    grid-template-areas:
+      "art cat date"
+      "art body body"
+      "art actions actions";
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ---- The player deck -------------------------------------------------------------------- */
+
+/* The dock region holds the deck; the deck itself is fixed to the viewport. */
+.dock {
+  grid-column: 2;
+  width: 0;
+  height: 0;
+}
+
+.player {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: auto minmax(14rem, 22rem) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 5.5rem;
+  padding: 0 1.25rem 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--red);
+  background: var(--raised);
+}
+
+.now {
+  display: contents;
+}
+
+.now-art {
+  width: 5.5rem;
+  height: 5.5rem;
+  object-fit: cover;
+  display: block;
+}
+
+.now-blank {
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem;
+  background: var(--red);
+  color: var(--on-red);
+  font: 600 0.625rem/1 var(--mono);
+}
+
+.now-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.now-cat {
+  font: 800 1.125rem/1 var(--display);
+  font-stretch: var(--display-stretch);
+  color: var(--red-text);
+}
+
+.now-title {
+  font: 600 0.9375rem/1.25 var(--read);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ticker {
+  display: inline-block;
+}
+
+/* Hold at the start, slide to show the end, hold, come back. */
+.now-title.ticking {
+  text-overflow: clip;
+  mask-image: linear-gradient(90deg, #000 calc(100% - 1.5rem), transparent);
+}
+
+.now-title.ticking .ticker {
+  animation: tick var(--tick, 8s) ease-in-out infinite;
+}
+
+.now-title.ticking:hover .ticker {
+  animation-play-state: paused;
+}
+
+@keyframes tick {
+  0%, 18% { transform: translateX(0); }
+  50%, 68% { transform: translateX(var(--shift, 0)); }
+  100% { transform: translateX(0); }
+}
+
+.now-source {
+  font: 400 0.75rem/1.2 var(--mono);
+  color: var(--text-2);
+}
+
+/* Transport: play/pause, elapsed, the waveform as the seek bar, total. */
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.pause {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  flex: none;
+}
+
+.pause .icon-play,
+.paused .pause .icon-pause {
+  display: none;
+}
+
+.paused .pause .icon-play {
+  display: block;
+}
+
+.elapsed,
+.total {
+  flex: none;
+  min-width: 3.5rem;
+  font: 400 0.75rem/1 var(--mono);
+  color: var(--text-2);
+}
+
+.total {
+  text-align: right;
+}
+
+.wave {
+  position: relative;
+  flex: 1;
+  min-width: 6rem;
+  height: 3rem;
+}
+
+.bars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--line-strong);
+}
+
+.bars.lit {
+  fill: var(--red);
+  clip-path: inset(0 calc((1 - var(--progress)) * 100%) 0 0);
+}
+
+.seek {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.seek:disabled {
+  cursor: default;
+}
+
+.wave:has(.seek:focus-visible) {
+  outline: 2px solid var(--cyan);
+  outline-offset: 4px;
+}
+
+/* Volume: a thin level line with a square thumb. */
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  color: var(--text-2);
+}
+
+.level {
+  --level: 0.8;
+  appearance: none;
+  width: 6rem;
+  height: 1.5rem;
+  margin: 0;
+  background: linear-gradient(var(--text), var(--text)) left center / calc(var(--level) * 100%) 2px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) center / 100% 2px no-repeat;
+  cursor: pointer;
+}
+
+.level::-webkit-slider-thumb {
+  appearance: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--text);
+}
+
+.level::-moz-range-thumb {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--text);
+}
+
+.level:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.placement {
+  display: flex;
+}
+
+.placement button {
+  min-height: 2.25rem;
+  border-color: var(--line-strong);
+}
+
+.placement button + button {
+  margin-left: -1px;
+}
+
+.placement button[aria-pressed="true"] {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  position: relative;
+}
+
+.placement button[aria-pressed="true"]:hover {
+  background: var(--cyan);
+  color: var(--ground);
+}
+
+.player > .stop {
+  grid-column: -2;
+}
+
+/* SoundCloud's own widget stays out of view while the deck drives it ... */
+.sc-frame {
+  position: fixed;
+  left: -200vw;
+  top: 0;
+  width: 20rem;
+  border: 0;
+}
+
+/* ... unless its handshake never arrives: then it shows above the deck as the controls. */
+.player.native .transport {
+  visibility: hidden;
+}
+
+.player.native .sc-frame {
+  left: auto;
+  right: 1.25rem;
+  top: auto;
+  bottom: calc(100% + 1rem);
+  width: min(30rem, calc(100vw - 2.5rem));
+  border: 1px solid var(--red);
+}
+
+.player-off {
+  grid-column: 3 / span 2;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.player-off p {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.player-off a {
+  font: 500 0.75rem/1 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--red-text);
+}
+
+/* ---- The video: pane, mini or deck. Only its box moves; the iframe never does. ---------- */
+
+.ratio-16x9 {
+  position: fixed;
+  z-index: 25;
+  background: #000;
+  border: 1px solid var(--red);
+  transition: top var(--move), left var(--move), right var(--move), bottom var(--move),
+    width var(--move), height var(--move);
+}
+
+.ratio-16x9 iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Pane: theatre size beside the list. */
+body[data-video="pane"] .ratio-16x9 {
+  top: calc(var(--bar-h) + 1.75rem);
+  left: calc(var(--obi-w) + var(--list-w) + 1.5rem);
+  right: var(--gutter);
+  bottom: calc(var(--deck-h) + 1.75rem);
+  width: auto;
+  height: auto;
+}
+
+body[data-video="pane"] .label {
+  grid-template-columns: auto var(--list-w) minmax(0, 1fr);
+}
+
+body[data-video="pane"] .sheet {
+  padding-right: 1.75rem;
+  border-right: 1px solid var(--line);
+  min-height: calc(100dvh - var(--bar-h) - var(--deck-h));
+}
+
+/* The splitter on the list's right edge: drag to resize; narrow enough, the list folds. */
+.splitter {
+  display: none;
+}
+
+body[data-video="pane"] .splitter {
+  display: block;
+  position: fixed;
+  z-index: 26;
+  top: var(--bar-h);
+  bottom: var(--deck-h);
+  left: calc(var(--obi-w) + var(--list-w) - 0.375rem);
+  width: 0.75rem;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+body[data-video="pane"] .splitter::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0.25rem;
+  width: 0.25rem;
+  height: 3rem;
+  margin-top: -1.5rem;
+  background: var(--line-strong);
+  transition: background-color var(--quick), height var(--quick);
+}
+
+body[data-video="pane"] .splitter:hover::after,
+body[data-video="pane"] .splitter:focus-visible::after,
+body.resizing .splitter::after {
+  background: var(--cyan);
+  height: 5rem;
+  margin-top: -2.5rem;
+}
+
+.splitter:focus-visible {
+  outline: none;
+}
+
+body.resizing,
+body.resizing * {
+  user-select: none;
+}
+
+body.resizing .label,
+body.resizing .ratio-16x9 {
+  transition: none;
+}
+
+/* The fold: list width, the video's left edge and the splitter slide together, and the
+   rows fade into their new form. Plays even while dragging, so the snap reads as a move. */
+body.folding .label,
+body.resizing.folding .label {
+  transition: grid-template-columns 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.folding .ratio-16x9,
+body.resizing.folding .ratio-16x9 {
+  transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.folding .splitter {
+  transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.folding #timeline,
+body.folding .sheet-head {
+  animation: fold-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fold-in {
+  from {
+    opacity: 0;
+    transform: translateX(-0.75rem);
+  }
+}
+
+/* Strip: the list folds to its catalogue numbers and the video takes the room. */
+body[data-video="pane"][data-list="strip"] {
+  --list-w: var(--strip-w);
+}
+
+body[data-video="pane"][data-list="strip"] .sheet {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+body[data-video="pane"][data-list="strip"] .sheet-head {
+  border-bottom-color: var(--line);
+}
+
+body[data-video="pane"][data-list="strip"] .sheet-head::before,
+body[data-video="pane"][data-list="strip"] .sheet-head::after,
+body[data-video="pane"][data-list="strip"] .sheet-title,
+body[data-video="pane"][data-list="strip"] .view-actions,
+body[data-video="pane"][data-list="strip"] .sheet-note,
+body[data-video="pane"][data-list="strip"] .caught-up,
+body[data-video="pane"][data-list="strip"] .item .thumb,
+body[data-video="pane"][data-list="strip"] .item .blank,
+body[data-video="pane"][data-list="strip"] .item .body,
+body[data-video="pane"][data-list="strip"] .item .date,
+body[data-video="pane"][data-list="strip"] .item .actions {
+  display: none;
+}
+
+body[data-video="pane"][data-list="strip"] .item {
+  display: block;
+  margin: 0;
+  padding: 0.625rem 0.25rem;
+}
+
+body[data-video="pane"][data-list="strip"] .load-more {
+  min-height: 2.25rem;
+  font-size: 0.625rem;
+}
+
+/* Mini: a small window above the deck's right end. */
+body[data-video="mini"] .ratio-16x9 {
+  top: auto;
+  left: auto;
+  right: 1.25rem;
+  bottom: calc(var(--deck-h) + 1rem);
+  width: var(--mini-w, 20rem);
+  height: calc(var(--mini-w, 20rem) * 9 / 16);
+}
+
+/* Deck: a 16:9 slot standing up out of the deck's right end. */
+body[data-video="deck"] .ratio-16x9 {
+  top: auto;
+  left: auto;
+  right: 0;
+  bottom: 0;
+  width: var(--deck-w, 24rem);
+  height: calc(var(--deck-w, 24rem) * 9 / 16);
+  border-width: 1px 0 0 1px;
+}
+
+body[data-video="deck"] .player {
+  grid-template-columns: auto minmax(9rem, 14rem) minmax(0, 1fr) auto auto;
+  padding-right: calc(var(--deck-w, 24rem) + 1.25rem);
+}
+
+body[data-video="deck"] .elapsed,
+body[data-video="deck"] .total {
+  min-width: 0;
+}
+
+body[data-video="deck"] .level {
+  width: 4rem;
+}
+
+/* The slot stands over the sheet's lower right, so the sheet ends above it. */
+body[data-video="deck"] .sheet {
+  padding-bottom: calc(var(--deck-w, 24rem) * 9 / 16 + 1rem);
+}
+
+.shield {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+
+.ratio-16x9:fullscreen {
+  border: 0;
+}
+
+/* The resize grip: top-left corner of the mini and deck video, never over the pane. */
+.grip {
+  display: none;
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 1.75rem;
+  min-height: 1.75rem;
+  padding: 0;
+  border: 0;
+  background: var(--red);
+  color: var(--on-red);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.grip:hover {
+  background: var(--text);
+  color: var(--ground);
+}
+
+body[data-video="mini"] .grip,
+body[data-video="deck"] .grip {
+  display: inline-flex;
+}
+
+/* While dragging, the iframe must not swallow the pointer, and nothing animates. */
+body.resizing .ratio-16x9 {
+  transition: none;
+}
+
+body.resizing .ratio-16x9 iframe {
+  pointer-events: none;
+}
+
+/* ---- Sources and Import ----------------------------------------------------------------- */
 
 .roster {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-bottom: 2px solid var(--ink);
 }
 
 .roster > li {
   display: grid;
   align-items: center;
   gap: 0.5rem 1.25rem;
-  padding: var(--row-pad) 0.75rem;
+  padding: 0.875rem 0.75rem;
   margin: 0 -0.75rem;
-  border-top: 1px solid var(--ink);
-}
-
-.roster > li:first-child {
-  border-top-width: 2px;
+  border-bottom: 1px solid var(--line);
 }
 
 .roster > .source {
-  grid-template-columns: 7rem minmax(0, 1fr) minmax(12rem, 17rem) auto;
+  grid-template-columns: 7.5rem minmax(0, 1fr) minmax(12rem, 17rem) auto;
   grid-template-areas: "cat body status actions";
 }
 
@@ -759,46 +1330,56 @@ select.field {
   grid-area: actions;
 }
 
+.source .title {
+  display: block;
+  font: 500 1rem/1.35 var(--read);
+}
+
 .url,
 .last-fetched,
 .not-fetched {
   display: block;
-  font-size: 0.75rem;
-  color: var(--muted);
+  font: 400 0.75rem/1.4 var(--mono);
+  color: var(--text-2);
   overflow-wrap: anywhere;
 }
 
 .url {
-  margin-top: 0.125rem;
+  margin-top: 0.25rem;
 }
 
 .error {
   margin: 0 0 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.45;
   overflow-wrap: anywhere;
 }
 
-/* A failing source is marked by inversion, never by a second hue. */
+/* A failing source carries the obi's red as a tag. */
 .tag {
   display: inline-block;
   margin-right: 0.375rem;
-  padding: 0.25rem 0.5rem;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-weight: 900;
-  line-height: 1;
+  padding: 0.25rem 0.375rem;
+  background: var(--red);
+  color: var(--on-red);
+  font: 600 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .regroup {
   display: flex;
   gap: 0.5rem;
+  margin: 0;
 }
 
 .regroup .field {
   width: 11rem;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.source .actions form {
+  margin: 0;
 }
 
 .group-sheet {
@@ -807,15 +1388,15 @@ select.field {
 
 .new-group {
   max-width: 36rem;
-  margin-bottom: 1.5rem;
-}
-
-.group-sheet .sheet-note {
-  margin-bottom: 0;
+  margin: 1.5rem 0;
 }
 
 .roster > .group {
   grid-template-columns: minmax(0, 1fr) 8rem auto;
+}
+
+.roster > .group form {
+  margin: 0;
 }
 
 .rename {
@@ -826,19 +1407,32 @@ select.field {
 
 .rename .field {
   flex: 1;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .members {
-  font-size: 0.75rem;
-  color: var(--muted);
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
   text-align: right;
 }
 
-/* Below this width the fetch status folds under the source's title and URL. */
+#summary .roster > li {
+  display: flex;
+  justify-content: space-between;
+  font: 400 0.875rem/1.4 var(--mono);
+}
+
+#summary .roster > li span {
+  font-weight: 600;
+}
+
+.failure {
+  color: var(--red-text);
+}
+
 @container sheet (max-width: 68rem) {
   .roster > .source {
-    grid-template-columns: 7rem minmax(0, 1fr) auto;
+    grid-template-columns: 7.5rem minmax(0, 1fr) auto;
     grid-template-areas:
       "cat body actions"
       "cat status actions";
@@ -846,44 +1440,11 @@ select.field {
 
   .source .cat {
     align-self: start;
-    padding-top: 0.125rem;
+    padding-top: 0.25rem;
   }
 }
 
-/* ---- A narrow sheet (a docked video beside it) folds the date under the title ------ */
-
-@container sheet (max-width: 56rem) {
-  .item {
-    grid-template-columns: 9.5rem 4.5rem minmax(0, 1fr) auto;
-    grid-template-areas:
-      "cat art body actions"
-      "cat art date actions";
-    row-gap: 0.25rem;
-  }
-
-  .cat {
-    grid-area: cat;
-  }
-
-  .thumb,
-  .blank {
-    grid-area: art;
-  }
-
-  .body {
-    grid-area: body;
-  }
-
-  .date {
-    grid-area: date;
-  }
-
-  .actions {
-    grid-area: actions;
-  }
-}
-
-/* ---- Narrow screens: the sleeve becomes a band, rows stack -------------------------- */
+/* ---- Narrow screens --------------------------------------------------------------------- */
 
 @media (max-width: 60rem) {
   :root {
@@ -892,243 +1453,238 @@ select.field {
 
   .bar {
     position: static;
+    flex-wrap: wrap;
     gap: 0 1.5rem;
     padding-top: 0.75rem;
-    padding-bottom: 0.25rem;
+  }
+
+  .pages {
+    min-height: 2.5rem;
   }
 
   .groups {
+    order: 3;
     flex-basis: 100%;
-    min-height: 3rem;
-  }
-
-  .pages:has(+ .groups)::after {
-    content: none;
-  }
-
-  .sheet-head {
-    align-items: flex-start;
-  }
-
-  .view-actions .read-toggle,
-  .view-actions button {
     min-height: 2.75rem;
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0 var(--gutter);
   }
 
-  .label,
-  .label:has(#dock .player) {
-    grid-template-columns: minmax(0, 1fr);
+  .label {
+    display: block;
   }
 
+  /* The obi turns horizontal: a red band under the bar. */
   .sleeve {
     position: static;
+    display: block;
     height: auto;
-    overflow: visible;
-    padding-block: 1.25rem;
+    border-right: 0;
   }
 
   .series-block {
-    display: flex;
-    align-items: end;
-    gap: 1rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: auto;
+    padding: 1rem var(--gutter);
   }
 
   .series {
-    font-size: 1.75rem;
-  }
-
-  .dock {
-    position: fixed;
-    inset: auto 0 0;
-    z-index: 20;
-  }
-
-  .player {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "now stop"
-      "media media";
-    gap: 0.75rem;
-    padding: 0.75rem var(--gutter) calc(0.75rem + env(safe-area-inset-bottom));
-  }
-
-  .stop {
-    align-self: center;
-  }
-
-  .now-art {
-    width: 3rem;
-    height: 3rem;
-  }
-
-  .now-blank {
-    font-size: 0.5625rem;
-  }
-
-  .now-cat {
-    font-size: 1rem;
-  }
-
-  .player .ratio-16x9 {
-    width: min(100%, calc(40dvh * 16 / 9));
-    justify-self: center;
-  }
-
-  body:has(#dock .player) {
-    padding-bottom: var(--dock-h, 19rem);
+    writing-mode: horizontal-tb;
+    transform: none;
+    max-block-size: none;
+    max-inline-size: none;
+    white-space: normal;
+    overflow: visible;
+    font-size: clamp(1.25rem, 7vw, 1.75rem);
   }
 
   .series-meta {
-    margin-left: auto;
+    writing-mode: horizontal-tb;
+    align-items: flex-end;
+    gap: 0.25rem;
     text-align: right;
   }
 
-  .sheet {
-    padding-top: 1.5rem;
-  }
-
-  .sheet-title {
-    font-size: 2rem;
-  }
-
-  .item {
-    grid-template-columns: minmax(0, 1fr) 4rem;
-    grid-template-areas:
-      "cat art"
-      "body art"
-      "date art"
-      "actions actions";
-    gap: 0.25rem 1rem;
-    margin: 0 -0.5rem;
-    padding: 1rem 0.5rem;
-  }
-
-  .thumb,
-  .blank {
-    grid-area: art;
-    align-self: start;
-    width: 4rem;
-    height: 4rem;
-  }
-
-  .item:has(.blank) {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "cat"
-      "body"
-      "date"
-      "actions";
-  }
-
-  .blank {
+  .series-block::after {
     display: none;
   }
 
-  .cat {
-    grid-area: cat;
-    font-size: 0.875rem;
+  .sleeve > :not(.series-block):not(.dock) {
+    width: auto;
+    padding: 0 var(--gutter);
   }
 
-  .body {
-    grid-area: body;
+  .sleeve > .message {
+    width: auto;
+    margin: 1rem var(--gutter) 0;
   }
 
-  .date {
-    grid-area: date;
+  .sleeve > .hint:last-child {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
   }
 
-  .actions {
-    grid-area: actions;
-    justify-content: flex-start;
-    margin-top: 0.75rem;
+  .sheet-head {
+    flex-wrap: wrap;
+  }
+
+  .sheet-head::before,
+  .sheet-head::after {
+    display: none;
+  }
+
+  .sheet-title {
+    font-size: 1.25rem;
+  }
+
+  .view-actions {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  /* The row layout itself follows the sheet's width (the container queries above). */
+  .item {
+    padding: 0.875rem var(--gutter);
+    margin: 0 calc(-1 * var(--gutter));
   }
 
   .actions button {
     min-height: 2.75rem;
   }
 
-  .caught-up {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 60rem) {
-  .sleeve:has(.add) .series-block {
-    align-items: start;
-  }
-
-  .roster > li {
-    margin: 0 -0.5rem;
-    padding: 1rem 0.5rem;
-  }
-
-  .roster > .source {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "cat"
-      "body"
-      "status"
-      "actions";
-    gap: 0.375rem;
-  }
-
-  .source .actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-
-  .source .regroup {
-    display: contents;
-  }
-
-  .source .regroup .field {
-    grid-column: 1 / -1;
-    width: auto;
-  }
-
-  .source .actions button {
-    width: 100%;
-  }
-
-  .roster .title {
-    font-size: 1.125rem;
-  }
-
-  .roster .field,
-  .roster button,
-  .field-row .field,
-  .field-row button {
+  .field {
+    font-size: 1rem;
     min-height: 2.75rem;
   }
 
+  .roster > .source,
   .roster > .group {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "rename rename"
-      "members delete";
-    gap: 0.5rem 1rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: none;
   }
 
-  .rename {
-    grid-area: rename;
-    max-width: none;
+  .roster > .source > *,
+  .roster > .group > * {
+    grid-area: auto;
+  }
+
+  .regroup .field {
+    width: auto;
+    flex: 1;
   }
 
   .members {
-    grid-area: members;
     text-align: left;
   }
 
-  .group form:last-child {
-    grid-area: delete;
+  /* The deck: art, title and transport on two lines. */
+  .player {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "art text stop"
+      "transport transport transport";
+    gap: 0.5rem 0.75rem;
+    padding: 0.625rem 0.75rem 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
 
-  /* 16px keeps iOS from zooming into a focused field. */
-  .field,
-  .regroup .field {
-    font-size: 1rem;
+  .now-title {
+    line-height: 1.35;
+  }
+
+  .now-art {
+    grid-area: art;
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .now-text {
+    grid-area: text;
+  }
+
+  .now-cat {
+    font-size: 0.875rem;
+  }
+
+  .player > .stop {
+    grid-area: stop;
+  }
+
+  .transport {
+    grid-area: transport;
+    gap: 0.5rem;
+  }
+
+  .wave {
+    height: 2.25rem;
+    min-width: 0;
+  }
+
+  .elapsed,
+  .total {
+    min-width: 0;
+    font-size: 0.6875rem;
+  }
+
+  .volume {
+    gap: 0.25rem;
+  }
+
+  /* Phones always show the video in the pane above the deck: no placement choice. */
+  .placement {
+    display: none;
+  }
+
+  .player-off {
+    grid-column: 1 / -1;
+  }
+
+  /* Pane on a phone: the full width just above the deck. */
+  body[data-video="pane"] .label,
+  body[data-video="deck"] .label {
+    display: block;
+  }
+
+  body[data-video] .ratio-16x9 {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: var(--deck-h);
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: 40dvh;
+    border-width: 1px 0 0;
+  }
+
+  body[data-video] {
+    padding-bottom: calc(var(--deck-h) + min(56.25vw, 40dvh));
+  }
+
+  body[data-video="pane"] .sheet {
+    border-right: 0;
+    padding-right: var(--gutter);
+  }
+
+  body[data-video] .splitter {
+    display: none;
+  }
+
+  body[data-video="deck"] .player {
+    padding-right: 0.75rem;
+  }
+
+  .level {
+    width: 3.5rem;
+  }
+
+  body[data-video] .grip {
+    display: none;
   }
 }
 
@@ -1137,5 +1693,16 @@ select.field {
   *::before,
   *::after {
     transition: none !important;
+  }
+
+  .now-title.ticking {
+    text-overflow: ellipsis;
+    mask-image: none;
+  }
+
+  .now-title.ticking .ticker,
+  body.folding #timeline,
+  body.folding .sheet-head {
+    animation: none;
   }
 }
