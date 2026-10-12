@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="content">
-<div class="player" th:attr="data-item=${item.catalogueNumber}">
+<div class="player" th:attr="data-item=${item.catalogueNumber},data-kind=${kind}">
   <div class="now">
     <img class="now-art" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="">
     <span class="now-art now-blank" th:unless="${item.thumbnailUrl}" aria-hidden="true"
@@ -13,16 +13,47 @@
       <span class="now-source" th:text="${item.sourceTitle}">Source</span>
     </div>
   </div>
-  <div class="ratio-16x9" th:if="${kind == 'youtube'}">
-    <iframe th:src="${embedUrl}" title="YouTube video player"
-            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+
+  <div class="transport" th:unless="${kind == 'disabled'}">
+    <button type="button" class="pause" aria-label="Pause" disabled>
+      <svg class="icon icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg>
+      <svg class="icon icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2l10 6-10 6z"/></svg>
+    </button>
+    <time class="elapsed">0:00</time>
+    <div class="wave" style="--progress: 0">
+      <svg class="bars" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true">
+        <rect th:each="height, bar : ${waveform}" width="3"
+              th:attr="x=${bar.index * 5},y=${(100 - height) / 2},height=${height}"/>
+      </svg>
+      <svg class="bars lit" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true">
+        <rect th:each="height, bar : ${waveform}" width="3"
+              th:attr="x=${bar.index * 5},y=${(100 - height) / 2},height=${height}"/>
+      </svg>
+      <input class="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek" disabled>
+    </div>
+    <time class="total">--:--</time>
+    <label class="volume">
+      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6 6 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+      <input class="level" type="range" min="0" max="100" value="80" step="1" aria-label="Volume">
+    </label>
   </div>
-  <iframe th:if="${kind == 'soundcloud'}" th:src="${embedUrl}" title="SoundCloud player" height="166"
-          scrolling="no" allow="autoplay"></iframe>
+
+  <div class="placement" role="group" aria-label="Video position" th:if="${kind == 'youtube'}">
+    <button type="button" data-place="pane" aria-pressed="true">Pane</button>
+    <button type="button" data-place="mini" aria-pressed="false">Mini</button>
+    <button type="button" data-place="deck" aria-pressed="false">Deck</button>
+  </div>
+
+  <div class="ratio-16x9" th:if="${kind == 'youtube'}"><iframe th:src="${embedUrl}" title="YouTube video player"
+            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="shield" aria-hidden="true"></div><button
+      type="button" class="grip" aria-label="Resize video (arrow keys)"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h5v1.5H3.5V7H2zM9 2h5v5h-1.5V3.5H9z" /></svg></button></div>
+  <iframe class="sc-frame" th:if="${kind == 'soundcloud'}" th:src="${embedUrl}" title="SoundCloud player"
+          height="166" scrolling="no" allow="autoplay"></iframe>
   <div class="player-off" th:if="${kind == 'disabled'}">
     <p>This video can't be played here</p>
     <a th:href="${watchUrl}" rel="noopener noreferrer">Watch on YouTube</a>
   </div>
+
   <button type="button" class="stop" hx-on:click="stopPlayer(this)">Stop</button>
 </div>
 </th:block>

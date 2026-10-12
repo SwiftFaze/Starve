@@ -5,33 +5,26 @@ primary_target: "src/main/resources/templates/home.html"
 related_targets: ["src/main/resources/templates/player.html"]
 ---
 
----
-version: 1
-slug: "src-main-resources-templates-home-html"
-primary_target: "src/main/resources/templates/home.html"
-related_targets: ["src/main/resources/templates/player.html"]
----
-
 # Timeline surface brief
 
-Scope: the timeline `/` (home.html, player.html fragment). Mode: Operate. Code-led.
-Audience: the single owner, desktop and phone equally, usually listening while doing other things; under ~20 new items per visit.
-Task: play or open, mark read, reach "You're all caught up". Deal-breakers: platform/social look, more clicks than today, busy motion, music stopping on navigation (the last is deferred: docked persistent player is a separate spec'd issue; superseded: the docked player shipped in the same branch, see FIRST VIEWPORT).
-Constraints: Thymeleaf + vendored htmx, no runtime CDN (self-hosted font), no-JS still works, acceptance-test markup contracts kept (article data-title, class "item read", class "play", class "group-link" plain-text labels, class "load-more", hidden before/group inputs, time text yyyy-MM-dd, .ratio-16x9 > iframe).
-Unresolved: dark theme; docked sleeve player (follow-up issue); sheet heading wording.
+Scope: the timeline `/` (home.html, player.html fragment). Mode: Operate. Code-led. Issue #22.
+Audience: the single owner, desktop (long listening sessions) and phone (short catch-ups); under ~20 new items per visit; references are dark poster/HUD work, Ghost Hardware, designbyzeth, 90s OVA covers.
+Task: play or open, mark read, reach "You're all caught up", while music or video keeps playing. Deal-breakers: unreadable all-caps reading text, platform/social look, music stopping on navigation or on any layout change.
+Constraints: Thymeleaf + vendored htmx, no CDN, no-JS still works; one new self-hosted OFL mono WOFF2 approved; acceptance-test markup contracts kept (article data-title, class "item read", class "play", class "group-link" plain-text labels, class "load-more", hidden before/group inputs, time text yyyy-MM-dd, .ratio-16x9 > iframe, ids #bar #series #sheet #dock, swaps target only #sheet/#bar/#series).
+Unresolved: reading article text in the pane is a separate issue; the pane holds only video on this branch.
 
 ## Direction contract
 
-THESIS: The timeline is a record label's release sheet: every item carries a catalogue number and the page reads as this label's current releases, not a social feed. It refuses the category default of thumbnail cards with avatars and engagement chrome.
+THESIS: The timeline is a 90s OVA cassette cover: a red obi strip names the series, the release list is the cover's spec panel, and a player deck runs along the bottom like the tape transport. It refuses the reader/music-app default of a grey sidebar, rounded cards and pill buttons.
 
-OWN-WORLD: Off-white sheet, black ink, one signal orange used only for live state and the series sleeve; muted grey meta. Akira Expanded (user-supplied, personal-use demo, self-hosted and gitignored; fallback Archivo at 125% width, weight 900) for display text and catalogue numbers; Archivo normal width for titles, meta and controls; tabular figures. Square corners, 1px black rules between rows, 2px black rules for structure, black-outlined rectangular buttons that fill black on hover.
+OWN-WORLD: Dark: ink #0c0c12 ground, bone #f0ece4 text, obi red #ff3b2f for the obi band and live state only, cyan #2fd2c4 for "open in the pane" state only; light: the same drawing on bone paper with ink text, red and a darker cyan. Akira Expanded for display (wordmark, obi series name, sheet heading, deck STV number, caught-up); Archivo mixed case for titles and body; a mono for STV numbers, dates, sources and control labels. Square corners, hairline rules, outlined mono buttons, caution chevrons on the obi, a barcode block for the playing STV number, registration crosses at region corners, fine grain.
 
-STORY: The visitor sees which series they are in and how many releases are unread, scans titles by catalogue number, plays or opens one, marks the rest read, and reaches the end of the sheet.
+STORY: The visitor sees which series they are in on the obi, scans readable titles by STV number, plays one and keeps scanning while the deck shows its waveform, watches a video big in the pane, tucks it into a mini window or into the deck itself, and marks the list down to "caught up".
 
-FIRST VIEWPORT: Black top bar (sticky on desktop, static on phones): STARVE wordmark left, then the Timeline / Sources page switch fixed in the same place on every page (user, 2026-10-12: the way back must not move), then behind a 1px divider the group tabs as the label's sub-series (current underlined orange). The bar is navigation only; Show read and Mark all read (the sheet's one filled button) sit right of the sheet heading. Below, on desktop, a sticky orange sleeve column (~360px) left: the current series name in display caps with "n unread" and the catalogue range beneath, then the dock. Right: the release sheet with a display-caps heading, then rows: catalogue number STV 0132, art (or an empty cell), title + source, date, then Play and Mark read. Play docks the player in the sleeve as a black sleeve card (cover art or an orange numbered square, the STV number at display scale in orange, title, source, the embed, Stop); while anything plays the sleeve widens to clamp(22.5rem, 40vw, 44rem) and the sheet folds dates under titles. Group tabs, the read toggle and Mark all read swap only #sheet, #bar and #series, so playback continues. Phone: the sleeve is a compact band; the dock is a fixed bottom bar with the video capped at 40dvh.
+FIRST VIEWPORT: Desktop: a vertical red obi band (~88px) full height on the left with the series name set vertically in Akira and "n unread"; the top bar right of it (wordmark, Timeline/Sources, group tabs). The release list fills the rest: sheet head (Akira heading, Show read, filled Mark all read), rows of STV number, art, title over source, date, Play and Mark read. A waveform deck (96px) fixed across the bottom while something plays: art, STV number in Akira red, title, source, play/pause, waveform with elapsed/total, minimise/expand for video, Stop. A playing video opens as a theatre pane right of the list; the list narrows to a 460px index and a ◂ control collapses it to a 128px STV strip. Phone: the obi turns horizontal under the bar; deck at the bottom; theatre full width above it.
 
-FORM: The Label Catalogue, the model's top-ranked grounded candidate (IMPECCABLE'S PICK), chosen by the user over the rolled directions; seed key ab23b902.
+FORM: OVA Obi Strip, pinned by the user in re-roll round 1 of seed 9e4512a5 (it was the model's third grounded candidate in round 0), fused with the three-pane deck and reader-takeover organisation the user chose; video placement chosen by the user: theatre in the pane on Play, with Mini and Deck as the other two placements.
 
-Signature move: the catalogue number. Every item is STV plus its real id, set in display caps; the playing row inverts to black with an orange number and its Play button reads "Playing", and the dock carries the same number large. Motion: 150ms colour/inversion transitions and one 320ms expand of the sleeve column when a player docks; none under reduced motion.
+Signature move: the obi band and the waveform deck. The obi carries the series like a cassette spine; the deck's waveform fills red as it plays and is the seek control; a Pane / Mini / Deck switch moves a playing video between theatre, a floating mini window and a 16:9 slot in the deck without restarting it. Motion: 150ms state changes, one 240ms pane/mini/collapse transition; none under reduced motion.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

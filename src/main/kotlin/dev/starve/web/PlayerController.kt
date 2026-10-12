@@ -5,6 +5,7 @@ import dev.starve.application.PlayerResult
 import dev.starve.application.PlayerService
 import dev.starve.domain.Catalogue
 import dev.starve.domain.Playable
+import dev.starve.domain.Waveform
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -30,6 +31,7 @@ class PlayerController(
         @PathVariable id: Long,
         model: Model,
     ): String {
+        model.addAttribute("waveform", Waveform.bars(id))
         when (val result = player.player(id)) {
             PlayerResult.NotPlayable -> {
                 throw ResponseStatusException(HttpStatus.NOT_FOUND)

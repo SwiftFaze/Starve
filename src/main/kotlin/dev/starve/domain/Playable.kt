@@ -13,7 +13,7 @@ sealed interface Playable {
         val videoId: String,
     ) : Playable {
         val watchUrl: String get() = "https://www.youtube.com/watch?v=$videoId"
-        override val embedUrl: String get() = "https://www.youtube-nocookie.com/embed/$videoId?autoplay=1"
+        override val embedUrl: String get() = "https://www.youtube-nocookie.com/embed/$videoId?autoplay=1&enablejsapi=1&controls=0&rel=0&iv_load_policy=3&playsinline=1"
     }
 
     data class SoundCloud(

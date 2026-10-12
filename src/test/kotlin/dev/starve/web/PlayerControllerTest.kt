@@ -4,6 +4,7 @@ import dev.starve.application.EmbedChecker
 import dev.starve.application.PlayerService
 import dev.starve.application.TimelineItems
 import dev.starve.domain.Playable
+import dev.starve.domain.Waveform
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -37,7 +38,7 @@ class PlayerControllerTest {
 
         assertEquals("player :: content", view)
         assertEquals("youtube", model.getAttribute("kind"))
-        assertEquals("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1", model.getAttribute("embedUrl"))
+        assertEquals("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&enablejsapi=1&controls=0&rel=0&iv_load_policy=3&playsinline=1", model.getAttribute("embedUrl"))
     }
 
     @Test
@@ -47,6 +48,15 @@ class PlayerControllerTest {
         controller(mapOf(7L to "https://soundcloud.com/a/b")).player(7, model)
 
         assertEquals(NowPlayingView("STV 0007", "Item 7", "Source", null), model.getAttribute("item"))
+    }
+
+    @Test
+    fun `the player carries a waveform seeded by the item id`() {
+        val model = ConcurrentModel()
+
+        controller(mapOf(7L to "https://soundcloud.com/a/b")).player(7, model)
+
+        assertEquals(Waveform.bars(7), model.getAttribute("waveform"))
     }
 
     @Test
