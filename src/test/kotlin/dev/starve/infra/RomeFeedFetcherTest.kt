@@ -99,6 +99,25 @@ class RomeFeedFetcherTest {
     }
 
     @Test
+    fun `an entity-encoded title is decoded and trimmed after decoding`() {
+        assertEquals("Tom & Jerry", titleFetchedFrom("&amp;#32;Tom &amp;amp; Jerry&amp;#32;"))
+    }
+
+    @Test
+    fun `a title that decodes to whitespace is untitled`() {
+        assertEquals("(untitled)", titleFetchedFrom("&amp;#32;"))
+    }
+
+    private fun titleFetchedFrom(rawTitle: String): String {
+        val spec = dev.starve.acceptance.FeedSpec(title = "Ok", entries = 1, itemTitle = rawTitle)
+        server.route("/t.xml", Route.Feed(spec))
+        val result = fetcher.fetch("${server.baseUrl}/t.xml", Validators()) as FetchResult.Fetched
+        return result.feed.items
+            .single()
+            .title
+    }
+
+    @Test
     fun `blank titles and authors are treated as absent`() {
         server.route("/blank.xml", Route.Raw("rss-blank.xml", "application/rss+xml"))
 
