@@ -37,12 +37,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Akira Expanded Outline";
-  src: url("/fonts/akira-expanded-outline.otf") format("opentype");
-  font-display: swap;
-}
-
 /* ---- Tokens ----------------------------------------------------------------------------- */
 
 :root {
@@ -54,7 +48,7 @@
   --line-strong: #454556;
   --text: #f0ece4;
   --text-2: #a3a2b3;
-  --text-3: #6f6e80;
+  --text-3: #85849a;
   --red: #ff3b2f;
   --on-red: #0c0c12;
   --red-text: #ff5a4f;
@@ -63,7 +57,6 @@
 
   --display: "Akira Expanded", "Archivo", system-ui, sans-serif;
   --display-stretch: 125%;
-  --outline: "Akira Expanded Outline", var(--display);
   --read: "Archivo", system-ui, sans-serif;
   --mono: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
@@ -91,11 +84,11 @@
     --line-strong: #a39d90;
     --text: #0c0c12;
     --text-2: #4c4b5a;
-    --text-3: #6c6a78;
+    --text-3: #5e5c6a;
     --red: #ef3326;
     --on-red: #0c0c12;
     --red-text: #c0231a;
-    --cyan: #0b7a71;
+    --cyan: #0a6f67;
     --grain-opacity: 0.08;
 
     color-scheme: light;

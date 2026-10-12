@@ -12,6 +12,13 @@ class WaveformTest {
     }
 
     @Test
+    fun `an item keeps its waveform across releases`() {
+        val bars = Waveform.bars(112)
+
+        assertEquals(GOLDEN_112, bars.take(GOLDEN_112.size))
+    }
+
+    @Test
     fun `different items get different waveforms`() {
         assertNotEquals(Waveform.bars(112), Waveform.bars(113))
     }
@@ -33,5 +40,10 @@ class WaveformTest {
         val bars = Waveform.bars(42)
 
         assertTrue(bars.max() - bars.min() >= 40, bars.toString())
+    }
+
+    private companion object {
+        // The first bars of item 112, recorded when the waveform shipped (issue #22).
+        val GOLDEN_112 = listOf(91, 45, 57, 78, 59, 73, 79, 84, 72, 69, 59, 80)
     }
 }
