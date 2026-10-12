@@ -28,5 +28,17 @@ object World {
             .firstOrNull { it.contains("data-title=\"$title\"") }
             ?: error("no timeline entry '$title'")
 
+    /** Set by every action step, so a phrase used to arrange and to assert knows which it is doing. */
+    var actionHasRun = false
+
     fun feedServer(): FeedServer = requireNotNull(feeds) { "feed server not running" }
+}
+
+/** The entities Thymeleaf writes for text and attribute values. */
+object Html {
+    private val entities = listOf("&" to "&amp;", "<" to "&lt;", ">" to "&gt;", "\"" to "&quot;", "'" to "&#39;")
+
+    fun escape(text: String): String = entities.fold(text) { acc, (raw, entity) -> acc.replace(raw, entity) }
+
+    fun unescape(html: String): String = entities.reversed().fold(html) { text, (raw, ent) -> text.replace(ent, raw) }
 }

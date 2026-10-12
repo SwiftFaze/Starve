@@ -291,6 +291,15 @@
         ],
         "createdAt": "2026-10-12T15:51:48.403Z",
         "reason": "Claude, false positive: the type scale lives in starve.css (3rem outline sheet heading, 2.125rem sleeve display, 0.875rem body), not in the template; verified in screenshots"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/import.html"
+        ],
+        "createdAt": "2026-10-12T16:09:18.864Z",
+        "reason": "Claude: page reuses starve.css classes (.series 2.75rem, .sheet-title 3rem vs body 0.875rem); hook cannot see the external stylesheet's scale"
       }
     ]
   }

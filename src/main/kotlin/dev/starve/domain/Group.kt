@@ -35,4 +35,12 @@ object GroupRules {
             else -> NameCheck.Valid(name)
         }
     }
+
+    /** [raw] trimmed and cut to [MAX_NAME_LENGTH] characters; null when nothing is left. */
+    fun truncatedName(raw: String): String? =
+        raw
+            .trim()
+            .take(MAX_NAME_LENGTH)
+            .trim()
+            .ifEmpty { null }
 }

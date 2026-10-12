@@ -65,6 +65,15 @@ uniqueness and the navigation counts. The group filter is an optional group id
 passed through `TimelineService` to `ItemRepository.timeline` and `markAllRead`,
 which restrict by `sources.group_id`; the render-timestamp cutoff still applies.
 
+## Bulk import
+
+`ImportService` takes the uploaded bytes, picks OPML (starts with `<`) or Takeout
+CSV, and stores the resulting `ImportEntry` list through the existing source and
+group repositories. CSV parsing is pure domain (`TakeoutCsv`); OPML parsing sits
+behind the `OpmlReader` port, implemented by `infra/XmlOpmlReader` with DTDs and
+external entities disabled. Nothing is fetched in the request: new source ids go to
+`BackgroundPoller`, which polls them on a daemon executor.
+
 ## Inline playback
 
 `domain/Playable.kt` is a sealed type (`YouTube`, `SoundCloud`) derived from an

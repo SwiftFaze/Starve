@@ -235,6 +235,9 @@ class IngestionSteps {
     @Then("there are no subscriptions")
     fun noSubscriptions() = assertEquals(0L, subscriptionCount())
 
+    @Then("there are {int} subscriptions")
+    fun subscriptionsCountPlural(count: Int) = subscriptionsCount(count)
+
     @Then("there is {int} subscription")
     fun subscriptionsCount(count: Int) = assertEquals(count.toLong(), subscriptionCount())
 
@@ -274,7 +277,7 @@ class IngestionSteps {
             .body()
             .split("<li class=\"source\"")
             .drop(1)
-            .firstOrNull { it.contains("data-title=\"$title\"") }
+            .firstOrNull { it.contains("data-title=\"${Html.escape(title)}\"") }
 
     private fun requireBlock(title: String) = requireNotNull(block(title)) { "no source titled '$title'" }
 
