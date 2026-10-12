@@ -1,0 +1,288 @@
+{
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-11T18:58:45.586Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-11T18:58:45.893Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-11T18:58:46.114Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-11T18:58:46.331Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-11T18:58:46.565Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-11T18:58:46.854Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-boarding.html"
+        ],
+        "createdAt": "2026-10-11T18:58:47.159Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-boarding.html"
+        ],
+        "createdAt": "2026-10-11T18:58:47.443Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-boarding.html"
+        ],
+        "createdAt": "2026-10-11T18:58:47.800Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-assigned.html"
+        ],
+        "createdAt": "2026-10-11T19:04:00.749Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-assigned.html"
+        ],
+        "createdAt": "2026-10-11T19:04:00.966Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-assigned.html"
+        ],
+        "createdAt": "2026-10-11T19:04:01.167Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-model-pick.html"
+        ],
+        "createdAt": "2026-10-11T19:04:01.369Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-model-pick.html"
+        ],
+        "createdAt": "2026-10-11T19:04:01.601Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-model-pick.html"
+        ],
+        "createdAt": "2026-10-11T19:04:01.803Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-crouwel.html"
+        ],
+        "createdAt": "2026-10-11T19:04:02.030Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-crouwel.html"
+        ],
+        "createdAt": "2026-10-11T19:04:02.221Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-crouwel.html"
+        ],
+        "createdAt": "2026-10-11T19:04:02.413Z",
+        "reason": "model: spent decision-round sketch, never shipped; production build is a fresh implementation"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r2-fusion.html"
+        ],
+        "createdAt": "2026-10-11T19:08:44.513Z",
+        "reason": "model: decision sketch, never shipped; tight leading is the intended single-line condensed display headline"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r2-fusion.html"
+        ],
+        "createdAt": "2026-10-11T19:08:44.726Z",
+        "reason": "model: decision sketch, never shipped; tight leading is the intended single-line condensed display headline"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/home.html"
+        ],
+        "createdAt": "2026-10-11T19:31:36.042Z",
+        "reason": "model: Thymeleaf th:src sets the thumbnail at render; the img only renders when thumbnailUrl exists"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/home.html"
+        ],
+        "createdAt": "2026-10-11T19:35:20.951Z",
+        "reason": "model: detector could not resolve /starve.css from templates/; real sizes are body 16px, wordmark 30px, series 80px, sheet title 56px"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-11T19:47:48.027Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-11T19:47:48.255Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-boarding.html"
+        ],
+        "createdAt": "2026-10-11T19:47:48.490Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-11T19:47:48.715Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-assigned.html"
+        ],
+        "createdAt": "2026-10-11T19:47:48.948Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-crouwel.html"
+        ],
+        "createdAt": "2026-10-11T19:47:49.173Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r1-model-pick.html"
+        ],
+        "createdAt": "2026-10-11T19:47:49.426Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/r2-fusion.html"
+        ],
+        "createdAt": "2026-10-11T19:47:49.652Z",
+        "reason": "model: spent decision-round sketch in another direction's fonts, never shipped"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/player.html"
+        ],
+        "createdAt": "2026-10-11T20:00:24.771Z",
+        "reason": "model: Thymeleaf th:src sets the cover art at render; the img only renders when thumbnailUrl exists"
+      }
+    ]
+  }
+}

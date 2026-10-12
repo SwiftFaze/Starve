@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T18:00:00Z",
+  "title": "Design System: Starve",
+  "extensions": {
+    "colorMeta": {
+      "signal-orange": { "role": "primary", "displayName": "Signal Orange", "canonical": "#ff5a1f", "tonalRamp": ["oklch(15% 0.06 37)", "oklch(26% 0.1 37)", "oklch(37% 0.14 37)", "oklch(48% 0.18 37)", "oklch(59% 0.2 37)", "oklch(68% 0.21 37)", "oklch(82% 0.11 37)", "oklch(95% 0.03 37)"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#111111", "tonalRamp": ["oklch(15% 0 0)", "oklch(26% 0 0)", "oklch(37% 0 0)", "oklch(48% 0 0)", "oklch(59% 0 0)", "oklch(70% 0 0)", "oklch(82% 0 0)", "oklch(95% 0 0)"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#f2f2ee", "tonalRamp": ["oklch(15% 0.006 107)", "oklch(26% 0.006 107)", "oklch(37% 0.006 107)", "oklch(48% 0.006 107)", "oklch(59% 0.006 107)", "oklch(70% 0.006 107)", "oklch(82% 0.006 107)", "oklch(96% 0.006 107)"] },
+      "muted-grey": { "role": "neutral", "displayName": "Muted Grey", "canonical": "#5f5f5a", "tonalRamp": ["oklch(15% 0.007 107)", "oklch(26% 0.007 107)", "oklch(37% 0.007 107)", "oklch(46% 0.007 107)", "oklch(59% 0.007 107)", "oklch(70% 0.007 107)", "oklch(82% 0.007 107)", "oklch(95% 0.007 107)"] },
+      "on-ink": { "role": "neutral", "displayName": "On-Ink", "canonical": "#f2f2ee", "tonalRamp": ["oklch(15% 0.006 107)", "oklch(26% 0.006 107)", "oklch(37% 0.006 107)", "oklch(48% 0.006 107)", "oklch(59% 0.006 107)", "oklch(70% 0.006 107)", "oklch(82% 0.006 107)", "oklch(96% 0.006 107)"] },
+      "on-ink-muted": { "role": "neutral", "displayName": "On-Ink Muted", "canonical": "#b4b4ad", "tonalRamp": ["oklch(15% 0.009 107)", "oklch(26% 0.009 107)", "oklch(37% 0.009 107)", "oklch(48% 0.009 107)", "oklch(59% 0.009 107)", "oklch(70% 0.009 107)", "oklch(76% 0.009 107)", "oklch(95% 0.009 107)"] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "The sheet heading in Akira Expanded Outline; one per page. 2rem below 60rem." },
+      "display": { "displayName": "Display", "purpose": "The series name on the sleeve, uppercase, balanced wrap. 1.75rem below 60rem." },
+      "dock-number": { "displayName": "Dock Number", "purpose": "The STV number in the dock card, in Signal Orange. 1rem below 60rem." },
+      "closing": { "displayName": "Closing", "purpose": "The end-of-sheet statement (You're all caught up). 1.25rem below 60rem." },
+      "wordmark": { "displayName": "Wordmark", "purpose": "STARVE in the top bar." },
+      "range": { "displayName": "Range", "purpose": "The STV range on the sleeve, under a 2px ink rule." },
+      "catalogue": { "displayName": "Catalogue", "purpose": "The STV number as the first column of each row. 0.875rem below 60rem." },
+      "title": { "displayName": "Title", "purpose": "Item titles in rows and the dock; underlined on hover only." },
+      "body": { "displayName": "Body", "purpose": "Page default; notes and series meta." },
+      "nav": { "displayName": "Nav", "purpose": "Group tabs in the top bar." },
+      "label": { "displayName": "Label", "purpose": "Control text. Load more runs at 0.875rem." },
+      "meta": { "displayName": "Meta", "purpose": "Source names and dates, in Muted Grey on paper or On-Ink Muted on ink." }
+    },
+    "fonts": {
+      "akira-expanded": { "file": "/fonts/akira-expanded.ttf", "weight": 800, "licence": "Typologic personal-use; user-supplied, gitignored, never committed (public repo)." },
+      "akira-expanded-outline": { "file": "/fonts/akira-expanded-outline.otf", "licence": "Typologic personal-use; user-supplied, gitignored, never committed (public repo)." },
+      "archivo": { "file": "/fonts/archivo-latin.woff2, /fonts/archivo-latin-ext.woff2", "weight": "100 900", "stretch": "62% 125%", "licence": "OFL, committed; the declared fallback, rendered at font-stretch 125%." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "quick", "value": "150ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Colour and ink/paper inversion on controls, tabs and rows. Removed under prefers-reduced-motion." },
+      { "name": "expand", "value": "320ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The sleeve column widening to clamp(22.5rem, 40vw, 44rem) when a player docks. The only motion beyond 150ms; removed under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "narrow", "value": "max-width: 60rem" },
+      { "name": "sheet-narrow (container query on the sheet)", "value": "max-width: 56rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "The default control: square, 1.5px currentColor stroke, inverts to ink on hover.",
+      "html": "<button class=\"ds-btn\">Mark read</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: var(--ink, #111111); font: 600 0.75rem/1 var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; letter-spacing: 0.01em; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn:hover { background: var(--ink, #111111); border-color: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-btn:focus-visible { outline: 2px solid var(--ink, #111111); outline-offset: 2px; }"
+    },
+    {
+      "name": "Bar Filled Button",
+      "kind": "button",
+      "refersTo": "button-bar",
+      "description": "Mark all read: the top bar's one filled control.",
+      "html": "<div class=\"ds-bar-ground\"><button class=\"ds-btn-bar\">Mark all read</button></div>",
+      "css": ".ds-bar-ground { background: var(--ink, #111111); padding: 1rem; } .ds-btn-bar { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid var(--on-ink, #f2f2ee); border-radius: 0; background: var(--on-ink, #f2f2ee); color: var(--ink, #111111); font: 600 0.75rem/1 var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; letter-spacing: 0.01em; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-bar:hover { background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-btn-bar:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Top Bar with Group Tabs",
+      "kind": "nav",
+      "refersTo": "top-bar",
+      "description": "Ink bar, sticky on desktop: wordmark, group tabs with an orange underline on the current tab.",
+      "html": "<header class=\"ds-bar\"><span class=\"ds-wordmark\">Starve</span><nav class=\"ds-groups\"><a class=\"ds-tab\" href=\"#\" aria-current=\"page\">All (48)</a><a class=\"ds-tab\" href=\"#\">Music (40)</a><a class=\"ds-tab\" href=\"#\">Tech (8)</a></nav></header>",
+      "css": ".ds-bar { position: sticky; top: 0; display: flex; align-items: stretch; gap: 0 2.5rem; min-height: 4rem; padding: 0 2.5rem; background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; } .ds-wordmark { display: flex; align-items: center; font-size: 1.375rem; font-weight: 900; line-height: 1; text-transform: uppercase; } .ds-groups { display: flex; align-items: stretch; gap: 1.75rem; } .ds-tab { display: flex; align-items: center; padding-top: 3px; border-bottom: 3px solid transparent; color: var(--on-ink-muted, #b4b4ad); font-weight: 600; font-size: 0.8125rem; white-space: nowrap; text-decoration: none; transition: color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-tab:hover { color: var(--on-ink, #f2f2ee); } .ds-tab[aria-current] { color: var(--on-ink, #f2f2ee); border-bottom-color: var(--orange, #ff5a1f); } .ds-tab:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Series Sleeve",
+      "kind": "custom",
+      "refersTo": "sleeve",
+      "description": "Orange column naming the current series, unread count and catalogue range; the dock sits beneath.",
+      "html": "<aside class=\"ds-sleeve\"><h2 class=\"ds-series\">All</h2><p class=\"ds-series-meta\">48 unread<span>Newest first</span><span class=\"ds-range\">STV 0106–0155</span></p></aside>",
+      "css": ".ds-sleeve { display: flex; flex-direction: column; gap: 1.5rem; width: 22.5rem; padding: 2.5rem; background: var(--orange, #ff5a1f); color: var(--ink, #111111); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-variant-numeric: tabular-nums; } .ds-series { margin: 0; font-size: 2.75rem; font-weight: 900; line-height: 1.05; text-transform: uppercase; overflow-wrap: anywhere; text-wrap: balance; } .ds-series-meta { margin: 0; font-size: 0.8125rem; font-weight: 600; line-height: 1.4; } .ds-series-meta span { display: block; font-weight: 400; } .ds-series-meta .ds-range { margin-top: 1rem; padding-top: 0.75rem; border-top: 2px solid var(--ink, #111111); font-size: 1rem; font-weight: 900; line-height: 1; }"
+    },
+    {
+      "name": "Dock Card",
+      "kind": "custom",
+      "refersTo": "dock-card",
+      "description": "The playing release as a black sleeve card inside the orange column: art or numbered orange square, large orange STV number, title, source, embed, Stop.",
+      "html": "<div class=\"ds-dock-ground\"><div class=\"ds-player\"><div class=\"ds-now\"><span class=\"ds-now-blank\" aria-hidden=\"true\">STV 0132</span><div class=\"ds-now-text\"><span class=\"ds-now-cat\">STV 0132</span><span class=\"ds-now-title\">XY diaries : may-september</span><span class=\"ds-now-source\">PIXY</span></div></div><div class=\"ds-embed\"></div><button class=\"ds-stop\">Stop</button></div></div>",
+      "css": ".ds-dock-ground { width: 30rem; padding: 2.5rem; background: var(--orange, #ff5a1f); } .ds-player { display: grid; gap: 1rem; padding: 1rem; background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-size: 0.875rem; font-variant-numeric: tabular-nums; } .ds-now { display: flex; align-items: center; gap: 0.875rem; min-width: 0; } .ds-now-blank { flex: none; display: flex; align-items: flex-end; width: 4.5rem; height: 4.5rem; padding: 0.375rem; background: var(--orange, #ff5a1f); color: var(--ink, #111111); font-size: 0.75rem; font-weight: 900; line-height: 0.9; } .ds-now-text { display: flex; flex-direction: column; min-width: 0; } .ds-now-cat { color: var(--orange, #ff5a1f); font-size: 1.75rem; font-weight: 900; line-height: 1; } .ds-now-title { margin-top: 0.25rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; } .ds-now-source { font-size: 0.75rem; color: var(--on-ink-muted, #b4b4ad); } .ds-embed { aspect-ratio: 16 / 9; background: #000; } .ds-stop { justify-self: start; min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-stop:hover { background: var(--on-ink, #f2f2ee); border-color: var(--on-ink, #f2f2ee); color: var(--ink, #111111); } .ds-stop:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Release Row",
+      "kind": "card",
+      "refersTo": "release-row",
+      "description": "One item on the sheet: catalogue number, art cell (empty and unframed when there is no art), title and source, date, actions; 1px ink rule above.",
+      "html": "<article class=\"ds-row\"><span class=\"ds-cat\">STV 0132</span><span class=\"ds-blank\"></span><div><a class=\"ds-title\" href=\"#\">PIXY - MADEBYGOD</a><span class=\"ds-meta\">PIXY</span></div><time class=\"ds-meta\">2026-10-07 16:00 UTC</time><button class=\"ds-row-btn\">Mark read</button></article>",
+      "css": ".ds-row { display: grid; grid-template-columns: 9.5rem 4.5rem minmax(0, 1fr) 9rem auto; align-items: center; gap: 0 1.25rem; padding: 1.125rem 0.75rem; border-top: 1px solid var(--ink, #111111); background: var(--paper, #f2f2ee); color: var(--ink, #111111); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-size: 0.875rem; font-variant-numeric: tabular-nums; } .ds-cat { font-size: 0.9375rem; font-weight: 900; line-height: 1; white-space: nowrap; } .ds-blank { display: block; width: 4.5rem; height: 4.5rem; } .ds-title { display: block; color: inherit; font-size: 0.875rem; font-weight: 600; line-height: 1.3; text-decoration: none; overflow-wrap: anywhere; } .ds-title:hover { text-decoration: underline; text-underline-offset: 0.2em; } .ds-meta { display: block; font-size: 0.75rem; color: var(--muted, #5f5f5a); } .ds-row-btn { min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-row-btn:hover { background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-row-btn:focus-visible { outline: 2px solid var(--ink, #111111); outline-offset: 2px; }"
+    },
+    {
+      "name": "Playing Row",
+      "kind": "card",
+      "refersTo": "release-row-playing",
+      "description": "The playing release inverts to ink with an orange catalogue number and the filled orange Playing control; the player itself is in the dock.",
+      "html": "<article class=\"ds-row-live\"><span class=\"ds-cat-live\">STV 0131</span><div><span class=\"ds-title-live\">XY diaries : may-september</span><span class=\"ds-meta-live\">PIXY</span></div><button class=\"ds-play-live\" aria-pressed=\"true\">Playing</button><button class=\"ds-btn-live\">Mark read</button></article>",
+      "css": ".ds-row-live { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) auto auto; align-items: center; gap: 0 1.25rem; padding: 1.125rem 0.75rem; background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; font-size: 0.875rem; } .ds-cat-live { color: var(--orange, #ff5a1f); font-size: 0.9375rem; font-weight: 900; line-height: 1; white-space: nowrap; } .ds-title-live { display: block; font-weight: 600; line-height: 1.3; } .ds-meta-live { display: block; font-size: 0.75rem; color: var(--on-ink-muted, #b4b4ad); } .ds-play-live, .ds-btn-live { min-height: 2.5rem; padding: 0.5rem 1rem; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-play-live { background: var(--orange, #ff5a1f); border-color: var(--orange, #ff5a1f); color: var(--ink, #111111); } .ds-btn-live:hover { background: var(--on-ink, #f2f2ee); border-color: var(--on-ink, #f2f2ee); color: var(--ink, #111111); } .ds-play-live:focus-visible, .ds-btn-live:focus-visible { outline: 2px solid var(--orange, #ff5a1f); outline-offset: 2px; }"
+    },
+    {
+      "name": "Load More",
+      "kind": "button",
+      "refersTo": "load-more",
+      "description": "Full-width outlined block ending a page of the sheet.",
+      "html": "<a class=\"ds-load-more\" href=\"#\">Load more</a>",
+      "css": ".ds-load-more { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 3.5rem; padding: 0.5rem 1rem; border: 2px solid var(--ink, #111111); border-radius: 0; color: var(--ink, #111111); font: 600 0.875rem/1 var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; text-decoration: none; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-load-more:hover { background: var(--ink, #111111); color: var(--on-ink, #f2f2ee); } .ds-load-more:focus-visible { outline: 2px solid var(--ink, #111111); outline-offset: 2px; }"
+    },
+    {
+      "name": "Sheet Heading and Caught-Up Statement",
+      "kind": "custom",
+      "refersTo": "headline",
+      "description": "The outline-cut sheet heading that opens the sheet and the caps statement under a 2px rule that closes it.",
+      "html": "<div class=\"ds-sheet\"><h2 class=\"ds-sheet-title\">New releases</h2><p class=\"ds-caught-up\">You're all caught up</p></div>",
+      "css": ".ds-sheet { color: var(--ink, #111111); font-family: var(--font, \"Akira Expanded\", Archivo, system-ui, sans-serif); font-stretch: 125%; } .ds-sheet-title { margin: 0 0 1.5rem; font-family: var(--outline, \"Akira Expanded Outline\", \"Akira Expanded\", Archivo, system-ui, sans-serif); font-size: 3rem; font-weight: 900; line-height: 0.95; text-transform: uppercase; } .ds-caught-up { margin: 0; padding: 2.5rem 0 1rem; border-top: 2px solid var(--ink, #111111); font-size: 1.625rem; font-weight: 900; line-height: 1; text-transform: uppercase; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Label Catalogue",
+    "overview": "Starve is set as a record label's release sheet. The timeline is the label's current releases: each item carries a catalogue number (STV plus its four-digit id), rows are ruled off like a printed sheet, and the series being browsed sits on an orange sleeve beside it. It is a document you work through to the end, not a feed of cards. What is playing is pulled out of the sheet and filed in the sleeve as a black sleeve card, so the release you are listening to stays in view while the sheet scrolls and swaps.\n\nThe world is three inks on paper. Black ink carries text, rules, the top bar and anything live; the off-white paper is the sheet; one signal orange marks the series sleeve and whatever is current or playing. One extended, heavy face, Akira Expanded, sets every word on the page; its outline cut sets the sheet heading. Corners are square everywhere. Structure comes from ink rules at two weights, not from boxes, shadows or tints.\n\nDensity is a working sheet: one row per item with generous vertical padding, catalogue number first, so the eye scans numbers and titles in a column. State is shown by inversion, not decoration: the playing row turns black with an orange number and its Play control reads \"Playing\". Motion is 150ms colour changes plus one 320ms widening of the sleeve when a player docks; all of it disappears under reduced motion.",
+    "keyCharacteristics": [
+      "Black, off-white and one signal orange; no other hues, no gradients, no tints.",
+      "Akira Expanded for all text, Akira Expanded Outline for the sheet heading; Archivo at 125% width is the shipped fallback.",
+      "Square corners on every element.",
+      "1px ink rules between rows, 2px ink rules for structure.",
+      "Outlined rectangular controls that invert on hover; one filled control per region.",
+      "Live state shown by inverting a whole row to ink and docking a black sleeve card in the orange column."
+    ],
+    "rules": [
+      { "name": "The Signal Rule", "body": "Orange means \"the series you are in\" or \"live now\". It appears on the sleeve and on current or playing state only; a static row, heading or control at rest on the sheet never turns orange.", "section": "colors" },
+      { "name": "The Inversion Rule", "body": "State is shown by swapping ink and paper, not by tinting. Hovered controls fill with ink (with on-ink on ink grounds); the playing row becomes an ink row with on-ink text. There are no grey hover washes or translucent overlays.", "section": "colors" },
+      { "name": "The One Face Rule", "body": "Every word on every surface is set in Akira Expanded; the only other cut is Akira Expanded Outline, and it belongs to the page heading alone. Do not introduce a second family for reading text or controls.", "section": "typography" },
+      { "name": "The Licensed Fallback Rule", "body": "Akira Expanded and its outline cut are user-supplied personal-use fonts (Typologic). They are self-hosted from `/fonts/` but gitignored and never committed, because the repository is public. Archivo (committed, OFL) is the declared fallback, set at 125% width with weights 900 / 600 / 400 so a fresh clone or Docker image renders a wide Archivo with a working hierarchy. Every font stack ends in Archivo; nothing loads from a CDN.", "section": "typography" },
+      { "name": "The Catalogue Number Rule", "body": "Every item is identified by \"STV \" plus its id zero-padded to four digits, set in the Catalogue style as the first column of its row and in the Dock Number style in the dock. Ranges use an en dash (\"STV 0106–0155\").", "section": "typography" },
+      { "name": "The Flat Sheet Rule", "body": "Nothing floats. If a region needs to stand apart, give it an ink or orange ground or a 2px rule, never a shadow or a raised card.", "section": "elevation" },
+      { "name": "The Rule Weight Rule", "body": "1px separates like from like; 2px closes or opens a structure. Do not introduce a third rule weight for separation.", "section": "shapes" },
+      { "name": "The One Filled Control Rule", "body": "Each region has at most one filled control: Mark all read in the bar, Playing in the playing row. Every other control is outlined and fills only on hover.", "section": "components" },
+      { "name": "The Docked Player Rule", "body": "Playback lives in the sleeve, not in the sheet. Navigation, filters and bulk actions swap only the sheet, bar and series block, so the dock and its embed are never re-rendered while something plays.", "section": "components" }
+    ],
+    "dos": [
+      "Do reuse the ink top bar (with its group tabs and filled bar control), the outline-cut sheet heading, the orange sleeve column, the ruled row grid with the catalogue number first, the outlined controls and the 2px end-of-sheet rule on every new surface; the Sources page should be a sheet of ruled source rows beside the same sleeve, so the whole app reads as one catalogue.",
+      "Do keep orange to the sleeve and to current or live state (current tab underline, playing row, dock number, focus on ink, selection).",
+      "Do show state by inverting ink and paper, with 150ms colour transitions (`cubic-bezier(0.16, 1, 0.3, 1)`); the sleeve's 320ms widening is the only longer motion, and none of it runs under reduced motion.",
+      "Do separate rows with 1px ink rules and mark structure with 2px ink rules.",
+      "Do set every word in Akira Expanded, the page heading in Akira Expanded Outline, and end every font stack in the self-hosted Archivo at 125% width.",
+      "Do keep the Akira files out of git; the public repository ships only Archivo and its OFL licence.",
+      "Do keep figures tabular and catalogue numbers zero-padded to four digits."
+    ],
+    "donts": [
+      "Don't round corners, add shadows, or lift anything onto a card.",
+      "Don't introduce a second accent hue, gradients, or tinted surfaces.",
+      "Don't put more than one filled control in a region.",
+      "Don't add `text-transform` to content (titles, sources, notes, control labels); only the label's own marks (wordmark, series name, sheet heading, closing statement) are uppercased in CSS, so the Archivo fallback still reads content in its own case.",
+      "Don't replace control words with icons.",
+      "Don't add engagement chrome (avatars, counts of likes or views, recommendation rails); the sheet lists only what the owner subscribed to."
+    ]
+  }
+}
