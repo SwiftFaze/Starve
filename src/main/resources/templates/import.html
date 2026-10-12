@@ -43,7 +43,7 @@
           <li>Failed: <span id="failed" th:text="${summary.failed}">0</span></li>
         </ul>
         <ul id="failures" class="roster" th:if="${summary.failed > 0}">
-          <li class="failure error" th:each="failure : ${summary.failures}" th:text="${failure}">reason</li>
+          <li class="failure" th:each="failure : ${summary.failures}" th:text="${failure}">reason</li>
         </ul>
         <p class="sheet-note">New subscriptions are fetched in the background; their items appear on the timeline shortly.</p>
       </section>
