@@ -75,6 +75,10 @@ disabled embedding, a message and a link to watch it on YouTube replace the
 player. If YouTube cannot be asked, Starve assumes embedding is allowed. Other
 items keep the open-link behavior only.
 
+Switching between **Timeline** and **Sources**, and adding, removing or grouping
+sources, swaps the page around the player, so whatever is playing keeps playing.
+A browser reload or opening an item still starts the page afresh.
+
 ## Configuration
 
 Set as Spring properties (`--starve.poll.interval=PT15M`) or environment
