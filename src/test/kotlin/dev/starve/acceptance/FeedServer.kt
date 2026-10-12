@@ -16,6 +16,8 @@ data class FeedSpec(
     val noDate: Boolean = false,
     val noGuid: Boolean = false,
     val etag: Boolean = false,
+    val coverArt: Boolean = false,
+    val coverArtUrl: String? = null,
 )
 
 sealed interface Route {

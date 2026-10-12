@@ -5,7 +5,10 @@ Feature: Feed ingestion
 
   Covers: adding and removing a subscription by raw feed URL; parsing RSS 2.0
   and Atom; storing items (title, link, published date, author, thumbnail,
-  first-seen time); per-source deduplication; conditional GET (ETag /
+  first-seen time), the thumbnail taken from media:thumbnail, an image
+  enclosure or a per-item <itunes:image> (SoundCloud's cover art, stored as
+  its 500x500 variant); filling in a missing thumbnail on an already stored
+  item when a later fetch provides one; per-source deduplication; conditional GET (ETag /
   Last-Modified, 304 treated as success); per-source last-fetch time and last
   error with failure isolation; validation of added URLs; deletion of a
   source's items on removal; retention of items by first-seen age (90 days).
@@ -38,6 +41,25 @@ Feature: Feed ingestion
     Then the sources page lists a source titled "Some Channel"
     And the source "Some Channel" has 2 stored items
     And every stored item of "Some Channel" has a thumbnail URL
+
+  Scenario: Add an RSS feed whose items carry iTunes cover art
+    Given the feed server serves "/sounds.rss" as an RSS 2.0 feed titled "Some Artist" with 2 entries having iTunes cover art
+    When I add the feed URL "/sounds.rss"
+    Then the source "Some Artist" has 2 stored items
+    And every stored item of "Some Artist" has a thumbnail URL
+
+  Scenario: SoundCloud cover art is stored at 500x500
+    Given the feed server serves "/sounds.rss" as an RSS 2.0 feed titled "Some Artist" with 1 entries having the iTunes cover art "https://i1.sndcdn.com/artworks-abc-t3000x3000.jpg"
+    When I add the feed URL "/sounds.rss"
+    Then every stored item of "Some Artist" has the thumbnail URL "https://i1.sndcdn.com/artworks-abc-t500x500.jpg"
+
+  Scenario: A later fetch fills in a missing thumbnail
+    Given the feed server serves "/sounds.rss" as an RSS 2.0 feed titled "Some Artist" with 2 entries
+    And I have added the feed URL "/sounds.rss"
+    And the feed server serves "/sounds.rss" as an RSS 2.0 feed titled "Some Artist" with 2 entries having iTunes cover art
+    When the poller runs
+    Then the source "Some Artist" has 2 stored items
+    And every stored item of "Some Artist" has a thumbnail URL
 
   Scenario: Feed without a title falls back to its URL
     Given the feed server serves "/untitled.xml" as an RSS 2.0 feed without a title with 1 entries

@@ -51,7 +51,9 @@ class PlayerServiceTest {
         val items = TimelineItems(links = mapOf(1L to youtube))
         val embeds = Embeds(true)
 
-        assertEquals(PlayerResult.Embed(Playable.YouTube("dQw4w9WgXcQ")), service(items, embeds).player(1))
+        val result = service(items, embeds).player(1)
+
+        assertEquals(PlayerResult.Embed(Playable.YouTube("dQw4w9WgXcQ"), ref(1, youtube)), result)
         assertEquals(listOf(1L to now), items.readCalls)
         assertEquals(listOf(Playable.YouTube("dQw4w9WgXcQ")), embeds.asked)
     }
@@ -62,7 +64,8 @@ class PlayerServiceTest {
 
         val result = service(items, Embeds(false)).player(1)
 
-        assertEquals(PlayerResult.EmbeddingDisabled("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), result)
+        val expected = PlayerResult.EmbeddingDisabled("https://www.youtube.com/watch?v=dQw4w9WgXcQ", ref(1, youtube))
+        assertEquals(expected, result)
         assertEquals(listOf(1L to now), items.readCalls)
     }
 
@@ -72,7 +75,7 @@ class PlayerServiceTest {
         val items = TimelineItems(links = mapOf(1L to track))
         val embeds = Embeds(false)
 
-        assertEquals(PlayerResult.Embed(Playable.SoundCloud(track)), service(items, embeds).player(1))
+        assertEquals(PlayerResult.Embed(Playable.SoundCloud(track), ref(1, track)), service(items, embeds).player(1))
         assertTrue(embeds.asked.isEmpty())
         assertEquals(listOf(1L to now), items.readCalls)
     }

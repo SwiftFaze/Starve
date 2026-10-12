@@ -1,6 +1,6 @@
 package dev.starve.infra
 
-import dev.starve.application.ItemLink
+import dev.starve.application.ItemRef
 import dev.starve.application.ItemRepository
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
@@ -20,7 +20,7 @@ class JdbcItemRepository(
         items: List<FeedItem>,
         firstSeenAt: Instant,
     ) {
-        items.forEach { insertIfAbsent(sourceId, it, firstSeenAt) }
+        items.forEach { upsert(sourceId, it, firstSeenAt) }
     }
 
     override fun deleteFirstSeenBefore(cutoff: Instant): Int =
@@ -57,12 +57,21 @@ class JdbcItemRepository(
             .list()
     }
 
-    override fun findLink(id: Long): ItemLink? =
+    override fun find(id: Long): ItemRef? =
         jdbc
-            .sql("SELECT link FROM items WHERE id = ?")
-            .param(id)
-            .query { rs, _ -> ItemLink(rs.getString("link")) }
-            .optional()
+            .sql(
+                "SELECT i.id, i.link, i.title, s.title AS source_title, i.thumbnail_url " +
+                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
+            ).param(id)
+            .query { rs, _ ->
+                ItemRef(
+                    rs.getLong("id"),
+                    rs.getString("link"),
+                    rs.getString("title"),
+                    rs.getString("source_title"),
+                    rs.getString("thumbnail_url"),
+                )
+            }.optional()
             .orElse(null)
 
     override fun markRead(
@@ -97,15 +106,18 @@ class JdbcItemRepository(
             Playable.of(getString("link")) != null,
         )
 
-    private fun insertIfAbsent(
+    /** Inserts a new item; for a known one only fills in a thumbnail it did not have yet. */
+    private fun upsert(
         sourceId: Long,
         item: FeedItem,
         firstSeenAt: Instant,
     ) {
         jdbc
             .sql(
-                "INSERT OR IGNORE INTO items (source_id, item_key, title, link, published_at, " +
-                    "author, thumbnail_url, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO items (source_id, item_key, title, link, published_at, " +
+                    "author, thumbnail_url, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                    "ON CONFLICT (source_id, item_key) DO UPDATE " +
+                    "SET thumbnail_url = COALESCE(items.thumbnail_url, excluded.thumbnail_url)",
             ).params(
                 listOf(
                     sourceId,

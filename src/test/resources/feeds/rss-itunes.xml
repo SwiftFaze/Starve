@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"><channel>
+<title>Some Artist</title><link>http://example.test</link><description>d</description>
+<itunes:image href="https://i1.sndcdn.com/avatars-channel-original.jpg"/>
+<item><title>Track one</title><guid>t1</guid><link>http://example.test/t1</link>
+<itunes:image href="https://i1.sndcdn.com/artworks-one-t3000x3000.jpg"/></item>
+<item><title>Track two</title><guid>t2</guid><link>http://example.test/t2</link></item>
+</channel></rss>

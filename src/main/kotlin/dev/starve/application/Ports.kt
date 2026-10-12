@@ -117,7 +117,7 @@ interface GroupRepository {
 }
 
 interface ItemRepository {
-    /** Stores items whose key is new for the source; existing keys are left untouched. */
+    /** Stores items whose key is new for the source; a known key only gains a thumbnail it lacked. */
     fun insertNew(
         sourceId: Long,
         items: List<FeedItem>,
@@ -138,7 +138,7 @@ interface ItemRepository {
         groupId: Long?,
     ): List<TimelineItem>
 
-    fun findLink(id: Long): ItemLink?
+    fun find(id: Long): ItemRef?
 
     /** Marks the item read at [at] unless already read; returns false when no such item exists. */
     fun markRead(
@@ -154,9 +154,13 @@ interface ItemRepository {
     ): Int
 }
 
-/** The target of an item, as needed to open it. */
-data class ItemLink(
+/** One item as needed to open it, or to name it while it plays. */
+data class ItemRef(
+    val id: Long,
     val link: String?,
+    val title: String,
+    val sourceTitle: String,
+    val thumbnailUrl: String?,
 )
 
 interface EmbedChecker {

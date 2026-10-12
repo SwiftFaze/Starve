@@ -1,6 +1,6 @@
 package dev.starve.infra
 
-import dev.starve.application.ItemLink
+import dev.starve.application.ItemRef
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
@@ -93,6 +93,26 @@ class JdbcRepositoriesTest {
     }
 
     @Test
+    fun `a later insert fills a missing thumbnail but never replaces an existing one`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val first = listOf(item("bare", "bare"), pictured("kept", "http://a.test/old.jpg"))
+        items.insertNew(source.id, first, Instant.EPOCH)
+
+        items.insertNew(
+            source.id,
+            listOf(pictured("bare", "http://a.test/new.jpg"), pictured("kept", "http://a.test/other.jpg")),
+            Instant.EPOCH.plusSeconds(60),
+        )
+
+        val thumbs =
+            jdbc
+                .sql("SELECT item_key, thumbnail_url FROM items ORDER BY item_key")
+                .query { rs, _ -> rs.getString(1) to rs.getString(2) }
+                .list()
+        assertEquals(listOf("bare" to "http://a.test/new.jpg", "kept" to "http://a.test/old.jpg"), thumbs)
+    }
+
+    @Test
     fun `deleting by cutoff removes only older items and reports the count`() {
         val source = sources.insert("http://a.test/f", "T")
         val cutoff = Instant.parse("2026-10-11T12:00:00Z")
@@ -155,18 +175,18 @@ class JdbcRepositoriesTest {
     }
 
     @Test
-    fun `finding a link distinguishes a missing item from an item without a link`() {
+    fun `finding an item returns its link, title, source and thumbnail, or nothing when missing`() {
         val source = sources.insert("http://a.test/f", "T")
         items.insertNew(
             source.id,
-            listOf(item("k", "t"), FeedItem("l", "u", "http://x.test/a", null, null, null)),
+            listOf(item("k", "t"), FeedItem("l", "u", "http://x.test/a", null, null, "http://x.test/a.jpg")),
             Instant.EPOCH,
         )
         val ids = jdbc.sql("SELECT id FROM items ORDER BY id").query(Long::class.java).list()
 
-        assertEquals(ItemLink(null), items.findLink(ids[0]))
-        assertEquals(ItemLink("http://x.test/a"), items.findLink(ids[1]))
-        assertNull(items.findLink(ids[1] + 1))
+        assertEquals(ItemRef(ids[0], null, "t", "T", null), items.find(ids[0]))
+        assertEquals(ItemRef(ids[1], "http://x.test/a", "u", "T", "http://x.test/a.jpg"), items.find(ids[1]))
+        assertNull(items.find(ids[1] + 1))
     }
 
     @Test
@@ -231,4 +251,9 @@ class JdbcRepositoriesTest {
         key: String,
         title: String,
     ) = FeedItem(key, title, null, null, null, null)
+
+    private fun pictured(
+        key: String,
+        thumbnail: String,
+    ) = FeedItem(key, key, null, null, null, thumbnail)
 }

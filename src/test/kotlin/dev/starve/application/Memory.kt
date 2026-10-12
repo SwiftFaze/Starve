@@ -93,7 +93,7 @@ open class MemoryItems(
         groupId: Long?,
     ): List<TimelineItem> = emptyList()
 
-    override fun findLink(id: Long): ItemLink? = null
+    override fun find(id: Long): ItemRef? = null
 
     override fun markRead(
         id: Long,
@@ -130,7 +130,7 @@ class TimelineItems(
         return rows
     }
 
-    override fun findLink(id: Long): ItemLink? = if (links.containsKey(id)) ItemLink(links[id]) else null
+    override fun find(id: Long): ItemRef? = if (links.containsKey(id)) ref(id, links[id]) else null
 
     override fun markRead(
         id: Long,
@@ -183,3 +183,9 @@ class MemoryGroups(
 
     override fun totalUnread(): Int = total
 }
+
+/** The [ItemRef] the in-memory repositories return for item [id] with [link]. */
+fun ref(
+    id: Long,
+    link: String?,
+) = ItemRef(id, link, "Item $id", "Source", null)
