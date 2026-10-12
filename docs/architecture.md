@@ -8,7 +8,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 `src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
-`src/main/resources/db/migration/V*.sql` on startup. Actuator exposes only
+`src/main/resources/db/migration/V*.sql` on startup. V5 is the exception: a Java migration bean (`DecodeItemTitlesMigration`), so the next SQL migration is V6. Actuator exposes only
 `/actuator/health`. There is no authentication (single user, self-hosted).
 
 ## Modules
@@ -34,6 +34,11 @@ parsing, one timeout over the whole exchange) and the `Jdbc*Repository` classes;
 `FeedConfig` wires the services and `SchedulingConfig` runs polling and
 retention on `@Scheduled` timers. Items are unique per `(source, key)` where key
 is the guid, else the link.
+
+Item titles are HTML-entity-decoded once, at ingestion: `RomeFeedFetcher` runs each
+title through `TitleEntities` (decimal, hex and named references, single pass; bare `&`
+and unknown references are kept), then trims, so storage and templates see plain text.
+`DecodeItemTitlesMigration` (V5) applied the same decoding to titles stored earlier.
 
 Subscribing first resolves the pasted URL through the `FeedLocator` port
 (`HttpFeedLocator`, sharing `BoundedHttp` with `RomeFeedFetcher`). Resolution

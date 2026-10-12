@@ -5,9 +5,9 @@ import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import java.nio.file.Files
 
 class SkeletonSteps {
@@ -91,8 +91,9 @@ class SkeletonSteps {
             .query(String::class.java)
             .list()
 
-    private fun migrationScripts(): Int =
-        PathMatchingResourcePatternResolver()
-            .getResources("classpath:db/migration/V*.sql")
-            .size
+    /** Every migration Flyway resolved: SQL scripts plus Java migrations. */
+    private fun migrationScripts(): Int {
+        val flyway = app.bean(Flyway::class.java)
+        return flyway.info().all().size
+    }
 }

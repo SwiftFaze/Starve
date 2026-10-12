@@ -68,12 +68,17 @@ class RomeFeedFetcher(
         val published = entry.publishedDate ?: entry.updatedDate
         return FeedItem(
             key = key,
-            title = entry.title?.trim()?.takeIf { it.isNotEmpty() } ?: "(untitled)",
+            title = decodedTitle(entry),
             link = entry.link?.takeIf { it.isNotBlank() },
             publishedAt = published?.toInstant(),
             author = entry.author?.takeIf { it.isNotBlank() },
             thumbnailUrl = thumbnail(entry),
         )
+    }
+
+    private fun decodedTitle(entry: SyndEntry): String {
+        val decoded = TitleEntities.decode(entry.title.orEmpty()).trim()
+        return decoded.ifEmpty { "(untitled)" }
     }
 
     private fun thumbnail(entry: SyndEntry): String? {
