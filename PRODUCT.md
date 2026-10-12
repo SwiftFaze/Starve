@@ -56,12 +56,19 @@ recommends the next thing.
   URL and Starve resolves its feed, or rejects it with a reason. Each source shows
   its last fetch time and last error, because failures must never be silent.
 - **Inline playback:** YouTube (via youtube-nocookie) and SoundCloud items play in
-  place and are marked read. If embedding is disabled, a link out replaces the
-  player. Every other item links out.
+  place and are marked read. A player deck along the bottom of the timeline shows
+  what is playing with play/pause, a seekable waveform, elapsed and total time,
+  volume and Stop, and keeps playing while the list is filtered or paged. A video
+  plays in a pane beside the list, a resizable mini window or a slot in the deck
+  (phones: always above the deck). If embedding is disabled, a link out replaces
+  the player. Every other item links out.
 - **Retention:** items are kept 90 days, and unread items from the last 7 days are
   never deleted.
-- **Planned:** bulk import from a YouTube Takeout subscriptions CSV and from OPML
-  (issue #6).
+- **Bulk import** (`/import`): a YouTube Takeout subscriptions CSV or an OPML file
+  subscribes to every source in it, with a summary of what was added, already
+  subscribed and failed.
+- **Theme:** dark and light, following the OS; a switch on the obi overrides it
+  and is remembered in that browser.
 - **Out of scope:** X/Twitter and Instagram, keyword mute or filter rules, any
   ranking or weighting, authentication or multiple users, native mobile apps.
 - **Stack:** Kotlin, Spring Boot, server-rendered Thymeleaf with htmx (vendored, no

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Import - Starve</title>
+  <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
   <script src="/htmx.min.js"></script>
 </head>
@@ -20,6 +21,7 @@
     <aside class="sleeve" aria-label="Upload a subscription file">
       <div class="series-block">
         <h1 class="series roster-name">Import subscriptions</h1>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
 
       <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Not a Takeout CSV or OPML file</p>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title th:text="${appName}">Starve</title>
+  <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
   <script src="/htmx.min.js"></script>
   <script src="/deck.js" defer></script>
@@ -33,6 +34,7 @@
           <span class="range" th:unless="${#lists.isEmpty(items)}" th:with="ids=${#lists.sort(items.![id])}"
                 th:text="|STV ${#numbers.formatInteger(ids[0], 4)}–${#numbers.formatInteger(ids[#lists.size(ids) - 1], 4)}|">STV 0131–0155</span>
         </p>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
       <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>
     </aside>

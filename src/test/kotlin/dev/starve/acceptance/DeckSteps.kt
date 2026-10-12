@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 
-/** Steps for player-deck.feature: the deck controls, the waveform, placements and the splitter. */
+/** Steps for player-deck.feature and theme-switch.feature: deck controls, waveform, placements, splitter, theme. */
 class DeckSteps {
     private val app = World.app
 
@@ -67,6 +67,16 @@ class DeckSteps {
     @Then("the page loads the deck script")
     fun loadsDeckScript() = assertTrue(body().contains("<script src=\"/deck.js\""), body())
 
+    @Then("the page has a theme switch")
+    fun hasThemeSwitch() = assertTrue(THEME_SWITCH.containsMatchIn(body()), body())
+
+    @Then("the page loads the theme script before its stylesheet")
+    fun loadsThemeFirst() {
+        val script = body().indexOf("<script src=\"/theme.js\"></script>")
+        val sheet = body().indexOf("<link rel=\"stylesheet\" href=\"/starve.css\">")
+        assertTrue(script in 0 until sheet, body())
+    }
+
     private fun body(): String = World.response.body()
 
     /** The bar heights of the first (unlit) waveform layer. */
@@ -84,5 +94,6 @@ class DeckSteps {
         val PLACEMENT =
             Regex("<button[^>]*data-place=\"[a-z]+\"[^>]*aria-pressed=\"(true|false)\"[^>]*>([^<]+)</button>")
         val SPLITTER = Regex("<div class=\"splitter\"[^>]*role=\"separator\"")
+        val THEME_SWITCH = Regex("<button type=\"button\" class=\"theme-switch\"")
     }
 }

@@ -37,6 +37,14 @@
   font-display: swap;
 }
 
+/* The obi ink is a typed colour so it can transition: when the theme swaps under the shutter,
+   the panel's text and the red band's text fade between ink and white instead of jumping. */
+@property --on-obi {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0c0c12;
+}
+
 /* ---- Tokens ----------------------------------------------------------------------------- */
 
 :root {
@@ -53,6 +61,9 @@
   --on-red: #0c0c12;
   --red-text: #ff5a4f;
   --cyan: #2fd2c4;
+  --stripe: #0c0c12;
+  --on-obi: #0c0c12;
+  --obi-tag-text: #ff3b2f;
   --grain-opacity: 0.06;
 
   --display: "Akira Expanded", "Archivo", system-ui, sans-serif;
@@ -74,8 +85,9 @@
   color-scheme: dark;
 }
 
+/* Light follows the OS unless the theme switch chose dark; the switch can also force it. */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     /* Light: the same drawing on bone paper. */
     --ground: #ebe8e0;
     --raised: #f5f3ee;
@@ -89,10 +101,35 @@
     --on-red: #0c0c12;
     --red-text: #c0231a;
     --cyan: #0a6f67;
+    --stripe: #ebe8e0;
+    --on-obi: #ffffff;
+    --obi-tag-text: #b31f16;
     --grain-opacity: 0.08;
 
     color-scheme: light;
   }
+}
+
+:root[data-theme="light"] {
+  /* Light: the same drawing on bone paper. */
+  --ground: #ebe8e0;
+  --raised: #f5f3ee;
+  --sunk: #dedad0;
+  --line: #cdc8bc;
+  --line-strong: #a39d90;
+  --text: #0c0c12;
+  --text-2: #4c4b5a;
+  --text-3: #5e5c6a;
+  --red: #ef3326;
+  --on-red: #0c0c12;
+  --red-text: #c0231a;
+  --cyan: #0a6f67;
+  --stripe: #ebe8e0;
+  --on-obi: #ffffff;
+  --obi-tag-text: #b31f16;
+  --grain-opacity: 0.08;
+
+  color-scheme: light;
 }
 
 /* ---- Base ------------------------------------------------------------------------------- */
@@ -106,6 +143,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   scrollbar-color: var(--line-strong) var(--ground);
+  /* Room for the scrollbar is kept on every page, so switching between a short and a long
+     page never changes the page width. */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -365,6 +405,23 @@ input[type="file"].field::file-selector-button {
   background: var(--red);
 }
 
+/* Clicking the page you are on, already at the top: the marker blinks twice. */
+.tab.here::before {
+  animation: here 700ms steps(1, end);
+}
+
+@keyframes here {
+  0%,
+  50% {
+    background: transparent;
+  }
+
+  25%,
+  75% {
+    background: var(--red);
+  }
+}
+
 /* ---- The label: obi, panel and sheet ---------------------------------------------------- */
 
 .label {
@@ -394,7 +451,8 @@ input[type="file"].field::file-selector-button {
   padding: 1.25rem 0;
   overflow: hidden;
   background: var(--red);
-  color: var(--on-red);
+  color: var(--on-obi);
+  transition: --on-obi 600ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .series {
@@ -422,7 +480,7 @@ input[type="file"].field::file-selector-button {
   gap: 1rem;
   margin: 0;
   writing-mode: vertical-rl;
-  font: 500 0.6875rem/1 var(--mono);
+  font: 600 0.6875rem/1 var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -431,20 +489,218 @@ input[type="file"].field::file-selector-button {
   display: block;
 }
 
-/* Caution chevrons close the obi. */
-.series-block::after {
-  content: "";
+/* Caution chevrons close the obi, and double as the theme switch. */
+.theme-switch {
   flex: none;
   width: 3rem;
+  min-height: 1.5rem;
   height: 1.5rem;
   margin-top: auto;
-  background: repeating-linear-gradient(-45deg, var(--on-red) 0 0.375rem, transparent 0.375rem 0.75rem);
+  padding: 0;
+  border: 0;
+  background: repeating-linear-gradient(-45deg, var(--stripe) 0 25%, transparent 25% 50%) 0 0 / 1rem 1rem;
+  cursor: pointer;
+}
+
+/* On hover the chevrons march sideways. The stripes sit on a 1rem square tile that repeats
+   seamlessly at 45deg, so sliding the pattern exactly one tile loops without a join. */
+.theme-switch:hover,
+.theme-switch:focus-visible {
+  background: repeating-linear-gradient(-45deg, var(--stripe) 0 25%, transparent 25% 50%) 0 0 / 1rem 1rem;
+  animation: march 450ms linear infinite;
+}
+
+/* The theme change: theme.js sweeps this red obi shutter across the page and swaps the
+   theme while it covers everything. Chevron edges lead and trail it. */
+.shutter {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--red);
+  color: var(--on-obi);
+  pointer-events: none;
+  transform: translateX(-130%);
+  will-change: transform;
+  transition: --on-obi 600ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.shutter::before,
+.shutter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3rem;
+  background: repeating-linear-gradient(-45deg, var(--red) 0 25%, transparent 25% 50%) 0 0 / 1.5rem 1.5rem;
+}
+
+/* The panel's spec sheet: hairline frame, crosses, corner captions, barcode and chevrons. */
+.shutter-frame {
+  position: absolute;
+  inset: clamp(1rem, 3vw, 2.5rem);
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--on-obi) 55%, transparent);
+}
+
+.shutter-frame::before,
+.shutter-frame::after {
+  content: "";
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  background: linear-gradient(var(--on-obi), var(--on-obi)) center / 1px 100% no-repeat,
+    linear-gradient(var(--on-obi), var(--on-obi)) center / 100% 1px no-repeat;
+}
+
+.shutter-frame::before {
+  top: -0.5rem;
+  left: -0.5rem;
+}
+
+.shutter-frame::after {
+  bottom: -0.5rem;
+  right: -0.5rem;
+}
+
+.shutter-cap {
+  font: 600 0.75rem/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.shutter-frame > .shutter-cap,
+.shutter-code {
+  position: absolute;
+}
+
+.tl {
+  top: 1.25rem;
+  left: 1.25rem;
+}
+
+.tr {
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.bl {
+  bottom: 1.25rem;
+  left: 1.25rem;
+}
+
+.shutter-code {
+  bottom: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.375rem;
+}
+
+.shutter-bars {
+  width: 7rem;
+  height: 2rem;
+  background: repeating-linear-gradient(90deg, var(--on-obi) 0 2px, transparent 2px 4px, var(--on-obi) 4px 7px,
+    transparent 7px 9px, var(--on-obi) 9px 10px, transparent 10px 13px);
+}
+
+.shutter-core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.shutter-label {
+  font: 800 clamp(2.5rem, 9vw, 7rem)/1 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+}
+
+.shutter-rule {
+  width: min(24rem, 60vw);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--on-obi) 15% 85%, transparent);
+}
+
+.shutter-chevrons {
+  position: absolute;
+  top: 50%;
+  left: 1.25rem;
+  width: 2rem;
+  height: 6rem;
+  margin-top: -3rem;
+  background: repeating-linear-gradient(-45deg, var(--on-obi) 0 25%, transparent 25% 50%) 0 0 / 1rem 1rem;
+  opacity: 0.85;
+}
+
+/* A faint scanline sweeps down the sheet while it covers the page. */
+.shutter-scan {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.shutter-scan::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 18%;
+  background: linear-gradient(transparent, color-mix(in srgb, var(--on-obi) 14%, transparent), transparent);
+  animation: scan 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(560%);
+  }
+}
+
+@media (max-width: 60rem) {
+  .tr,
+  .shutter-chevrons {
+    display: none;
+  }
+
+  .shutter-bars {
+    width: 4.5rem;
+    height: 1.5rem;
+  }
+}
+
+.shutter::before {
+  right: 100%;
+}
+
+.shutter::after {
+  left: 100%;
+}
+
+@keyframes march {
+  to {
+    background-position: 1rem 0;
+  }
+}
+
+.theme-switch:focus-visible {
+  outline-color: var(--on-red);
 }
 
 .failing-count {
   padding: 0.5rem 0.25rem;
-  background: var(--on-red);
-  color: var(--red);
+  background: var(--on-obi);
+  color: var(--obi-tag-text);
   font-weight: 700;
 }
 
@@ -1510,8 +1766,12 @@ body.resizing .ratio-16x9 iframe {
     text-align: right;
   }
 
-  .series-block::after {
-    display: none;
+  .theme-switch {
+    order: 3;
+    margin-top: 0;
+    width: 2.25rem;
+    height: 1.25rem;
+    min-height: 1.25rem;
   }
 
   .sleeve > :not(.series-block):not(.dock) {
@@ -1701,6 +1961,10 @@ body.resizing .ratio-16x9 iframe {
   }
 
   .now-title.ticking .ticker,
+  .theme-switch:hover,
+  .theme-switch:focus-visible,
+  .shutter-scan::before,
+  .tab.here::before,
   body.folding #timeline,
   body.folding .sheet-head {
     animation: none;
