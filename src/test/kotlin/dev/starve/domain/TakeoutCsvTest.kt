@@ -54,6 +54,24 @@ class TakeoutCsvTest {
     }
 
     @Test
+    fun `row numbers count each CRLF, bare CR and blank line as one line break`() {
+        val header = "Channel Id,Channel Title"
+        val text = header + "\r\nbad1,x\r\n\r\nbad2,x\rbad3,x\n\nbad4,x"
+
+        assertEquals(
+            listOf(2, 4, 5, 7).map { "row $it: invalid channel id" },
+            parse(text).failures,
+        )
+    }
+
+    @Test
+    fun `a last row ending in an empty field without a line break is still read`() {
+        val parsed = parse("Channel Id,Channel Title\n$idA,")
+
+        assertEquals(listOf("https://yt.test/feed?channel_id=$idA"), parsed.entries.map { it.title })
+    }
+
+    @Test
     fun `a blank title falls back to the feed url`() {
         val parsed = parse("Channel Id,Channel Title\n$idA,  \n")
 

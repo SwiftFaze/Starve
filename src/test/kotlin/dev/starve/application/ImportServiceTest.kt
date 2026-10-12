@@ -137,6 +137,24 @@ class ImportServiceTest {
         assertEquals(listOf(1L to 1L), memory.assignments)
     }
 
+    @Test
+    fun `an ungrouped feed repeated within one file is still recognised as already subscribed`() {
+        opml(ImportEntry("http://a.test/f", "A", null), ImportEntry("http://a.test/f", "A", null))
+
+        val summary = summary(import("<opml/>"))
+
+        assertEquals(1, summary.added)
+        assertEquals(1, summary.alreadySubscribed)
+        assertEquals(1, stored.size)
+    }
+
+    @Test
+    fun `the summary lists the reasons rows were unusable`() {
+        opml()
+
+        assertEquals(listOf("outline 'x': not an http(s) URL"), summary(import("<opml/>")).failures)
+    }
+
     /** The memory store, but able to look sources up by id as the real store does. */
     private class LookupSources(
         private val delegate: MemorySources,
