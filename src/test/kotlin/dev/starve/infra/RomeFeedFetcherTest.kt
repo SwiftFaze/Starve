@@ -32,7 +32,7 @@ class RomeFeedFetcherTest {
     @BeforeEach
     fun setUp() {
         server = FeedServer()
-        fetcher = RomeFeedFetcher(BoundedHttp(HttpClient.newHttpClient(), Duration.ofMillis(500), "test"))
+        fetcher = fetcherWithTimeout(GENEROUS_TIMEOUT)
     }
 
     @AfterEach
@@ -42,6 +42,7 @@ class RomeFeedFetcherTest {
     fun `a body that stalls after the headers times out as a fetch error`() {
         server.route("/slow.xml", Route.StallBody)
         val started = System.nanoTime()
+        val fetcher = fetcherWithTimeout(Duration.ofMillis(500))
         assertThrows(FeedFetchException::class.java) { fetcher.fetch("${server.baseUrl}/slow.xml", Validators()) }
         assertTrue(Duration.ofNanos(System.nanoTime() - started) < Duration.ofSeconds(3))
     }
@@ -54,7 +55,7 @@ class RomeFeedFetcherTest {
         val items = MemoryItems()
         val ingestor = FeedIngestor(repo, items, Clock.systemUTC())
 
-        PollService(repo, fetcher, ingestor).pollAll()
+        PollService(repo, fetcherWithTimeout(Duration.ofSeconds(3)), ingestor).pollAll()
 
         assertTrue(repo.errors[1L]?.isNotBlank() == true)
         assertEquals(null, repo.errors[2L])
@@ -108,6 +109,10 @@ class RomeFeedFetcherTest {
     fun `a title that decodes to whitespace is untitled`() {
         assertEquals("(untitled)", titleFetchedFrom("&amp;#32;"))
     }
+
+    // Only the stall tests need a short timeout; a short one elsewhere fails on a loaded machine.
+    private fun fetcherWithTimeout(timeout: Duration): FeedFetcher =
+        RomeFeedFetcher(BoundedHttp(HttpClient.newHttpClient(), timeout, "test"))
 
     private fun titleFetchedFrom(rawTitle: String): String {
         val spec = FeedSpec(title = "Ok", entries = 1, itemTitle = rawTitle)
@@ -251,5 +256,9 @@ class RomeFeedFetcherTest {
         ) {
             stored += items.size
         }
+    }
+
+    private companion object {
+        val GENEROUS_TIMEOUT: Duration = Duration.ofSeconds(10)
     }
 }

@@ -20,7 +20,7 @@ class HttpFeedLocatorTest {
     fun setUp() {
         server = FeedServer()
         val template = "${server.baseUrl}/sc/{id}.rss"
-        val http = BoundedHttp(HttpClient.newHttpClient(), Duration.ofMillis(500), "test")
+        val http = BoundedHttp(HttpClient.newHttpClient(), Duration.ofSeconds(10), "test")
         locator = HttpFeedLocator(http, setOf("localhost"), template)
     }
 
