@@ -83,9 +83,13 @@ body is only filled in for an item that has none, never overwritten, so posts
 fetched before this feature show the title and **Open original** only. A post
 whose feed carried no body shows a short note instead of text.
 
-The post stays put while the list scrolls and scrolls on its own. With a video in the pane,
-the video stays there and sits above the post; drag the edge between them to resize it. The
-list, the post and the video share the window, so resizing one never hides another. Empty paragraphs and runs of line breaks are dropped, so padding in a feed does not show as blank lines. The post opens in the same pane as a video, and the list's splitter resizes it either way.
+The post sits in a fixed column that scrolls on its own, so scrolling the list never
+moves it. Drag the splitter between the list and the post to resize them; the width is
+remembered. A video playing in the pane stays there when a post opens and sits above the
+post as a 16:9 strip; drag the horizontal splitter under it (or press the Up and Down
+arrow keys) to resize it, and the height is remembered too. The list, the video and the
+post share the window, so resizing one never hides another. Empty paragraphs and runs
+of line breaks are dropped from posts, so feed padding does not show as blank lines.
 
 ## Playing items inline
 

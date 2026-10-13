@@ -12,19 +12,19 @@ Feature: Reader pane for blog posts
   date escaped as text); an "Open original" link to the item's link opening in
   a new tab with rel="noopener noreferrer"; opening in the reader marking the
   item read; the no-body state (title, source, date and "Open original"
-  only, plus an explanatory line); a Close control; the reader declaring that a
-  video in the pane keeps its placement when a post opens (it is not moved to
-  Mini);
-  404 for an unknown item id and for a playable item.
+  only, plus an explanatory line); a Close control; the reader not asking a
+  video in the pane to step down when a post opens (it keeps its placement and
+  is not moved to Mini); 404 for an unknown item id and for a playable item.
   Supersedes: in part chronological-feed.feature, where a title click always
   goes to /items/{id}/open and redirects. That now holds only without
   JavaScript and for playable items; the endpoint itself is unchanged.
   Supersedes: "reading article text in the pane" being out of scope in
   player-deck.feature; the pane now serves the reader too.
   Out of scope: storing and sanitising bodies (post-bodies.feature); what the
-  browser does with the placements (the list staying
-  put, the reader layout, closing): browser behaviour covered by the human
-  playtest; the detail view for YouTube/SoundCloud items (#30), whose titles
+  browser does with the placements (the list staying put, the reader scrolling
+  on its own, the list and video splitters and their remembered sizes, the pane
+  video staying above the post, closing): browser behaviour covered by the
+  human playtest; the detail view for YouTube/SoundCloud items (#30), whose titles
   keep today's behaviour; full-text fetch for teaser feeds; images in posts
   beyond loading them; search over bodies; keyboard shortcuts.
 
