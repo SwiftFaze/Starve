@@ -47,6 +47,7 @@
 
   function place(where) {
     body.dataset.video = where;
+    syncSplitter();
     if (SIZES[where]) sizeVideo(where, videoWidth(where), false);
     requestAnimationFrame(tickTitle);
     document.querySelectorAll('#dock .placement button').forEach(function (button) {
@@ -55,6 +56,7 @@
     if (where === 'pane' && !window.matchMedia('(max-width: 60rem)').matches) sizeList(savedList(), false);
     else delete body.dataset.list;
     syncSplitter();
+    if (where === 'pane') applyVideoHeight();
   }
 
   document.addEventListener('click', function (event) {
@@ -120,7 +122,14 @@
     syncSplitter();
   }
 
+  // The list and a pane share the window when a video sits in the pane or a post is open.
+  function syncSplit() {
+    if (body.dataset.video === 'pane' || document.querySelector('#reader .reader-view')) body.dataset.split = 'on';
+    else delete body.dataset.split;
+  }
+
   function syncSplitter() {
+    syncSplit();
     var splitter = document.querySelector('.splitter');
     if (!splitter) return;
     var strip = body.dataset.list === 'strip';
@@ -132,7 +141,7 @@
 
   document.addEventListener('pointerdown', function (event) {
     var splitter = event.target.closest('.splitter');
-    if (!splitter || body.dataset.video !== 'pane') return;
+    if (!splitter || body.dataset.split !== 'on') return;
     event.preventDefault();
     var left = listLeft();
     body.classList.add('resizing');
@@ -150,7 +159,7 @@
   });
 
   document.addEventListener('dblclick', function (event) {
-    if (!event.target.closest('.splitter') || body.dataset.video !== 'pane') return;
+    if (!event.target.closest('.splitter') || body.dataset.split !== 'on') return;
     fold();
     sizeList(LIST_DEFAULT, true);
   });
@@ -449,6 +458,127 @@
 
   window.addEventListener('resize', tickTitle);
 
+  // ---- The reader: a blog post beside the list --------------------------------------------
+
+  function reader() { return document.getElementById('reader'); }
+
+  function emptyReader() {
+    var pane = reader();
+    if (pane) pane.replaceChildren();
+    syncSplitter();
+  }
+
+  // Close empties the pane only; a video stays where it is.
+  window.closeReader = function () {
+    emptyReader();
+    var sheet = document.getElementById('sheet');
+    if (sheet) sheet.focus();
+  };
+
+  // Opening a post marks its row read (the server already did). A video keeps its placement.
+  function readerOpened() {
+    var view = document.querySelector('#reader .reader-view');
+    if (!view) return;
+    layoutForReader();
+    markRowRead(view.dataset.item);
+    if (window.matchMedia('(max-width: 60rem)').matches) view.scrollIntoView({ block: 'start' });
+  }
+
+  function layoutForReader() {
+    // The split layout must apply before the list is measured, or the sheet is still at its old left edge.
+    syncSplitter();
+    // Without a pane video the reader opens the list at its saved width, as a pane video would.
+    if (body.dataset.video !== 'pane' && !window.matchMedia('(max-width: 60rem)').matches) sizeList(savedList(), false);
+    applyVideoHeight();
+  }
+
+  function markRowRead(itemId) {
+    var row = document.querySelector('.item[data-item="' + itemId + '"]');
+    if (!row) return;
+    row.classList.add('read');
+    var markRead = row.querySelector('form[action$="/read"]');
+    if (markRead) markRead.remove();
+  }
+
+  // ---- The video above the post: drag its lower edge to resize (a pane video with a post open) --
+
+  var VIDEO_MIN = 120;
+  var READER_MIN = 200;
+
+  function videoOverPost() {
+    return body.dataset.video === 'pane' && !!document.querySelector('#reader .reader-view') &&
+      !window.matchMedia('(max-width: 60rem)').matches;
+  }
+
+  function pinnedVideo() { return document.querySelector('.ratio-16x9'); }
+
+  // The most the video may grow: the post keeps READER_MIN pixels between the video and the deck.
+  function videoMax() {
+    var bar = document.getElementById('bar');
+    var deck = parseFloat(getComputedStyle(body).getPropertyValue('--deck-h')) || 0;
+    return Math.max(VIDEO_MIN, window.innerHeight - (bar ? bar.offsetHeight : 0) - deck - 96 - READER_MIN);
+  }
+
+  // The height is passed in when known: the video animates its height, so a measured value lags.
+  function syncVideoSplitter(known) {
+    var splitter = document.querySelector('.video-splitter');
+    var video = pinnedVideo();
+    if (!splitter || !video) return;
+    var height = known === undefined ? Math.round(video.getBoundingClientRect().height) : known;
+    splitter.setAttribute('aria-valuenow', String(height));
+    splitter.setAttribute('aria-valuetext', height + ' pixels');
+  }
+
+  // The dragged height, or the 16:9 height the video is drawn at while no height has been set.
+  function currentVideoHeight() {
+    return parseFloat(body.style.getPropertyValue('--video-h')) || pinnedVideo().getBoundingClientRect().height;
+  }
+
+  function sizeVideoHeight(height, remember) {
+    var value = Math.round(Math.max(VIDEO_MIN, Math.min(videoMax(), height)));
+    body.style.setProperty('--video-h', value + 'px');
+    if (remember) {
+      try { localStorage.setItem('starve.videoh', String(value)); } catch (e) { /* storage blocked */ }
+    }
+    syncVideoSplitter(value);
+  }
+
+  // Restores the saved height while a pane video and a post are shown; otherwise the 16:9 default.
+  function applyVideoHeight() {
+    var stored = NaN;
+    try { stored = Number(localStorage.getItem('starve.videoh')); } catch (e) { /* storage blocked */ }
+    if (videoOverPost() && stored) sizeVideoHeight(stored, false);
+    else body.style.removeProperty('--video-h');
+    syncVideoSplitter();
+  }
+
+  document.addEventListener('pointerdown', function (event) {
+    var splitter = event.target.closest && event.target.closest('.video-splitter');
+    if (!splitter || !videoOverPost()) return;
+    event.preventDefault();
+    var top = pinnedVideo().getBoundingClientRect().top;
+    body.classList.add('resizing');
+    splitter.setPointerCapture(event.pointerId);
+    function move(e) { sizeVideoHeight(e.clientY - top, false); }
+    function up(e) {
+      splitter.releasePointerCapture(event.pointerId);
+      splitter.removeEventListener('pointermove', move);
+      splitter.removeEventListener('pointerup', up);
+      body.classList.remove('resizing');
+      sizeVideoHeight(e.clientY - top, true);
+    }
+    splitter.addEventListener('pointermove', move);
+    splitter.addEventListener('pointerup', up);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (!event.target.matches || !event.target.matches('.video-splitter') || !videoOverPost()) return;
+    var step = { ArrowUp: -32, ArrowDown: 32 }[event.key];
+    if (!step) return;
+    event.preventDefault();
+    sizeVideoHeight(currentVideoHeight() + step, true);
+  });
+
   // ---- A new player arrives -------------------------------------------------------------
 
   function start() {
@@ -459,6 +589,7 @@
     var video = current.querySelector('.ratio-16x9 iframe');
     var audio = current.querySelector('.sc-frame');
     if (video) {
+      emptyReader();
       place('pane');
       state = youtube(video);
       video.addEventListener('load', function () { post(video, YOUTUBE, { event: 'listening', id: 'starve', channel: 'widget' }); });
@@ -467,6 +598,7 @@
       delete body.dataset.list;
       if (audio) state = soundcloud(audio);
     }
+    syncSplitter();
     applyVolume(savedVolume());
     trackDeck();
     tickTitle();
@@ -474,6 +606,7 @@
 
   document.addEventListener('htmx:afterSwap', function (event) {
     if (event.detail && event.detail.target === dock()) start();
+    if (event.detail && event.detail.target === reader()) readerOpened();
   });
   document.addEventListener('htmx:afterSettle', markPlaying);
 

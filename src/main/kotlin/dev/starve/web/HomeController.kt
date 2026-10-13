@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 data class TimelineItemView(
     val id: Long,
@@ -173,9 +171,4 @@ class HomeController(
             read,
             playable,
         )
-
-    private companion object {
-        val DISPLAY_FORMAT: DateTimeFormatter =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm 'UTC'").withZone(ZoneOffset.UTC)
-    }
 }

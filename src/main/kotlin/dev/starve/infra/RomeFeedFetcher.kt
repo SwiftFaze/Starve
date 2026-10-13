@@ -65,16 +65,23 @@ class RomeFeedFetcher(
 
     private fun toItem(entry: SyndEntry): FeedItem? {
         val key = FeedRules.itemKey(entry.uri, entry.link) ?: return null
+        val link = entry.link?.takeIf { it.isNotBlank() }
         val published = entry.publishedDate ?: entry.updatedDate
         return FeedItem(
             key = key,
             title = decodedTitle(entry),
-            link = entry.link?.takeIf { it.isNotBlank() },
+            link = link,
             publishedAt = published?.toInstant(),
             author = entry.author?.takeIf { it.isNotBlank() },
             thumbnailUrl = thumbnail(entry),
+            body = BodySanitizer.sanitize(rawBody(entry), link),
         )
     }
+
+    /** The entry's full content (content:encoded, Atom content) when it has any, else its description. */
+    private fun rawBody(entry: SyndEntry): String? =
+        entry.contents.firstNotNullOfOrNull { it.value?.takeIf(String::isNotBlank) }
+            ?: entry.description?.value
 
     private fun decodedTitle(entry: SyndEntry): String {
         val decoded = TitleEntities.decode(entry.title.orEmpty()).trim()

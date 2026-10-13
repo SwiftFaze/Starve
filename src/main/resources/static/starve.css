@@ -430,9 +430,12 @@ input[type="file"].field::file-selector-button {
   align-items: start;
 }
 
+/* z-index 1: the video is a fixed child of the dock, so it paints inside this stacking context. The
+   sleeve must paint above the reader beside it, or the reader's text draws over the video. */
 .sleeve {
   position: sticky;
   top: var(--bar-h);
+  z-index: 1;
   display: grid;
   grid-template-columns: var(--obi-w) auto;
   grid-auto-rows: min-content;
@@ -1340,11 +1343,11 @@ body[data-video="pane"] .ratio-16x9 {
   height: auto;
 }
 
-body[data-video="pane"] .label {
+body[data-split] .label {
   grid-template-columns: auto var(--list-w) minmax(0, 1fr);
 }
 
-body[data-video="pane"] .sheet {
+body[data-split] .sheet {
   padding-right: 1.75rem;
   border-right: 1px solid var(--line);
   min-height: calc(100dvh - var(--bar-h) - var(--deck-h));
@@ -1355,7 +1358,7 @@ body[data-video="pane"] .sheet {
   display: none;
 }
 
-body[data-video="pane"] .splitter {
+body[data-split] .splitter {
   display: block;
   position: fixed;
   z-index: 26;
@@ -1367,7 +1370,7 @@ body[data-video="pane"] .splitter {
   touch-action: none;
 }
 
-body[data-video="pane"] .splitter::after {
+body[data-split] .splitter::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -1379,8 +1382,8 @@ body[data-video="pane"] .splitter::after {
   transition: background-color var(--quick), height var(--quick);
 }
 
-body[data-video="pane"] .splitter:hover::after,
-body[data-video="pane"] .splitter:focus-visible::after,
+body[data-split] .splitter:hover::after,
+body[data-split] .splitter:focus-visible::after,
 body.resizing .splitter::after {
   background: var(--cyan);
   height: 5rem;
@@ -1430,40 +1433,40 @@ body.folding .sheet-head {
 }
 
 /* Strip: the list folds to its catalogue numbers and the video takes the room. */
-body[data-video="pane"][data-list="strip"] {
+body[data-split][data-list="strip"] {
   --list-w: var(--strip-w);
 }
 
-body[data-video="pane"][data-list="strip"] .sheet {
+body[data-split][data-list="strip"] .sheet {
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
-body[data-video="pane"][data-list="strip"] .sheet-head {
+body[data-split][data-list="strip"] .sheet-head {
   border-bottom-color: var(--line);
 }
 
-body[data-video="pane"][data-list="strip"] .sheet-head::before,
-body[data-video="pane"][data-list="strip"] .sheet-head::after,
-body[data-video="pane"][data-list="strip"] .sheet-title,
-body[data-video="pane"][data-list="strip"] .view-actions,
-body[data-video="pane"][data-list="strip"] .sheet-note,
-body[data-video="pane"][data-list="strip"] .caught-up,
-body[data-video="pane"][data-list="strip"] .item .thumb,
-body[data-video="pane"][data-list="strip"] .item .blank,
-body[data-video="pane"][data-list="strip"] .item .body,
-body[data-video="pane"][data-list="strip"] .item .date,
-body[data-video="pane"][data-list="strip"] .item .actions {
+body[data-split][data-list="strip"] .sheet-head::before,
+body[data-split][data-list="strip"] .sheet-head::after,
+body[data-split][data-list="strip"] .sheet-title,
+body[data-split][data-list="strip"] .view-actions,
+body[data-split][data-list="strip"] .sheet-note,
+body[data-split][data-list="strip"] .caught-up,
+body[data-split][data-list="strip"] .item .thumb,
+body[data-split][data-list="strip"] .item .blank,
+body[data-split][data-list="strip"] .item .body,
+body[data-split][data-list="strip"] .item .date,
+body[data-split][data-list="strip"] .item .actions {
   display: none;
 }
 
-body[data-video="pane"][data-list="strip"] .item {
+body[data-split][data-list="strip"] .item {
   display: block;
   margin: 0;
   padding: 0.625rem 0.25rem;
 }
 
-body[data-video="pane"][data-list="strip"] .load-more {
+body[data-split][data-list="strip"] .load-more {
   min-height: 2.25rem;
   font-size: 0.625rem;
 }
@@ -1910,7 +1913,7 @@ body.resizing .ratio-16x9 iframe {
   }
 
   /* Pane on a phone: the full width just above the deck. */
-  body[data-video="pane"] .label,
+  body[data-split] .label,
   body[data-video="deck"] .label {
     display: block;
   }
@@ -1931,12 +1934,12 @@ body.resizing .ratio-16x9 iframe {
     padding-bottom: calc(var(--deck-h) + min(56.25vw, 40dvh));
   }
 
-  body[data-video="pane"] .sheet {
+  body[data-split] .sheet {
     border-right: 0;
     padding-right: var(--gutter);
   }
 
-  body[data-video] .splitter {
+  body[data-split] .splitter {
     display: none;
   }
 
@@ -1973,5 +1976,240 @@ body.resizing .ratio-16x9 iframe {
   body.folding #timeline,
   body.folding .sheet-head {
     animation: none;
+  }
+}
+
+/* ---- The reader: a blog post beside the list -------------------------------------------- */
+
+.reader {
+  min-width: 0;
+}
+
+.reader:empty {
+  display: none;
+}
+
+/* The post is a fixed column beside the list, as the video is: it stays put while the list scrolls
+   and scrolls on its own. A video in the pane sits above it as a 16:9 strip (or the height the user
+   dragged the video splitter to). Desktop only; on a phone the post follows the list. */
+@media (min-width: 60.0625rem) {
+  body[data-split] .reader-view {
+    position: fixed;
+    top: var(--reader-top, var(--bar-h));
+    bottom: var(--deck-h);
+    left: calc(var(--list-x, var(--obi-w)) + var(--list-w));
+    right: 0;
+    overscroll-behavior: contain;
+  }
+
+  body[data-video="pane"]:has(.reader-view) {
+    --pane-video-h: var(--video-h, calc((100vw - var(--gutter) - var(--list-x, var(--obi-w)) - var(--list-w) - 1.5rem) * 9 / 16));
+    --reader-top: calc(var(--bar-h) + 1.75rem + var(--pane-video-h) + 1.25rem);
+  }
+
+  body[data-video="pane"]:has(.reader-view) .ratio-16x9 {
+    bottom: auto;
+    height: var(--pane-video-h);
+  }
+
+  body[data-video="pane"]:has(.reader-view) .video-splitter {
+    display: block;
+    position: fixed;
+    z-index: 26;
+    top: calc(var(--bar-h) + 1.75rem + var(--pane-video-h));
+    left: calc(var(--list-x, var(--obi-w)) + var(--list-w));
+    right: 0;
+    height: 1.25rem;
+    cursor: row-resize;
+    touch-action: none;
+  }
+
+  body[data-video="pane"]:has(.reader-view) .video-splitter::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 3rem;
+    height: 0.25rem;
+    margin: -0.125rem 0 0 -1.5rem;
+    background: var(--line-strong);
+    transition: background-color var(--quick), width var(--quick);
+  }
+
+  body[data-video="pane"]:has(.reader-view) .video-splitter:hover::after,
+  body[data-video="pane"]:has(.reader-view) .video-splitter:focus-visible::after,
+  body.resizing .video-splitter::after {
+    background: var(--cyan);
+    width: 5rem;
+    margin-left: -2.5rem;
+  }
+}
+
+/* A floating mini video sits over the post's lower corner, so the post ends above it. */
+body[data-video="mini"] .reader-view {
+  padding-bottom: calc(var(--mini-w, 320px) * 9 / 16 + 2rem);
+}
+
+.reader-view {
+  overflow-y: auto;
+  min-width: 0;
+  padding: 1.75rem var(--gutter) 4rem 1.75rem;
+  border-left: 1px solid var(--line);
+}
+
+.video-splitter {
+  display: none;
+}
+
+.video-splitter:focus-visible {
+  outline: none;
+}
+
+.reader-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem 1rem;
+  align-items: start;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--text);
+}
+
+.reader-cat {
+  grid-column: 1;
+  grid-row: 1;
+  font: 500 0.75rem/1.2 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+
+.reader-close {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.reader-title {
+  grid-column: 1;
+  margin: 0;
+  font: 500 1.375rem/1.3 var(--read);
+  overflow-wrap: anywhere;
+}
+
+.reader-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
+}
+
+.reader-original {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--text);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color var(--quick), color var(--quick);
+}
+
+.reader-original:hover {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.reader-body,
+.reader-empty {
+  max-width: 40rem;
+  margin: 1.5rem 0 0;
+  font: 400 1rem/1.6 var(--read);
+  overflow-wrap: anywhere;
+}
+
+.reader-empty {
+  color: var(--text-2);
+}
+
+.reader-body > :first-child {
+  margin-top: 0;
+}
+
+.reader-body img,
+.reader-body figure,
+.reader-body table {
+  max-width: 100%;
+  height: auto;
+}
+
+.reader-body figure {
+  margin: 1rem 0;
+}
+
+.reader-body pre {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: var(--sunk);
+  font: 400 0.8125rem/1.5 var(--mono);
+}
+
+.reader-body blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 1px solid var(--line-strong);
+  color: var(--text-2);
+}
+
+.reader-body hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* Tables keep their rules and figures; a table wider than the column scrolls sideways inside it
+   instead of widening the post. */
+.reader-body table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.reader-body th,
+.reader-body td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+
+.reader-body thead th {
+  background: var(--sunk);
+  font-weight: 600;
+}
+
+.reader-body caption {
+  padding-top: 0.5rem;
+  text-align: left;
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
+}
+
+
+@media (max-width: 60rem) {
+  .reader-view {
+    position: static;
+    max-height: none;
+    padding: 1.75rem var(--gutter) 2rem;
+    border-left: 0;
+    border-top: 1px solid var(--text);
   }
 }

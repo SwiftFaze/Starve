@@ -16,7 +16,7 @@ object FeedXml {
         val title = spec.title?.let { "<title>$it</title>" } ?: ""
         val items = (1..spec.entries).joinToString("") { rssItem(baseUrl, path, spec, it) }
         return """<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:itunes="$ITUNES"><channel>$title<link>$baseUrl$path</link>""" +
+<rss version="2.0" xmlns:itunes="$ITUNES" xmlns:content="$CONTENT"><channel>$title<link>$baseUrl$path</link>""" +
             """<description>fixture</description>$items</channel></rss>"""
     }
 
@@ -31,7 +31,14 @@ object FeedXml {
         val date = if (spec.noDate) "" else "<pubDate>${pubDate(n)}</pubDate>"
         val art = if (spec.coverArt) "<itunes:image href=\"${spec.coverArtUrl ?: "$baseUrl/art-$n.jpg"}\"/>" else ""
         val title = spec.itemTitle ?: "Entry $n"
-        return "<item><title>$title</title><link>$link</link>$guid$date<author>a$n@example.com</author>$art</item>"
+        return "<item><title>$title</title><link>$link</link>$guid$date<author>a$n@example.com</author>" +
+            "$art${bodies(spec)}</item>"
+    }
+
+    private fun bodies(spec: FeedSpec): String {
+        val description = spec.description?.let { "<description><![CDATA[$it]]></description>" } ?: ""
+        val encoded = spec.content?.let { "<content:encoded><![CDATA[$it]]></content:encoded>" } ?: ""
+        return description + encoded
     }
 
     private fun atom(
@@ -58,9 +65,10 @@ object FeedXml {
             } else {
                 ""
             }
+        val content = spec.content?.let { "<content type=\"html\">${escape(it)}</content>" } ?: ""
         return "<entry><id>yt:$path:$n</id><title>Entry $n</title><link href=\"$baseUrl$path/item-$n\"/>" +
             "<published>2026-01-0${n}T10:00:00Z</published><updated>2026-01-0${n}T10:00:00Z</updated>" +
-            "<author><name>Author $n</name></author>$thumb</entry>"
+            "<author><name>Author $n</name></author>$thumb$content</entry>"
     }
 
     private fun pubDate(n: Int) = "Mon, 0$n Jun 2026 10:00:00 GMT".replace("Mon", WEEKDAYS[(n - 1) % WEEKDAYS.size])
@@ -68,4 +76,7 @@ object FeedXml {
     private val WEEKDAYS = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
     private const val ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd"
+    private const val CONTENT = "http://purl.org/rss/1.0/modules/content/"
+
+    private fun escape(text: String) = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 }

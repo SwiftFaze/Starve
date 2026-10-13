@@ -90,6 +90,31 @@ embedding is disabled, anything else fails open. All outbound HTTP (feed fetch,
 feed location, oEmbed) goes through the shared `BoundedHttp` helper, which bounds
 the whole exchange, body included, by one timeout.
 
+## Reader pane and post bodies
+
+`RomeFeedFetcher` picks each entry's body (content, else description) and passes it
+through `infra/BodySanitizer`, a jsoup allow-list (relaxed, minus style and data:
+URLs, with links forced to `target=_blank rel="noopener noreferrer"`), capped at
+200000 characters. It also drops blocks left with no text or image (empty `<p>`,
+`&nbsp;` spacers) and collapses runs of `<br>`, since feeds pad posts with those.
+Sanitising happens once, at ingestion; the stored `items.body`
+(V6, nullable) is trusted at render time, and `ItemRepository` only fills a missing
+body on a later insert. `ReaderService` (wired by `ReaderConfig`) resolves
+`GET /items/{id}/reader`: it reads the `PostRef` through `ItemRepository.findPost`,
+marks the item read, and returns null (404) for an unknown or playable item, which
+keeps using the player. `ReaderController` renders `reader.html` as an htmx
+fragment and offers "Open original" only for http(s) links.
+
+Reader layout (`deck.js`, `starve.css`): the reader shares the list's pane layout, so the
+`data-split` attribute on `body` (set while a video is in the pane or a post is open)
+drives the list width and the vertical splitter. On desktop the post is a fixed column
+that scrolls on its own, so the list scrolling never moves it. With a pane video, the
+video is a 16:9 strip above the post, and the horizontal `video-splitter` sets its height
+(`--video-h`, persisted as `starve.videoh`, Up/Down arrows step 32px, at least 120px for
+the video and 200px for the post). Opening a post never moves a video out of the pane.
+
+No layer contract changes: the sanitiser is an infra detail behind the existing fetcher port.
+
 ## Dependency rule
 
 Dependencies point inward: `web`/`infra` -> `application` -> `domain`. Nothing

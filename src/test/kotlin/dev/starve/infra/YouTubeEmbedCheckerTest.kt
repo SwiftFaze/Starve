@@ -57,6 +57,7 @@ class YouTubeEmbedCheckerTest {
     fun `a stalled endpoint fails open once the timeout passes`() {
         server.route("/oembed/dQw4w9WgXcQ", Route.Stall)
         val started = System.nanoTime()
+        val checker = checkerFor(server.baseUrl, "t", Duration.ofMillis(500))
 
         assertTrue(checker.allowsEmbedding(video))
         assertTrue(Duration.ofNanos(System.nanoTime() - started) < Duration.ofSeconds(3))
@@ -72,8 +73,9 @@ class YouTubeEmbedCheckerTest {
     private fun checkerFor(
         baseUrl: String,
         agent: String,
+        timeout: Duration = Duration.ofSeconds(10),
     ): YouTubeEmbedChecker {
-        val http = BoundedHttp(HttpClient.newHttpClient(), Duration.ofMillis(500), agent)
+        val http = BoundedHttp(HttpClient.newHttpClient(), timeout, agent)
         return YouTubeEmbedChecker(http, "$baseUrl/oembed")
     }
 }

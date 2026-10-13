@@ -55,7 +55,8 @@ and keeps their items.
 
 The home page (`/`) lists every unread item from all sources, newest first, 50 at
 a time with a **Load more** link. Opening an item marks it read and goes to its
-link; the mark-read button marks it without opening. **Mark all read** marks
+link (blog posts open in the reader pane instead, see below); the mark-read button
+marks it without opening. **Mark all read** marks
 everything shown when the page was rendered, so items that arrive meanwhile stay
 unread. **Show read** adds already-read items back to the list. Read items are
 kept until the retention age removes them.
@@ -64,6 +65,31 @@ Above the list, a navigation shows **All** and each group (alphabetical) with it
 unread count, e.g. `Music (12)`. Choosing a group (`/?group=<id>`) shows only its
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.
+
+## Reading posts in the reader pane
+
+Clicking the title of a blog post (any item that is not a YouTube video or
+SoundCloud track) shows it in a reader pane beside the list instead of leaving
+for the original site. The list stays in place, the post is marked read, and
+anything playing keeps playing. The reader shows the title, source, published
+date and the post body, with **Open original** (new tab, http/https links only)
+and **Close**. Without JavaScript the title still follows the link as before.
+
+Starve stores each entry's body (the feed's full content, else its description)
+when it first fetches the item, cleaned of scripts, frames, forms, styles, event
+handlers, and any link or image URL that is not http(s) (links may also be
+`mailto:`). Links open in a new tab. Bodies are capped at 200,000 characters. A
+body is only filled in for an item that has none, never overwritten, so posts
+fetched before this feature show the title and **Open original** only. A post
+whose feed carried no body shows a short note instead of text.
+
+The post sits in a fixed column that scrolls on its own, so scrolling the list never
+moves it. Drag the splitter between the list and the post to resize them; the width is
+remembered. A video playing in the pane stays there when a post opens and sits above the
+post as a 16:9 strip; drag the horizontal splitter under it (or press the Up and Down
+arrow keys) to resize it, and the height is remembered too. The list, the video and the
+post share the window, so resizing one never hides another. Empty paragraphs and runs
+of line breaks are dropped from posts, so feed padding does not show as blank lines.
 
 ## Playing items inline
 

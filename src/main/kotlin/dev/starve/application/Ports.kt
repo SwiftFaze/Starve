@@ -118,7 +118,7 @@ interface GroupRepository {
 }
 
 interface ItemRepository {
-    /** Stores items whose key is new for the source; a known key only gains a thumbnail it lacked. */
+    /** Stores items whose key is new for the source; a known key only gains a thumbnail or body it lacked. */
     fun insertNew(
         sourceId: Long,
         items: List<FeedItem>,
@@ -141,6 +141,9 @@ interface ItemRepository {
 
     fun find(id: Long): ItemRef?
 
+    /** The item with its published date and stored body, for the reader. */
+    fun findPost(id: Long): PostRef?
+
     /** Marks the item read at [at] unless already read; returns false when no such item exists. */
     fun markRead(
         id: Long,
@@ -162,6 +165,16 @@ data class ItemRef(
     val title: String,
     val sourceTitle: String,
     val thumbnailUrl: String?,
+)
+
+/** One item as the reader shows it; [body] is already-sanitised HTML, or null when none was stored. */
+data class PostRef(
+    val id: Long,
+    val link: String?,
+    val title: String,
+    val sourceTitle: String,
+    val publishedAt: Instant,
+    val body: String?,
 )
 
 interface EmbedChecker {
