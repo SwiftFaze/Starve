@@ -65,6 +65,11 @@ sealed interface Route {
     /** An image answer, as a site serves its icon. */
     data object Icon : Route
 
+    /** A JSON document with the given text, served as is. */
+    data class Json(
+        val body: String,
+    ) : Route
+
     data object Stall : Route
 
     /** Sends headers and a little body, then stalls. */
@@ -107,7 +112,21 @@ class FeedServer {
         status: Int,
     ) = route("$OEMBED_PATH/$videoId", Route.Status(status))
 
+    /** Answers the SoundCloud oEmbed query for [trackUrl] (served at [SOUNDCLOUD_OEMBED_PATH]) with [answer]. */
+    fun routeSoundCloud(
+        trackUrl: String,
+        answer: Route,
+    ) = route("$SOUNDCLOUD_OEMBED_PATH?$trackUrl", answer)
+
+    /** How many SoundCloud oEmbed queries for [trackUrl] arrived since the last [clearRequests]. */
+    fun soundCloudQueries(trackUrl: String): Int {
+        val asked = requests.filter { it.path == SOUNDCLOUD_OEMBED_PATH }
+        return asked.count { trackOf(it.query) == trackUrl }
+    }
+
     fun clearRoutes() = routes.clear()
+
+    fun clearRequests() = seen.clear()
 
     fun routeOf(path: String): Route? = routes[path]
 
@@ -126,6 +145,7 @@ class FeedServer {
             is Route.Status -> respond(exchange, route.code, "text/plain", "status ${route.code}")
             is Route.Html -> respond(exchange, 200, "text/html; charset=utf-8", route.body)
             Route.Icon -> respond(exchange, 200, "image/png", "icon")
+            is Route.Json -> respond(exchange, 200, "application/json", route.body)
             is Route.Raw -> respond(exchange, 200, route.contentType, resource(route.resource))
             is Route.Feed -> serveFeed(exchange, path, route.spec, ifNoneMatch)
             Route.Stall -> stall(exchange)
@@ -133,11 +153,15 @@ class FeedServer {
         }
     }
 
-    /** oEmbed queries are routed per video; everything else by path. */
+    /** oEmbed queries are routed per video or per SoundCloud track; everything else by path. */
     private fun routeKey(exchange: HttpExchange): String {
         val path = exchange.requestURI.path
         val videoId = OEMBED_VIDEO.find(exchange.requestURI.rawQuery.orEmpty())?.groupValues?.get(1)
-        return if (path == OEMBED_PATH && videoId != null) "$OEMBED_PATH/$videoId" else path
+        return when {
+            path == OEMBED_PATH && videoId != null -> "$OEMBED_PATH/$videoId"
+            path == SOUNDCLOUD_OEMBED_PATH -> "$SOUNDCLOUD_OEMBED_PATH?${trackOf(exchange.requestURI.query)}"
+            else -> path
+        }
     }
 
     private fun serveFeed(
@@ -190,8 +214,15 @@ class FeedServer {
     companion object {
         const val ETAG = "\"v1\""
         const val OEMBED_PATH = "/oembed"
+        const val SOUNDCLOUD_OEMBED_PATH = "/soundcloud/oembed"
         private val OEMBED_VIDEO = Regex("""url=[^&]*watch%3Fv%3D([A-Za-z0-9_-]+)""")
         private const val STALL_MILLIS = 5_000L
         private const val BODY_CLAIM = 100_000L
+
+        /** The track URL in a decoded oEmbed query such as `url=https://soundcloud.com/a/b&format=json`. */
+        private fun trackOf(query: String?): String? {
+            val pair = query?.split('&')?.firstOrNull { it.startsWith("url=") }
+            return pair?.removePrefix("url=")
+        }
     }
 }

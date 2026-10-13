@@ -1,8 +1,5 @@
 package dev.starve.acceptance
 
-import dev.starve.application.ItemRepository
-import dev.starve.application.SourceRepository
-import dev.starve.domain.FeedItem
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -10,8 +7,6 @@ import io.cucumber.java.en.When
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import java.time.Duration
-import java.time.Instant
 
 class PlayerSteps {
     private val app = World.app
@@ -24,22 +19,6 @@ class PlayerSteps {
         videoId: String,
         status: Int,
     ) = World.oembed.routeOembed(videoId, status)
-
-    @Given("the source {string} has an unread item {string} with the link {string} published {int} days ago")
-    fun unreadItemWithLink(
-        source: String,
-        title: String,
-        link: String,
-        days: Int,
-    ) {
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == source }
-                ?: sources.insert("http://$source.test/feed", source)
-        val published = Instant.now().minus(Duration.ofDays(days.toLong()))
-        val item = FeedItem(title, title, link, published, null, null)
-        app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), Instant.now())
-    }
 
     @When("I request the player of the item {string} via htmx")
     fun requestPlayer(title: String) = requestPlayerOf(itemId(title))

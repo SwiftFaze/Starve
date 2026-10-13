@@ -72,7 +72,7 @@
             <span class="blank" th:unless="${item.thumbnailUrl != null or item.faviconUrl != null}"></span>
             <div class="body">
               <a class="title" th:href="@{/items/{id}/open(id=${item.id})}" th:text="${item.title}"
-                 th:attr="hx-get=${item.playable} ? null : @{/items/{id}/reader(id=${item.id})}"
+                 th:attr="hx-get=${item.playable} ? @{/items/{id}/detail(id=${item.id})} : @{/items/{id}/reader(id=${item.id})}"
                  hx-target="#reader" hx-swap="innerHTML">Title</a>
               <span class="source" th:text="${item.sourceTitle}">Source</span>
             </div>

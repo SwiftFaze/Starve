@@ -2057,6 +2057,29 @@ body.resizing .ratio-16x9 iframe {
   }
 }
 
+/* The detail view of a SoundCloud track or YouTube video is a reader view too: its artwork sits large under
+   the header, and its control fills red while that item is in the deck (the playing row's rule). */
+.detail-art {
+  display: block;
+  width: 100%;
+  max-width: 26rem;
+  height: auto;
+  max-height: 60vh;
+  margin: 1.5rem 0 0;
+  object-fit: contain;
+  background: var(--sunk);
+}
+
+.detail-play {
+  margin-top: 1.25rem;
+}
+
+.detail-view.current .detail-play {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--on-red);
+}
+
 /* A floating mini video sits over the post's lower corner, so the post ends above it. */
 body[data-video="mini"] .reader-view {
   padding-bottom: calc(var(--mini-w, 320px) * 9 / 16 + 2rem);

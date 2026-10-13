@@ -1,7 +1,9 @@
 package dev.starve.infra
 
+import dev.starve.application.DetailRef
 import dev.starve.application.ItemRef
 import dev.starve.application.ItemRepository
+import dev.starve.application.Oembed
 import dev.starve.application.PostRef
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
@@ -96,6 +98,38 @@ class JdbcItemRepository(
             }.optional()
             .orElse(null)
 
+    override fun findDetail(id: Long): DetailRef? =
+        jdbc
+            .sql(
+                "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.author, " +
+                    "i.thumbnail_url, i.body, i.oembed_json " +
+                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
+            ).param(id)
+            .query { rs, _ ->
+                DetailRef(
+                    rs.getLong("id"),
+                    rs.getString("link"),
+                    rs.getString("title"),
+                    rs.getString("source_title"),
+                    Instant.ofEpochMilli(rs.getLong("published_at")),
+                    rs.getString("author"),
+                    rs.getString("thumbnail_url"),
+                    rs.getString("body"),
+                    OembedJson.decode(rs.getString("oembed_json")),
+                )
+            }.optional()
+            .orElse(null)
+
+    override fun saveOembed(
+        id: Long,
+        oembed: Oembed,
+    ) {
+        jdbc
+            .sql("UPDATE items SET oembed_json = ? WHERE id = ?")
+            .params(OembedJson.encode(oembed), id)
+            .update()
+    }
+
     override fun markRead(
         id: Long,
         at: Instant,
@@ -116,18 +150,6 @@ class JdbcItemRepository(
                     "AND (? IS NULL OR source_id IN (SELECT id FROM sources WHERE group_id = ?))",
             ).params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli(), groupId, groupId)
             .update()
-
-    private fun ResultSet.toTimelineItem() =
-        TimelineItem(
-            getLong("id"),
-            getString("source_title"),
-            getString("title"),
-            Instant.ofEpochMilli(getLong("published_at")),
-            getString("thumbnail_url"),
-            getInt("is_read") == 1,
-            Playable.of(getString("link")) != null,
-            getString("favicon_url"),
-        )
 
     /** Inserts a new item; for a known one only fills in a thumbnail or body it did not have yet. */
     private fun upsert(
@@ -157,3 +179,16 @@ class JdbcItemRepository(
             ).update()
     }
 }
+
+/** One timeline row from a joined query: the item, its source title, and whether it is read or playable. */
+private fun ResultSet.toTimelineItem() =
+    TimelineItem(
+        getLong("id"),
+        getString("source_title"),
+        getString("title"),
+        Instant.ofEpochMilli(getLong("published_at")),
+        getString("thumbnail_url"),
+        getInt("is_read") == 1,
+        Playable.of(getString("link")) != null,
+        getString("favicon_url"),
+    )

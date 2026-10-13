@@ -157,6 +157,15 @@ interface ItemRepository {
     /** The item with its published date and stored body, for the reader. */
     fun findPost(id: Long): PostRef?
 
+    /** The item with its feed data and stored oEmbed details, for the detail view. */
+    fun findDetail(id: Long): DetailRef?
+
+    /** Stores the oEmbed details of an item, replacing any stored before. */
+    fun saveOembed(
+        id: Long,
+        oembed: Oembed,
+    )
+
     /** Marks the item read at [at] unless already read; returns false when no such item exists. */
     fun markRead(
         id: Long,
@@ -194,6 +203,43 @@ data class PostRef(
     val thumbnailUrl: String? = null,
     val faviconUrl: String? = null,
 )
+
+/** SoundCloud's public oEmbed details of a track; a field is null when oEmbed did not give it. */
+data class Oembed(
+    val authorName: String?,
+    val thumbnailUrl: String?,
+    val description: String?,
+)
+
+/** One item as the detail view needs it: its feed data, and the oEmbed details once they are stored. */
+data class DetailRef(
+    val id: Long,
+    val link: String?,
+    val title: String,
+    val sourceTitle: String,
+    val publishedAt: Instant,
+    val author: String?,
+    val thumbnailUrl: String?,
+    val body: String?,
+    val oembed: Oembed?,
+)
+
+/** What the detail view shows: the feed data with SoundCloud's oEmbed details laid over it. */
+data class ItemDetail(
+    val id: Long,
+    val link: String?,
+    val title: String,
+    val sourceTitle: String,
+    val publishedAt: Instant,
+    val artist: String?,
+    val thumbnailUrl: String?,
+    val description: String?,
+)
+
+fun interface SoundCloudOembed {
+    /** The oEmbed details of [trackUrl]; null when the fetch fails, times out or its body cannot be read. */
+    fun fetch(trackUrl: String): Oembed?
+}
 
 interface EmbedChecker {
     /** Whether [video] may be embedded; true whenever that cannot be determined. */

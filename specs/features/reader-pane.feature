@@ -25,7 +25,7 @@ Feature: Reader pane for blog posts
   on its own, the list and video splitters and their remembered sizes, the pane
   video staying above the post, closing): browser behaviour covered by the
   human playtest; the detail view for YouTube/SoundCloud items (#30), whose titles
-  keep today's behaviour; full-text fetch for teaser feeds; images in posts
+  request their detail view instead (media-detail-view.feature); full-text fetch for teaser feeds; images in posts
   beyond loading them; search over bodies; keyboard shortcuts.
 
   Background:
@@ -115,18 +115,20 @@ Feature: Reader pane for blog posts
     And I request the reader of the item "Second" via htmx
     Then the reader does not ask a video in the pane to step down
 
-  Scenario: A YouTube video's title keeps today's behaviour
+  Scenario: A YouTube video's title requests its detail view, not the reader
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
     When I request the home page "/"
     Then the title of "Clip" does not request a reader
+    And the title of "Clip" requests its detail view into the reader pane via htmx
     And the title of "Clip" still links to its open endpoint without JavaScript
     When I request the reader of the item "Clip" via htmx
     Then the response status is 404
 
-  Scenario: A SoundCloud track's title keeps today's behaviour
+  Scenario: A SoundCloud track's title requests its detail view, not the reader
     Given the source "Cloud" has an unread item "Track" with the link "https://soundcloud.com/artist/track" published 1 days ago
     When I request the home page "/"
     Then the title of "Track" does not request a reader
+    And the title of "Track" requests its detail view into the reader pane via htmx
     When I request the reader of the item "Track" via htmx
     Then the response status is 404
 

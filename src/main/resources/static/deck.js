@@ -22,6 +22,7 @@
       if (play) { play.textContent = 'Play'; play.setAttribute('aria-pressed', 'false'); }
     });
     syncSplitter();
+    markDetail();
     if (!current) return;
     var row = document.querySelector('.item[data-item="' + current.dataset.item + '"]');
     if (!row) return;
@@ -256,6 +257,7 @@
     var pause = current.querySelector('.pause');
     pause.setAttribute('aria-label', state.playing ? 'Pause' : 'Play');
     current.classList.toggle('paused', !state.playing);
+    markDetail();
   }
 
   function enable() {
@@ -579,6 +581,37 @@
     sizeVideoHeight(currentVideoHeight() + step, true);
   });
 
+  // ---- The detail view: its control reads Pause while its item plays in the deck ----------
+
+  // A detail view is keyed to its item, so it can tell whether that item is the one in the deck.
+  function markDetail() {
+    var current = player();
+    var id = current ? current.dataset.item : null;
+    document.querySelectorAll('#reader .detail-view').forEach(function (view) {
+      var inDeck = id !== null && view.dataset.item === id;
+      var playing = inDeck && !!state && state.playing;
+      view.classList.toggle('current', inDeck);
+      var play = view.querySelector('.detail-play');
+      if (!play) return;
+      var label = playing ? 'Pause' : 'Play';
+      if (play.textContent !== label) play.textContent = label;
+      play.setAttribute('aria-pressed', String(playing));
+    });
+  }
+
+  // While its item is in the deck the control pauses or resumes it; htmx leaves that click alone.
+  document.addEventListener('click', function (event) {
+    var play = event.target.closest('#reader .detail-play');
+    if (!play || !play.closest('.current') || !state) return;
+    if (state.playing) state.pause(); else state.play();
+  });
+
+  // Whether the pane already shows the detail view or post of this item.
+  function readerShows(id) {
+    var view = document.querySelector('#reader .reader-view');
+    return !!view && view.dataset.item === id;
+  }
+
   // ---- A new player arrives -------------------------------------------------------------
 
   function start() {
@@ -589,7 +622,9 @@
     var video = current.querySelector('.ratio-16x9 iframe');
     var audio = current.querySelector('.sc-frame');
     if (video) {
-      emptyReader();
+      // A video starting in the pane closes the reader, unless the reader is the detail view of this item:
+      // then the view stays, so its control can read Pause.
+      if (!readerShows(current.dataset.item)) emptyReader();
       place('pane');
       state = youtube(video);
       video.addEventListener('load', function () { post(video, YOUTUBE, { event: 'listening', id: 'starve', channel: 'widget' }); });
