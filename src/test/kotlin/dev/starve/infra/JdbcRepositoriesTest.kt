@@ -40,11 +40,12 @@ class JdbcRepositoriesTest {
         Flyway
             .configure()
             .dataSource(dataSource)
+            .javaMigrations(SearchIndexMigration())
             .load()
             .migrate()
         jdbc = JdbcClient.create(dataSource)
-        sources = JdbcSourceRepository(jdbc)
-        items = JdbcItemRepository(jdbc)
+        sources = JdbcSourceRepository(jdbc, SearchIndex(jdbc))
+        items = JdbcItemRepository(jdbc, SearchIndex(jdbc))
         favourites = JdbcFavouriteRepository(jdbc)
         groups = JdbcGroupRepository(jdbc)
     }

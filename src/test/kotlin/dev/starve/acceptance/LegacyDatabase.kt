@@ -1,6 +1,7 @@
 package dev.starve.acceptance
 
 import dev.starve.infra.DecodeItemTitlesMigration
+import dev.starve.infra.SearchIndexMigration
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.MigrationVersion
 import org.springframework.jdbc.core.simple.JdbcClient
@@ -21,7 +22,7 @@ class LegacyDatabase(
             .configure()
             .dataSource(dataSource())
             .locations("classpath:db/migration")
-            .javaMigrations(DecodeItemTitlesMigration())
+            .javaMigrations(DecodeItemTitlesMigration(), SearchIndexMigration())
             .target(MigrationVersion.fromVersion(version))
             .load()
             .migrate()
@@ -48,5 +49,27 @@ class LegacyDatabase(
                 ).params(sourceId, "item-$index", title, seen, seen)
                 .update()
         }
+    }
+
+    /** Inserts source [source] holding one item titled [title] with stored post body [body], bypassing the app. */
+    fun holdWithBody(
+        source: String,
+        title: String,
+        body: String,
+    ) {
+        val jdbc = JdbcClient.create(dataSource())
+        val sourceId =
+            jdbc
+                .sql("INSERT INTO sources (url, title) VALUES (?, ?) RETURNING id")
+                .params("http://blog.test/feed", source)
+                .query(Long::class.java)
+                .single()
+        val seen = Instant.parse("2026-01-01T00:00:00Z").toEpochMilli()
+        jdbc
+            .sql(
+                "INSERT INTO items (source_id, item_key, title, body, published_at, first_seen_at) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+            ).params(sourceId, "item-0", title, body, seen, seen)
+            .update()
     }
 }

@@ -5,6 +5,7 @@ import dev.starve.application.MemoryGroups
 import dev.starve.application.MemorySources
 import dev.starve.application.TimelineItems
 import dev.starve.application.TimelineService
+import dev.starve.domain.Cursor
 import dev.starve.domain.Group
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
@@ -38,6 +39,8 @@ class HomeControllerTest {
         )
 
     private fun row(id: Long) = TimelineItem(id, "A", "T$id", published, "http://img.test/$id", id == 1L)
+
+    private fun rows(count: Int) = (1..count).map { row(it.toLong()) }
 
     @Test
     fun `home renders formatted views and the render timestamp`() {
@@ -278,5 +281,65 @@ class HomeControllerTest {
 
         assertEquals("redirect:/?group=2", view)
         assertEquals(2L, items.markAllGroup)
+    }
+
+    @Test
+    fun `a search shows the matches and keeps the text in the box`() {
+        val items = TimelineItems(listOf(row(1)))
+        val model = ConcurrentModel()
+
+        val view = controller(items).home(TimelineQuery(q = "match"), null, model)
+
+        assertEquals("home", view)
+        assertEquals("match", model.getAttribute("query"))
+        assertEquals(true, model.getAttribute("searching"))
+        assertEquals(1, (model.getAttribute("items") as List<*>).size)
+        assertEquals(Triple("\"match\"*", null, TimelineRules.PAGE_SIZE + 1), items.searched)
+    }
+
+    @Test
+    fun `a search ignores the group and show settings`() {
+        val items = TimelineItems(listOf(row(1)))
+
+        controller(items).home(TimelineQuery(q = "match", show = "all", group = "99"), null, ConcurrentModel())
+
+        assertNull(items.requestedGroup)
+        assertNull(items.requested)
+    }
+
+    @Test
+    fun `a blank search is the normal timeline`() {
+        val items = TimelineItems(listOf(row(1)))
+        val model = ConcurrentModel()
+
+        controller(items).home(TimelineQuery(q = "   "), null, model)
+
+        assertEquals(false, model.getAttribute("searching"))
+        assertEquals(Triple<Cursor?, Boolean, Int>(null, false, TimelineRules.PAGE_SIZE + 1), items.requested)
+    }
+
+    @Test
+    fun `a search with more pages links to the next page with the search kept`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(rows(TimelineRules.PAGE_SIZE + 1)))
+            .home(TimelineQuery(q = "a b"), null, model)
+
+        val href = model.getAttribute("moreHref") as String
+        assertTrue(href.startsWith("/?q=a+b&after="), href)
+    }
+
+    @Test
+    fun `an htmx search returns only the sheet fragment`() {
+        val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(q = "match"), "true", ConcurrentModel())
+
+        assertEquals("home :: sheet", view)
+    }
+
+    @Test
+    fun `an htmx request for the timeline without a query still returns the full page`() {
+        val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(), "true", ConcurrentModel())
+
+        assertEquals("home", view)
     }
 }

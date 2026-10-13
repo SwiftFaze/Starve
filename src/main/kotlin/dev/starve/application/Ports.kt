@@ -170,6 +170,16 @@ interface ItemRepository {
         groupId: Long?,
     ): List<TimelineItem>
 
+    /**
+     * Items whose title, source name or body matches the FTS5 [match] expression, newest first, older than [after]
+     * (all when null); at most [limit]. Read state, group and the show setting do not apply.
+     */
+    fun search(
+        match: String,
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem>
+
     fun find(id: Long): ItemRef?
 
     /** The item with its published date, stored body and favourite state, for the reader. */

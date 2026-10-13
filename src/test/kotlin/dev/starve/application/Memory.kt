@@ -111,6 +111,12 @@ open class MemoryItems(
         groupId: Long?,
     ): List<TimelineItem> = emptyList()
 
+    override fun search(
+        match: String,
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem> = emptyList()
+
     override fun find(id: Long): ItemRef? = null
 
     override fun findPost(id: Long): PostRef? = null
@@ -151,6 +157,7 @@ class TimelineItems(
 
     /** Each favourite call as (id, time); the time is null for an unfavourite. */
     val favouriteCalls = mutableListOf<Pair<Long, Instant?>>()
+    var searched: Triple<String, Cursor?, Int>? = null
 
     override fun timeline(
         after: Cursor?,
@@ -182,6 +189,15 @@ class TimelineItems(
     override fun unfavourite(id: Long): Boolean {
         favouriteCalls += id to null
         return links.containsKey(id)
+    }
+
+    override fun search(
+        match: String,
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem> {
+        searched = Triple(match, after, limit)
+        return rows
     }
 
     override fun find(id: Long): ItemRef? = if (links.containsKey(id)) ref(id, links[id]) else null

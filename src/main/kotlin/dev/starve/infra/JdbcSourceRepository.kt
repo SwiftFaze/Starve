@@ -5,12 +5,14 @@ import dev.starve.domain.Source
 import dev.starve.domain.Validators
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.sql.ResultSet
 import java.time.Instant
 
 @Repository
 class JdbcSourceRepository(
     private val jdbc: JdbcClient,
+    private val search: SearchIndex,
 ) : SourceRepository {
     override fun findAll(): List<Source> =
         jdbc
@@ -46,7 +48,9 @@ class JdbcSourceRepository(
         return Source(id, url, title, Validators(), null, null)
     }
 
+    @Transactional
     override fun delete(id: Long) {
+        search.removeOfSource(id)
         jdbc.sql("DELETE FROM sources WHERE id = ?").param(id).update()
     }
 
@@ -57,18 +61,26 @@ class JdbcSourceRepository(
         jdbc.sql("UPDATE sources SET group_id = ? WHERE id = ?").params(groupId, sourceId).update()
     }
 
+    @Transactional
     override fun recordSuccess(
         id: Long,
         title: String,
         validators: Validators,
         at: Instant,
     ) {
+        val previous =
+            jdbc
+                .sql("SELECT title FROM sources WHERE id = ?")
+                .param(id)
+                .query(String::class.java)
+                .single()
         jdbc
             .sql(
                 "UPDATE sources SET title = ?, etag = ?, last_modified = ?, " +
                     "last_fetched_at = ?, last_error = NULL WHERE id = ?",
             ).params(listOf(title, validators.etag, validators.lastModified, at.toEpochMilli(), id))
             .update()
+        if (previous != title) search.renameSource(id, title)
     }
 
     override fun recordFailure(

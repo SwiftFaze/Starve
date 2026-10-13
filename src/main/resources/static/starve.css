@@ -372,6 +372,22 @@ input[type="file"].field::file-selector-button {
   display: none;
 }
 
+.search {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.search input {
+  width: 12rem;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+
 .tab,
 .group-link,
 .favourites-link {
