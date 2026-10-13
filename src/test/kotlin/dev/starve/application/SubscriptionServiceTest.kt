@@ -10,7 +10,7 @@ import java.time.Instant
 
 class SubscriptionServiceTest {
     private val sources = MemorySources()
-    private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC())
+    private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC(), quietFavicons(sources))
 
     @Test
     fun `an untitled feed is subscribed under its url`() {

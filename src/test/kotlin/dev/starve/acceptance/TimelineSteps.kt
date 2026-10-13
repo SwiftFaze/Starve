@@ -177,7 +177,7 @@ class TimelineSteps {
     fun entryShowsThumbnail(title: String) = assertTrue(entry(title).contains("<img "))
 
     @Then("the timeline entry {string} shows no thumbnail")
-    fun entryShowsNoThumbnail(title: String) = assertFalse(entry(title).contains("<img "))
+    fun entryShowsNoThumbnail(title: String) = assertFalse(entry(title).contains("class=\"thumb\""))
 
     @Then("the timeline entry {string} is marked as read")
     fun entryMarkedRead(title: String) = assertTrue(isReadEntry(title))

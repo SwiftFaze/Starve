@@ -10,6 +10,7 @@ import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
 import dev.starve.application.PollService
+import dev.starve.application.quietFavicons
 import dev.starve.domain.ParsedImport
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,7 +35,11 @@ class ImportControllerTest {
             { _ -> ParsedImport(emptyList(), emptyList()) },
             BackgroundPoller(
                 sources,
-                PollService(sources, fetcher, FeedIngestor(sources, MemoryItems(), Clock.systemUTC())),
+                PollService(
+                    sources,
+                    fetcher,
+                    FeedIngestor(sources, MemoryItems(), Clock.systemUTC(), quietFavicons(sources)),
+                ),
             ) { it.run() },
             "https://yt.test/{id}",
         )

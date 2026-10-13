@@ -24,6 +24,23 @@ data class FeedSpec(
     val description: String? = null,
     /** HTML for each RSS item's content:encoded, or each Atom entry's content; `null` omits it. */
     val content: String? = null,
+    /** The channel's own link, the site the feed belongs to; `null` omits it. */
+    val siteLink: String? = null,
+    /** Entries carry no link at all. */
+    val linkless: Boolean = false,
+    /** Replaces each RSS entry's link; `null` keeps the default "/item-n" link. */
+    val entryLink: String? = null,
+    val mediaThumbnail: String? = null,
+    val mediaContent: MediaContent? = null,
+    /** URL of an image enclosure on each RSS item; `null` omits it. */
+    val enclosure: String? = null,
+)
+
+/** A media:content element; [type] and [medium] are set only when given. */
+data class MediaContent(
+    val url: String,
+    val type: String? = null,
+    val medium: String? = null,
 )
 
 sealed interface Route {
@@ -44,6 +61,9 @@ sealed interface Route {
     data class Html(
         val body: String,
     ) : Route
+
+    /** An image answer, as a site serves its icon. */
+    data object Icon : Route
 
     data object Stall : Route
 
@@ -105,6 +125,7 @@ class FeedServer {
             null -> respond(exchange, 404, "text/plain", "not found")
             is Route.Status -> respond(exchange, route.code, "text/plain", "status ${route.code}")
             is Route.Html -> respond(exchange, 200, "text/html; charset=utf-8", route.body)
+            Route.Icon -> respond(exchange, 200, "image/png", "icon")
             is Route.Raw -> respond(exchange, 200, route.contentType, resource(route.resource))
             is Route.Feed -> serveFeed(exchange, path, route.spec, ifNoneMatch)
             Route.Stall -> stall(exchange)

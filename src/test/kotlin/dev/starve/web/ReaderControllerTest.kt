@@ -43,6 +43,8 @@ class ReaderControllerTest {
                 "2026-10-11T09:30:00Z",
                 "<p>Hi</p>",
                 "https://blog.example/a",
+                null,
+                null,
             ),
             model.getAttribute("post"),
         )

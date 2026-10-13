@@ -10,6 +10,7 @@ import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
 import dev.starve.application.SubscriptionService
+import dev.starve.application.quietFavicons
 import dev.starve.domain.Feed
 import dev.starve.domain.Group
 import dev.starve.domain.Source
@@ -41,9 +42,10 @@ class SourcesControllerTest {
         object : FeedLocator {
             override fun locate(url: String) = LocateResult.Found(url)
         }
+    private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC(), quietFavicons(sources))
     private val controller =
         SourcesController(
-            SubscriptionService(sources, locator, fetcher, FeedIngestor(sources, MemoryItems(), Clock.systemUTC())),
+            SubscriptionService(sources, locator, fetcher, ingestor),
             GroupService(groups, sources),
         )
 

@@ -51,7 +51,8 @@ class JdbcItemRepository(
         return jdbc
             .sql(
                 "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, " +
-                    "i.read_at IS NOT NULL AS is_read FROM items i JOIN sources s ON s.id = i.source_id " +
+                    "s.favicon_url, i.read_at IS NOT NULL AS is_read " +
+                    "FROM items i JOIN sources s ON s.id = i.source_id " +
                     "$where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
             ).params(params + limit)
             .query { rs, _ -> rs.toTimelineItem() }
@@ -78,8 +79,8 @@ class JdbcItemRepository(
     override fun findPost(id: Long): PostRef? =
         jdbc
             .sql(
-                "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body " +
-                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
+                "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body, " +
+                    "i.thumbnail_url, s.favicon_url FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
             ).param(id)
             .query { rs, _ ->
                 PostRef(
@@ -89,6 +90,8 @@ class JdbcItemRepository(
                     rs.getString("source_title"),
                     Instant.ofEpochMilli(rs.getLong("published_at")),
                     rs.getString("body"),
+                    rs.getString("thumbnail_url"),
+                    rs.getString("favicon_url"),
                 )
             }.optional()
             .orElse(null)
@@ -123,6 +126,7 @@ class JdbcItemRepository(
             getString("thumbnail_url"),
             getInt("is_read") == 1,
             Playable.of(getString("link")) != null,
+            getString("favicon_url"),
         )
 
     /** Inserts a new item; for a known one only fills in a thumbnail or body it did not have yet. */

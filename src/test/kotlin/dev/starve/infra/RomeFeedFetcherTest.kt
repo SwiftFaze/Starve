@@ -10,6 +10,7 @@ import dev.starve.application.FetchResult
 import dev.starve.application.InvalidFeedException
 import dev.starve.application.PollService
 import dev.starve.application.SourceRepository
+import dev.starve.application.quietFavicons
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Source
 import dev.starve.domain.Validators
@@ -53,7 +54,7 @@ class RomeFeedFetcherTest {
         server.route("/ok.xml", Route.Feed(FeedSpec(title = "Ok", entries = 2)))
         val repo = MemorySources(listOf("${server.baseUrl}/slow.xml", "${server.baseUrl}/ok.xml"))
         val items = MemoryItems()
-        val ingestor = FeedIngestor(repo, items, Clock.systemUTC())
+        val ingestor = FeedIngestor(repo, items, Clock.systemUTC(), quietFavicons(repo))
 
         PollService(repo, fetcherWithTimeout(Duration.ofSeconds(3)), ingestor).pollAll()
 
@@ -243,6 +244,14 @@ class RomeFeedFetcherTest {
             at: Instant,
         ) {
             errors[id] = error
+        }
+
+        override fun recordFavicon(
+            id: Long,
+            url: String?,
+            at: Instant,
+        ) {
+            // Icons are not under test here.
         }
     }
 

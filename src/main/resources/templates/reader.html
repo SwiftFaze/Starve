@@ -8,12 +8,14 @@
     <span class="reader-cat" th:text="${post.catalogueNumber}">STV 0132</span>
     <h2 class="reader-title" th:text="${post.title}">Title</h2>
     <p class="reader-meta">
+      <img class="site-icon" th:if="${post.siteIcon}" th:src="${post.siteIcon}" alt="" loading="lazy">
       <span class="source" th:text="${post.sourceTitle}">Source</span>
       <time class="date" th:datetime="${post.publishedIso}" th:text="${post.published}">date</time>
     </p>
     <a class="reader-original" th:if="${post.link}" th:href="${post.link}" target="_blank"
        rel="noopener noreferrer">Open original</a>
   </header>
+  <img class="reader-image" th:if="${post.headerImage}" th:src="${post.headerImage}" alt="" loading="lazy">
   <div class="reader-body" th:if="${post.body}" th:utext="${post.body}"></div>
   <p class="reader-empty" th:unless="${post.body}">This post has no text to show here.<th:block
      th:if="${post.link}"> Open the original to read it.</th:block></p>

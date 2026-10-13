@@ -16,7 +16,7 @@ class FeedIngestorTest {
     private val source = Source(7, "http://a.test/feed", "Stored", Validators("e", "m"), null, null)
     private val sources = MemorySources()
     private val items = MemoryItems()
-    private val ingestor = FeedIngestor(sources, items, clock)
+    private val ingestor = FeedIngestor(sources, items, clock, quietFavicons(sources))
 
     @Test
     fun `not modified records success keeping the stored title and validators`() {

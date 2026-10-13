@@ -31,6 +31,7 @@ data class TimelineItemView(
     val thumbnailUrl: String?,
     val read: Boolean,
     val playable: Boolean = false,
+    val faviconUrl: String? = null,
 ) {
     val catalogueNumber: String get() = Catalogue.number(id)
 }
@@ -170,5 +171,6 @@ class HomeController(
             thumbnailUrl,
             read,
             playable,
+            faviconUrl,
         )
 }

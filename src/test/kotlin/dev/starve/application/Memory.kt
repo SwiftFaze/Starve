@@ -64,7 +64,25 @@ class MemorySources(
     ) {
         failures += id to error
     }
+
+    val favicons = mutableListOf<Triple<Long, String?, Instant>>()
+
+    override fun recordFavicon(
+        id: Long,
+        url: String?,
+        at: Instant,
+    ) {
+        favicons += Triple(id, url, at)
+    }
 }
+
+/** A finder for tests that do not care about icons: no site has one. */
+object NoIcons : FaviconFinder {
+    override fun find(siteUrl: String): String? = null
+}
+
+/** Favicon handling for tests that do not care about icons; every site has none. */
+fun quietFavicons(sources: SourceRepository): FaviconService = FaviconService(sources, NoIcons)
 
 /** Records the items and cutoffs passed to the item repository. */
 open class MemoryItems(

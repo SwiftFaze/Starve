@@ -2,7 +2,10 @@ package dev.starve.domain
 
 import java.time.Instant
 
-/** One entry of the timeline, with the title of the source it came from. [playable]: its link can play inline. */
+/**
+ * One entry of the timeline, with the title of the source it came from. [playable]: its link can play inline.
+ * [faviconUrl] is the source's site icon, shown in the thumbnail slot when the item has no [thumbnailUrl].
+ */
 data class TimelineItem(
     val id: Long,
     val sourceTitle: String,
@@ -11,6 +14,7 @@ data class TimelineItem(
     val thumbnailUrl: String?,
     val read: Boolean,
     val playable: Boolean = false,
+    val faviconUrl: String? = null,
 )
 
 /** Keyset position in the timeline: the next page holds items strictly older than this. */

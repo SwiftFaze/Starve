@@ -11,6 +11,10 @@ data class Source(
     val lastFetchedAt: Instant?,
     val lastError: String?,
     val groupId: Long? = null,
+    /** The site's icon, when one was found; shown at render time, never copied onto items. */
+    val faviconUrl: String? = null,
+    /** When the icon was last looked up, found or not; null when never. */
+    val faviconCheckedAt: Instant? = null,
 )
 
 /** HTTP cache validators remembered from the last successful fetch, for conditional GET. */
