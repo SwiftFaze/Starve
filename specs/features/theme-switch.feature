@@ -38,8 +38,8 @@ Feature: Theme switch and page shutter
 #   - A third "follow the OS" button; clearing the saved choice returns to it.
 #
 # Risks:
-#   - The page switch swaps content in place; anything playing stops, as a
-#     page load did (playtest).
+#   - The page switch swaps content in place; playing stops across Import and
+#     reload, but Timeline <-> Sources keeps it (sources-keeps-playing.feature).
 #
 # Open questions:
 #   - None.

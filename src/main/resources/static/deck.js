@@ -488,25 +488,33 @@
 
   var observer = null;
 
+  function trackBar() {
+    var bar = document.getElementById('bar');
+    if (bar) body.style.setProperty('--bar-h', bar.offsetHeight + 'px');
+  }
+
+  // The list starts where the sheet does: after the obi, and on Sources after the tool panel too.
+  function trackList() {
+    body.style.setProperty('--list-x', Math.round(listLeft()) + 'px');
+  }
+
   function trackHeights() {
     if (!window.ResizeObserver) return;
     if (observer) observer.disconnect();
     observer = new ResizeObserver(function () {
-      var bar = document.getElementById('bar');
-      if (bar) body.style.setProperty('--bar-h', bar.offsetHeight + 'px');
+      trackBar();
       trackDeck();
+      trackList();
     });
     observer.observe(body);
     var target = dock();
     if (target) observer.observe(target);
+    var sleeve = document.querySelector('.sleeve');
+    if (sleeve) observer.observe(sleeve);
   }
 
-  // The shutter swapped a whole page in place: whatever played went with the old content.
-  document.addEventListener('starve:page', function () {
-    state = null;
-    trackHeights();
-    markPlaying();
-  });
+  // A page tab swaps the bar in place (the dock and the deck stay), and the bar may change height.
+  document.addEventListener('htmx:afterSettle', trackBar);
 
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && body.dataset.list === 'strip') sizeList(LIST_MIN + 180, true);

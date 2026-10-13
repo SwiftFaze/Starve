@@ -704,8 +704,13 @@ input[type="file"].field::file-selector-button {
   font-weight: 700;
 }
 
+/* The tool panel is one swappable wrapper; its children still sit in the sleeve grid. */
+.panel {
+  display: contents;
+}
+
 /* The tool panel beside the obi on Sources and Import. */
-.sleeve > :not(.series-block):not(.dock) {
+:is(.sleeve, .panel) > :not(.series-block):not(.dock) {
   grid-column: 2;
   width: var(--panel-w);
   margin-left: 0;
@@ -714,16 +719,16 @@ input[type="file"].field::file-selector-button {
   padding-right: 1.5rem;
 }
 
-.sleeve > .add {
+:is(.sleeve, .panel) > .add {
   margin-top: 1.75rem;
   margin-bottom: 0;
 }
 
-.sleeve > .hint {
+:is(.sleeve, .panel) > .hint {
   margin-top: 1rem;
 }
 
-.sleeve > .message {
+:is(.sleeve, .panel) > .message {
   margin-top: 1.5rem;
   padding: 0.875rem 1rem;
   width: calc(var(--panel-w) - 3rem);
@@ -732,12 +737,12 @@ input[type="file"].field::file-selector-button {
   font-weight: 500;
 }
 
-.sleeve > .message::before {
+:is(.sleeve, .panel) > .message::before {
   content: "[ ";
   color: var(--cyan);
 }
 
-.sleeve > .message::after {
+:is(.sleeve, .panel) > .message::after {
   content: " ]";
   color: var(--cyan);
 }
@@ -756,7 +761,7 @@ input[type="file"].field::file-selector-button {
   color: var(--text);
 }
 
-.sleeve > .hint:last-child {
+:is(.sleeve, .panel) > .hint:last-child {
   padding-bottom: 1.5rem;
 }
 
@@ -1328,7 +1333,7 @@ a.title:hover {
 /* Pane: theatre size beside the list. */
 body[data-video="pane"] .ratio-16x9 {
   top: calc(var(--bar-h) + 1.75rem);
-  left: calc(var(--obi-w) + var(--list-w) + 1.5rem);
+  left: calc(var(--list-x, var(--obi-w)) + var(--list-w) + 1.5rem);
   right: var(--gutter);
   bottom: calc(var(--deck-h) + 1.75rem);
   width: auto;
@@ -1356,7 +1361,7 @@ body[data-video="pane"] .splitter {
   z-index: 26;
   top: var(--bar-h);
   bottom: var(--deck-h);
-  left: calc(var(--obi-w) + var(--list-w) - 0.375rem);
+  left: calc(var(--list-x, var(--obi-w)) + var(--list-w) - 0.375rem);
   width: 0.75rem;
   cursor: col-resize;
   touch-action: none;
@@ -1774,17 +1779,17 @@ body.resizing .ratio-16x9 iframe {
     min-height: 1.25rem;
   }
 
-  .sleeve > :not(.series-block):not(.dock) {
+  :is(.sleeve, .panel) > :not(.series-block):not(.dock) {
     width: auto;
     padding: 0 var(--gutter);
   }
 
-  .sleeve > .message {
+  :is(.sleeve, .panel) > .message {
     width: auto;
     margin: 1rem var(--gutter) 0;
   }
 
-  .sleeve > .hint:last-child {
+  :is(.sleeve, .panel) > .hint:last-child {
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--line);
   }

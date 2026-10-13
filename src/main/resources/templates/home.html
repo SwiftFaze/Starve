@@ -13,8 +13,10 @@
   <header class="bar" id="bar">
     <h1 class="wordmark"><a href="/" th:text="${appName}">Starve</a></h1>
     <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/" aria-current="page">Timeline</a>
-      <a class="tab" href="/sources">Sources</a>
+      <a class="tab" href="/" aria-current="page" hx-get="/" hx-target="#sheet" hx-select="#sheet"
+         hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
+      <a class="tab" href="/sources" hx-get="/sources" hx-target="#sheet" hx-select="#sheet"
+         hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Sources</a>
     </nav>
     <nav class="groups" aria-label="Groups">
       <a class="group-link" th:each="entry : ${nav}" th:href="${entry.href}" th:text="${entry.label}"
@@ -25,7 +27,7 @@
   </header>
 
   <div class="label">
-    <aside class="sleeve" aria-label="Series and player">
+    <aside class="sleeve" aria-label="Series, tools and player">
       <div id="series" class="series-block">
         <h2 class="series" th:text="${series.name}">All</h2>
         <p class="series-meta">
@@ -36,6 +38,7 @@
         </p>
         <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
+      <div id="panel" class="panel"></div>
       <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>
     </aside>
 
