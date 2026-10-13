@@ -39,6 +39,7 @@ class ReaderController(
     ): String {
         val post = reader.open(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         model.addAttribute("post", post.toView())
+        model.addAttribute("star", StarView("reader-star", post.id, post.favourite, fromReader = true))
         return "reader :: content"
     }
 

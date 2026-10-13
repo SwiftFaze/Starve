@@ -373,7 +373,8 @@ input[type="file"].field::file-selector-button {
 }
 
 .tab,
-.group-link {
+.group-link,
+.favourites-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -387,22 +388,41 @@ input[type="file"].field::file-selector-button {
 }
 
 .tab:hover,
-.group-link:hover {
+.group-link:hover,
+.favourites-link:hover {
   color: var(--text);
 }
 
-/* The current page or group gets the obi's red square. */
+/* The current page, group or Favourites gets the obi's red square. */
 .tab[aria-current],
-.group-link[aria-current] {
+.group-link[aria-current],
+.favourites-link[aria-current] {
   color: var(--text);
 }
 
 .tab[aria-current]::before,
-.group-link[aria-current]::before {
+.group-link[aria-current]::before,
+.favourites-link[aria-current]::before {
   content: "";
   width: 0.5rem;
   height: 0.5rem;
   background: var(--red);
+}
+
+/* The favourite star: a plain toggle button, red once the item is a favourite. */
+.star {
+  margin: 0;
+}
+
+.star button {
+  min-height: 0;
+  padding: 0.125rem 0.5rem;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.star[data-favourite="true"] button {
+  color: var(--red);
 }
 
 /* Clicking the page you are on, already at the top: the marker blinks twice. */
@@ -2120,6 +2140,12 @@ body[data-video="mini"] .reader-view {
 .reader-close {
   grid-column: 2;
   grid-row: 1 / span 2;
+}
+
+/* Under the catalogue number, left of the close button's column, above the title. */
+.reader-head .star {
+  grid-column: 1;
+  justify-self: start;
 }
 
 .reader-title {

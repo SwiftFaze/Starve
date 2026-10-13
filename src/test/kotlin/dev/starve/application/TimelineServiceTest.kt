@@ -90,6 +90,21 @@ class TimelineServiceTest {
     }
 
     @Test
+    fun `the favourites page asks for favourites after the cursor with one look-ahead row`() {
+        val items = TimelineItems(favouriteRows = rows(TimelineRules.PAGE_SIZE + 1))
+        val service = TimelineService(items, MemorySources(mutableListOf(source)), clock)
+        val after = Cursor(Instant.EPOCH, 9)
+
+        val page = service.favourites(after)
+
+        assertEquals(after to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
+        assertEquals(TimelineRules.PAGE_SIZE, page.items.size)
+        assertEquals(Cursor(Instant.ofEpochMilli(50), 50), page.next)
+        assertEquals(now, page.renderedAt)
+        assertTrue(page.hasSources)
+    }
+
+    @Test
     fun `mark all read reports how many items the repository marked`() {
         val items = TimelineItems(markedAllCount = 4)
 

@@ -132,19 +132,36 @@ open class MemoryItems(
         at: Instant,
         groupId: Long?,
     ) = 0
+
+    override fun favourites(
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem> = emptyList()
+
+    override fun favourite(
+        id: Long,
+        at: Instant,
+    ) = false
+
+    override fun unfavourite(id: Long) = false
 }
 
-/** An item repository with canned timeline rows that records read-state calls. */
+/** An item repository with canned timeline rows that records read-state and favourite calls. */
 class TimelineItems(
     private val rows: List<TimelineItem> = emptyList(),
     private val links: Map<Long, String?> = emptyMap(),
     private val markedAllCount: Int = 0,
+    private val favouriteRows: List<TimelineItem> = emptyList(),
 ) : MemoryItems() {
     var requested: Triple<Cursor?, Boolean, Int>? = null
     var requestedGroup: Long? = null
     var markAllGroup: Long? = null
     val readCalls = mutableListOf<Pair<Long, Instant>>()
     var markAllCall: Pair<Instant, Instant>? = null
+    var favouritesRequested: Pair<Cursor?, Int>? = null
+
+    /** Each favourite call as (id, time); the time is null for an unfavourite. */
+    val favouriteCalls = mutableListOf<Pair<Long, Instant?>>()
 
     override fun timeline(
         after: Cursor?,
@@ -155,6 +172,27 @@ class TimelineItems(
         requested = Triple(after, showRead, limit)
         requestedGroup = groupId
         return rows
+    }
+
+    override fun favourites(
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem> {
+        favouritesRequested = after to limit
+        return favouriteRows
+    }
+
+    override fun favourite(
+        id: Long,
+        at: Instant,
+    ): Boolean {
+        favouriteCalls += id to at
+        return links.containsKey(id)
+    }
+
+    override fun unfavourite(id: Long): Boolean {
+        favouriteCalls += id to null
+        return links.containsKey(id)
     }
 
     override fun find(id: Long): ItemRef? = if (links.containsKey(id)) ref(id, links[id]) else null

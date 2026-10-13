@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- One favourite star from the model attribute "star"; the form posts the reverse toggle, without JavaScript too. -->
+<th:block th:fragment="star">
+  <form method="post" class="star" th:id="${star.domId}" th:action="${star.action}" hx-swap="outerHTML"
+        th:attr="hx-post=${star.action},hx-target=${'#' + star.domId},hx-swap-oob=${star.oob} ? 'true' : null,data-favourite=${star.favourite ? 'true' : 'false'}">
+    <button type="submit" th:attr="aria-label=${star.favourite} ? 'Remove from favourites' : 'Add to favourites'"
+            th:text="${star.favourite} ? '★' : '☆'">☆</button>
+  </form>
+</th:block>
+
+<!-- The reader's star ("star") and the timeline row's star ("rowStar"), answered together to an htmx toggle. -->
+<th:block th:fragment="pair">
+  <th:block th:replace="~{::star}"></th:block>
+  <th:block th:with="star=${rowStar}"><th:block th:replace="~{::star}"></th:block></th:block>
+</th:block>
+</body>
+</html>

@@ -32,8 +32,11 @@ data class TimelineItemView(
     val read: Boolean,
     val playable: Boolean = false,
     val faviconUrl: String? = null,
+    val favourite: Boolean = false,
 ) {
     val catalogueNumber: String get() = Catalogue.number(id)
+
+    val star: StarView get() = StarView("star-$id", id, favourite)
 }
 
 /** One link of the group navigation, e.g. label "Music (12)". */
@@ -43,10 +46,10 @@ data class NavEntryView(
     val current: Boolean,
 )
 
-/** The series the timeline is showing: "All" or one group, with its unread count. */
+/** The series the timeline is showing: "All", one group with its unread count, or Favourites (no count). */
 data class SeriesView(
     val name: String,
-    val unread: Int,
+    val unread: Int?,
 ) {
     companion object {
         /** The group [current] from [nav], or "All" when no group is selected. */
@@ -61,11 +64,22 @@ data class SeriesView(
     }
 }
 
-/** The timeline's query parameters; a malformed or unknown [group] is answered with 404. */
+/**
+ * The timeline's query parameters; a malformed or unknown [group] is answered with 404. [favourites] "1" selects
+ * the Favourites view, which ignores [show] and [group].
+ */
 data class TimelineQuery(
     val show: String? = null,
     val after: String? = null,
     val group: String? = null,
+    val favourites: String? = null,
+)
+
+/** Which timeline is on screen: the Favourites view, or the timeline with read items and an optional group. */
+private data class Scope(
+    val favourites: Boolean,
+    val showAll: Boolean,
+    val groupId: Long?,
 )
 
 @Controller
@@ -79,21 +93,18 @@ class HomeController(
         @RequestHeader("HX-Request", required = false) htmx: String?,
         model: Model,
     ): String {
-        val showAll = query.show == "all"
-        val groupId = query.group?.let { resolveGroup(it).id }
-        val page = timeline.page(Cursor.parse(query.after), showAll, groupId)
-        model.addAttribute("appName", "Starve")
-        model.addAttribute("showAll", showAll)
-        model.addAttribute("items", page.items.map { it.toView() })
-        model.addAttribute("hasSources", page.hasSources)
-        model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
-        model.addAttribute("moreHref", moreHref(page, showAll, groupId))
+        val favourites = query.favourites == "1"
+        val scope =
+            Scope(
+                favourites = favourites,
+                showAll = !favourites && query.show == "all",
+                groupId = if (favourites) null else query.group?.let { resolveGroup(it).id },
+            )
+        val cursor = Cursor.parse(query.after)
+        val page = if (favourites) timeline.favourites(cursor) else timeline.page(cursor, scope.showAll, scope.groupId)
+        addPage(model, page, scope)
         if (htmx != null && query.after != null) return "home :: more"
-        val nav = groups.navigation()
-        model.addAttribute("groupId", groupId)
-        model.addAttribute("nav", navigation(nav, groupId, showAll))
-        model.addAttribute("series", SeriesView.of(nav, groupId))
-        model.addAttribute("toggleHref", href(groupId, if (showAll) null else "all", null))
+        addChrome(model, groups.navigation(), scope)
         return "home"
     }
 
@@ -128,49 +139,93 @@ class HomeController(
 
     private fun resolveGroup(raw: String): Group = raw.toLongOrNull()?.let { groups.find(it) } ?: throw notFound()
 
-    private fun navigation(
-        nav: GroupNavigation,
-        current: Long?,
-        showAll: Boolean,
-    ): List<NavEntryView> {
-        val show = if (showAll) "all" else null
-        val all = NavEntryView("All (${nav.totalUnread})", href(null, show, null), current == null)
-        return listOf(all) +
-            nav.groups.map {
-                NavEntryView("${it.group.name} (${it.unread})", href(it.group.id, show, null), it.group.id == current)
-            }
-    }
-
-    private fun moreHref(
+    /** The rows and the paging of the page on screen. */
+    private fun addPage(
+        model: Model,
         page: TimelinePage,
-        showAll: Boolean,
-        groupId: Long?,
-    ): String? = page.next?.let { href(groupId, if (showAll) "all" else null, it.encode()) }
-
-    private fun href(
-        groupId: Long?,
-        show: String?,
-        after: String?,
-    ): String {
-        val query =
-            listOfNotNull(
-                after?.let { "after=$it" },
-                show?.let { "show=$it" },
-                groupId?.let { "group=$it" },
-            )
-        return if (query.isEmpty()) "/" else "/?" + query.joinToString("&")
+        scope: Scope,
+    ) {
+        model.addAttribute("appName", "Starve")
+        model.addAttribute("showAll", scope.showAll)
+        model.addAttribute("favourites", scope.favourites)
+        model.addAttribute("items", page.items.map { it.toView() })
+        model.addAttribute("emptyFavourites", scope.favourites && page.items.isEmpty())
+        model.addAttribute("hasSources", page.hasSources)
+        model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
+        model.addAttribute("moreHref", moreHref(page, scope))
     }
 
-    private fun TimelineItem.toView() =
-        TimelineItemView(
-            id,
-            sourceTitle,
-            title,
-            DISPLAY_FORMAT.format(publishedAt),
-            publishedAt.toString(),
-            thumbnailUrl,
-            read,
-            playable,
-            faviconUrl,
-        )
+    /** The navigation, series and toggles around the page; only a full page needs them. */
+    private fun addChrome(
+        model: Model,
+        nav: GroupNavigation,
+        scope: Scope,
+    ) {
+        model.addAttribute("groupId", scope.groupId)
+        model.addAttribute("nav", navigation(nav, scope))
+        val favouritesEntry = NavEntryView("Favourites", href(null, null, null, true), scope.favourites)
+        model.addAttribute("favouritesEntry", favouritesEntry)
+        model.addAttribute("series", seriesOf(nav, scope))
+        model.addAttribute("toggleHref", href(scope.groupId, if (scope.showAll) null else "all", null))
+    }
 }
+
+private fun seriesOf(
+    nav: GroupNavigation,
+    scope: Scope,
+): SeriesView = if (scope.favourites) SeriesView("Favourites", null) else SeriesView.of(nav, scope.groupId)
+
+private fun navigation(
+    nav: GroupNavigation,
+    scope: Scope,
+): List<NavEntryView> {
+    val show = if (scope.showAll) "all" else null
+    val current = scope.groupId == null && !scope.favourites
+    val all = NavEntryView("All (${nav.totalUnread})", href(null, show, null), current)
+    return listOf(all) +
+        nav.groups.map {
+            NavEntryView(
+                "${it.group.name} (${it.unread})",
+                href(it.group.id, show, null),
+                it.group.id == scope.groupId,
+            )
+        }
+}
+
+private fun moreHref(
+    page: TimelinePage,
+    scope: Scope,
+): String? =
+    page.next?.let {
+        href(scope.groupId, if (scope.showAll) "all" else null, it.encode(), scope.favourites)
+    }
+
+private fun href(
+    groupId: Long?,
+    show: String?,
+    after: String?,
+    favourites: Boolean = false,
+): String {
+    val query =
+        listOfNotNull(
+            after?.let { "after=$it" },
+            show?.let { "show=$it" },
+            groupId?.let { "group=$it" },
+            "favourites=1".takeIf { favourites },
+        )
+    return if (query.isEmpty()) "/" else "/?" + query.joinToString("&")
+}
+
+private fun TimelineItem.toView() =
+    TimelineItemView(
+        id,
+        sourceTitle,
+        title,
+        DISPLAY_FORMAT.format(publishedAt),
+        publishedAt.toString(),
+        thumbnailUrl,
+        read,
+        playable,
+        faviconUrl,
+        favourite,
+    )

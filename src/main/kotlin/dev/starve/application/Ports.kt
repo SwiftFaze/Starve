@@ -138,7 +138,7 @@ interface ItemRepository {
         firstSeenAt: Instant,
     )
 
-    /** Deletes items first seen before [cutoff]; returns how many were removed. */
+    /** Deletes items first seen before [cutoff] that are not favourites; returns how many were removed. */
     fun deleteFirstSeenBefore(cutoff: Instant): Int
 
     /**
@@ -152,9 +152,24 @@ interface ItemRepository {
         groupId: Long?,
     ): List<TimelineItem>
 
+    /** Newest-first favourites older than [after] (all when null), read or not; at most [limit]. */
+    fun favourites(
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem>
+
+    /** Marks the item a favourite at [at] unless it already is; returns false when no such item exists. */
+    fun favourite(
+        id: Long,
+        at: Instant,
+    ): Boolean
+
+    /** Clears the favourite mark; returns false when no such item exists. */
+    fun unfavourite(id: Long): Boolean
+
     fun find(id: Long): ItemRef?
 
-    /** The item with its published date and stored body, for the reader. */
+    /** The item with its published date, stored body and favourite state, for the reader. */
     fun findPost(id: Long): PostRef?
 
     /** The item with its feed data and stored oEmbed details, for the detail view. */
@@ -202,6 +217,7 @@ data class PostRef(
     val body: String?,
     val thumbnailUrl: String? = null,
     val faviconUrl: String? = null,
+    val favourite: Boolean = false,
 )
 
 /** SoundCloud's public oEmbed details of a track; a field is null when oEmbed did not give it. */
