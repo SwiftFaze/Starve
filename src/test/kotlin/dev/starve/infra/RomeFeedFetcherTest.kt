@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.acceptance.FeedServer
+import dev.starve.acceptance.FeedSpec
 import dev.starve.acceptance.Route
 import dev.starve.application.FeedFetchException
 import dev.starve.application.FeedFetcher
@@ -48,7 +49,7 @@ class RomeFeedFetcherTest {
     @Test
     fun `a stalled source records an error and does not stop other sources polling`() {
         server.route("/slow.xml", Route.StallBody)
-        server.route("/ok.xml", Route.Feed(dev.starve.acceptance.FeedSpec(title = "Ok", entries = 2)))
+        server.route("/ok.xml", Route.Feed(FeedSpec(title = "Ok", entries = 2)))
         val repo = MemorySources(listOf("${server.baseUrl}/slow.xml", "${server.baseUrl}/ok.xml"))
         val items = MemoryItems()
         val ingestor = FeedIngestor(repo, items, Clock.systemUTC())
@@ -62,7 +63,7 @@ class RomeFeedFetcherTest {
 
     @Test
     fun `fetch returns the parsed feed when the server answers in time`() {
-        server.route("/ok.xml", Route.Feed(dev.starve.acceptance.FeedSpec(title = "Ok", entries = 1)))
+        server.route("/ok.xml", Route.Feed(FeedSpec(title = "Ok", entries = 1)))
         val result = fetcher.fetch("${server.baseUrl}/ok.xml", Validators()) as FetchResult.Fetched
         assertEquals("Ok", result.feed.title)
     }
@@ -109,12 +110,30 @@ class RomeFeedFetcherTest {
     }
 
     private fun titleFetchedFrom(rawTitle: String): String {
-        val spec = dev.starve.acceptance.FeedSpec(title = "Ok", entries = 1, itemTitle = rawTitle)
+        val spec = FeedSpec(title = "Ok", entries = 1, itemTitle = rawTitle)
         server.route("/t.xml", Route.Feed(spec))
         val result = fetcher.fetch("${server.baseUrl}/t.xml", Validators()) as FetchResult.Fetched
         return result.feed.items
             .single()
             .title
+    }
+
+    @Test
+    fun `the body is the content element, else the description, else none, sanitised against the item link`() {
+        assertEquals("<p>Full</p>", bodyOf(FeedSpec(description = "<p>Teaser</p>", content = "<p>Full</p>")))
+        assertEquals("<p>Teaser</p>", bodyOf(FeedSpec(description = "<p>Teaser</p>")))
+        assertEquals(null, bodyOf(FeedSpec()))
+        assertEquals(null, bodyOf(FeedSpec(content = "<script>x()</script>")))
+        assertEquals("<p>Atom</p>", bodyOf(FeedSpec(atom = true, content = "<p>Atom</p>")))
+        assertTrue(bodyOf(FeedSpec(content = "<a href=\"/x\">x</a>"))!!.contains("href=\"${server.baseUrl}/x\""))
+    }
+
+    private fun bodyOf(spec: FeedSpec): String? {
+        server.route("/b.xml", Route.Feed(spec))
+        val result = fetcher.fetch("${server.baseUrl}/b.xml", Validators()) as FetchResult.Fetched
+        return result.feed.items
+            .single()
+            .body
     }
 
     @Test
@@ -151,7 +170,7 @@ class RomeFeedFetcherTest {
 
     @Test
     fun `an interrupted fetch fails and keeps the interrupt flag`() {
-        server.route("/ok.xml", Route.Feed(dev.starve.acceptance.FeedSpec()))
+        server.route("/ok.xml", Route.Feed(FeedSpec()))
         Thread.currentThread().interrupt()
 
         val url = "${server.baseUrl}/ok.xml"

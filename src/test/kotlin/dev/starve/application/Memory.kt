@@ -95,6 +95,8 @@ open class MemoryItems(
 
     override fun find(id: Long): ItemRef? = null
 
+    override fun findPost(id: Long): PostRef? = null
+
     override fun markRead(
         id: Long,
         at: Instant,

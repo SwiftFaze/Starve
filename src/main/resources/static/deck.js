@@ -449,6 +449,37 @@
 
   window.addEventListener('resize', tickTitle);
 
+  // ---- The reader: a blog post beside the list --------------------------------------------
+
+  function reader() { return document.getElementById('reader'); }
+
+  function emptyReader() {
+    var pane = reader();
+    if (pane) pane.replaceChildren();
+  }
+
+  // Close empties the pane only; a video stepped down to Mini or Deck stays where it is.
+  window.closeReader = function () {
+    emptyReader();
+    var sheet = document.getElementById('sheet');
+    if (sheet) sheet.focus();
+  };
+
+  // Opening a post marks its row read (the server already did) and, when the post asks for it,
+  // steps a video in the pane down to Mini with the placement code above, so it keeps playing.
+  function readerOpened() {
+    var view = document.querySelector('#reader .reader-view');
+    if (!view) return;
+    if (view.dataset.stepVideo === 'mini' && body.dataset.video === 'pane') place('mini');
+    var row = document.querySelector('.item[data-item="' + view.dataset.item + '"]');
+    if (row) {
+      row.classList.add('read');
+      var markRead = row.querySelector('form[action$="/read"]');
+      if (markRead) markRead.remove();
+    }
+    if (window.matchMedia('(max-width: 60rem)').matches) view.scrollIntoView({ block: 'start' });
+  }
+
   // ---- A new player arrives -------------------------------------------------------------
 
   function start() {
@@ -459,6 +490,7 @@
     var video = current.querySelector('.ratio-16x9 iframe');
     var audio = current.querySelector('.sc-frame');
     if (video) {
+      emptyReader();
       place('pane');
       state = youtube(video);
       video.addEventListener('load', function () { post(video, YOUTUBE, { event: 'listening', id: 'starve', channel: 'widget' }); });
@@ -474,6 +506,7 @@
 
   document.addEventListener('htmx:afterSwap', function (event) {
     if (event.detail && event.detail.target === dock()) start();
+    if (event.detail && event.detail.target === reader()) readerOpened();
   });
   document.addEventListener('htmx:afterSettle', markPlaying);
 

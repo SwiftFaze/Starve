@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.application.ItemRef
+import dev.starve.application.PostRef
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
@@ -110,6 +111,38 @@ class JdbcRepositoriesTest {
                 .query { rs, _ -> rs.getString(1) to rs.getString(2) }
                 .list()
         assertEquals(listOf("bare" to "http://a.test/new.jpg", "kept" to "http://a.test/old.jpg"), thumbs)
+    }
+
+    @Test
+    fun `a later insert fills a missing body but never replaces an existing one`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("bare", "bare"), withBody("kept", "<p>first</p>")), Instant.EPOCH)
+
+        items.insertNew(
+            source.id,
+            listOf(withBody("bare", "<p>filled</p>"), withBody("kept", "<p>second</p>")),
+            Instant.EPOCH.plusSeconds(60),
+        )
+
+        val bodies =
+            jdbc
+                .sql("SELECT item_key, body FROM items ORDER BY item_key")
+                .query { rs, _ -> rs.getString(1) to rs.getString(2) }
+                .list()
+        assertEquals(listOf("bare" to "<p>filled</p>", "kept" to "<p>first</p>"), bodies)
+    }
+
+    @Test
+    fun `finding a post returns its source, published date, link and body, or nothing when missing`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val published = Instant.parse("2026-03-04T05:06:07Z")
+        val post = FeedItem("p", "Post", "http://a.test/p", published, null, null, "<p>b</p>")
+        items.insertNew(source.id, listOf(post, item("bare", "bare")), Instant.EPOCH)
+        val ids = jdbc.sql("SELECT id FROM items ORDER BY id").query(Long::class.java).list()
+
+        assertEquals(PostRef(ids[0], "http://a.test/p", "Post", "T", published, "<p>b</p>"), items.findPost(ids[0]))
+        assertEquals(PostRef(ids[1], null, "bare", "T", Instant.EPOCH, null), items.findPost(ids[1]))
+        assertNull(items.findPost(ids[1] + 1))
     }
 
     @Test
@@ -256,4 +289,9 @@ class JdbcRepositoriesTest {
         key: String,
         thumbnail: String,
     ) = FeedItem(key, key, null, null, null, thumbnail)
+
+    private fun withBody(
+        key: String,
+        body: String,
+    ) = FeedItem(key, key, null, null, null, null, body)
 }

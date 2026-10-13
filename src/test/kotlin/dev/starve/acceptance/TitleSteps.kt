@@ -2,16 +2,12 @@ package dev.starve.acceptance
 
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
-import org.flywaydb.core.Flyway
-import org.flywaydb.core.api.MigrationVersion
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.springframework.jdbc.core.simple.JdbcClient
-import org.springframework.jdbc.datasource.SimpleDriverDataSource
-import java.time.Instant
 
 class TitleSteps {
     private val app = World.app
+    private val legacy = LegacyDatabase(app)
 
     // ---- fixture setup -------------------------------------------------------------------
 
@@ -26,39 +22,14 @@ class TitleSteps {
     ) = World.feedServer().route(path, Route.Feed(FeedSpec(title = title, itemTitle = itemTitle)))
 
     @Given("the database is migrated only up to before the title fix")
-    fun migratedBeforeTitleFix() {
-        Flyway
-            .configure()
-            .dataSource(dataSource())
-            .locations("classpath:db/migration")
-            .target(MigrationVersion.fromVersion("4"))
-            .load()
-            .migrate()
-    }
+    fun migratedBeforeTitleFix() = legacy.migrateOnlyTo("4")
 
     @Given("it holds a source {string} with stored items titled {string} and {string}")
     fun holdsSourceWithItems(
         source: String,
         first: String,
         second: String,
-    ) {
-        val jdbc = JdbcClient.create(dataSource())
-        val sourceId =
-            jdbc
-                .sql("INSERT INTO sources (url, title) VALUES (?, ?) RETURNING id")
-                .params("http://blog.test/feed", source)
-                .query(Long::class.java)
-                .single()
-        val seen = Instant.parse("2026-01-01T00:00:00Z").toEpochMilli()
-        listOf(first, second).forEachIndexed { index, title ->
-            jdbc
-                .sql(
-                    "INSERT INTO items (source_id, item_key, title, published_at, first_seen_at) " +
-                        "VALUES (?, ?, ?, ?, ?)",
-                ).params(sourceId, "item-$index", title, seen, seen)
-                .update()
-        }
-    }
+    ) = legacy.hold(source, first, second)
 
     // ---- assertions ----------------------------------------------------------------------
 
@@ -84,6 +55,4 @@ class TitleSteps {
         val page = app.get("/").body()
         assertTrue(page.contains("data-title=\"${Html.escape(title)}\""), "timeline lacks '$title'")
     }
-
-    private fun dataSource() = SimpleDriverDataSource(org.sqlite.JDBC(), "jdbc:sqlite:${app.dbPath}")
 }

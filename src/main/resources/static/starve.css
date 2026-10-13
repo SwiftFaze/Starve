@@ -1975,3 +1975,141 @@ body.resizing .ratio-16x9 iframe {
     animation: none;
   }
 }
+
+/* ---- The reader: a blog post beside the list -------------------------------------------- */
+
+.reader {
+  min-width: 0;
+}
+
+.reader:empty {
+  display: none;
+}
+
+.label:has(.reader-view) {
+  grid-template-columns: auto minmax(26rem, 0.9fr) minmax(0, 1.1fr);
+}
+
+.reader-view {
+  position: sticky;
+  top: var(--bar-h);
+  max-height: calc(100dvh - var(--bar-h) - var(--deck-h));
+  overflow-y: auto;
+  padding: 1.75rem var(--gutter) 4rem 1.75rem;
+  border-left: 1px solid var(--line);
+}
+
+.reader-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem 1rem;
+  align-items: start;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--text);
+}
+
+.reader-cat {
+  grid-column: 1;
+  grid-row: 1;
+  font: 500 0.75rem/1.2 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+
+.reader-close {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.reader-title {
+  grid-column: 1;
+  margin: 0;
+  font: 500 1.375rem/1.3 var(--read);
+  overflow-wrap: anywhere;
+}
+
+.reader-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
+}
+
+.reader-original {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--text);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color var(--quick), color var(--quick);
+}
+
+.reader-original:hover {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.reader-body,
+.reader-empty {
+  max-width: 40rem;
+  margin: 1.5rem 0 0;
+  font: 400 1rem/1.6 var(--read);
+  overflow-wrap: anywhere;
+}
+
+.reader-empty {
+  color: var(--text-2);
+}
+
+.reader-body > :first-child {
+  margin-top: 0;
+}
+
+.reader-body img,
+.reader-body figure,
+.reader-body table {
+  max-width: 100%;
+  height: auto;
+}
+
+.reader-body figure {
+  margin: 1rem 0;
+}
+
+.reader-body pre {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: var(--sunk);
+  font: 400 0.8125rem/1.5 var(--mono);
+}
+
+.reader-body blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 1px solid var(--line-strong);
+  color: var(--text-2);
+}
+
+.reader-body hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 60rem) {
+  .reader-view {
+    position: static;
+    max-height: none;
+    padding: 1.75rem var(--gutter) 2rem;
+    border-left: 0;
+    border-top: 1px solid var(--text);
+  }
+}

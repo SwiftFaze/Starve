@@ -2,6 +2,7 @@ package dev.starve.infra
 
 import dev.starve.application.ItemRef
 import dev.starve.application.ItemRepository
+import dev.starve.application.PostRef
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Playable
@@ -74,6 +75,24 @@ class JdbcItemRepository(
             }.optional()
             .orElse(null)
 
+    override fun findPost(id: Long): PostRef? =
+        jdbc
+            .sql(
+                "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body " +
+                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
+            ).param(id)
+            .query { rs, _ ->
+                PostRef(
+                    rs.getLong("id"),
+                    rs.getString("link"),
+                    rs.getString("title"),
+                    rs.getString("source_title"),
+                    Instant.ofEpochMilli(rs.getLong("published_at")),
+                    rs.getString("body"),
+                )
+            }.optional()
+            .orElse(null)
+
     override fun markRead(
         id: Long,
         at: Instant,
@@ -106,7 +125,7 @@ class JdbcItemRepository(
             Playable.of(getString("link")) != null,
         )
 
-    /** Inserts a new item; for a known one only fills in a thumbnail it did not have yet. */
+    /** Inserts a new item; for a known one only fills in a thumbnail or body it did not have yet. */
     private fun upsert(
         sourceId: Long,
         item: FeedItem,
@@ -115,9 +134,10 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "INSERT INTO items (source_id, item_key, title, link, published_at, " +
-                    "author, thumbnail_url, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                    "author, thumbnail_url, body, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                     "ON CONFLICT (source_id, item_key) DO UPDATE " +
-                    "SET thumbnail_url = COALESCE(items.thumbnail_url, excluded.thumbnail_url)",
+                    "SET thumbnail_url = COALESCE(items.thumbnail_url, excluded.thumbnail_url), " +
+                    "body = COALESCE(items.body, excluded.body)",
             ).params(
                 listOf(
                     sourceId,
@@ -127,6 +147,7 @@ class JdbcItemRepository(
                     (item.publishedAt ?: firstSeenAt).toEpochMilli(),
                     item.author,
                     item.thumbnailUrl,
+                    item.body,
                     firstSeenAt.toEpochMilli(),
                 ),
             ).update()

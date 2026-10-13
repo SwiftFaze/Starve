@@ -10,6 +10,8 @@ data class FeedItem(
     val publishedAt: Instant?,
     val author: String?,
     val thumbnailUrl: String?,
+    /** Sanitised HTML of the post, or null when the entry had none worth showing. */
+    val body: String? = null,
 )
 
 /** A parsed feed: its own title, when it has one, and its entries. */

@@ -20,6 +20,10 @@ data class FeedSpec(
     val coverArtUrl: String? = null,
     /** Raw XML text for every item title; `null` keeps the default "Entry n". */
     val itemTitle: String? = null,
+    /** HTML for each RSS item's description; `null` omits it. */
+    val description: String? = null,
+    /** HTML for each RSS item's content:encoded, or each Atom entry's content; `null` omits it. */
+    val content: String? = null,
 )
 
 sealed interface Route {
