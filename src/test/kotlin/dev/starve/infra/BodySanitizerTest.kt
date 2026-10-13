@@ -147,6 +147,30 @@ class BodySanitizerTest {
     }
 
     @Test
+    fun `paragraphs and divs with no text and no image are dropped`() {
+        val cleaned = clean("<p>One</p><p>&nbsp;</p><p><br></p><p> </p><div><strong></strong></div><p>Two</p>")
+
+        assertEquals("<p>One</p><p>Two</p>", cleaned)
+    }
+
+    @Test
+    fun `a block holding only an image is kept`() {
+        val cleaned = clean("<p><img src=\"https://i.example/a.png\" alt=\"\"></p>")!!
+
+        assertTrue(cleaned.contains("<img src=\"https://i.example/a.png\""))
+    }
+
+    @Test
+    fun `a run of line breaks collapses to one`() {
+        assertEquals("<p>a<br>b</p>", clean("<p>a<br><br><br>b</p>"))
+    }
+
+    @Test
+    fun `a line break after text is kept when the text is between two breaks`() {
+        assertEquals("<p>a<br>b<br>c</p>", clean("<p>a<br>b<br>c</p>"))
+    }
+
+    @Test
     fun `a body that grows when cleaned is still capped`() {
         val cleaned = clean("<p>" + "aaaaaaa&".repeat(50_000) + "</p>")!!
 

@@ -120,7 +120,10 @@
     syncSplitter();
   }
 
+  // The list and a pane share the window when a video sits in the pane or a post is open.
   function syncSplitter() {
+    if (body.dataset.video === 'pane' || document.querySelector('#reader .reader-view')) body.dataset.split = 'on';
+    else delete body.dataset.split;
     var splitter = document.querySelector('.splitter');
     if (!splitter) return;
     var strip = body.dataset.list === 'strip';
@@ -132,7 +135,7 @@
 
   document.addEventListener('pointerdown', function (event) {
     var splitter = event.target.closest('.splitter');
-    if (!splitter || body.dataset.video !== 'pane') return;
+    if (!splitter || body.dataset.split !== 'on') return;
     event.preventDefault();
     var left = listLeft();
     body.classList.add('resizing');
@@ -150,7 +153,7 @@
   });
 
   document.addEventListener('dblclick', function (event) {
-    if (!event.target.closest('.splitter') || body.dataset.video !== 'pane') return;
+    if (!event.target.closest('.splitter') || body.dataset.split !== 'on') return;
     fold();
     sizeList(LIST_DEFAULT, true);
   });
@@ -456,6 +459,7 @@
   function emptyReader() {
     var pane = reader();
     if (pane) pane.replaceChildren();
+    syncSplitter();
   }
 
   // Close empties the pane only; a video stepped down to Mini or Deck stays where it is.
@@ -471,6 +475,9 @@
     var view = document.querySelector('#reader .reader-view');
     if (!view) return;
     if (view.dataset.stepVideo === 'mini' && body.dataset.video === 'pane') place('mini');
+    // Without a pane video the reader opens the list at its saved width, as a pane video would.
+    if (body.dataset.video !== 'pane' && !window.matchMedia('(max-width: 60rem)').matches) sizeList(savedList(), false);
+    syncSplitter();
     var row = document.querySelector('.item[data-item="' + view.dataset.item + '"]');
     if (row) {
       row.classList.add('read');
@@ -499,6 +506,7 @@
       delete body.dataset.list;
       if (audio) state = soundcloud(audio);
     }
+    syncSplitter();
     applyVolume(savedVolume());
     trackDeck();
     tickTitle();

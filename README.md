@@ -81,7 +81,7 @@ handlers, and any link or image URL that is not http(s) (links may also be
 `mailto:`). Links open in a new tab. Bodies are capped at 200,000 characters. A
 body is only filled in for an item that has none, never overwritten, so posts
 fetched before this feature show the title and **Open original** only. A post
-whose feed carried no body shows a short note instead of text.
+whose feed carried no body shows a short note instead of text. Empty paragraphs and runs of line breaks are dropped, so padding in a feed does not show as blank lines. The post opens in the same pane as a video, and the list's splitter resizes it either way.
 
 ## Playing items inline
 

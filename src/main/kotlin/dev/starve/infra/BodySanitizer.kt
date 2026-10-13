@@ -2,6 +2,9 @@ package dev.starve.infra
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.Node
+import org.jsoup.nodes.TextNode
 import org.jsoup.safety.Cleaner
 import org.jsoup.safety.Safelist
 
@@ -54,6 +57,25 @@ object BodySanitizer {
         parsed.select(ACTIVE).remove()
         val cleaned: Document = Cleaner(safelist).clean(parsed)
         cleaned.outputSettings().prettyPrint(false)
+        dropEmptyBlocks(cleaned.body())
+        collapseLineBreaks(cleaned.body())
         return cleaned.body().html().trim()
     }
+
+    // Feeds pad posts with empty paragraphs and <br> runs for spacing; each renders as a blank line.
+    private fun dropEmptyBlocks(body: Element) {
+        body.select("p, div").filter { it.text().isBlankText() && it.select("img").isEmpty() }.forEach { it.remove() }
+    }
+
+    private fun collapseLineBreaks(body: Element) {
+        body.select("br").filter { precededByBreak(it) }.forEach { it.remove() }
+    }
+
+    private fun precededByBreak(br: Element): Boolean {
+        var node: Node? = br.previousSibling()
+        while (node is TextNode && node.isBlank) node = node.previousSibling()
+        return node is Element && node.tagName() == "br"
+    }
+
+    private fun String.isBlankText() = replace(' ', ' ').isBlank()
 }

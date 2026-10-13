@@ -95,13 +95,16 @@ the whole exchange, body included, by one timeout.
 `RomeFeedFetcher` picks each entry's body (content, else description) and passes it
 through `infra/BodySanitizer`, a jsoup allow-list (relaxed, minus style and data:
 URLs, with links forced to `target=_blank rel="noopener noreferrer"`), capped at
-200000 characters. Sanitising happens once, at ingestion; the stored `items.body`
+200000 characters, and it drops blocks left with no text or image (empty `<p>`, `&nbsp;` spacers) and collapses runs of `<br>`, since feeds pad posts with those. Sanitising happens once, at ingestion; the stored `items.body`
 (V6, nullable) is trusted at render time, and `ItemRepository` only fills a missing
 body on a later insert. `ReaderService` (wired by `ReaderConfig`) resolves
 `GET /items/{id}/reader`: it reads the `PostRef` through `ItemRepository.findPost`,
 marks the item read, and returns null (404) for an unknown or playable item, which
 keeps using the player. `ReaderController` renders `reader.html` as an htmx
-fragment and offers "Open original" only for http(s) links. No layer contract
+fragment and offers "Open original" only for http(s) links. Layout: the reader shares the list's
+pane layout, so the `data-split` attribute on `body` (set while a video is in the pane or a post
+is open) drives the list width and splitter. With a pane video, the video keeps a 16:9 strip
+above the post, which scrolls beneath it. No layer contract
 changes: the sanitiser is an infra detail behind the existing fetcher port.
 
 ## Dependency rule

@@ -430,9 +430,12 @@ input[type="file"].field::file-selector-button {
   align-items: start;
 }
 
+/* z-index 1: the video is a fixed child of the dock, so it paints inside this stacking context. The
+   sleeve must paint above the reader beside it, or the reader's text draws over the video. */
 .sleeve {
   position: sticky;
   top: var(--bar-h);
+  z-index: 1;
   display: grid;
   grid-template-columns: var(--obi-w) auto;
   grid-auto-rows: min-content;
@@ -1340,11 +1343,11 @@ body[data-video="pane"] .ratio-16x9 {
   height: auto;
 }
 
-body[data-video="pane"] .label {
+body[data-split] .label {
   grid-template-columns: auto var(--list-w) minmax(0, 1fr);
 }
 
-body[data-video="pane"] .sheet {
+body[data-split] .sheet {
   padding-right: 1.75rem;
   border-right: 1px solid var(--line);
   min-height: calc(100dvh - var(--bar-h) - var(--deck-h));
@@ -1355,7 +1358,7 @@ body[data-video="pane"] .sheet {
   display: none;
 }
 
-body[data-video="pane"] .splitter {
+body[data-split] .splitter {
   display: block;
   position: fixed;
   z-index: 26;
@@ -1367,7 +1370,7 @@ body[data-video="pane"] .splitter {
   touch-action: none;
 }
 
-body[data-video="pane"] .splitter::after {
+body[data-split] .splitter::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -1379,8 +1382,8 @@ body[data-video="pane"] .splitter::after {
   transition: background-color var(--quick), height var(--quick);
 }
 
-body[data-video="pane"] .splitter:hover::after,
-body[data-video="pane"] .splitter:focus-visible::after,
+body[data-split] .splitter:hover::after,
+body[data-split] .splitter:focus-visible::after,
 body.resizing .splitter::after {
   background: var(--cyan);
   height: 5rem;
@@ -1430,40 +1433,40 @@ body.folding .sheet-head {
 }
 
 /* Strip: the list folds to its catalogue numbers and the video takes the room. */
-body[data-video="pane"][data-list="strip"] {
+body[data-split][data-list="strip"] {
   --list-w: var(--strip-w);
 }
 
-body[data-video="pane"][data-list="strip"] .sheet {
+body[data-split][data-list="strip"] .sheet {
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
-body[data-video="pane"][data-list="strip"] .sheet-head {
+body[data-split][data-list="strip"] .sheet-head {
   border-bottom-color: var(--line);
 }
 
-body[data-video="pane"][data-list="strip"] .sheet-head::before,
-body[data-video="pane"][data-list="strip"] .sheet-head::after,
-body[data-video="pane"][data-list="strip"] .sheet-title,
-body[data-video="pane"][data-list="strip"] .view-actions,
-body[data-video="pane"][data-list="strip"] .sheet-note,
-body[data-video="pane"][data-list="strip"] .caught-up,
-body[data-video="pane"][data-list="strip"] .item .thumb,
-body[data-video="pane"][data-list="strip"] .item .blank,
-body[data-video="pane"][data-list="strip"] .item .body,
-body[data-video="pane"][data-list="strip"] .item .date,
-body[data-video="pane"][data-list="strip"] .item .actions {
+body[data-split][data-list="strip"] .sheet-head::before,
+body[data-split][data-list="strip"] .sheet-head::after,
+body[data-split][data-list="strip"] .sheet-title,
+body[data-split][data-list="strip"] .view-actions,
+body[data-split][data-list="strip"] .sheet-note,
+body[data-split][data-list="strip"] .caught-up,
+body[data-split][data-list="strip"] .item .thumb,
+body[data-split][data-list="strip"] .item .blank,
+body[data-split][data-list="strip"] .item .body,
+body[data-split][data-list="strip"] .item .date,
+body[data-split][data-list="strip"] .item .actions {
   display: none;
 }
 
-body[data-video="pane"][data-list="strip"] .item {
+body[data-split][data-list="strip"] .item {
   display: block;
   margin: 0;
   padding: 0.625rem 0.25rem;
 }
 
-body[data-video="pane"][data-list="strip"] .load-more {
+body[data-split][data-list="strip"] .load-more {
   min-height: 2.25rem;
   font-size: 0.625rem;
 }
@@ -1910,7 +1913,7 @@ body.resizing .ratio-16x9 iframe {
   }
 
   /* Pane on a phone: the full width just above the deck. */
-  body[data-video="pane"] .label,
+  body[data-split] .label,
   body[data-video="deck"] .label {
     display: block;
   }
@@ -1931,12 +1934,12 @@ body.resizing .ratio-16x9 iframe {
     padding-bottom: calc(var(--deck-h) + min(56.25vw, 40dvh));
   }
 
-  body[data-video="pane"] .sheet {
+  body[data-split] .sheet {
     border-right: 0;
     padding-right: var(--gutter);
   }
 
-  body[data-video] .splitter {
+  body[data-split] .splitter {
     display: none;
   }
 
@@ -1986,8 +1989,33 @@ body.resizing .ratio-16x9 iframe {
   display: none;
 }
 
-.label:has(.reader-view) {
-  grid-template-columns: auto minmax(26rem, 0.9fr) minmax(0, 1.1fr);
+/* A video in the pane and a post share the right-hand column. The video keeps a 16:9 strip at the
+   top and the post scrolls beneath it, so neither covers the other. Desktop only; on a phone the
+   video and the post stack in the page flow. */
+@media (min-width: 60.0625rem) {
+  body[data-video="pane"]:has(.reader-view) {
+    --pane-video-h: calc((100vw - var(--gutter) - var(--list-x, var(--obi-w)) - var(--list-w) - 1.5rem) * 9 / 16);
+    --reader-top: calc(var(--bar-h) + 1.75rem + var(--pane-video-h) + 1.25rem);
+  }
+
+  body[data-video="pane"]:has(.reader-view) .ratio-16x9 {
+    bottom: auto;
+    height: var(--pane-video-h);
+  }
+
+  body[data-video="pane"]:has(.reader-view) .reader {
+    padding-top: calc(var(--reader-top) - var(--bar-h));
+  }
+
+  body[data-video="pane"]:has(.reader-view) .reader-view {
+    top: var(--reader-top);
+    max-height: calc(100dvh - var(--reader-top) - var(--deck-h) - 1.25rem);
+  }
+}
+
+/* A floating mini video sits over the post's lower corner, so the post ends above it. */
+body[data-video="mini"] .reader-view {
+  padding-bottom: calc(var(--mini-w, 320px) * 9 / 16 + 2rem);
 }
 
 .reader-view {
