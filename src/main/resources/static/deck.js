@@ -123,9 +123,13 @@
   }
 
   // The list and a pane share the window when a video sits in the pane or a post is open.
-  function syncSplitter() {
+  function syncSplit() {
     if (body.dataset.video === 'pane' || document.querySelector('#reader .reader-view')) body.dataset.split = 'on';
     else delete body.dataset.split;
+  }
+
+  function syncSplitter() {
+    syncSplit();
     var splitter = document.querySelector('.splitter');
     if (!splitter) return;
     var strip = body.dataset.list === 'strip';
@@ -475,18 +479,25 @@
   function readerOpened() {
     var view = document.querySelector('#reader .reader-view');
     if (!view) return;
+    layoutForReader();
+    markRowRead(view.dataset.item);
+    if (window.matchMedia('(max-width: 60rem)').matches) view.scrollIntoView({ block: 'start' });
+  }
+
+  function layoutForReader() {
     // The split layout must apply before the list is measured, or the sheet is still at its old left edge.
     syncSplitter();
     // Without a pane video the reader opens the list at its saved width, as a pane video would.
     if (body.dataset.video !== 'pane' && !window.matchMedia('(max-width: 60rem)').matches) sizeList(savedList(), false);
     applyVideoHeight();
-    var row = document.querySelector('.item[data-item="' + view.dataset.item + '"]');
-    if (row) {
-      row.classList.add('read');
-      var markRead = row.querySelector('form[action$="/read"]');
-      if (markRead) markRead.remove();
-    }
-    if (window.matchMedia('(max-width: 60rem)').matches) view.scrollIntoView({ block: 'start' });
+  }
+
+  function markRowRead(itemId) {
+    var row = document.querySelector('.item[data-item="' + itemId + '"]');
+    if (!row) return;
+    row.classList.add('read');
+    var markRead = row.querySelector('form[action$="/read"]');
+    if (markRead) markRead.remove();
   }
 
   // ---- The video above the post: drag its lower edge to resize (a pane video with a post open) --
