@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0-beta](https://github.com/SwiftFaze/Starve/compare/v1.0.0...v1.1.0-beta) (2026-10-13)
+
+
+### Features
+
+* read posts in an in-app reader pane ([3a5e675](https://github.com/SwiftFaze/Starve/commit/3a5e675f97e45f22f07938bd69b32b82e4cf61f4))
+* read posts in an in-app reader pane ([3389c1b](https://github.com/SwiftFaze/Starve/commit/3389c1bc1c06d138e20bbb3f7d28b5171b59a428))
+
+
+### Bug Fixes
+
+* keep reader text inside the pane ([67fc46a](https://github.com/SwiftFaze/Starve/commit/67fc46ab4d4d18c55c2696e89fbf9ba481ff271b))
+* resize the reader pane, keep the video above the text and tidy post spacing ([7c8e544](https://github.com/SwiftFaze/Starve/commit/7c8e5447385348b333b2723083b45c254f9f1172))
+
 ## 1.0.0 (2026-10-13)
 
 
