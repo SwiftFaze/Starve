@@ -24,7 +24,13 @@ class BodySanitizerTest {
         val html = "<figure><img src=\"https://i.example/a.png\" alt=\"a\"><figcaption>cap</figcaption></figure>"
 
         assertEquals(html, clean(html))
-        assertTrue(clean("<table><tbody><tr><td>1</td></tr></tbody></table>")!!.contains("<td>1</td>"))
+    }
+
+    @Test
+    fun `tables survive`() {
+        val cleaned = clean("<table><tbody><tr><td>1</td></tr></tbody></table>")!!
+
+        assertTrue(cleaned.contains("<td>1</td>"))
     }
 
     @Test
@@ -111,5 +117,40 @@ class BodySanitizerTest {
             )
 
         assertEquals(once, clean(once))
+    }
+
+    @Test
+    fun `document level and embedded elements are dropped`() {
+        val html =
+            "<base href=\"https://evil.example/\">" +
+                "<meta http-equiv=\"refresh\" content=\"0;url=https://evil.example\">" +
+                "<svg onload=\"x()\"><circle r=\"1\"/></svg><video src=\"https://v.example/a.mp4\">v</video>" +
+                "<audio src=\"https://v.example/a.mp3\">a</audio><p>Kept</p>"
+
+        val cleaned = clean(html)!!
+
+        assertTrue(cleaned.contains("<p>Kept</p>"))
+        assertFalse(cleaned.contains("evil.example"))
+        assertFalse(cleaned.contains("<svg"))
+        assertFalse(cleaned.contains("<video"))
+        assertFalse(cleaned.contains("<audio"))
+        assertFalse(cleaned.contains("<meta"))
+        assertFalse(cleaned.contains("<base"))
+    }
+
+    @Test
+    fun `nested and malformed markup is closed and neutralised`() {
+        val cleaned = clean("<div><p>a<b>b<i>c</div><scr<script>ipt>x()</script>")!!
+
+        assertFalse(cleaned.contains("<script"))
+        assertEquals(cleaned, clean(cleaned))
+    }
+
+    @Test
+    fun `a body that grows when cleaned is still capped`() {
+        val cleaned = clean("<p>" + "aaaaaaa&".repeat(50_000) + "</p>")!!
+
+        assertTrue(cleaned.length <= 200_000)
+        assertTrue(cleaned.endsWith("</p>"))
     }
 }

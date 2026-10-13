@@ -31,10 +31,17 @@ object BodySanitizer {
         baseUrl: String?,
     ): String? {
         if (html.isNullOrBlank()) return null
+        return cleanWithinCap(html, baseUrl.orEmpty()).takeIf { it.isNotBlank() }
+    }
+
+    private fun cleanWithinCap(
+        html: String,
+        baseUrl: String,
+    ): String {
         var keep = MAX_LENGTH
         while (true) {
-            val clean = clean(html.take(keep.coerceAtLeast(0)), baseUrl.orEmpty())
-            if (clean.length <= MAX_LENGTH) return clean.takeIf { it.isNotBlank() }
+            val clean = clean(html.take(keep.coerceAtLeast(0)), baseUrl)
+            if (clean.length <= MAX_LENGTH) return clean
             keep -= clean.length - MAX_LENGTH
         }
     }

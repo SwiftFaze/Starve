@@ -63,10 +63,17 @@ class ReaderServiceTest {
     }
 
     @Test
-    fun `a playable item is not readable and stays unread`() {
-        val (service, items) = service(post(1, "https://youtu.be/dQw4w9WgXcQ"), post(2, "https://soundcloud.com/a/b"))
+    fun `a youtube item is not readable and stays unread`() {
+        val (service, items) = service(post(1, "https://youtu.be/dQw4w9WgXcQ"))
 
         assertNull(service.open(1))
+        assertTrue(items.read.isEmpty())
+    }
+
+    @Test
+    fun `a soundcloud item is not readable and stays unread`() {
+        val (service, items) = service(post(2, "https://soundcloud.com/a/b"))
+
         assertNull(service.open(2))
         assertTrue(items.read.isEmpty())
     }

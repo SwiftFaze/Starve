@@ -119,13 +119,31 @@ class RomeFeedFetcherTest {
     }
 
     @Test
-    fun `the body is the content element, else the description, else none, sanitised against the item link`() {
+    fun `the body prefers the content element over the description`() {
         assertEquals("<p>Full</p>", bodyOf(FeedSpec(description = "<p>Teaser</p>", content = "<p>Full</p>")))
+    }
+
+    @Test
+    fun `the body falls back to the description`() {
         assertEquals("<p>Teaser</p>", bodyOf(FeedSpec(description = "<p>Teaser</p>")))
+    }
+
+    @Test
+    fun `there is no body when the entry has neither or only unsafe markup`() {
         assertEquals(null, bodyOf(FeedSpec()))
         assertEquals(null, bodyOf(FeedSpec(content = "<script>x()</script>")))
+    }
+
+    @Test
+    fun `an atom entry body is read from its content`() {
         assertEquals("<p>Atom</p>", bodyOf(FeedSpec(atom = true, content = "<p>Atom</p>")))
-        assertTrue(bodyOf(FeedSpec(content = "<a href=\"/x\">x</a>"))!!.contains("href=\"${server.baseUrl}/x\""))
+    }
+
+    @Test
+    fun `body links are resolved against the item link`() {
+        val body = bodyOf(FeedSpec(content = "<a href=\"/x\">x</a>"))!!
+
+        assertTrue(body.contains("href=\"${server.baseUrl}/x\""))
     }
 
     private fun bodyOf(spec: FeedSpec): String? {

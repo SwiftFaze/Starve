@@ -69,13 +69,20 @@ class ReaderControllerTest {
     }
 
     @Test
-    fun `a playable or unknown item is 404`() {
-        val tube = PostRef(1, "https://youtu.be/dQw4w9WgXcQ", "T", "S", published, null)
+    fun `a playable item is 404`() {
+        val reader = controller(PostRef(1, "https://youtu.be/dQw4w9WgXcQ", "T", "S", published, null))
 
-        listOf(1L, 2L).forEach {
-            val reader = controller(tube)
-            val failure = assertThrows(ResponseStatusException::class.java) { reader.reader(it, ConcurrentModel()) }
-            assertEquals(HttpStatus.NOT_FOUND, failure.statusCode)
-        }
+        val failure = assertThrows(ResponseStatusException::class.java) { reader.reader(1, ConcurrentModel()) }
+
+        assertEquals(HttpStatus.NOT_FOUND, failure.statusCode)
+    }
+
+    @Test
+    fun `an unknown item is 404`() {
+        val reader = controller()
+
+        val failure = assertThrows(ResponseStatusException::class.java) { reader.reader(2, ConcurrentModel()) }
+
+        assertEquals(HttpStatus.NOT_FOUND, failure.statusCode)
     }
 }
