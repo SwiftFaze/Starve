@@ -493,16 +493,24 @@
     if (bar) body.style.setProperty('--bar-h', bar.offsetHeight + 'px');
   }
 
+  // The list starts where the sheet does: after the obi, and on Sources after the tool panel too.
+  function trackList() {
+    body.style.setProperty('--list-x', Math.round(listLeft()) + 'px');
+  }
+
   function trackHeights() {
     if (!window.ResizeObserver) return;
     if (observer) observer.disconnect();
     observer = new ResizeObserver(function () {
       trackBar();
       trackDeck();
+      trackList();
     });
     observer.observe(body);
     var target = dock();
     if (target) observer.observe(target);
+    var sleeve = document.querySelector('.sleeve');
+    if (sleeve) observer.observe(sleeve);
   }
 
   // A page tab swaps the bar in place (the dock and the deck stay), and the bar may change height.

@@ -1333,7 +1333,7 @@ a.title:hover {
 /* Pane: theatre size beside the list. */
 body[data-video="pane"] .ratio-16x9 {
   top: calc(var(--bar-h) + 1.75rem);
-  left: calc(var(--obi-w) + var(--list-w) + 1.5rem);
+  left: calc(var(--list-x, var(--obi-w)) + var(--list-w) + 1.5rem);
   right: var(--gutter);
   bottom: calc(var(--deck-h) + 1.75rem);
   width: auto;
@@ -1361,7 +1361,7 @@ body[data-video="pane"] .splitter {
   z-index: 26;
   top: var(--bar-h);
   bottom: var(--deck-h);
-  left: calc(var(--obi-w) + var(--list-w) - 0.375rem);
+  left: calc(var(--list-x, var(--obi-w)) + var(--list-w) - 0.375rem);
   width: 0.75rem;
   cursor: col-resize;
   touch-action: none;
