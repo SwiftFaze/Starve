@@ -90,6 +90,20 @@ embedding is disabled, anything else fails open. All outbound HTTP (feed fetch,
 feed location, oEmbed) goes through the shared `BoundedHttp` helper, which bounds
 the whole exchange, body included, by one timeout.
 
+## Reader pane and post bodies
+
+`RomeFeedFetcher` picks each entry's body (content, else description) and passes it
+through `infra/BodySanitizer`, a jsoup allow-list (relaxed, minus style and data:
+URLs, with links forced to `target=_blank rel="noopener noreferrer"`), capped at
+200000 characters. Sanitising happens once, at ingestion; the stored `items.body`
+(V6, nullable) is trusted at render time, and `ItemRepository` only fills a missing
+body on a later insert. `ReaderService` (wired by `ReaderConfig`) resolves
+`GET /items/{id}/reader`: it reads the `PostRef` through `ItemRepository.findPost`,
+marks the item read, and returns null (404) for an unknown or playable item, which
+keeps using the player. `ReaderController` renders `reader.html` as an htmx
+fragment and offers "Open original" only for http(s) links. No layer contract
+changes: the sanitiser is an infra detail behind the existing fetcher port.
+
 ## Dependency rule
 
 Dependencies point inward: `web`/`infra` -> `application` -> `domain`. Nothing

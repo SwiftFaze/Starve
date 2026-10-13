@@ -49,6 +49,20 @@ class ReaderControllerTest {
     }
 
     @Test
+    fun `the view exposes each field the template reads`() {
+        val model = ConcurrentModel()
+
+        controller(PostRef(7, "https://blog.example/a", "Title", "Blog", published, "<p>Hi</p>")).reader(7, model)
+
+        val view = model.getAttribute("post") as ReaderView
+        assertEquals("STV 0007", view.catalogueNumber)
+        assertEquals("Title", view.title)
+        assertEquals("Blog", view.sourceTitle)
+        assertEquals("2026-10-11 09:30 UTC", view.published)
+        assertEquals("2026-10-11T09:30:00Z", view.publishedIso)
+    }
+
+    @Test
     fun `a post without a body or a link has neither in its view`() {
         val model = ConcurrentModel()
 
