@@ -13,7 +13,8 @@ Feature: Reader pane for blog posts
   a new tab with rel="noopener noreferrer"; opening in the reader marking the
   item read; the no-body state (title, source, date and "Open original"
   only, plus an explanatory line); a Close control; the reader declaring that a
-  video in the pane steps down to Mini (or stays in Deck) so it keeps playing;
+  video in the pane keeps its placement when a post opens (it is not moved to
+  Mini);
   404 for an unknown item id and for a playable item.
   Supersedes: in part chronological-feed.feature, where a title click always
   goes to /items/{id}/open and redirects. That now holds only without
@@ -21,7 +22,7 @@ Feature: Reader pane for blog posts
   Supersedes: "reading article text in the pane" being out of scope in
   player-deck.feature; the pane now serves the reader too.
   Out of scope: storing and sanitising bodies (post-bodies.feature); what the
-  browser does with the placements (the video moving to Mini, the list staying
+  browser does with the placements (the list staying
   put, the reader layout, closing): browser behaviour covered by the human
   playtest; the detail view for YouTube/SoundCloud items (#30), whose titles
   keep today's behaviour; full-text fetch for teaser feeds; images in posts
@@ -102,10 +103,17 @@ Feature: Reader pane for blog posts
     Then the reader shows the title "Linkless"
     And the reader has no "Open original" link
 
-  Scenario: The reader declares that a video in the pane steps down so it keeps playing
+  Scenario: Opening a post does not move a video out of the pane
     Given the source "Blog" has an item "Post" with the link "https://blog.example/post" and the stored body "<p>Hi</p>" published 1 days ago
     When I request the reader of the item "Post" via htmx
-    Then the reader asks a video in the pane to step down to Mini
+    Then the reader does not ask a video in the pane to step down
+
+  Scenario: Switching to another post does not move a video out of the pane
+    Given the source "Blog" has an item "Post" with the link "https://blog.example/post" and the stored body "<p>Hi</p>" published 1 days ago
+    And the source "Blog" has an item "Second" with the link "https://blog.example/second" and the stored body "<p>Two</p>" published 1 days ago
+    When I request the reader of the item "Post" via htmx
+    And I request the reader of the item "Second" via htmx
+    Then the reader does not ask a video in the pane to step down
 
   Scenario: A YouTube video's title keeps today's behaviour
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
@@ -138,7 +146,7 @@ Feature: Reader pane for blog posts
 #
 # Risks:
 #   - "Anything already playing keeps playing" depends on the reader not
-#     replacing the dock and on deck.js stepping a pane video down to Mini;
+#     replacing the dock and on deck.js keeping a pane video in the pane;
 #     that is browser behaviour the human playtest must cover (YouTube in Pane
 #     then open a post; YouTube in Deck then open a post; a SoundCloud track
 #     then open a post; close the reader).

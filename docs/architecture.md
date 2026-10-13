@@ -103,8 +103,10 @@ marks the item read, and returns null (404) for an unknown or playable item, whi
 keeps using the player. `ReaderController` renders `reader.html` as an htmx
 fragment and offers "Open original" only for http(s) links. Layout: the reader shares the list's
 pane layout, so the `data-split` attribute on `body` (set while a video is in the pane or a post
-is open) drives the list width and splitter. With a pane video, the video keeps a 16:9 strip
-above the post, which scrolls beneath it. No layer contract
+is open) drives the list width and splitter. On desktop the post is a fixed column that scrolls on
+its own, so the list scrolling never moves it. With a pane video, the video is a strip above the
+post, whose height the horizontal `video-splitter` sets (`--video-h`, persisted as
+`starve.videoh`). Opening a post never moves a video out of the pane. No layer contract
 changes: the sanitiser is an infra detail behind the existing fetcher port.
 
 ## Dependency rule

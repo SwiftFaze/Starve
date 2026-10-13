@@ -127,8 +127,8 @@ class ReaderSteps {
     @Then("the reader has a Close control")
     fun readerHasClose() = assertTrue(READER_CLOSE.containsMatchIn(body()), body())
 
-    @Then("the reader asks a video in the pane to step down to Mini")
-    fun readerStepsVideoDown() = assertTrue(body().contains("data-step-video=\"mini\""), body())
+    @Then("the reader does not ask a video in the pane to step down")
+    fun readerKeepsVideoPlacement() = assertFalse(body().contains("data-step-video"), body())
 
     // ---- helpers -------------------------------------------------------------------------
 

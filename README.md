@@ -81,7 +81,11 @@ handlers, and any link or image URL that is not http(s) (links may also be
 `mailto:`). Links open in a new tab. Bodies are capped at 200,000 characters. A
 body is only filled in for an item that has none, never overwritten, so posts
 fetched before this feature show the title and **Open original** only. A post
-whose feed carried no body shows a short note instead of text. Empty paragraphs and runs of line breaks are dropped, so padding in a feed does not show as blank lines. The post opens in the same pane as a video, and the list's splitter resizes it either way.
+whose feed carried no body shows a short note instead of text.
+
+The post stays put while the list scrolls and scrolls on its own. With a video in the pane,
+the video stays there and sits above the post; drag the edge between them to resize it. The
+list, the post and the video share the window, so resizing one never hides another. Empty paragraphs and runs of line breaks are dropped, so padding in a feed does not show as blank lines. The post opens in the same pane as a video, and the list's splitter resizes it either way.
 
 ## Playing items inline
 
