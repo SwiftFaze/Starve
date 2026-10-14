@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0-beta.4](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.3...v1.1.0-beta.4) (2026-10-14)
+
+
+### Features
+
+* favourite items with a star and a Favourites filter ([3df6616](https://github.com/SwiftFaze/Starve/commit/3df66164384ea1854542e57332efbb30059d8be4))
+* favourite items with a star and a Favourites filter (wip) ([34df7a5](https://github.com/SwiftFaze/Starve/commit/34df7a5d8960c7c796857ca1f62120302dc8e053)), closes [#31](https://github.com/SwiftFaze/Starve/issues/31)
+
+
+### Bug Fixes
+
+* keep the favourite star and the site favicon together on timeline rows ([74eab1f](https://github.com/SwiftFaze/Starve/commit/74eab1f7ac06320a8881a5661c71daade02faa8d))
+
 ## [1.1.0-beta.3](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.2...v1.1.0-beta.3) (2026-10-14)
 
 
