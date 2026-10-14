@@ -2,7 +2,9 @@ Feature: Save items for later
   An item can be saved to read or watch later with a ⏲ toggle on each timeline
   row, in the reader pane and in the detail view. Saved items are listed by a
   Later entry in the left navigation, earliest-saved first, whether read or
-  not. Nothing clears them automatically, and retention never removes them.
+  not. Nothing clears them automatically, and retention never removes them,
+  and they stay searchable. Searching from the Later view searches everything;
+  clearing the search returns to Later.
 
   Covers: a read-later flag on items, separate from favourites (migration V12,
   nullable later_at holding when the item was saved; items already stored are
@@ -19,7 +21,10 @@ Feature: Save items for later
   not, paged 50 at a time with "Load more" keeping the filter, with no "Show
   read" or "Mark all read" control and an empty state; Favourites winning when
   both filters are given; retention skipping saved items, and deleting them
-  again once cleared; 404 for an unknown item id.
+  again once cleared; 404 for an unknown item id; Later as an origin view of
+  full-text search (full-text-search.feature): the search form carrying
+  "later" as "1", clearing a search in Later returning to Later, and the
+  search index (like the items) keeping saved items through retention.
   Supersedes: in part feed-ingestion.feature, whose retention scenario
   ("deletes items first seen more than 90 days ago") now holds only for items
   that are neither favourites nor saved for later.
@@ -33,7 +38,8 @@ Feature: Save items for later
   Favourites-plus-Later filter; a count on the Later entry; reordering the
   queue by hand; the ⏲ in the player dock; what the browser does with the swaps
   (no reload, focus, animation): browser behaviour covered by the human
-  playtest; search; bulk saving; export.
+  playtest; narrowing search results to saved items (results ignore the view
+  by design); bulk saving; export.
 
   Background:
     Given a fresh SQLite database file
@@ -420,6 +426,20 @@ Feature: Save items for later
     Then the timeline lists no items
     When I save the item "Old post" for later via htmx
     Then the item "Old post" is saved for later
+
+  Scenario: Clearing a search in the Later view returns to Later
+    Given the source "Alpha" has an unread item "Post saved" published 2 days ago
+    And the source "Alpha" has an unread item "Post plain" published 1 days ago
+    And the item "Post saved" is saved for later
+    When I request the home page "/?later=1"
+    Then the search form carries "later" as "1"
+    When I search for "post" while viewing the Later
+    Then the timeline lists the items in this order
+      | Post plain |
+      | Post saved |
+    When I clear the search via htmx while viewing the Later
+    Then the timeline lists "Post saved"
+    And the timeline does not list "Post plain"
 
 # Non-goals:
 #   - Automatic clearing on open, read or play.

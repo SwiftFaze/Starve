@@ -25,6 +25,7 @@ class JdbcSearchIndexTest {
     private lateinit var items: JdbcItemRepository
     private lateinit var searching: JdbcSearchRepository
     private lateinit var favourites: JdbcFavouriteRepository
+    private lateinit var later: JdbcLaterRepository
     private lateinit var articles: JdbcArticleRepository
     private val now = Instant.parse("2026-10-11T12:00:00Z")
 
@@ -43,6 +44,7 @@ class JdbcSearchIndexTest {
         items = JdbcItemRepository(jdbc, index)
         searching = JdbcSearchRepository(jdbc)
         favourites = JdbcFavouriteRepository(jdbc)
+        later = JdbcLaterRepository(jdbc)
         articles = JdbcArticleRepository(jdbc, index)
     }
 
@@ -146,6 +148,32 @@ class JdbcSearchIndexTest {
 
         assertEquals(listOf("Treasured"), search("treasured"))
         assertEquals(emptyList<String>(), search("forgotten"))
+    }
+
+    @Test
+    fun `retention keeps an item saved for later searchable and drops an unsaved item of the same age`() {
+        val source = sources.insert("http://a.test/f", "Daily")
+        val old = now.minusSeconds(90L * 86400)
+        items.insertNew(source.id, listOf(feedItem("kept", "Queued"), feedItem("lost", "Forgotten")), old)
+        val keptId = searching.search(SearchRules.matchExpression("queued")!!, null, 10).single().id
+        later.save(keptId, now)
+
+        items.deleteFirstSeenBefore(now.minusSeconds(30L * 86400))
+
+        assertEquals(listOf("Queued"), search("queued"))
+        assertEquals(emptyList<String>(), search("forgotten"))
+    }
+
+    @Test
+    fun `a search result carries the later flag`() {
+        val source = sources.insert("http://a.test/f", "Daily")
+        items.insertNew(source.id, listOf(feedItem("a", "Queued"), feedItem("b", "Queued too")), now)
+        val savedId = searching.search(SearchRules.matchExpression("queued")!!, null, 10).first { it.title == "Queued" }.id
+        later.save(savedId, now)
+
+        val flags = searching.search(SearchRules.matchExpression("queued")!!, null, 10).associate { it.title to it.later }
+
+        assertEquals(mapOf("Queued" to true, "Queued too" to false), flags)
     }
 
     @Test

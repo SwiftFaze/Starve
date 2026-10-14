@@ -8,6 +8,7 @@ import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
+import dev.starve.domain.LaterCursor
 import dev.starve.domain.Validators
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
@@ -32,6 +33,7 @@ class JdbcRepositoriesTest {
     private lateinit var sources: JdbcSourceRepository
     private lateinit var items: JdbcItemRepository
     private lateinit var favourites: JdbcFavouriteRepository
+    private lateinit var later: JdbcLaterRepository
     private lateinit var groups: JdbcGroupRepository
 
     @BeforeEach
@@ -47,6 +49,7 @@ class JdbcRepositoriesTest {
         sources = JdbcSourceRepository(jdbc, SearchIndex(jdbc))
         items = JdbcItemRepository(jdbc, SearchIndex(jdbc))
         favourites = JdbcFavouriteRepository(jdbc)
+        later = JdbcLaterRepository(jdbc)
         groups = JdbcGroupRepository(jdbc)
     }
 
@@ -370,6 +373,90 @@ class JdbcRepositoriesTest {
         assertEquals(100L, favouritedAt(idOf("k")))
         assertNull(favouritedAt(idOf("new")))
     }
+
+    @Test
+    fun `saving keeps the first saved time, clearing clears it and unknown items are reported`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
+        val id = idOf("k")
+
+        assertEquals(true, later.save(id, Instant.ofEpochMilli(100)))
+        assertEquals(true, later.save(id, Instant.ofEpochMilli(200)))
+        assertEquals(false, later.save(id + 1, Instant.ofEpochMilli(300)))
+        assertEquals(100L, savedAt(id))
+        assertEquals(true, items.findPost(id)!!.later)
+        assertEquals(true, items.findDetail(id)!!.later)
+
+        assertEquals(true, later.clear(id))
+        assertEquals(true, later.clear(id))
+        assertEquals(false, later.clear(id + 1))
+        assertNull(savedAt(id))
+        assertEquals(false, items.findPost(id)!!.later)
+    }
+
+    @Test
+    fun `the timeline flags saved items and leaves favourites and read state alone`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("a", "a"), item("b", "b")), Instant.EPOCH)
+        later.save(idOf("b"), Instant.EPOCH)
+
+        val rows = items.timeline(null, true, 10, null).associateBy { it.title }
+        assertEquals(false, rows.getValue("a").later)
+        assertEquals(true, rows.getValue("b").later)
+        assertEquals(false, rows.getValue("b").favourite)
+        assertEquals(false, rows.getValue("b").read)
+    }
+
+    @Test
+    fun `saved items are listed earliest saved first, ties by id, read or not, and paged by cursor`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("a", "a"), item("b", "b"), item("c", "c")), Instant.EPOCH)
+        later.save(idOf("c"), Instant.ofEpochMilli(200))
+        later.save(idOf("a"), Instant.ofEpochMilli(100))
+        later.save(idOf("b"), Instant.ofEpochMilli(200))
+        items.markRead(idOf("a"), Instant.EPOCH)
+
+        val all = later.later(null, 10)
+        assertEquals(listOf("a", "b", "c"), all.map { it.item.title })
+        assertEquals(listOf(100L, 200L, 200L), all.map { it.savedAt.toEpochMilli() })
+        assertEquals(listOf(true, false, false), all.map { it.item.read })
+        val afterB = LaterCursor(Instant.ofEpochMilli(200), idOf("b"))
+        assertEquals(listOf("c"), later.later(afterB, 10).map { it.item.title })
+    }
+
+    @Test
+    fun `deleting by cutoff spares saved items until they are cleared`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val cutoff = Instant.parse("2026-10-11T12:00:00Z")
+        items.insertNew(source.id, listOf(item("kept", "kept"), item("gone", "gone")), cutoff.minusSeconds(1))
+        later.save(idOf("kept"), Instant.EPOCH)
+
+        assertEquals(1, items.deleteFirstSeenBefore(cutoff))
+        assertEquals(listOf("kept"), keys())
+
+        later.clear(idOf("kept"))
+        assertEquals(1, items.deleteFirstSeenBefore(cutoff))
+        assertEquals(emptyList<String>(), keys())
+    }
+
+    @Test
+    fun `a refetch of a feed keeps the saved time of an item it already stored`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
+        later.save(idOf("k"), Instant.ofEpochMilli(100))
+
+        items.insertNew(source.id, listOf(item("k", "t")), Instant.ofEpochMilli(500))
+
+        assertEquals(100L, savedAt(idOf("k")))
+    }
+
+    private fun savedAt(id: Long): Long? =
+        jdbc
+            .sql("SELECT later_at FROM items WHERE id = ?")
+            .param(id)
+            .query { rs, _ -> rs.getObject(1)?.let { (it as Number).toLong() } }
+            .list()
+            .single()
 
     private fun idOf(key: String): Long =
         jdbc

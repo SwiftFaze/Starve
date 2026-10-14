@@ -51,6 +51,15 @@ object World {
     var actionHasRun = false
 
     fun feedServer(): FeedServer = requireNotNull(feeds) { "feed server not running" }
+
+    /** The opening `<a>` tag and the label of each link in the groups navigation of [page], in order. */
+    fun navAnchors(page: String): List<Pair<String, String>> {
+        val nav = requireNotNull(GROUPS_NAV.find(page)) { "no groups navigation" }.value
+        return ANCHOR.findAll(nav).map { it.groupValues[1] to it.groupValues[2] }.toList()
+    }
+
+    private val GROUPS_NAV = Regex("<nav class=\"groups\".*?</nav>", RegexOption.DOT_MATCHES_ALL)
+    private val ANCHOR = Regex("(<a [^>]*>)([^<]*)</a>")
 }
 
 /** The entities Thymeleaf writes for text and attribute values. */

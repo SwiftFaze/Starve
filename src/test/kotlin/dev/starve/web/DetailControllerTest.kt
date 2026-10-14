@@ -80,4 +80,14 @@ class DetailControllerTest {
             description,
             link,
         )
+
+    @Test
+    fun `the detail view carries the save toggle for the item`() {
+        val model = ConcurrentModel()
+        val item = DetailRef(7, youtube, "Title", "Channel", published, null, null, null, null, later = true)
+
+        controller(item).detail(7, model)
+
+        assertEquals(LaterView("detail-later", 7, true, from = "detail"), model.getAttribute("laterToggle"))
+    }
 }

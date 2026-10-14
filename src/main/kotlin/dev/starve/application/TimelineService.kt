@@ -1,15 +1,16 @@
 package dev.starve.application
 
 import dev.starve.domain.Cursor
+import dev.starve.domain.PageCursor
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
 import java.time.Clock
 import java.time.Instant
 
-/** One rendered page of the timeline. [next] is null on the last page. */
+/** One rendered page of a timeline view. [next] is null on the last page. */
 data class TimelinePage(
     val items: List<TimelineItem>,
-    val next: Cursor?,
+    val next: PageCursor?,
     val renderedAt: Instant,
     val hasSources: Boolean,
 )

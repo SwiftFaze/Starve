@@ -147,7 +147,7 @@ Feature: Favourite items
   Scenario: The left navigation offers Favourites after All and the groups
     Given the group "Music" exists
     When I request the home page "/"
-    Then the navigation ends with the "Favourites" entry linking to "/?favourites=1"
+    Then the navigation has the "Favourites" entry linking to "/?favourites=1"
     And the "Favourites" entry follows the group "Music"
 
   Scenario: The Favourites view lists favourites newest first, read or not

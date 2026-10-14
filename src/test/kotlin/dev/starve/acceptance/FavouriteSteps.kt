@@ -78,14 +78,16 @@ class FavouriteSteps {
     @When("I unfavourite the item first seen {int} days ago")
     fun unfavouriteFirstSeenAgo(days: Int) = toggle("unfavourite", idFirstSeenDaysAgo(days).toString())
 
-    /** The unknown-item outline: the id is sent exactly as written, so "abc" stays non-numeric. */
+    /**
+     * The unknown-item outline of favourites and read-later ("save" and "clear" are the Later verbs): the id is sent
+     * exactly as written, so "abc" stays non-numeric.
+     */
     @When("I {word} the unknown item {word} via htmx")
     fun toggleUnknown(
         action: String,
         id: String,
     ) {
-        require(action == "favourite" || action == "unfavourite") { "no toggle '$action'" }
-        toggle(action, id, HTMX)
+        toggle(UNKNOWN_TOGGLES[action] ?: error("no toggle '$action'"), id, HTMX)
     }
 
     @When("I request the timeline of the group {string} with the Favourites filter")
@@ -184,9 +186,17 @@ class FavouriteSteps {
         url: String,
     ) {
         val last = navAnchors().last()
-        assertTrue(last.first.contains("class=\"favourites-link\""), last.first)
         assertEquals(label, last.second)
         assertTrue(last.first.contains("href=\"$url\""), last.first)
+    }
+
+    @Then("the navigation has the {string} entry linking to {string}")
+    fun navigationHas(
+        label: String,
+        url: String,
+    ) {
+        val entry = requireNotNull(navAnchors().firstOrNull { it.second == label }) { "no '$label' entry" }
+        assertTrue(entry.first.contains("href=\"$url\""), entry.first)
     }
 
     @Then("the {string} entry follows the group {string}")
@@ -258,10 +268,7 @@ class FavouriteSteps {
         assertTrue(tag.contains("hx-post=\"/items/$id/$verb"), tag)
     }
 
-    private fun navAnchors(): List<Pair<String, String>> {
-        val nav = requireNotNull(GROUPS_NAV.find(body())) { "no groups navigation" }.value
-        return ANCHOR.findAll(nav).map { it.groupValues[1] to it.groupValues[2] }.toList()
-    }
+    private fun navAnchors(): List<Pair<String, String>> = World.navAnchors(body())
 
     private fun isFavourite(title: String): Boolean =
         count("SELECT COUNT(*) FROM items WHERE title = ? AND favourited_at IS NOT NULL", title) == 1L
@@ -307,7 +314,9 @@ class FavouriteSteps {
     private companion object {
         val HTMX = mapOf("HX-Request" to "true")
         val STAR = Regex("<form[^>]*class=\"star\"[^>]*>")
-        val GROUPS_NAV = Regex("<nav class=\"groups\".*?</nav>", RegexOption.DOT_MATCHES_ALL)
-        val ANCHOR = Regex("(<a [^>]*>)([^<]*)</a>")
+
+        /** Unknown-item outline verbs mapped to the endpoint they post to. */
+        val UNKNOWN_TOGGLES =
+            mapOf("favourite" to "favourite", "unfavourite" to "unfavourite", "save" to "later", "clear" to "unlater")
     }
 }

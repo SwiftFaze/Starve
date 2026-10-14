@@ -5,8 +5,10 @@ import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
+import dev.starve.domain.LaterCursor
 import dev.starve.domain.ParsedImport
 import dev.starve.domain.Playable
+import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
@@ -175,6 +177,24 @@ interface ArticleRepository {
     )
 }
 
+/** Persistence of the read-later mark and the Later view. */
+interface LaterRepository {
+    /** Saved items earliest-saved first (ties by id ascending), after [after] (from the start when null). */
+    fun later(
+        after: LaterCursor?,
+        limit: Int,
+    ): List<SavedItem>
+
+    /** Saves the item for later at [at] unless it already is saved; returns false when no such item exists. */
+    fun save(
+        id: Long,
+        at: Instant,
+    ): Boolean
+
+    /** Clears the saved mark; returns false when no such item exists. */
+    fun clear(id: Long): Boolean
+}
+
 interface ItemRepository {
     /** Stores items whose key is new for the source; a known key only gains a thumbnail or body it lacked. */
     fun insertNew(
@@ -183,7 +203,10 @@ interface ItemRepository {
         firstSeenAt: Instant,
     )
 
-    /** Deletes items first seen before [cutoff] that are not favourites; returns how many were removed. */
+    /**
+     * Deletes items first seen before [cutoff] that are neither favourites nor saved for later; returns how many
+     * were removed.
+     */
     fun deleteFirstSeenBefore(cutoff: Instant): Int
 
     /**
@@ -199,7 +222,7 @@ interface ItemRepository {
 
     fun find(id: Long): ItemRef?
 
-    /** The item with its published date, stored body and favourite state, for the reader. */
+    /** The item with its published date, stored body and favourite and saved-for-later state, for the reader. */
     fun findPost(id: Long): PostRef?
 
     /** The item with its feed data and stored oEmbed details, for the detail view. */
@@ -250,6 +273,7 @@ data class PostRef(
     val favourite: Boolean = false,
     /** When the article page was last fetched for this item; null when never. */
     val articleCheckedAt: Instant? = null,
+    val later: Boolean = false,
 )
 
 /** SoundCloud's public oEmbed details of a track; a field is null when oEmbed did not give it. */
@@ -259,7 +283,10 @@ data class Oembed(
     val description: String?,
 )
 
-/** One item as the detail view needs it: its feed data, and the oEmbed details once they are stored. */
+/**
+ * One item as the detail view needs it: its feed data, the oEmbed details once they are stored, and whether it is
+ * saved for later.
+ */
 data class DetailRef(
     val id: Long,
     val link: String?,
@@ -270,6 +297,7 @@ data class DetailRef(
     val thumbnailUrl: String?,
     val body: String?,
     val oembed: Oembed?,
+    val later: Boolean = false,
 )
 
 /** What the detail view shows: the feed data with SoundCloud's oEmbed details laid over it. */
@@ -282,6 +310,7 @@ data class ItemDetail(
     val artist: String?,
     val thumbnailUrl: String?,
     val description: String?,
+    val later: Boolean = false,
 )
 
 fun interface SoundCloudOembed {
