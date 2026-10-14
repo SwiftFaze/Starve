@@ -112,6 +112,14 @@ body is only filled in for an item that has none, never overwritten, so posts
 fetched before this feature show the title and **Open original** only. A post
 whose feed carried no body shows a short note instead of text.
 
+When a post's stored body is only a teaser (under 500 characters of text), opening it
+fetches the original article page once, and the reader shows the article's text instead
+(the `<article>` or `<main>` content, cleaned as above). The page's `og:image` fills in
+a missing image. The fetch gives up after 5 seconds, ignores non-HTML pages and pages
+over 1 MB, and keeps the teaser if the page has no longer text. A failed or empty attempt
+is retried at most once a day, so reopening a post does not hammer its site. A fetched
+article is searchable like any other post body.
+
 The post sits in a fixed column that scrolls on its own, so scrolling the list never
 moves it. Drag the splitter between the list and the post to resize them; the width is
 remembered. A video playing in the pane stays there when a post opens and sits above the

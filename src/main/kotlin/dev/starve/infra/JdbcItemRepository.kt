@@ -75,7 +75,8 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body, " +
-                    "i.thumbnail_url, s.favicon_url, i.favourited_at IS NOT NULL AS is_favourite " +
+                    "i.thumbnail_url, s.favicon_url, i.favourited_at IS NOT NULL AS is_favourite, " +
+                    "i.article_checked_at " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
             ).param(id)
             .query { rs, _ ->
@@ -89,6 +90,7 @@ class JdbcItemRepository(
                     rs.getString("thumbnail_url"),
                     rs.getString("favicon_url"),
                     rs.getInt("is_favourite") == 1,
+                    rs.getLong("article_checked_at").takeUnless { rs.wasNull() }?.let(Instant::ofEpochMilli),
                 )
             }.optional()
             .orElse(null)

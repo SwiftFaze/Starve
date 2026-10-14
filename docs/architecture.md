@@ -8,7 +8,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 `src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
-`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`), so the next migration number after V10 is V11 (reserved by #29). Actuator exposes only
+`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, so the next migration number is V12 (reserved by #32). Actuator exposes only
 `/actuator/health`. There is no authentication (single user, self-hosted).
 
 ## Modules
@@ -125,6 +125,19 @@ marks the item read, and returns null (404) for an unknown or playable item, whi
 keeps using the player. `ReaderController` renders `reader.html` as an htmx
 fragment and offers "Open original" only for http(s) links.
 
+Teaser-only posts get their article page fetched on open (V11, `items.article_checked_at`).
+`ReaderService` does so when `ArticleRules` says the stored body is under 500 plain-text
+characters (`HtmlText`, implemented by `infra/JsoupText`) and the last check is missing or
+over a day old. The `ArticleFetcher` port is implemented by `infra/HttpArticleFetcher`
+(through `BoundedHttp`, HTML only, at most 1,000,000 bytes), and `infra/ArticleExtractor`
+picks the `<article>`, else `<main>`, else the densest paragraph block, sanitised by
+`BodySanitizer`, plus the og:image. The result is stored through
+`ArticleRepository.recordArticleCheck` (`JdbcArticleRepository`, its own port like
+`FavouriteRepository`, keeping `ItemRepository` small); the body is replaced only when the
+article text is longer, and the image only fills a missing thumbnail. A replaced body is
+indexed text, so `recordArticleCheck` calls `SearchIndex.index` in the same transaction
+and the full article becomes searchable.
+
 Reader layout (`deck.js`, `starve.css`): the reader shares the list's pane layout, so the
 `data-split` attribute on `body` (set while a video is in the pane or a post is open)
 drives the list width and the vertical splitter. On desktop the post is a fixed column
@@ -141,7 +154,8 @@ No layer contract changes: the sanitiser is an infra detail behind the existing 
 title, source, body; `unicode61` tokenizer with diacritics removed). SQL triggers
 cannot see the source name or strip body markup, so `infra/SearchIndex` maintains it
 from application code, inside the same transaction as the write, on every path:
-`JdbcItemRepository` (insert, a body filled in later, retention deletes) and
+`JdbcItemRepository` (insert, a body filled in later, retention deletes),
+`JdbcArticleRepository` (a fetched article replacing the body) and
 `JdbcSourceRepository` (rename on `recordSuccess`, `delete`). Bodies are indexed as text
 via `infra/SearchText` (jsoup). `SearchIndexMigration` (V10) back-fills existing items
 with the same code. `domain/SearchRules.matchExpression` turns user input into the FTS5
