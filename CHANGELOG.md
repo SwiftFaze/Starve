@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.3](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.2...v1.1.0-beta.3) (2026-10-14)
+
+
+### Features
+
+* open a detail view for SoundCloud and YouTube items ([2a565a2](https://github.com/SwiftFaze/Starve/commit/2a565a272ec6a0a205613a3696bd5cbbdb15be5a))
+* open a detail view for SoundCloud and YouTube items ([791b901](https://github.com/SwiftFaze/Starve/commit/791b90135b4a30ed9e2cbc57637ded42e8ba7b69))
+
 ## [1.1.0-beta.2](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.1...v1.1.0-beta.2) (2026-10-14)
 
 
