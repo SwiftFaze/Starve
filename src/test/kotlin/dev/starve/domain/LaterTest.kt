@@ -36,6 +36,16 @@ class LaterTest {
     }
 
     @Test
+    fun `a page of exactly the page size has no next cursor`() {
+        val rows = (1..TimelineRules.PAGE_SIZE).map { saved(it.toLong(), it.toLong()) }
+
+        val (shown, next) = LaterRules.paginate(rows)
+
+        assertEquals(TimelineRules.PAGE_SIZE, shown.size)
+        assertNull(next)
+    }
+
+    @Test
     fun `a short page has no next cursor`() {
         val (shown, next) = LaterRules.paginate(listOf(saved(1, 1)))
 

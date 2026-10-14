@@ -498,4 +498,15 @@ class HomeControllerTest {
         val toggles = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).laterToggle }
         assertEquals(listOf(LaterView("later-1", 1, true), LaterView("later-2", 2, false)), toggles)
     }
+
+    @Test
+    fun `a row carries the item's saved for later state`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(listOf(row(1).copy(later = true), row(2)))).home(TimelineQuery(), null, model)
+
+        val views = (model.getAttribute("items") as List<*>).map { it as TimelineItemView }
+        assertTrue(views[0].later)
+        assertFalse(views[1].later)
+    }
 }
