@@ -18,6 +18,15 @@
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
 
+  // The favicon is the obi tile in the active theme's colours, so it follows the switch too.
+  function icon() {
+    var link = document.getElementById('favicon');
+    if (link) link.href = '/favicon-' + current() + '.svg';
+  }
+
+  icon();
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', icon);
+
   function label() {
     var next = current() === 'dark' ? 'light' : 'dark';
     document.querySelectorAll('.theme-switch').forEach(function (button) {
@@ -30,6 +39,7 @@
     root.dataset.theme = next;
     try { localStorage.setItem(KEY, next); } catch (e) { /* storage blocked: this page only */ }
     label();
+    icon();
   }
 
   // ---- The shutter: a red obi panel with chevron edges that sweeps across the page ---------

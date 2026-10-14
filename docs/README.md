@@ -6,4 +6,5 @@ opening them all. Add a line whenever you add a doc.
 - [`architecture.md`](architecture.md) — layering, module map and the dependency rules between modules.
 - [`testing.md`](testing.md) — the test layers, where each lives, how to run them, and the gates around them.
 - [`release.md`](release.md) — the two release channels (`master` stable, `develop` beta) and why versioning/changelog generation is fully automatic.
+- [`brand.md`](brand.md) — the Starve mark (logo and favicon): its construction, colours per theme, rules, and how the favicon follows the theme.
 - [`instruction-files.md`](instruction-files.md) — how `CLAUDE.md` and `.claude/*.md` are kept from decaying: size budgets tiered by load frequency, the one-canonical-home rule, the review checklist for changes to them, and the monthly audit.
