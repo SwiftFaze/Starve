@@ -139,6 +139,8 @@ class CsrfCookieWriter : OncePerRequestFilter() {
 /** htmx fragment URLs are never saved, so a login after an htmx bounce lands on a full page. */
 fun htmxSafeRequestCache() =
     HttpSessionRequestCache().apply {
+        // Without this, Spring appends "?continue" to the page a login returns to.
+        setMatchingRequestParameterName(null)
         setRequestMatcher(RequestMatcher { request -> !isHtmxRequest(request) })
     }
 

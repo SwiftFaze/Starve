@@ -369,3 +369,14 @@ interface UserRepository {
 fun interface PasswordHasher {
     fun hash(password: String): String
 }
+
+/** Small installation values kept in the database (the `app_metadata` table). */
+interface AppMetadata {
+    fun find(key: String): String?
+
+    /** Stores [value] only while [key] is unset; false when a value was already there. */
+    fun putIfAbsent(
+        key: String,
+        value: String,
+    ): Boolean
+}

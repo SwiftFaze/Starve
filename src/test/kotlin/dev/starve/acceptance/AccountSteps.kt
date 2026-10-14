@@ -319,6 +319,8 @@ class AccountSteps {
         rememberMe: Boolean,
     ) {
         lastBrowser = from
+        // An explicit login is not the setup sign-in the harness restores after a restart.
+        if (from === app.browser) app.forgetSignIn()
         val fields =
             buildList<Pair<String, String>> {
                 add("username" to username)

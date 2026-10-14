@@ -1,6 +1,8 @@
 package dev.starve.infra
 
+import dev.starve.application.AppMetadata
 import dev.starve.application.FailureThrottle
+import dev.starve.application.RememberMeKeyProvider
 import dev.starve.application.SetupService
 import dev.starve.application.UserRepository
 import org.slf4j.LoggerFactory
@@ -15,6 +17,9 @@ import java.time.Clock
 /** Wires the account services; the security chain itself lives in [SecurityConfig]. */
 @Configuration
 class AccountConfig {
+    @Bean
+    fun rememberMeKeys(metadata: AppMetadata) = RememberMeKeyProvider(metadata)
+
     @Bean
     fun failureThrottle(clock: Clock) = FailureThrottle(clock)
 

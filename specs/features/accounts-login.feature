@@ -18,7 +18,9 @@ Feature: Accounts and login with first-run admin setup
   15 minutes, even with the right password. A success resets the count. Wrong
   setup codes are throttled the same way per client IP. Throttle state is in
   memory. "Remember me" sets a 30-day hash-based cookie; without it the login
-  lasts only for the browser session. "POST /logout" ends the session, deletes
+  lasts only for the browser session. The remember-me key is generated once and
+  kept in app_metadata, so remembered logins survive an application restart.
+  "POST /logout" ends the session, deletes
   the remember-me cookie and shows the login page. An htmx request without a
   session is told to load "/login" as a full page (HX-Redirect) instead of
   having the login form swapped into a fragment.
@@ -261,6 +263,15 @@ Feature: Accounts and login with first-run admin setup
     And I log in as "rob" with password "correct-horse-1" ticking "Remember me"
     Then a persistent login cookie is set that expires in 30 days
     When the browser session ends
+    Then requesting "/" now returns status 200
+
+  Scenario: Remember me keeps the user signed in across an application restart
+    Given a fresh SQLite database file
+    And the application is running with the user "rob" with password "correct-horse-1"
+    And I am not signed in
+    And I log in as "rob" with password "correct-horse-1" ticking "Remember me"
+    When the browser session ends
+    And the application is restarted with the same database file
     Then requesting "/" now returns status 200
 
   Scenario: Logout ends the session and forgets remember me

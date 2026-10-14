@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.application.FailureThrottle
+import dev.starve.application.RememberMeKeyProvider
 import dev.starve.application.SetupService
 import dev.starve.application.UserRepository
 import org.springframework.context.annotation.Bean
@@ -23,16 +24,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.security.web.csrf.CsrfFilter
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler
-import java.security.SecureRandom
-import java.util.Base64
 
 /** A remembered login lasts 30 days. */
 private const val REMEMBER_ME_SECONDS = 30 * 24 * 60 * 60
 
 /** The CSRF header htmx and the acceptance client send; the token itself lives in the XSRF-TOKEN cookie. */
 private const val CSRF_HEADER = "X-CSRF-TOKEN"
-
-private const val KEY_BYTES = 32
 
 private typealias Registry = AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
 
@@ -41,7 +38,7 @@ private val PUBLIC_PATHS =
 
 /**
  * What the login chain needs: the throttled password check, the account lookup, and the remember-me key.
- * The key is generated per start and held in memory, so remember-me cookies end at a restart (no table needed).
+ * The remember-me key is kept in app_metadata, so remembered logins survive a restart.
  */
 class LoginAuthentication(
     val manager: AuthenticationManager,
@@ -63,10 +60,11 @@ class SecurityConfig {
         users: UserDetailsService,
         encoder: PasswordEncoder,
         throttle: FailureThrottle,
+        keys: RememberMeKeyProvider,
     ): LoginAuthentication {
         // Explicit and parentless, so no other provider can accept a password the throttle has refused.
         val password = DaoAuthenticationProvider(users).apply { setPasswordEncoder(encoder) }
-        val rememberMeKey = randomKey()
+        val rememberMeKey = keys.key()
         val manager =
             ProviderManager(
                 ThrottledLoginProvider(password, throttle),
@@ -132,9 +130,4 @@ class SecurityConfig {
     }
 
     private fun csrfTokens() = CookieCsrfTokenRepository.withHttpOnlyFalse().apply { setHeaderName(CSRF_HEADER) }
-
-    private fun randomKey(): String {
-        val bytes = ByteArray(KEY_BYTES).also { SecureRandom().nextBytes(it) }
-        return Base64.getEncoder().encodeToString(bytes)
-    }
 }
