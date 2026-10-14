@@ -100,6 +100,21 @@ arrow keys) to resize it, and the height is remembered too. The list, the video 
 post share the window, so resizing one never hides another. Empty paragraphs and runs
 of line breaks are dropped from posts, so feed padding does not show as blank lines.
 
+## Detail view for tracks and videos
+
+Clicking the title of a SoundCloud track or YouTube video opens a detail view in the
+reader pane instead of leaving for the original site: large artwork, title,
+artist or channel, published date and description, with **Open original**, **Close**
+and a **Play** button (it reads **Pause** while that item is playing). Opening the
+view marks the item read; Play loads the item into the player exactly as the row's
+Play does, and a video already playing in the pane stays in the pane. Without
+JavaScript the title still follows the link as before.
+
+For SoundCloud, Starve asks SoundCloud's public oEmbed (no API key) for the artist,
+artwork and description once per track and stores the answer with the item. If that
+request fails, the view shows the feed's own data and asks again the next time it is
+opened. YouTube items use the feed data only.
+
 ## Playing items inline
 
 Items whose link is a YouTube video (`watch?v=`, `youtu.be`, `/shorts/`) or a
@@ -126,6 +141,7 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | `starve.fetch.timeout` | `PT10S` | limit for one whole feed fetch, body included |
 | `starve.soundcloud.hosts` | `soundcloud.com,m.soundcloud.com` | hosts whose single-segment URLs are treated as SoundCloud profiles |
 | `starve.soundcloud.feed-url-template` | `https://feeds.soundcloud.com/users/soundcloud:users:{id}/sounds.rss` | feed URL for a profile; `{id}` is its numeric user id |
+| `starve.soundcloud.oembed-url` | `https://soundcloud.com/oembed` | oEmbed endpoint used for the detail view of a SoundCloud track |
 | `starve.youtube.oembed-url` | `https://www.youtube.com/oembed` | oEmbed endpoint used to check whether a video may be embedded |
 | `starve.youtube.feed-url-template` | `https://www.youtube.com/feeds/videos.xml?channel_id={id}` | feed URL for an imported Takeout channel; `{id}` is its channel id |
 | `starve.retention.max-age` | `P90D` | items first seen longer ago are purged |

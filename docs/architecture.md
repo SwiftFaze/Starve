@@ -90,6 +90,17 @@ embedding is disabled, anything else fails open. All outbound HTTP (feed fetch,
 feed location, oEmbed) goes through the shared `BoundedHttp` helper, which bounds
 the whole exchange, body included, by one timeout.
 
+## Detail view
+
+`DetailService` resolves `GET /items/{id}/detail` (`DetailController`, fragment
+`templates/detail.html`, rendered into the reader pane). It returns null, a 404, for an
+unknown item or one whose link is not `Playable`; otherwise it marks the item read and
+lays SoundCloud's oEmbed over the stored item (artist, thumbnail, description), falling
+back to the feed data. The `SoundCloudOembed` port is implemented by
+`infra/SoundCloudOembedClient` through `BoundedHttp`, parsed by `infra/OembedJson`; a
+successful answer is stored once per item in `items.oembed_json` (migration V8), a
+failed one is not, so the next open retries. YouTube items use feed data only.
+
 ## Reader pane and post bodies
 
 `RomeFeedFetcher` picks each entry's body (content, else description) and passes it
