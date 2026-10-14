@@ -38,20 +38,22 @@ class DetailControllerTest {
         val view = controller(item).detail(7, model)
 
         assertEquals("detail :: content", view)
+        // Thymeleaf reads the view through its getters, so assert through them rather than data-class equality.
+        val shown = model.getAttribute("detail") as DetailView
         assertEquals(
-            DetailView(
-                7,
+            listOf<Any?>(
+                7L,
                 "STV 0007",
                 "Title",
                 "Channel",
                 "2026-10-11 09:30 UTC",
                 "2026-10-11T09:30:00Z",
                 "Artist",
-                "https://img.test/t.jpg",
+                thumbnail,
                 "<p>Hi</p>",
                 youtube,
             ),
-            model.getAttribute("detail"),
+            shown.fields(),
         )
     }
 
@@ -64,4 +66,18 @@ class DetailControllerTest {
         assertThrows(ResponseStatusException::class.java) { controller(post).detail(9, ConcurrentModel()) }
             .also { assertEquals(HttpStatus.NOT_FOUND, it.statusCode) }
     }
+
+    private fun DetailView.fields() =
+        listOf(
+            id,
+            catalogueNumber,
+            title,
+            sourceTitle,
+            published,
+            publishedIso,
+            artist,
+            thumbnailUrl,
+            description,
+            link,
+        )
 }
