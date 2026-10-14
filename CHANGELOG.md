@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.6](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.5...v1.1.0-beta.6) (2026-10-14)
+
+
+### Features
+
+* fetch the full article and og:image for teaser-only posts ([#57](https://github.com/SwiftFaze/Starve/issues/57)) ([7ef2937](https://github.com/SwiftFaze/Starve/commit/7ef29377447067ccf961cad951c3bd50897e0ea6))
+
 ## [1.1.0-beta.5](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.4...v1.1.0-beta.5) (2026-10-14)
 
 
