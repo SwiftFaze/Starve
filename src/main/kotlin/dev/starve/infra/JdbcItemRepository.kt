@@ -48,26 +48,6 @@ class JdbcItemRepository(
         return jdbc.pageRows(conditions, params, after, limit)
     }
 
-    override fun favourites(
-        after: Cursor?,
-        limit: Int,
-    ): List<TimelineItem> = jdbc.pageRows(mutableListOf("i.favourited_at IS NOT NULL"), mutableListOf(), after, limit)
-
-    override fun favourite(
-        id: Long,
-        at: Instant,
-    ): Boolean =
-        jdbc
-            .sql("UPDATE items SET favourited_at = COALESCE(favourited_at, ?) WHERE id = ?")
-            .params(at.toEpochMilli(), id)
-            .update() > 0
-
-    override fun unfavourite(id: Long): Boolean =
-        jdbc
-            .sql("UPDATE items SET favourited_at = NULL WHERE id = ?")
-            .param(id)
-            .update() > 0
-
     override fun find(id: Long): ItemRef? =
         jdbc
             .sql(
@@ -162,7 +142,7 @@ class JdbcItemRepository(
 }
 
 /** The rows matching [conditions] and the cursor, newest first, at most [limit] of them. */
-private fun JdbcClient.pageRows(
+internal fun JdbcClient.pageRows(
     conditions: MutableList<String>,
     params: MutableList<Any>,
     after: Cursor?,
@@ -184,7 +164,7 @@ private fun JdbcClient.pageRows(
 }
 
 /** One timeline row from a joined query: the item, its source title and icon, and its read and favourite state. */
-private fun ResultSet.toTimelineItem() =
+internal fun ResultSet.toTimelineItem() =
     TimelineItem(
         getLong("id"),
         getString("source_title"),

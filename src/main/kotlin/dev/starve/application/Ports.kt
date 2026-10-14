@@ -130,6 +130,24 @@ interface GroupRepository {
     fun totalUnread(): Int
 }
 
+/** Persistence of the favourite mark and the Favourites view. */
+interface FavouriteRepository {
+    /** Newest-first favourites older than [after] (all when null), read or not; at most [limit]. */
+    fun favourites(
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem>
+
+    /** Marks the item a favourite at [at] unless it already is; returns false when no such item exists. */
+    fun favourite(
+        id: Long,
+        at: Instant,
+    ): Boolean
+
+    /** Clears the favourite mark; returns false when no such item exists. */
+    fun unfavourite(id: Long): Boolean
+}
+
 interface ItemRepository {
     /** Stores items whose key is new for the source; a known key only gains a thumbnail or body it lacked. */
     fun insertNew(
@@ -151,21 +169,6 @@ interface ItemRepository {
         limit: Int,
         groupId: Long?,
     ): List<TimelineItem>
-
-    /** Newest-first favourites older than [after] (all when null), read or not; at most [limit]. */
-    fun favourites(
-        after: Cursor?,
-        limit: Int,
-    ): List<TimelineItem>
-
-    /** Marks the item a favourite at [at] unless it already is; returns false when no such item exists. */
-    fun favourite(
-        id: Long,
-        at: Instant,
-    ): Boolean
-
-    /** Clears the favourite mark; returns false when no such item exists. */
-    fun unfavourite(id: Long): Boolean
 
     fun find(id: Long): ItemRef?
 

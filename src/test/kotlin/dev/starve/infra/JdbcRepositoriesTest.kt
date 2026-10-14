@@ -31,6 +31,7 @@ class JdbcRepositoriesTest {
     private lateinit var jdbc: JdbcClient
     private lateinit var sources: JdbcSourceRepository
     private lateinit var items: JdbcItemRepository
+    private lateinit var favourites: JdbcFavouriteRepository
     private lateinit var groups: JdbcGroupRepository
 
     @BeforeEach
@@ -44,6 +45,7 @@ class JdbcRepositoriesTest {
         jdbc = JdbcClient.create(dataSource)
         sources = JdbcSourceRepository(jdbc)
         items = JdbcItemRepository(jdbc)
+        favourites = JdbcFavouriteRepository(jdbc)
         groups = JdbcGroupRepository(jdbc)
     }
 
@@ -299,15 +301,15 @@ class JdbcRepositoriesTest {
         items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
         val id = idOf("k")
 
-        assertEquals(true, items.favourite(id, Instant.ofEpochMilli(100)))
-        assertEquals(true, items.favourite(id, Instant.ofEpochMilli(200)))
-        assertEquals(false, items.favourite(id + 1, Instant.ofEpochMilli(300)))
+        assertEquals(true, favourites.favourite(id, Instant.ofEpochMilli(100)))
+        assertEquals(true, favourites.favourite(id, Instant.ofEpochMilli(200)))
+        assertEquals(false, favourites.favourite(id + 1, Instant.ofEpochMilli(300)))
         assertEquals(100L, favouritedAt(id))
         assertEquals(true, items.findPost(id)!!.favourite)
 
-        assertEquals(true, items.unfavourite(id))
-        assertEquals(true, items.unfavourite(id))
-        assertEquals(false, items.unfavourite(id + 1))
+        assertEquals(true, favourites.unfavourite(id))
+        assertEquals(true, favourites.unfavourite(id))
+        assertEquals(false, favourites.unfavourite(id + 1))
         assertNull(favouritedAt(id))
         assertEquals(false, items.findPost(id)!!.favourite)
     }
@@ -316,7 +318,7 @@ class JdbcRepositoriesTest {
     fun `the timeline flags favourites and leaves read state alone`() {
         val source = sources.insert("http://a.test/f", "T")
         items.insertNew(source.id, listOf(item("a", "a"), item("b", "b")), Instant.EPOCH)
-        items.favourite(idOf("b"), Instant.EPOCH)
+        favourites.favourite(idOf("b"), Instant.EPOCH)
 
         assertEquals(listOf(true, false), items.timeline(null, true, 10, null).map { it.favourite })
         assertEquals(listOf(false, false), items.timeline(null, true, 10, null).map { it.read })
@@ -333,12 +335,12 @@ class JdbcRepositoriesTest {
             listOf(dated("old", old), dated("mid", mid), dated("new", new), dated("plain", mid)),
             Instant.EPOCH,
         )
-        listOf("old", "mid", "new").forEach { items.favourite(idOf(it), Instant.EPOCH) }
+        listOf("old", "mid", "new").forEach { favourites.favourite(idOf(it), Instant.EPOCH) }
         items.markRead(idOf("new"), Instant.EPOCH)
 
-        assertEquals(listOf("new", "mid", "old"), items.favourites(null, 10).map { it.title })
-        assertEquals(listOf(true, false, false), items.favourites(null, 10).map { it.read })
-        assertEquals(listOf("mid"), items.favourites(Cursor(new, idOf("new")), 1).map { it.title })
+        assertEquals(listOf("new", "mid", "old"), favourites.favourites(null, 10).map { it.title })
+        assertEquals(listOf(true, false, false), favourites.favourites(null, 10).map { it.read })
+        assertEquals(listOf("mid"), favourites.favourites(Cursor(new, idOf("new")), 1).map { it.title })
     }
 
     @Test
@@ -346,12 +348,12 @@ class JdbcRepositoriesTest {
         val source = sources.insert("http://a.test/f", "T")
         val cutoff = Instant.parse("2026-10-11T12:00:00Z")
         items.insertNew(source.id, listOf(item("kept", "kept"), item("gone", "gone")), cutoff.minusSeconds(1))
-        items.favourite(idOf("kept"), Instant.EPOCH)
+        favourites.favourite(idOf("kept"), Instant.EPOCH)
 
         assertEquals(1, items.deleteFirstSeenBefore(cutoff))
         assertEquals(listOf("kept"), keys())
 
-        items.unfavourite(idOf("kept"))
+        favourites.unfavourite(idOf("kept"))
         assertEquals(1, items.deleteFirstSeenBefore(cutoff))
         assertEquals(emptyList<String>(), keys())
     }
@@ -360,7 +362,7 @@ class JdbcRepositoriesTest {
     fun `a refetch of a feed keeps the favourite time of an item it already stored`() {
         val source = sources.insert("http://a.test/f", "T")
         items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
-        items.favourite(idOf("k"), Instant.ofEpochMilli(100))
+        favourites.favourite(idOf("k"), Instant.ofEpochMilli(100))
 
         items.insertNew(source.id, listOf(item("k", "t"), item("new", "n")), Instant.ofEpochMilli(500))
 

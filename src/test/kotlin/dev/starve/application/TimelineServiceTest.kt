@@ -27,7 +27,7 @@ class TimelineServiceTest {
     @Test
     fun `a page asks for one look-ahead row and reports the next cursor and render time`() {
         val items = TimelineItems(rows(TimelineRules.PAGE_SIZE + 1))
-        val service = TimelineService(items, MemorySources(mutableListOf(source)), clock)
+        val service = TimelineService(items, items, MemorySources(mutableListOf(source)), clock)
         val after = Cursor(Instant.EPOCH, 9)
 
         val page = service.page(after, true, 3)
@@ -42,7 +42,8 @@ class TimelineServiceTest {
 
     @Test
     fun `a short page has no next cursor and no sources is reported`() {
-        val service = TimelineService(TimelineItems(rows(2)), MemorySources(), clock)
+        val items = TimelineItems(rows(2))
+        val service = TimelineService(items, items, MemorySources(), clock)
 
         val page = service.page(null, false)
 
@@ -53,7 +54,7 @@ class TimelineServiceTest {
     @Test
     fun `marking read stamps the current time and reports whether the item exists`() {
         val items = TimelineItems(links = mapOf(5L to null))
-        val service = TimelineService(items, MemorySources(), clock)
+        val service = TimelineService(items, items, MemorySources(), clock)
 
         assertTrue(service.markRead(5))
         assertFalse(service.markRead(6))
@@ -63,7 +64,7 @@ class TimelineServiceTest {
     @Test
     fun `opening marks the item read and yields its link`() {
         val items = TimelineItems(links = mapOf(5L to "http://x.test/a", 6L to null))
-        val service = TimelineService(items, MemorySources(), clock)
+        val service = TimelineService(items, items, MemorySources(), clock)
 
         assertEquals(OpenResult.Opened("http://x.test/a"), service.open(5))
         assertEquals(OpenResult.Opened(null), service.open(6))
@@ -74,7 +75,7 @@ class TimelineServiceTest {
     fun `opening an unknown item marks nothing`() {
         val items = TimelineItems()
 
-        assertEquals(OpenResult.Missing, TimelineService(items, MemorySources(), clock).open(1))
+        assertEquals(OpenResult.Missing, TimelineService(items, items, MemorySources(), clock).open(1))
         assertTrue(items.readCalls.isEmpty())
     }
 
@@ -83,7 +84,7 @@ class TimelineServiceTest {
         val items = TimelineItems()
         val cutoff = now.minusSeconds(30)
 
-        TimelineService(items, MemorySources(), clock).markAllRead(cutoff, 7)
+        TimelineService(items, items, MemorySources(), clock).markAllRead(cutoff, 7)
 
         assertEquals(cutoff to now, items.markAllCall)
         assertEquals(7L, items.markAllGroup)
@@ -92,7 +93,7 @@ class TimelineServiceTest {
     @Test
     fun `the favourites page asks for favourites after the cursor with one look-ahead row`() {
         val items = TimelineItems(favouriteRows = rows(TimelineRules.PAGE_SIZE + 1))
-        val service = TimelineService(items, MemorySources(mutableListOf(source)), clock)
+        val service = TimelineService(items, items, MemorySources(mutableListOf(source)), clock)
         val after = Cursor(Instant.EPOCH, 9)
 
         val page = service.favourites(after)
@@ -108,7 +109,7 @@ class TimelineServiceTest {
     fun `mark all read reports how many items the repository marked`() {
         val items = TimelineItems(markedAllCount = 4)
 
-        val marked = TimelineService(items, MemorySources(), clock).markAllRead(now)
+        val marked = TimelineService(items, items, MemorySources(), clock).markAllRead(now)
 
         assertEquals(4, marked)
     }

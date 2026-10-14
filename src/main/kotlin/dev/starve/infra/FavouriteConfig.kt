@@ -1,7 +1,7 @@
 package dev.starve.infra
 
+import dev.starve.application.FavouriteRepository
 import dev.starve.application.FavouriteService
-import dev.starve.application.ItemRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.Clock
@@ -11,7 +11,7 @@ import java.time.Clock
 class FavouriteConfig {
     @Bean
     fun favouriteService(
-        items: ItemRepository,
+        favourites: FavouriteRepository,
         clock: Clock,
-    ) = FavouriteService(items, clock)
+    ) = FavouriteService(favourites, clock)
 }

@@ -1,6 +1,6 @@
 package dev.starve.acceptance
 
-import dev.starve.application.ItemRepository
+import dev.starve.application.FavouriteRepository
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -238,7 +238,7 @@ class FavouriteSteps {
         World.pages = listOf(World.response.body())
     }
 
-    private fun favourite(id: Long) = app.bean(ItemRepository::class.java).favourite(id, Instant.now())
+    private fun favourite(id: Long) = app.bean(FavouriteRepository::class.java).favourite(id, Instant.now())
 
     private fun firstStar(): String = requireNotNull(STAR.find(body())) { "no star in ${body()}" }.value
 

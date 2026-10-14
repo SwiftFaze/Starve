@@ -25,6 +25,7 @@ sealed interface OpenResult {
 
 class TimelineService(
     private val items: ItemRepository,
+    private val favourites: FavouriteRepository,
     private val sources: SourceRepository,
     private val clock: Clock,
 ) {
@@ -40,7 +41,7 @@ class TimelineService(
     /** The Favourites view: favourites of every source, read or not, newest first. */
     fun favourites(after: Cursor?): TimelinePage {
         val renderedAt = clock.instant()
-        return pageOf(items.favourites(after, TimelineRules.PAGE_SIZE + 1), renderedAt)
+        return pageOf(favourites.favourites(after, TimelineRules.PAGE_SIZE + 1), renderedAt)
     }
 
     private fun pageOf(

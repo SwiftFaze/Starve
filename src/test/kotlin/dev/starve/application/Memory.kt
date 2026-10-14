@@ -132,18 +132,6 @@ open class MemoryItems(
         at: Instant,
         groupId: Long?,
     ) = 0
-
-    override fun favourites(
-        after: Cursor?,
-        limit: Int,
-    ): List<TimelineItem> = emptyList()
-
-    override fun favourite(
-        id: Long,
-        at: Instant,
-    ) = false
-
-    override fun unfavourite(id: Long) = false
 }
 
 /** An item repository with canned timeline rows that records read-state and favourite calls. */
@@ -152,7 +140,8 @@ class TimelineItems(
     private val links: Map<Long, String?> = emptyMap(),
     private val markedAllCount: Int = 0,
     private val favouriteRows: List<TimelineItem> = emptyList(),
-) : MemoryItems() {
+) : MemoryItems(),
+    FavouriteRepository {
     var requested: Triple<Cursor?, Boolean, Int>? = null
     var requestedGroup: Long? = null
     var markAllGroup: Long? = null

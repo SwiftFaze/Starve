@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.application.FaviconService
+import dev.starve.application.FavouriteRepository
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FeedLocator
@@ -79,9 +80,10 @@ class FeedConfig {
     @Bean
     fun timelineService(
         items: ItemRepository,
+        favourites: FavouriteRepository,
         sources: SourceRepository,
         clock: Clock,
-    ) = TimelineService(items, sources, clock)
+    ) = TimelineService(items, favourites, sources, clock)
 
     @Bean
     fun groupService(

@@ -33,7 +33,7 @@ class HomeControllerTest {
 
     private fun controller(items: TimelineItems) =
         HomeController(
-            TimelineService(items, MemorySources(mutableListOf(source)), Clock.fixed(now, ZoneOffset.UTC)),
+            TimelineService(items, items, MemorySources(mutableListOf(source)), Clock.fixed(now, ZoneOffset.UTC)),
             GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources()),
         )
 
