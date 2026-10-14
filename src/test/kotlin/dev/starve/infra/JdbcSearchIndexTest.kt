@@ -24,6 +24,7 @@ class JdbcSearchIndexTest {
     private lateinit var sources: JdbcSourceRepository
     private lateinit var items: JdbcItemRepository
     private lateinit var searching: JdbcSearchRepository
+    private lateinit var favourites: JdbcFavouriteRepository
     private val now = Instant.parse("2026-10-11T12:00:00Z")
 
     @BeforeEach
@@ -40,6 +41,7 @@ class JdbcSearchIndexTest {
         sources = JdbcSourceRepository(jdbc, index)
         items = JdbcItemRepository(jdbc, index)
         searching = JdbcSearchRepository(jdbc)
+        favourites = JdbcFavouriteRepository(jdbc)
     }
 
     @AfterEach
@@ -103,6 +105,20 @@ class JdbcSearchIndexTest {
 
         assertEquals(1L, indexRows())
         assertEquals(emptyList<String>(), search("ancient"))
+    }
+
+    @Test
+    fun `retention keeps a favourite searchable and drops an unstarred item of the same age`() {
+        val source = sources.insert("http://a.test/f", "Daily")
+        val old = now.minusSeconds(90L * 86400)
+        items.insertNew(source.id, listOf(feedItem("kept", "Treasured"), feedItem("lost", "Forgotten")), old)
+        val keptId = searching.search(SearchRules.matchExpression("treasured")!!, null, 10).single().id
+        favourites.favourite(keptId, now)
+
+        items.deleteFirstSeenBefore(now.minusSeconds(30L * 86400))
+
+        assertEquals(listOf("Treasured"), search("treasured"))
+        assertEquals(emptyList<String>(), search("forgotten"))
     }
 
     @Test
