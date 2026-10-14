@@ -3,6 +3,7 @@ package dev.starve.web
 import dev.starve.application.GroupNavigation
 import dev.starve.application.GroupService
 import dev.starve.application.OpenResult
+import dev.starve.application.SearchService
 import dev.starve.application.TimelinePage
 import dev.starve.application.TimelineService
 import dev.starve.domain.Catalogue
@@ -104,11 +105,12 @@ private data class Scope(
     val text: String,
 ) {
     val searching get() = text.isNotBlank()
-)
+}
 
 @Controller
 class HomeController(
     private val timeline: TimelineService,
+    private val search: SearchService,
     private val groups: GroupService,
 ) {
     @GetMapping("/")
@@ -165,7 +167,7 @@ class HomeController(
         cursor: Cursor?,
     ): TimelinePage =
         when {
-            scope.searching -> timeline.search(scope.text, cursor)
+            scope.searching -> search.search(scope.text, cursor)
             scope.favourites -> timeline.favourites(cursor)
             else -> timeline.page(cursor, scope.showAll, scope.groupId)
         }

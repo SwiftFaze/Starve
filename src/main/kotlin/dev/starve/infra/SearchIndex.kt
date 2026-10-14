@@ -48,8 +48,14 @@ class SearchIndex(
 
     fun removeFirstSeenBefore(cutoff: Instant) {
         jdbc
-            .sql("DELETE FROM item_search WHERE rowid IN (SELECT id FROM items WHERE first_seen_at < ? AND favourited_at IS NULL)")
+            .sql(PURGE_SQL)
             .param(cutoff.toEpochMilli())
             .update()
+    }
+
+    private companion object {
+        const val PURGE_SQL =
+            "DELETE FROM item_search WHERE rowid IN " +
+                "(SELECT id FROM items WHERE first_seen_at < ? AND favourited_at IS NULL)"
     }
 }

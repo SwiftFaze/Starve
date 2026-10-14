@@ -3,6 +3,7 @@ package dev.starve.web
 import dev.starve.application.GroupService
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemorySources
+import dev.starve.application.SearchService
 import dev.starve.application.TimelineItems
 import dev.starve.application.TimelineService
 import dev.starve.domain.Cursor
@@ -32,9 +33,12 @@ class HomeControllerTest {
     private val news = Group(2, "News")
     private val source = Source(1, "http://a.test/f", "A", Validators(), null, null)
 
+    private val clock = Clock.fixed(now, ZoneOffset.UTC)
+
     private fun controller(items: TimelineItems) =
         HomeController(
-            TimelineService(items, items, MemorySources(mutableListOf(source)), Clock.fixed(now, ZoneOffset.UTC)),
+            TimelineService(items, items, MemorySources(mutableListOf(source)), clock),
+            SearchService(items, MemorySources(mutableListOf(source)), clock),
             GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources()),
         )
 

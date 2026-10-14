@@ -111,12 +111,6 @@ open class MemoryItems(
         groupId: Long?,
     ): List<TimelineItem> = emptyList()
 
-    override fun search(
-        match: String,
-        after: Cursor?,
-        limit: Int,
-    ): List<TimelineItem> = emptyList()
-
     override fun find(id: Long): ItemRef? = null
 
     override fun findPost(id: Long): PostRef? = null
@@ -147,7 +141,8 @@ class TimelineItems(
     private val markedAllCount: Int = 0,
     private val favouriteRows: List<TimelineItem> = emptyList(),
 ) : MemoryItems(),
-    FavouriteRepository {
+    FavouriteRepository,
+    SearchRepository {
     var requested: Triple<Cursor?, Boolean, Int>? = null
     var requestedGroup: Long? = null
     var markAllGroup: Long? = null

@@ -148,6 +148,19 @@ interface FavouriteRepository {
     fun unfavourite(id: Long): Boolean
 }
 
+/** Persistence of full-text search over titles, source names and post bodies. */
+interface SearchRepository {
+    /**
+     * Items whose title, source name or body matches the FTS5 [match] expression, newest first, older than [after]
+     * (all when null); at most [limit]. Read state, group and the show setting do not apply.
+     */
+    fun search(
+        match: String,
+        after: Cursor?,
+        limit: Int,
+    ): List<TimelineItem>
+}
+
 interface ItemRepository {
     /** Stores items whose key is new for the source; a known key only gains a thumbnail or body it lacked. */
     fun insertNew(
@@ -168,16 +181,6 @@ interface ItemRepository {
         showRead: Boolean,
         limit: Int,
         groupId: Long?,
-    ): List<TimelineItem>
-
-    /**
-     * Items whose title, source name or body matches the FTS5 [match] expression, newest first, older than [after]
-     * (all when null); at most [limit]. Read state, group and the show setting do not apply.
-     */
-    fun search(
-        match: String,
-        after: Cursor?,
-        limit: Int,
     ): List<TimelineItem>
 
     fun find(id: Long): ItemRef?

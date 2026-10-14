@@ -8,7 +8,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 `src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
-`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`), so the next SQL migration is V11. Actuator exposes only
+`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`), so the next migration number after V10 is V11 (reserved by #29). Actuator exposes only
 `/actuator/health`. There is no authentication (single user, self-hosted).
 
 ## Modules
@@ -146,8 +146,9 @@ from application code, inside the same transaction as the write, on every path:
 via `infra/SearchText` (jsoup). `SearchIndexMigration` (V10) back-fills existing items
 with the same code. `domain/SearchRules.matchExpression` turns user input into the FTS5
 expression (each word quoted and ANDed, the last one a prefix, no operators), so
-user text can never be parsed as query syntax. `TimelineService.search` goes through
-`ItemRepository.search`; the layer contracts are unchanged.
+user text can never be parsed as query syntax. `SearchService.search` goes through
+`SearchRepository.search` (`JdbcSearchRepository`, its own port like
+favourites); the layer contracts are unchanged.
 
 ## Dependency rule
 

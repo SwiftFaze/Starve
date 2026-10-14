@@ -26,7 +26,7 @@ class JdbcItemRepository(
         items: List<FeedItem>,
         firstSeenAt: Instant,
     ) {
-        items.forEach { jdbc.upsert(sourceId, it, firstSeenAt) }
+        items.forEach { upsert(sourceId, it, firstSeenAt) }
     }
 
     @Transactional
@@ -52,28 +52,6 @@ class JdbcItemRepository(
             params += groupId
         }
         return jdbc.pageRows(conditions, params, after, limit)
-    }
-
-    override fun search(
-        match: String,
-        after: Cursor?,
-        limit: Int,
-    ): List<TimelineItem> {
-        val cursor = if (after == null) "" else "AND (i.published_at < ? OR (i.published_at = ? AND i.id < ?))"
-        val params = mutableListOf<Any>(match)
-        if (after != null) {
-            params.addAll(listOf(after.publishedAt.toEpochMilli(), after.publishedAt.toEpochMilli(), after.id))
-        }
-        return jdbc
-            .sql(
-                "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, " +
-                    "s.favicon_url, i.read_at IS NOT NULL AS is_read, i.favourited_at IS NOT NULL AS is_favourite " +
-                    "FROM item_search " +
-                    "JOIN items i ON i.id = item_search.rowid JOIN sources s ON s.id = i.source_id " +
-                    "WHERE item_search MATCH ? $cursor ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
-            ).params(params + limit)
-            .query { rs, _ -> rs.toTimelineItem() }
-            .list()
     }
 
     override fun find(id: Long): ItemRef? =

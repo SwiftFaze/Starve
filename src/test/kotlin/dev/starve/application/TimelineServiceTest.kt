@@ -113,31 +113,4 @@ class TimelineServiceTest {
 
         assertEquals(4, marked)
     }
-
-    @Test
-    fun `a search asks the index for the expression, one look-ahead row and the cursor`() {
-        val items = TimelineItems(rows(TimelineRules.PAGE_SIZE + 1))
-        val service = TimelineService(items, MemorySources(mutableListOf(source)), clock)
-        val after = Cursor(Instant.EPOCH, 9)
-
-        val page = service.search("rust async", after)
-
-        assertEquals(Triple("\"rust\" \"async\"*", after, TimelineRules.PAGE_SIZE + 1), items.searched)
-        assertEquals(TimelineRules.PAGE_SIZE, page.items.size)
-        assertEquals(Cursor(Instant.ofEpochMilli(50), 50), page.next)
-        assertEquals(now, page.renderedAt)
-        assertTrue(page.hasSources)
-    }
-
-    @Test
-    fun `text with no words matches nothing without asking the index`() {
-        val items = TimelineItems(rows(3))
-        val service = TimelineService(items, MemorySources(mutableListOf(source)), clock)
-
-        val page = service.search("*", null)
-
-        assertNull(items.searched)
-        assertEquals(emptyList<TimelineItem>(), page.items)
-        assertNull(page.next)
-    }
 }

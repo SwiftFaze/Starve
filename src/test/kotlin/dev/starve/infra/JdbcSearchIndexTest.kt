@@ -23,6 +23,7 @@ class JdbcSearchIndexTest {
     private lateinit var jdbc: JdbcClient
     private lateinit var sources: JdbcSourceRepository
     private lateinit var items: JdbcItemRepository
+    private lateinit var searching: JdbcSearchRepository
     private val now = Instant.parse("2026-10-11T12:00:00Z")
 
     @BeforeEach
@@ -38,6 +39,7 @@ class JdbcSearchIndexTest {
         val index = SearchIndex(jdbc)
         sources = JdbcSourceRepository(jdbc, index)
         items = JdbcItemRepository(jdbc, index)
+        searching = JdbcSearchRepository(jdbc)
     }
 
     @AfterEach
@@ -51,7 +53,7 @@ class JdbcSearchIndexTest {
     ) = FeedItem(key, title, "http://a.test/$key", publishedAt, null, null, body)
 
     private fun search(text: String): List<String> =
-        items
+        searching
             .search(SearchRules.matchExpression(text)!!, null, 100)
             .map { it.title }
 
@@ -123,8 +125,8 @@ class JdbcSearchIndexTest {
         items.insertNew(source.id, listOf(feedItem("new", "Match new", publishedAt = now)), now)
         items.insertNew(source.id, listOf(feedItem("other", "Unrelated", publishedAt = now)), now)
 
-        val all = items.search(SearchRules.matchExpression("match")!!, null, 10)
-        val afterNew = items.search(SearchRules.matchExpression("match")!!, Cursor(now, all.first().id), 10)
+        val all = searching.search(SearchRules.matchExpression("match")!!, null, 10)
+        val afterNew = searching.search(SearchRules.matchExpression("match")!!, Cursor(now, all.first().id), 10)
 
         assertEquals(listOf("Match new", "Match old"), all.map { it.title })
         assertEquals(listOf("Match old"), afterNew.map { it.title })
