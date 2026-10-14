@@ -125,6 +125,16 @@ marks the item read, and returns null (404) for an unknown or playable item, whi
 keeps using the player. `ReaderController` renders `reader.html` as an htmx
 fragment and offers "Open original" only for http(s) links.
 
+Teaser-only posts get their article page fetched on open (V11, `items.article_checked_at`).
+`ReaderService` does so when `ArticleRules` says the stored body is under 500 plain-text
+characters (`HtmlText`, implemented by `infra/JsoupText`) and the last check is missing or
+over a day old. The `ArticleFetcher` port is implemented by `infra/HttpArticleFetcher`
+(through `BoundedHttp`, HTML only, at most 1,000,000 bytes), and `infra/ArticleExtractor`
+picks the `<article>`, else `<main>`, else the densest paragraph block, sanitised by
+`BodySanitizer`, plus the og:image. The result is stored through
+`ItemRepository.recordArticleCheck`; the body is replaced only when the article text is
+longer, and the image only fills a missing thumbnail.
+
 Reader layout (`deck.js`, `starve.css`): the reader shares the list's pane layout, so the
 `data-split` attribute on `body` (set while a video is in the pane or a post is open)
 drives the list width and the vertical splitter. On desktop the post is a fixed column
