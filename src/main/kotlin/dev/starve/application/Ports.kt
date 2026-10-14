@@ -164,8 +164,8 @@ interface SearchRepository {
 /** Persistence of the article-page check a teaser-only post goes through when it is opened. */
 interface ArticleRepository {
     /**
-     * Records an article check at [at]: stores [body] when it is not null,
-     * and [thumbnailUrl] only where the item has no thumbnail yet.
+     * Records an article check at [at]: stores [body] when it is not null (and
+     * re-indexes the item for search), and [thumbnailUrl] only where the item has no thumbnail yet.
      */
     fun recordArticleCheck(
         id: Long,

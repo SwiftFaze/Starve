@@ -24,7 +24,9 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
   original; every attempt being recorded in a nullable article_checked_at
   column on items (migration V11) and an item being fetched again only when
   its last attempt is over 24 hours old; opening still marking the item read
-  whatever the fetch did; the migration leaving existing items unchecked.
+  whatever the fetch did; the migration leaving existing items unchecked;
+  after a teaser post's article is fetched, a search for a word only in the
+  article finds the post.
   Supersedes: in part reader-pane.feature, whose no-body state for an item
   with a link now applies only once a fetch has been tried and given nothing.
   post-bodies.feature (bodies stay never overwritten at ingest) and
@@ -247,6 +249,15 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
     And the feed server answers 500 for "/posts/one"
     When I request the reader of the item "Post" via htmx
     Then the item "Post" is read
+
+  Scenario: A fetched article becomes searchable
+    Given the source "Blog" has an item "Post" with the link "<feed server>/posts/one" and the stored body "<p>Just a teaser.</p>" published 1 days ago
+    And the feed server serves "/posts/one" as an HTML page with an article of 800 characters of text
+    When I search for "lorem"
+    Then the timeline lists no items
+    When I request the reader of the item "Post" via htmx
+    And I search for "lorem"
+    Then the timeline lists "Post"
 
   Scenario: Items stored before the upgrade are unchecked and keep their data
     Given the database is migrated only up to before article fetching

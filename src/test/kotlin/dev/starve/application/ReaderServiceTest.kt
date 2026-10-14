@@ -188,7 +188,8 @@ class ReaderServiceTest {
             service(FetchedArticle(article(800), "https://img.example/og.jpg"), post(1, "https://blog.example/a", null))
 
         assertEquals("https://img.example/og.jpg", service.open(1)?.thumbnailUrl)
-        assertEquals("https://img.example/og.jpg", items.articles.articleChecks.single().thumbnailUrl)
+        val check = items.articles.articleChecks.single()
+        assertEquals("https://img.example/og.jpg", check.thumbnailUrl)
     }
 
     @Test

@@ -25,6 +25,7 @@ class JdbcSearchIndexTest {
     private lateinit var items: JdbcItemRepository
     private lateinit var searching: JdbcSearchRepository
     private lateinit var favourites: JdbcFavouriteRepository
+    private lateinit var articles: JdbcArticleRepository
     private val now = Instant.parse("2026-10-11T12:00:00Z")
 
     @BeforeEach
@@ -42,6 +43,7 @@ class JdbcSearchIndexTest {
         items = JdbcItemRepository(jdbc, index)
         searching = JdbcSearchRepository(jdbc)
         favourites = JdbcFavouriteRepository(jdbc)
+        articles = JdbcArticleRepository(jdbc, index)
     }
 
     @AfterEach
@@ -60,6 +62,31 @@ class JdbcSearchIndexTest {
             .map { it.title }
 
     private fun indexRows(): Long = jdbc.sql("SELECT COUNT(*) FROM item_search").query(Long::class.java).single()
+
+    private fun insertedTeaserId(): Long {
+        val source = sources.insert("http://a.test/f", "Retro Weekly")
+        items.insertNew(source.id, listOf(feedItem("k1", "Teaser post", "<p>Short teaser</p>")), now)
+        return jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
+    }
+
+    @Test
+    fun `a fetched article body is searchable and the teaser words no longer match`() {
+        val id = insertedTeaserId()
+
+        articles.recordArticleCheck(id, "<p>Full text about <em>dirigibles</em></p>", null, now)
+
+        assertEquals(listOf("Teaser post"), search("dirigibles"))
+        assertEquals(emptyList<String>(), search("short"))
+    }
+
+    @Test
+    fun `a check that stores no body leaves the old body words searchable`() {
+        val id = insertedTeaserId()
+
+        articles.recordArticleCheck(id, null, "http://a.test/og.jpg", now)
+
+        assertEquals(listOf("Teaser post"), search("teaser"))
+    }
 
     @Test
     fun `an inserted item is searchable by title, source name and body text`() {
