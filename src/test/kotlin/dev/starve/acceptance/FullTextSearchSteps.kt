@@ -90,6 +90,18 @@ class FullTextSearchSteps {
         requestSearch("/?q=${encode(text)}&group=$groupId")
     }
 
+    @When("I search for {string} while viewing the Favourites")
+    fun searchWhileViewingFavourites(text: String) = requestSearch("/?q=${encode(text)}&favourites=1")
+
+    @When("I clear the search via htmx while viewing the Favourites")
+    fun clearSearchInFavourites() = requestHtmx("/?q=&favourites=1")
+
+    @When("I clear the search via htmx while viewing the group {string}")
+    fun clearSearchInGroup(group: String) {
+        val groupId = app.bean(GroupRepository::class.java).findByName(group)!!.id
+        requestHtmx("/?q=&group=$groupId")
+    }
+
     @When("I search for {string} via htmx")
     fun searchViaHtmx(text: String) {
         World.response = app.get("/?q=${encode(text)}", HTMX)
@@ -97,6 +109,31 @@ class FullTextSearchSteps {
     }
 
     // ---- assertions ----------------------------------------------------------------------
+
+    @Then("the search form carries {string} as {string}")
+    fun searchFormCarries(
+        name: String,
+        value: String,
+    ) {
+        val form =
+            World.response
+                .body()
+                .substringAfter("<form class=\"search\"")
+                .substringBefore("</form>")
+        assertTrue(form.contains("name=\"$name\" value=\"$value\""), form)
+        assertTrue(form.contains("hx-include=\"closest form\""), form)
+    }
+
+    @Then("the search form carries the group {string}")
+    fun searchFormCarriesGroup(group: String) =
+        searchFormCarries(
+            "group",
+            app
+                .bean(GroupRepository::class.java)
+                .findByName(group)!!
+                .id
+                .toString(),
+        )
 
     @Then("the search box contains {string}")
     fun searchBoxContains(text: String) = assertTrue(searchBox().contains("value=\"$text\""), searchBox())
@@ -149,6 +186,11 @@ class FullTextSearchSteps {
 
     private fun requestSearch(path: String) {
         World.response = app.get(path)
+        World.pages = listOf(World.response.body())
+    }
+
+    private fun requestHtmx(path: String) {
+        World.response = app.get(path, HTMX)
         World.pages = listOf(World.response.body())
     }
 

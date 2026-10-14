@@ -334,6 +334,53 @@ class HomeControllerTest {
     }
 
     @Test
+    fun `a search keeps the favourites view it started from for clearing, but still searches everything`() {
+        val items = TimelineItems(listOf(row(1)))
+        val model = ConcurrentModel()
+
+        controller(items).home(TimelineQuery(q = "match", favourites = "1"), null, model)
+
+        assertEquals(true, model.getAttribute("favourites"))
+        assertEquals(false, model.getAttribute("emptyFavourites"))
+        assertEquals(Triple("\"match\"*", null, TimelineRules.PAGE_SIZE + 1), items.searched)
+        assertNull(items.favouritesRequested)
+    }
+
+    @Test
+    fun `a search keeps the group and show settings for clearing`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(listOf(row(1))))
+            .home(TimelineQuery(q = "match", show = "all", group = "1"), null, model)
+
+        assertEquals(1L, model.getAttribute("groupId"))
+        assertEquals(true, model.getAttribute("showAll"))
+    }
+
+    @Test
+    fun `clearing the search in the favourites view lists the favourites again`() {
+        val items = TimelineItems(listOf(row(1)), favouriteRows = listOf(row(2)))
+
+        val view = controller(items).home(TimelineQuery(q = "", favourites = "1"), "true", ConcurrentModel())
+
+        assertEquals("home :: sheet", view)
+        assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
+        assertNull(items.searched)
+    }
+
+    @Test
+    fun `a search with more pages keeps the view it started from in the next page link`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(rows(TimelineRules.PAGE_SIZE + 1)))
+            .home(TimelineQuery(q = "a", favourites = "1"), null, model)
+
+        val href = model.getAttribute("moreHref") as String
+        assertTrue(href.startsWith("/?q=a&after="), href)
+        assertTrue(href.endsWith("&favourites=1"), href)
+    }
+
+    @Test
     fun `an htmx search returns only the sheet fragment`() {
         val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(q = "match"), "true", ConcurrentModel())
 

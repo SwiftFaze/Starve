@@ -32,7 +32,10 @@
     <form class="search" role="search" action="/" method="get">
       <input type="search" name="q" th:value="${query}" placeholder="Search" aria-label="Search items"
              hx-get="/" hx-trigger="input changed delay:300ms, search" hx-target="#sheet" hx-swap="outerHTML"
-             hx-push-url="true">
+             hx-include="closest form" hx-push-url="true">
+      <input type="hidden" name="favourites" value="1" th:if="${favourites}">
+      <input type="hidden" name="group" th:if="${groupId != null}" th:value="${groupId}">
+      <input type="hidden" name="show" value="all" th:if="${showAll}">
     </form>
   </header>
 

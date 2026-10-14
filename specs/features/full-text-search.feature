@@ -7,7 +7,9 @@ Feature: Full-text search across titles, sources and post bodies
   Covers: GET /?q=<text> as the search URL (bookmarkable and reloadable; the
   page renders the box filled in and the results); a search box in the top bar
   requesting that URL via htmx on typing with a debounce, updating the list in
-  place and pushing the URL, and clearing the box returning to the timeline;
+  place and pushing the URL, and clearing the box returning to the timeline, or to the Favourites view or
+  group the search was started from (the form carrying `favourites`, `group`
+  and `show` as hidden fields, and "Load more" keeping them);
   matching words in the item title, the source name and the post body, case-
   and accent-insensitively, every typed word having to match (AND) and the
   last word matching as a prefix, so partial words work while typing; the body
@@ -27,8 +29,9 @@ Feature: Full-text search across titles, sources and post bodies
   Supersedes: nothing. It adds a view beside the timeline of
   chronological-feed.feature and source-groups.feature, and the "search over
   bodies" left out of post-bodies.feature and reader-pane.feature.
-  Out of scope: combining search with the Favourites filter (#31) or any other
-  filter, which search ignores by design here and which is a follow-up; the
+  Out of scope: narrowing search by the Favourites filter (#31) or any other
+  filter, which results ignore by design (the view is only remembered so that
+  clearing the search returns to it); the
   Mark all read control in search results (not offered); advanced query syntax
   in the UI; highlighting or snippets of the matched text; ranking by
   relevance; searching items already deleted by retention; the browser
@@ -184,6 +187,43 @@ Feature: Full-text search across titles, sources and post bodies
     When I load more
     Then the timeline lists every item exactly once, newest first
 
+  Scenario: Clearing the search in Favourites returns to Favourites
+    Given the source "Alpha" has an unread item "Post starred" published 2 days ago
+    And the source "Alpha" has an unread item "Post plain" published 1 days ago
+    And the item "Post starred" is a favourite
+    When I search for "post" while viewing the Favourites
+    Then the timeline lists the items in this order
+      | Post plain   |
+      | Post starred |
+    When I clear the search via htmx while viewing the Favourites
+    Then the timeline lists "Post starred"
+    And the timeline does not list "Post plain"
+
+  Scenario: Clearing the search in a group returns to that group
+    Given the group "Music" exists
+    And the source "Alpha" is in the group "Music"
+    And the source "Alpha" has an unread item "Match in group" published 2 days ago
+    And the source "Beta" has an unread item "Other outside" published 1 days ago
+    When I clear the search via htmx while viewing the group "Music"
+    Then the timeline lists "Match in group"
+    And the timeline does not list "Other outside"
+
+  Scenario: The search form carries the view it was opened from
+    Given the group "Music" exists
+    And the source "Alpha" has an unread item "Post one" published 1 days ago
+    When I request the home page "/?favourites=1"
+    Then the search form carries "favourites" as "1"
+    When I search for "post" while viewing the group "Music"
+    Then the search form carries the group "Music"
+
+  Scenario: A search URL that carries favourites still searches everything
+    Given the source "Alpha" has an unread item "Post starred" published 2 days ago
+    And the source "Alpha" has an unread item "Post plain" published 1 days ago
+    And the item "Post starred" is a favourite
+    When I request the home page "/?q=plain&favourites=1"
+    Then the timeline lists "Post plain"
+    And the page does not contain "No favourites yet"
+
   Scenario: Mark all read is not offered in search results
     Given the source "Alpha" has an unread item "Match here" published 1 days ago
     When I search for "match"
@@ -294,8 +334,7 @@ Feature: Full-text search across titles, sources and post bodies
 
 # Non-goals:
 #   - Relevance ranking, snippets, highlighting, typo tolerance or stemming.
-#   - Any combination with the Favourites filter (#31) or other filters; the
-#     follow-up decides whether search narrows within a filter.
+#   - Narrowing search by the Favourites filter (#31) or other filters.
 #   - A search-only index of deleted items.
 #
 # Risks:
