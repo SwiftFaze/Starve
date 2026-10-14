@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0-beta.5](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.4...v1.1.0-beta.5) (2026-10-14)
+
+
+### Features
+
+* search titles, sources and post bodies ([8b41b55](https://github.com/SwiftFaze/Starve/commit/8b41b55b1f6182fa3b1dcb5eff38f04802bcb24b))
+* search titles, sources and post bodies ([5a244a1](https://github.com/SwiftFaze/Starve/commit/5a244a135d516497487c5867954d90d2086a820d))
+
+
+### Bug Fixes
+
+* keep retained favourites searchable after the retention purge ([92bfc4f](https://github.com/SwiftFaze/Starve/commit/92bfc4f188ed8684ef91984dd839d8da2fa6640e))
+* return to the view a search started from when it is cleared ([03917db](https://github.com/SwiftFaze/Starve/commit/03917dbb9a7e75e5bc39e0a33107c6e327350969))
+
 ## [1.1.0-beta.4](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.3...v1.1.0-beta.4) (2026-10-14)
 
 
