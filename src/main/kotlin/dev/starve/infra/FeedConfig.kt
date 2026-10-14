@@ -1,5 +1,6 @@
 package dev.starve.infra
 
+import dev.starve.application.FaviconService
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FeedLocator
@@ -57,7 +58,8 @@ class FeedConfig {
         sources: SourceRepository,
         items: ItemRepository,
         clock: Clock,
-    ) = FeedIngestor(sources, items, clock)
+        favicons: FaviconService,
+    ) = FeedIngestor(sources, items, clock, favicons)
 
     @Bean
     fun pollService(

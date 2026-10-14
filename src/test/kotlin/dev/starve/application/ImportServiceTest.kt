@@ -31,7 +31,7 @@ class ImportServiceTest {
                 return FetchResult.Fetched(Feed("t", emptyList()), Validators())
             }
         }
-    private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC())
+    private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC(), quietFavicons(sources))
     private val service =
         ImportService(
             sources,

@@ -89,6 +89,19 @@ interface SourceRepository {
         error: String,
         at: Instant,
     )
+
+    /** Stores the site icon found for the source ([url] null when there is none) and stamps the check time. */
+    fun recordFavicon(
+        id: Long,
+        url: String?,
+        at: Instant,
+    )
+}
+
+/** Finds a site's icon; throws [FeedFetchException] when the site cannot be reached in time. */
+interface FaviconFinder {
+    /** The icon URL for the site at [siteUrl]: its icon link, else its /favicon.ico; null when it has none. */
+    fun find(siteUrl: String): String?
 }
 
 interface GroupRepository {
@@ -167,7 +180,10 @@ data class ItemRef(
     val thumbnailUrl: String?,
 )
 
-/** One item as the reader shows it; [body] is already-sanitised HTML, or null when none was stored. */
+/**
+ * One item as the reader shows it; [body] is already-sanitised HTML, or null when none was stored.
+ * [thumbnailUrl] is the item's feed image and [faviconUrl] its source's site icon, each null when absent.
+ */
 data class PostRef(
     val id: Long,
     val link: String?,
@@ -175,6 +191,8 @@ data class PostRef(
     val sourceTitle: String,
     val publishedAt: Instant,
     val body: String?,
+    val thumbnailUrl: String? = null,
+    val faviconUrl: String? = null,
 )
 
 interface EmbedChecker {

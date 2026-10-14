@@ -14,9 +14,10 @@ object FeedXml {
         spec: FeedSpec,
     ): String {
         val title = spec.title?.let { "<title>$it</title>" } ?: ""
+        val site = spec.siteLink?.let { "<link>$it</link>" } ?: ""
         val items = (1..spec.entries).joinToString("") { rssItem(baseUrl, path, spec, it) }
         return """<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:itunes="$ITUNES" xmlns:content="$CONTENT"><channel>$title<link>$baseUrl$path</link>""" +
+<rss version="2.0" xmlns:itunes="$ITUNES" xmlns:content="$CONTENT" xmlns:media="$MEDIA"><channel>$title$site""" +
             """<description>fixture</description>$items</channel></rss>"""
     }
 
@@ -26,14 +27,42 @@ object FeedXml {
         spec: FeedSpec,
         n: Int,
     ): String {
-        val link = "$baseUrl$path/item-$n"
+        val link = entryLink(baseUrl, path, spec, n)
+        val linkTag = link?.let { "<link>$it</link>" } ?: ""
         val guid = if (spec.noGuid) "" else "<guid isPermaLink=\"false\">guid-$path-$n</guid>"
         val date = if (spec.noDate) "" else "<pubDate>${pubDate(n)}</pubDate>"
         val art = if (spec.coverArt) "<itunes:image href=\"${spec.coverArtUrl ?: "$baseUrl/art-$n.jpg"}\"/>" else ""
         val title = spec.itemTitle ?: "Entry $n"
-        return "<item><title>$title</title><link>$link</link>$guid$date<author>a$n@example.com</author>" +
-            "$art${bodies(spec)}</item>"
+        return "<item><title>$title</title>$linkTag$guid$date<author>a$n@example.com</author>" +
+            "$art${media(spec)}${enclosure(spec)}${bodies(spec)}</item>"
     }
+
+    private fun entryLink(
+        baseUrl: String,
+        path: String,
+        spec: FeedSpec,
+        n: Int,
+    ): String? =
+        when {
+            spec.linkless -> null
+            spec.entryLink != null -> spec.entryLink
+            else -> "$baseUrl$path/item-$n"
+        }
+
+    private fun media(spec: FeedSpec): String {
+        val thumbnail = spec.mediaThumbnail?.let { "<media:thumbnail url=\"$it\"/>" } ?: ""
+        val content = spec.mediaContent?.let { mediaContent(it) } ?: ""
+        return thumbnail + content
+    }
+
+    private fun mediaContent(content: MediaContent): String {
+        val type = content.type?.let { " type=\"$it\"" }.orEmpty()
+        val medium = content.medium?.let { " medium=\"$it\"" }.orEmpty()
+        return "<media:content url=\"${content.url}\"$type$medium/>"
+    }
+
+    private fun enclosure(spec: FeedSpec): String =
+        spec.enclosure?.let { "<enclosure url=\"$it\" type=\"image/jpeg\" length=\"0\"/>" }.orEmpty()
 
     private fun bodies(spec: FeedSpec): String {
         val description = spec.description?.let { "<description><![CDATA[$it]]></description>" } ?: ""
@@ -77,6 +106,7 @@ object FeedXml {
 
     private const val ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd"
     private const val CONTENT = "http://purl.org/rss/1.0/modules/content/"
+    private const val MEDIA = "http://search.yahoo.com/mrss/"
 
     private fun escape(text: String) = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 }

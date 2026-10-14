@@ -34,6 +34,21 @@ object FeedDiscovery {
             .mapNotNull { resolve(pageUrl, it["href"]) }
             .firstOrNull()
 
+    /**
+     * The absolute URL of the first `rel="icon"` or `rel="shortcut icon"` link in [html];
+     * hrefs resolve against [pageUrl].
+     */
+    fun iconLink(
+        html: String,
+        pageUrl: String,
+    ): String? =
+        LINK_TAG
+            .findAll(html)
+            .map { attributes(it.value) }
+            .filter { "icon" in it["rel"].orEmpty().lowercase().split(WHITESPACE) }
+            .mapNotNull { resolve(pageUrl, it["href"]) }
+            .firstOrNull()
+
     /** The numeric SoundCloud user id of a profile page on one of [hosts], or null when it is not one. */
     fun soundCloudUserId(
         html: String,

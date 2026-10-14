@@ -2,6 +2,7 @@ package dev.starve.infra
 
 import dev.starve.acceptance.FeedServer
 import dev.starve.acceptance.FeedSpec
+import dev.starve.acceptance.MediaContent
 import dev.starve.acceptance.Route
 import dev.starve.application.FeedFetchException
 import dev.starve.application.FeedFetcher
@@ -10,6 +11,7 @@ import dev.starve.application.FetchResult
 import dev.starve.application.InvalidFeedException
 import dev.starve.application.PollService
 import dev.starve.application.SourceRepository
+import dev.starve.application.quietFavicons
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Source
 import dev.starve.domain.Validators
@@ -53,7 +55,7 @@ class RomeFeedFetcherTest {
         server.route("/ok.xml", Route.Feed(FeedSpec(title = "Ok", entries = 2)))
         val repo = MemorySources(listOf("${server.baseUrl}/slow.xml", "${server.baseUrl}/ok.xml"))
         val items = MemoryItems()
-        val ingestor = FeedIngestor(repo, items, Clock.systemUTC())
+        val ingestor = FeedIngestor(repo, items, Clock.systemUTC(), quietFavicons(repo))
 
         PollService(repo, fetcherWithTimeout(Duration.ofSeconds(3)), ingestor).pollAll()
 
@@ -160,6 +162,84 @@ class RomeFeedFetcherTest {
     }
 
     @Test
+    fun `the feed carries its trimmed site link, and none when the channel has no link`() {
+        assertEquals("https://blog.example/", feedOf(FeedSpec(siteLink = " https://blog.example/ ")).siteLink)
+        assertEquals(null, feedOf(FeedSpec(siteLink = "  ")).siteLink)
+        assertEquals(null, feedOf(FeedSpec()).siteLink)
+    }
+
+    @Test
+    fun `media thumbnail wins over every other image source`() {
+        val spec =
+            FeedSpec(
+                mediaThumbnail = "https://img.example/thumb.png",
+                mediaContent = MediaContent("https://img.example/content.png", type = "image/png"),
+                enclosure = "https://img.example/enclosure.png",
+                coverArt = true,
+                coverArtUrl = "https://img.example/cover.png",
+                content = "<img src=\"https://img.example/body.png\">",
+            )
+
+        assertEquals("https://img.example/thumb.png", thumbnailOf(spec))
+    }
+
+    @Test
+    fun `a media content image by type or by medium beats the enclosure, and a video does not count`() {
+        val enclosure = "https://img.example/enclosure.png"
+        val byType = MediaContent("https://img.example/type.png", type = "image/png")
+        val byMedium = MediaContent("https://img.example/medium.png", medium = "image")
+        val video = MediaContent("https://img.example/clip.mp4", type = "video/mp4", medium = "video")
+
+        val withEnclosure = { m: MediaContent -> thumbnailOf(FeedSpec(mediaContent = m, enclosure = enclosure)) }
+
+        assertEquals("https://img.example/type.png", withEnclosure(byType))
+        assertEquals("https://img.example/medium.png", withEnclosure(byMedium))
+        assertEquals(enclosure, withEnclosure(video))
+    }
+
+    @Test
+    fun `an untyped media content is not an image`() {
+        val untyped = MediaContent("https://img.example/blob")
+
+        assertEquals(null, thumbnailOf(FeedSpec(mediaContent = untyped)))
+    }
+
+    @Test
+    fun `the enclosure beats the itunes image, which beats a body image`() {
+        val body = "<img src=\"https://img.example/body.png\">"
+        val cover = "https://img.example/cover.png"
+
+        val enclosure = "https://img.example/enclosure.png"
+
+        assertEquals(enclosure, thumbnailOf(FeedSpec(enclosure = enclosure, coverArt = true, coverArtUrl = cover)))
+        assertEquals(cover, thumbnailOf(FeedSpec(coverArt = true, coverArtUrl = cover, content = body)))
+        assertEquals("https://img.example/body.png", thumbnailOf(FeedSpec(content = body)))
+    }
+
+    @Test
+    fun `a relative image resolves against the item link, else the site link`() {
+        val relative = "<img src=\"pic.png\">"
+
+        val site = "https://site.example/"
+
+        assertEquals(
+            "https://post.example/a/pic.png",
+            thumbnailOf(FeedSpec(entryLink = "https://post.example/a/b", siteLink = site, content = relative)),
+        )
+        assertEquals(
+            "https://site.example/pic.png",
+            thumbnailOf(FeedSpec(linkless = true, siteLink = site, content = relative)),
+        )
+    }
+
+    private fun feedOf(spec: FeedSpec): dev.starve.domain.Feed {
+        server.route("/f.xml", Route.Feed(spec))
+        return (fetcher.fetch("${server.baseUrl}/f.xml", Validators()) as FetchResult.Fetched).feed
+    }
+
+    private fun thumbnailOf(spec: FeedSpec): String? = feedOf(spec).items.single().thumbnailUrl
+
+    @Test
     fun `blank titles and authors are treated as absent`() {
         server.route("/blank.xml", Route.Raw("rss-blank.xml", "application/rss+xml"))
 
@@ -243,6 +323,14 @@ class RomeFeedFetcherTest {
             at: Instant,
         ) {
             errors[id] = error
+        }
+
+        override fun recordFavicon(
+            id: Long,
+            url: String?,
+            at: Instant,
+        ) {
+            // Icons are not under test here.
         }
     }
 

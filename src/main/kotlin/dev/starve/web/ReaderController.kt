@@ -3,6 +3,7 @@ package dev.starve.web
 import dev.starve.application.PostRef
 import dev.starve.application.ReaderService
 import dev.starve.domain.Catalogue
+import dev.starve.domain.PostImages
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -10,7 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.server.ResponseStatusException
 
-/** What the reader shows. [body] is stored, already-sanitised HTML; everything else is plain text. */
+/**
+ * What the reader shows. [body] is stored, already-sanitised HTML; everything else is plain text.
+ * [headerImage] is the feed image shown above the body; [siteIcon] is the source's icon, shown small by its name.
+ */
 data class ReaderView(
     val catalogueNumber: String,
     val title: String,
@@ -19,6 +23,8 @@ data class ReaderView(
     val publishedIso: String,
     val body: String?,
     val link: String?,
+    val headerImage: String?,
+    val siteIcon: String?,
 )
 
 @Controller
@@ -45,6 +51,8 @@ class ReaderController(
             publishedAt.toString(),
             body,
             link?.takeIf { WEB_LINK.matches(it) },
+            PostImages.headerImage(thumbnailUrl, body),
+            faviconUrl,
         )
 
     private companion object {

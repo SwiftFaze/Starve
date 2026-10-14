@@ -44,6 +44,15 @@ created when missing), and a feed that already has a group keeps it. Unusable
 rows are listed with their reason while the rest import. Imported feeds are not
 fetched during the upload; they are polled in the background afterwards.
 
+## Post images
+
+Every post in the timeline and the reader shows an image. Starve takes the first
+of the post's `media:thumbnail`, an image `media:content`, an image enclosure, its
+`itunes:image`, or the first body image that is not a tracking pixel. A post with
+none falls back to its site's favicon: the page's icon link, else `/favicon.ico`.
+The favicon is looked up during polling (checked again weekly) and read from the
+source at render time, so it is never copied onto items.
+
 ## Grouping sources
 
 On **Sources** you can create groups (1 to 50 characters, unique ignoring case),

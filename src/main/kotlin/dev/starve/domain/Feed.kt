@@ -14,8 +14,9 @@ data class FeedItem(
     val body: String? = null,
 )
 
-/** A parsed feed: its own title, when it has one, and its entries. */
+/** A parsed feed: its own title, when it has one, its site link, when it has one, and its entries. */
 data class Feed(
     val title: String?,
     val items: List<FeedItem>,
+    val siteLink: String? = null,
 )

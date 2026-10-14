@@ -81,6 +81,17 @@ class JdbcSourceRepository(
             .params(at.toEpochMilli(), error, id)
             .update()
     }
+
+    override fun recordFavicon(
+        id: Long,
+        url: String?,
+        at: Instant,
+    ) {
+        jdbc
+            .sql("UPDATE sources SET favicon_url = ?, favicon_checked_at = ? WHERE id = ?")
+            .params(listOf(url, at.toEpochMilli(), id))
+            .update()
+    }
 }
 
 private fun ResultSet.toSource() =
@@ -92,4 +103,6 @@ private fun ResultSet.toSource() =
         lastFetchedAt = getString("last_fetched_at")?.let { Instant.ofEpochMilli(it.toLong()) },
         lastError = getString("last_error"),
         groupId = getLong("group_id").takeUnless { wasNull() },
+        faviconUrl = getString("favicon_url"),
+        faviconCheckedAt = getString("favicon_checked_at")?.let { Instant.ofEpochMilli(it.toLong()) },
     )

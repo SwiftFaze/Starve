@@ -13,6 +13,7 @@ import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
 import dev.starve.domain.FeedRules
 import dev.starve.domain.Validators
+import org.jdom2.Element
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.http.HttpResponse
@@ -48,9 +49,11 @@ class RomeFeedFetcher(
 
     private fun parse(body: ByteArray): Feed {
         val syndFeed = readFeed(body)
+        val siteLink = syndFeed.link?.trim()?.takeIf { it.isNotEmpty() }
         return Feed(
             title = syndFeed.title?.trim()?.takeIf { it.isNotEmpty() },
-            items = syndFeed.entries.mapNotNull { toItem(it) },
+            items = syndFeed.entries.mapNotNull { toItem(it, siteLink) },
+            siteLink = siteLink,
         )
     }
 
@@ -63,18 +66,22 @@ class RomeFeedFetcher(
             throw InvalidFeedException(e.message ?: "unreadable feed", e)
         }
 
-    private fun toItem(entry: SyndEntry): FeedItem? {
+    private fun toItem(
+        entry: SyndEntry,
+        siteLink: String?,
+    ): FeedItem? {
         val key = FeedRules.itemKey(entry.uri, entry.link) ?: return null
         val link = entry.link?.takeIf { it.isNotBlank() }
         val published = entry.publishedDate ?: entry.updatedDate
+        val body = rawBody(entry)
         return FeedItem(
             key = key,
             title = decodedTitle(entry),
             link = link,
             publishedAt = published?.toInstant(),
             author = entry.author?.takeIf { it.isNotBlank() },
-            thumbnailUrl = thumbnail(entry),
-            body = BodySanitizer.sanitize(rawBody(entry), link),
+            thumbnailUrl = thumbnail(entry, link ?: siteLink, body),
+            body = BodySanitizer.sanitize(body, link),
         )
     }
 
@@ -88,14 +95,34 @@ class RomeFeedFetcher(
         return decoded.ifEmpty { "(untitled)" }
     }
 
-    private fun thumbnail(entry: SyndEntry): String? {
+    /**
+     * The first usable image of the entry, in order: media:thumbnail, a media:content that is an image, an image
+     * enclosure, itunes:image, then the first body image that is not a tracking pixel. Relative URLs resolve
+     * against [base], the item's link or else the site link.
+     */
+    private fun thumbnail(
+        entry: SyndEntry,
+        base: String?,
+        rawBody: String?,
+    ): String? {
         val media = entry.foreignMarkup.flatMap { if (it.name == "group") it.children else listOf(it) }
+        val candidates =
+            sequenceOf(
+                media.firstOrNull { it.name == "thumbnail" }?.getAttributeValue("url"),
+                media.firstOrNull { it.name == "content" && isImage(it) }?.getAttributeValue("url"),
+                entry.enclosures.firstOrNull { it.type?.startsWith("image/") == true }?.url,
+                media.firstOrNull { it.name == "image" && it.namespaceURI == ITUNES }?.getAttributeValue("href"),
+            )
         val found =
-            media.firstOrNull { it.name == "thumbnail" }?.getAttributeValue("url")
-                ?: entry.enclosures.firstOrNull { it.type?.startsWith("image/") == true }?.url
-                ?: media.firstOrNull { it.name == "image" && it.namespaceURI == ITUNES }?.getAttributeValue("href")
+            candidates.firstNotNullOfOrNull { FeedRules.absoluteHttpUrl(it, base) }
+                ?: rawBody?.let { BodyImages.firstUrl(it, base) }
         return found?.let(FeedRules::thumbnailUrl)
     }
+
+    /** A media:content is an image when its type says so, or its medium does. */
+    private fun isImage(element: Element): Boolean =
+        element.getAttributeValue("type")?.startsWith("image/") == true ||
+            element.getAttributeValue("medium") == "image"
 
     private companion object {
         const val ACCEPT = "application/rss+xml, application/atom+xml, application/xml, text/xml, */*"
