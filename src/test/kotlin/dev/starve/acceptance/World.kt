@@ -23,6 +23,15 @@ object World {
     /** The latest rendering of the sources page, however it was reached. */
     var sourcesPage: String = ""
 
+    /** How long the latest reader request took, in milliseconds. */
+    var readerMillis: Long = 0
+
+    /** The stored body of the item the latest reader request opened, before that request ran. */
+    var bodyBeforeReader: String? = null
+
+    /** Replaces the `<feed server>` placeholder with the running feed server's base URL, when one runs. */
+    fun expandFeedServer(text: String): String = text.replace("<feed server>", feeds?.baseUrl ?: "<feed server>")
+
     /** The `<article>` markup of the timeline entry titled [title] among [pages]. */
     fun entry(title: String): String =
         pages

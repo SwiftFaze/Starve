@@ -63,7 +63,8 @@ class ReaderSteps {
             sources.findAll().firstOrNull { it.title == source }
                 ?: sources.insert("http://$source.test/feed", source)
         val published = Instant.now().minus(Duration.ofDays(days.toLong()))
-        val item = FeedItem(title, title, seed.link, published, seed.artist, seed.thumbnail, seed.body)
+        val link = seed.link?.let { World.expandFeedServer(it) }
+        val item = FeedItem(title, title, link, published, seed.artist, seed.thumbnail, seed.body)
         app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), Instant.now())
     }
 
@@ -126,7 +127,7 @@ class ReaderSteps {
     fun readerHasLink(
         label: String,
         url: String,
-    ) = assertTrue(linkTag(label)?.contains("href=\"$url\"") == true, body())
+    ) = assertTrue(linkTag(label)?.contains("href=\"${World.expandFeedServer(url)}\"") == true, body())
 
     @Then("the {string} link opens in a new tab with rel {string}")
     fun linkOpensInNewTab(
@@ -149,7 +150,17 @@ class ReaderSteps {
     // ---- helpers -------------------------------------------------------------------------
 
     private fun requestReaderOf(id: Long) {
+        World.bodyBeforeReader =
+            app
+                .jdbc()
+                .sql("SELECT body FROM items WHERE id = ?")
+                .param(id)
+                .query(String::class.java)
+                .optional()
+                .orElse(null)
+        val started = System.nanoTime()
         World.response = app.get("/items/$id/reader", mapOf("HX-Request" to "true"))
+        World.readerMillis = (System.nanoTime() - started) / NANOS_PER_MILLI
     }
 
     private fun body(): String = World.response.body()
@@ -176,5 +187,6 @@ class ReaderSteps {
         val READER_DATE = Regex("<time [^>]*>\\d{4}-\\d{2}-\\d{2}")
         val READER_BODY = Regex("<div class=\"reader-body\"[^>]*>(.*)</div>", RegexOption.DOT_MATCHES_ALL)
         val READER_CLOSE = Regex("<button[^>]*class=\"reader-close\"[^>]*>")
+        const val NANOS_PER_MILLI = 1_000_000L
     }
 }

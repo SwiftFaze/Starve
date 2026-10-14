@@ -197,6 +197,17 @@ interface ItemRepository {
         oembed: Oembed,
     )
 
+    /**
+     * Records an article check at [at]: stores [body] when it is not null, and [thumbnailUrl] only where the
+     * item has no thumbnail yet.
+     */
+    fun recordArticleCheck(
+        id: Long,
+        body: String?,
+        thumbnailUrl: String?,
+        at: Instant,
+    )
+
     /** Marks the item read at [at] unless already read; returns false when no such item exists. */
     fun markRead(
         id: Long,
@@ -234,6 +245,8 @@ data class PostRef(
     val thumbnailUrl: String? = null,
     val faviconUrl: String? = null,
     val favourite: Boolean = false,
+    /** When the article page was last fetched for this item; null when never. */
+    val articleCheckedAt: Instant? = null,
 )
 
 /** SoundCloud's public oEmbed details of a track; a field is null when oEmbed did not give it. */
@@ -271,6 +284,22 @@ data class ItemDetail(
 fun interface SoundCloudOembed {
     /** The oEmbed details of [trackUrl]; null when the fetch fails, times out or its body cannot be read. */
     fun fetch(trackUrl: String): Oembed?
+}
+
+/** What a fetched article page offers: its sanitised [body] (null when no text was found) and og:image [imageUrl]. */
+data class FetchedArticle(
+    val body: String?,
+    val imageUrl: String?,
+)
+
+fun interface ArticleFetcher {
+    /** Fetches the page at the http(s) [url] and extracts its article; null when the page could not be fetched. */
+    fun fetch(url: String): FetchedArticle?
+}
+
+/** Reads the plain text of stored, already-sanitised HTML. */
+fun interface HtmlText {
+    fun plainText(html: String): String
 }
 
 interface EmbedChecker {

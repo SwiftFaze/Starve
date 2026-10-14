@@ -261,6 +261,7 @@ class PostImageSteps {
             mediaContent = content ?: medium,
             enclosure = ENCLOSURE.find(phrase)?.arg(1),
             content = ENCODED.find(phrase)?.arg(1),
+            description = DESCRIPTION.find(phrase)?.arg(1),
         )
     }
 
@@ -316,6 +317,7 @@ class PostImageSteps {
         val ENCLOSURE = Regex("the image enclosure $QUOTED")
         val ENCODED = Regex("the content:encoded $QUOTED")
         val LINK = Regex("the link $QUOTED")
+        val DESCRIPTION = Regex("the description $QUOTED")
 
         fun MatchResult.arg(index: Int): String = unescaped(groupValues[index])
 

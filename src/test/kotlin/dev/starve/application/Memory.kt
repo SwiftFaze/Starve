@@ -84,6 +84,14 @@ object NoIcons : FaviconFinder {
 /** Favicon handling for tests that do not care about icons; every site has none. */
 fun quietFavicons(sources: SourceRepository): FaviconService = FaviconService(sources, NoIcons)
 
+/** One article check as the item repository was asked to record it. */
+data class ArticleCheck(
+    val id: Long,
+    val body: String?,
+    val thumbnailUrl: String?,
+    val at: Instant,
+)
+
 /** Records the items and cutoffs passed to the item repository. */
 open class MemoryItems(
     private val deleted: Int = 0,
@@ -121,6 +129,17 @@ open class MemoryItems(
         id: Long,
         oembed: Oembed,
     ) = Unit
+
+    val articleChecks = mutableListOf<ArticleCheck>()
+
+    override fun recordArticleCheck(
+        id: Long,
+        body: String?,
+        thumbnailUrl: String?,
+        at: Instant,
+    ) {
+        articleChecks += ArticleCheck(id, body, thumbnailUrl, at)
+    }
 
     override fun markRead(
         id: Long,
