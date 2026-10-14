@@ -69,6 +69,17 @@ exemption lives in the SQL of `deleteFirstSeenBefore` (`favourited_at IS NULL`),
 removing a source deletes its favourites through the items' `ON DELETE CASCADE`.
 `FavouriteController` answers htmx toggles with the re-rendered `StarView`.
 
+Later: `items.later_at` (V12, nullable; the timestamp is the mark and the queue order)
+flags an item saved for later, independent of `favourited_at` and read state.
+`LaterService` (wired by `LaterConfig`, separate from `TimelineService`) saves and clears
+through `LaterRepository.save`/`clear`, both idempotent; `save` uses
+`COALESCE(later_at, ?)` so a re-save keeps the original time. `LaterService.page` serves
+`/?later=1` through `LaterRepository.later` (implemented by `JdbcLaterRepository`), a keyset
+page ordered `later_at ASC, id ASC` via `LaterCursor`, ignoring read state, show and group.
+The retention exemption sits in `deleteFirstSeenBefore` (`later_at IS NULL`, alongside
+favourites). `LaterController` answers htmx toggles with the re-rendered `LaterView`; a
+toggle from the reader or detail pane also refreshes the row's toggle out of band.
+
 ## Source groups
 
 `domain/Group.kt` holds `Group` and `GroupRules.checkName` (trim, 1 to 50 chars).

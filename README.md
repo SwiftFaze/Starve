@@ -84,6 +84,19 @@ starred items of every source, read or not, newest first, with the same paging.
 Clicking the star again removes the favourite. Removing a source deletes its
 favourites with the rest of its items.
 
+## Later
+
+Each timeline row, the reader pane and the detail view have a clock (⏲) that saves the
+item for later. **Later** in the navigation (`/?later=1`, after Favourites) lists the
+saved items of every source, read or not, earliest saved first, 50 at a time with
+**Load more**; it has no **Show read** or **Mark all read**. Saving does not change
+whether the item is read or a favourite, and opening, reading or playing it leaves it
+saved. Saving an already saved item keeps its original time. Click the clock again to
+clear it; a cleared row stays on screen until the next reload. The retention purge never
+deletes a saved item, though removing a source still deletes its items. If both
+`favourites=1` and `later=1` are given, Favourites wins. Searching from Later still searches
+every item, saved or not, and saved items stay searchable; clearing the search returns to Later.
+
 ## Searching
 
 The search box above the list finds items by words in their title, their
