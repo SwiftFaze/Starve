@@ -17,6 +17,20 @@ Needs JDK 21+.
 Open <http://localhost:8080>. The database is `./data/starve.db` (override with
 `STARVE_DB_PATH` or `--starve.db.path`).
 
+## First run: create the admin account
+
+Starve needs an account. On a fresh database every page redirects to `/setup`,
+which asks for a one-time setup code. The code is written to the application
+log at startup (`Starve setup code: XXXX-XXXX`): in the terminal for
+`./mvnw spring-boot:run`, or `docker compose logs` for Docker. It is held in
+memory only and a new one is issued on each start until an account exists.
+Enter it, choose a username and a password (at least 10 characters), and you
+are signed in. After that `/setup` is closed.
+
+Behind a reverse proxy, forward `X-Forwarded-For` and `X-Forwarded-Proto`
+(`server.forward-headers-strategy: native` is set), so failed attempts are
+throttled per real client address rather than per proxy.
+
 ## Subscribing to feeds
 
 Open **Sources** (<http://localhost:8080/sources>) and paste a feed URL, or just

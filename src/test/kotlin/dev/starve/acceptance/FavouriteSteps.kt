@@ -8,7 +8,6 @@ import io.cucumber.java.en.When
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import java.net.URI
 import java.time.Duration
 import java.time.Instant
 
@@ -118,16 +117,6 @@ class FavouriteSteps {
 
     @Then("the response does not ask a video in the pane to step down")
     fun responseKeepsVideoPlacement() = assertFalse(body().contains("data-step-video"), body())
-
-    @Then("the response redirects to {string}")
-    fun responseRedirectsTo(target: String) {
-        val location =
-            World.response
-                .headers()
-                .firstValue("Location")
-                .orElse(null)
-        assertEquals(target, location?.let { URI.create(it).path }, "Location: $location")
-    }
 
     // ---- assertions on the timeline ------------------------------------------------------
 

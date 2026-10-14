@@ -24,7 +24,10 @@ class SkeletonSteps {
     fun freshDatabaseFile() = app.freshDatabase()
 
     @Given("the application is running")
-    fun applicationIsRunning() = app.start()
+    fun applicationIsRunning() {
+        app.start()
+        app.completeSetup(World.OWNER, World.OWNER_PASSWORD)
+    }
 
     @When("the application starts")
     fun applicationStarts() = app.start()
@@ -40,6 +43,9 @@ class SkeletonSteps {
 
     @Then("the response status is {int}")
     fun responseStatusIs(status: Int) = assertEquals(status, World.response.statusCode())
+
+    @Then("the response redirects to {string}")
+    fun responseRedirectsTo(path: String) = assertRedirectTo(World.response, path)
 
     @Then("the page contains {string}")
     fun pageContains(text: String) = assertTrue(World.response.body().contains(text), "page lacks '$text'")

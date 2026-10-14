@@ -11,6 +11,7 @@ import dev.starve.domain.Playable
 import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
+import dev.starve.domain.User
 import dev.starve.domain.Validators
 import java.time.Instant
 
@@ -347,4 +348,35 @@ fun interface OpmlReader {
 /** Runs work off the calling thread. */
 fun interface BackgroundRunner {
     fun run(task: Runnable)
+}
+
+interface UserRepository {
+    /** Whether any account exists. */
+    fun exists(): Boolean
+
+    /** The account whose username matches [username] ignoring case, or null. */
+    fun findByUsername(username: String): User?
+
+    /** Stores [username] as the admin only while no account exists; false when one already does. */
+    fun insertFirstAdmin(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): Boolean
+}
+
+/** Hashes a raw password for storage. */
+fun interface PasswordHasher {
+    fun hash(password: String): String
+}
+
+/** Small installation values kept in the database (the `app_metadata` table). */
+interface AppMetadata {
+    fun find(key: String): String?
+
+    /** Stores [value] only while [key] is unset; false when a value was already there. */
+    fun putIfAbsent(
+        key: String,
+        value: String,
+    ): Boolean
 }

@@ -688,6 +688,12 @@
     if (event.key === 'Escape' && body.dataset.list === 'strip') sizeList(LIST_MIN + 180, true);
   });
 
+  // Every htmx request carries the CSRF token from the XSRF-TOKEN cookie, as the X-CSRF-TOKEN header.
+  document.addEventListener('htmx:configRequest', function (event) {
+    var token = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+    if (token) event.detail.headers['X-CSRF-TOKEN'] = token[1];
+  });
+
   trackHeights();
   markPlaying();
 })();

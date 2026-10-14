@@ -14,6 +14,7 @@ import dev.starve.application.SourceRepository
 import dev.starve.application.SubscriptionService
 import dev.starve.application.TimelineService
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -28,7 +29,9 @@ private const val SOUNDCLOUD_FEED_TEMPLATE = "https://feeds.soundcloud.com/users
 /** Wires the framework-free application services to their infrastructure adapters. */
 @Configuration
 class FeedConfig {
+    // Overridable, so the acceptance harness can drive time (the login block lifts after 15 minutes).
     @Bean
+    @ConditionalOnMissingBean(Clock::class)
     fun clock(): Clock = Clock.systemUTC()
 
     @Bean

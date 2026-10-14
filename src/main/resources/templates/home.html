@@ -67,7 +67,7 @@
           <a class="read-toggle" th:unless="${searching}" th:href="${toggleHref}" th:attr="hx-get=${toggleHref}"
              hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
              hx-push-url="true" th:text="${showAll} ? 'Hide read' : 'Show read'">Show read</a>
-          <form th:unless="${searching}" method="post" action="/read-all" hx-post="/read-all"
+          <form th:unless="${searching}" method="post" th:action="@{/read-all}" hx-post="/read-all"
                 hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML">
             <input type="hidden" name="before" th:value="${renderedAt}">
             <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">

@@ -27,7 +27,7 @@
 
       <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Not a Takeout CSV or OPML file</p>
 
-      <form class="add" method="post" action="/import" enctype="multipart/form-data">
+      <form class="add" method="post" th:action="@{/import}" enctype="multipart/form-data">
         <label class="field-label" for="import-file">Subscription file</label>
         <div class="field-row">
           <input class="field" id="import-file" type="file" name="file" aria-describedby="import-hint" required>
