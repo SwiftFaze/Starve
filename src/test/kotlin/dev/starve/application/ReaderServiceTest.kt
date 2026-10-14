@@ -17,6 +17,7 @@ class ReaderServiceTest {
         private val posts: Map<Long, PostRef>,
     ) : MemoryItems() {
         val read = mutableListOf<Pair<Long, Instant>>()
+        val articles = MemoryArticles()
 
         override fun findPost(id: Long): PostRef? = posts[id]
 
@@ -57,7 +58,7 @@ class ReaderServiceTest {
     ): Triple<ReaderService, Posts, Pages> {
         val items = Posts(posts.associateBy { it.id })
         val pages = Pages(page)
-        return Triple(ReaderService(items, Clock.fixed(now, ZoneOffset.UTC), pages, tags), items, pages)
+        return Triple(ReaderService(items, items.articles, Clock.fixed(now, ZoneOffset.UTC), pages, tags), items, pages)
     }
 
     @Test
@@ -111,7 +112,7 @@ class ReaderServiceTest {
 
         assertEquals(article(800), shown?.body)
         assertEquals(listOf("https://blog.example/a"), pages.requested)
-        assertEquals(listOf(ArticleCheck(1, article(800), null, now)), items.articleChecks)
+        assertEquals(listOf(ArticleCheck(1, article(800), null, now)), items.articles.articleChecks)
     }
 
     @Test
@@ -120,7 +121,7 @@ class ReaderServiceTest {
         val (service, items, _) = service(FetchedArticle(article(100), null), teaser)
 
         assertEquals(article(300), service.open(1)?.body)
-        assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articleChecks)
+        assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articles.articleChecks)
     }
 
     @Test
@@ -129,7 +130,7 @@ class ReaderServiceTest {
         val (service, items, _) = service(FetchedArticle(article(300).replace("x", "y"), null), teaser)
 
         assertEquals(article(300), service.open(1)?.body)
-        assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articleChecks)
+        assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articles.articleChecks)
     }
 
     @Test
@@ -137,7 +138,7 @@ class ReaderServiceTest {
         val (service, items, _) = service(null, post(1, "https://blog.example/a", body = "<p>Teaser</p>"))
 
         assertEquals("<p>Teaser</p>", service.open(1)?.body)
-        assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articleChecks)
+        assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articles.articleChecks)
         assertEquals(listOf(1L to now), items.read)
     }
 
@@ -187,7 +188,7 @@ class ReaderServiceTest {
             service(FetchedArticle(article(800), "https://img.example/og.jpg"), post(1, "https://blog.example/a", null))
 
         assertEquals("https://img.example/og.jpg", service.open(1)?.thumbnailUrl)
-        assertEquals("https://img.example/og.jpg", items.articleChecks.single().thumbnailUrl)
+        assertEquals("https://img.example/og.jpg", items.articles.articleChecks.single().thumbnailUrl)
     }
 
     @Test

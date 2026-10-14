@@ -161,6 +161,20 @@ interface SearchRepository {
     ): List<TimelineItem>
 }
 
+/** Persistence of the article-page check a teaser-only post goes through when it is opened. */
+interface ArticleRepository {
+    /**
+     * Records an article check at [at]: stores [body] when it is not null,
+     * and [thumbnailUrl] only where the item has no thumbnail yet.
+     */
+    fun recordArticleCheck(
+        id: Long,
+        body: String?,
+        thumbnailUrl: String?,
+        at: Instant,
+    )
+}
+
 interface ItemRepository {
     /** Stores items whose key is new for the source; a known key only gains a thumbnail or body it lacked. */
     fun insertNew(
@@ -195,17 +209,6 @@ interface ItemRepository {
     fun saveOembed(
         id: Long,
         oembed: Oembed,
-    )
-
-    /**
-     * Records an article check at [at]: stores [body] when it is not null, and [thumbnailUrl] only where the
-     * item has no thumbnail yet.
-     */
-    fun recordArticleCheck(
-        id: Long,
-        body: String?,
-        thumbnailUrl: String?,
-        at: Instant,
     )
 
     /** Marks the item read at [at] unless already read; returns false when no such item exists. */

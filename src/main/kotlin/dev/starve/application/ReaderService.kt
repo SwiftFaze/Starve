@@ -8,6 +8,7 @@ import java.time.Instant
 
 class ReaderService(
     private val items: ItemRepository,
+    private val checks: ArticleRepository,
     private val clock: Clock,
     private val articles: ArticleFetcher,
     private val text: HtmlText,
@@ -52,7 +53,7 @@ class ReaderService(
         // The teaser stays unless the extracted article text is longer than it.
         val body = page?.body?.takeIf { textLength(it) > textLength(post.body) }
         val image = page?.imageUrl
-        items.recordArticleCheck(post.id, body, image, now)
+        checks.recordArticleCheck(post.id, body, image, now)
         return post.copy(
             body = body ?: post.body,
             thumbnailUrl = post.thumbnailUrl ?: image,

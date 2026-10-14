@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.application.ArticleFetcher
+import dev.starve.application.ArticleRepository
 import dev.starve.application.ItemRepository
 import dev.starve.application.ReaderService
 import org.springframework.context.annotation.Bean
@@ -15,9 +16,10 @@ class ReaderConfig {
     @Bean
     fun readerService(
         items: ItemRepository,
+        checks: ArticleRepository,
         clock: Clock,
         articles: ArticleFetcher,
-    ) = ReaderService(items, clock, articles, JsoupText)
+    ) = ReaderService(items, checks, clock, articles, JsoupText)
 
     @Bean
     fun articleFetcher(): ArticleFetcher {

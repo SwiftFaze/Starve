@@ -2,6 +2,7 @@ package dev.starve.web
 
 import dev.starve.application.ArticleFetcher
 import dev.starve.application.HtmlText
+import dev.starve.application.MemoryArticles
 import dev.starve.application.MemoryItems
 import dev.starve.application.PostRef
 import dev.starve.application.ReaderService
@@ -24,6 +25,7 @@ class ReaderControllerTest {
                 object : MemoryItems() {
                     override fun findPost(id: Long) = posts.firstOrNull { it.id == id }
                 },
+                MemoryArticles(),
                 Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
                 ArticleFetcher { null },
                 HtmlText { it },

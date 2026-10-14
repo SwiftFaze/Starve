@@ -127,20 +127,6 @@ class JdbcItemRepository(
             .update()
     }
 
-    override fun recordArticleCheck(
-        id: Long,
-        body: String?,
-        thumbnailUrl: String?,
-        at: Instant,
-    ) {
-        jdbc
-            .sql(
-                "UPDATE items SET body = COALESCE(?, body), thumbnail_url = COALESCE(thumbnail_url, ?), " +
-                    "article_checked_at = ? WHERE id = ?",
-            ).params(body, thumbnailUrl, at.toEpochMilli(), id)
-            .update()
-    }
-
     override fun markRead(
         id: Long,
         at: Instant,
