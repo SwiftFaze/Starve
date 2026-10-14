@@ -17,6 +17,7 @@ import javax.sql.DataSource
 /** Starts, stops and queries the real application against one temporary SQLite file. */
 class ApplicationHarness(
     private val oembedUrl: () -> String,
+    private val soundCloudOembedUrl: () -> String,
 ) {
     private var dbFile: Path = newDbFile()
     private var context: ConfigurableApplicationContext? = null
@@ -48,6 +49,7 @@ class ApplicationHarness(
                     "--starve.scheduling.enabled=false",
                     "--starve.fetch.timeout=PT1S",
                     "--starve.youtube.oembed-url=${oembedUrl()}",
+                    "--starve.soundcloud.oembed-url=${soundCloudOembedUrl()}",
                     *extraArgs.toTypedArray(),
                 )
     }

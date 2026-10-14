@@ -115,6 +115,13 @@ open class MemoryItems(
 
     override fun findPost(id: Long): PostRef? = null
 
+    override fun findDetail(id: Long): DetailRef? = null
+
+    override fun saveOembed(
+        id: Long,
+        oembed: Oembed,
+    ) = Unit
+
     override fun markRead(
         id: Long,
         at: Instant,

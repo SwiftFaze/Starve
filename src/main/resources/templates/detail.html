@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="content">
+<article class="reader-view detail-view" th:attr="data-item=${detail.catalogueNumber}">
+  <header class="reader-head">
+    <button type="button" class="reader-close" hx-on:click="closeReader(this)">Close</button>
+    <span class="reader-cat" th:text="${detail.catalogueNumber}">STV 0132</span>
+    <h2 class="reader-title" th:text="${detail.title}">Title</h2>
+    <p class="reader-meta">
+      <span class="detail-artist" th:if="${detail.artist}" th:text="${detail.artist}">Artist</span>
+      <span class="source" th:text="${detail.sourceTitle}">Source</span>
+      <time class="date" th:datetime="${detail.publishedIso}" th:text="${detail.published}">date</time>
+    </p>
+    <a class="reader-original" th:if="${detail.link}" th:href="${detail.link}" target="_blank"
+       rel="noopener noreferrer">Open original</a>
+  </header>
+  <img class="detail-art" th:if="${detail.thumbnailUrl}" th:src="${detail.thumbnailUrl}" alt="">
+  <button type="button" class="detail-play" hx-target="#dock" hx-swap="innerHTML" aria-pressed="false"
+          th:attr="hx-get=@{/items/{id}/player(id=${detail.id})}"
+          hx-trigger="click[!target.closest('.current')]">Play</button>
+  <div class="reader-body" th:if="${detail.description}" th:utext="${detail.description}"></div>
+</article>
+</th:block>
+</body>
+</html>

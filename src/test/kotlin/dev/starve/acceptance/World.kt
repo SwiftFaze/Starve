@@ -7,7 +7,11 @@ object World {
     /** Stands in for YouTube oEmbed; started once because the application needs its URL when it starts. */
     val oembed: FeedServer by lazy { FeedServer() }
 
-    val app = ApplicationHarness { "${oembed.baseUrl}/oembed" }
+    val app =
+        ApplicationHarness(
+            { "${oembed.baseUrl}/oembed" },
+            { "${oembed.baseUrl}${FeedServer.SOUNDCLOUD_OEMBED_PATH}" },
+        )
     var feeds: FeedServer? = null
 
     /** The latest HTTP response, whichever step class made the request. */
@@ -28,6 +32,12 @@ object World {
             .firstOrNull { it.contains("data-title=\"$title\"") }
             ?: error("no timeline entry '$title'")
 
+    /** The opening `<a>` tag of the title link of the timeline entry titled [title]. */
+    fun titleLink(title: String): String {
+        val page = entry(title)
+        return requireNotNull(Regex("<a class=\"title\"[^>]*>").find(page)) { "no title link in $page" }.value
+    }
+
     /** Set by every action step, so a phrase used to arrange and to assert knows which it is doing. */
     var actionHasRun = false
 
@@ -41,4 +51,10 @@ object Html {
     fun escape(text: String): String = entities.fold(text) { acc, (raw, entity) -> acc.replace(raw, entity) }
 
     fun unescape(html: String): String = entities.reversed().fold(html) { text, (raw, ent) -> text.replace(ent, raw) }
+
+    /** The `<a>` markup whose text is [label], or null when the page has none. */
+    fun anchor(
+        page: String,
+        label: String,
+    ): String? = Regex("<a [^>]*>\\s*${Regex.escape(label)}\\s*</a>").find(page)?.value
 }

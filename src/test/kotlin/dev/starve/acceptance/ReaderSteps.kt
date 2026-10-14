@@ -13,33 +13,49 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import java.time.Duration
 import java.time.Instant
 
-/** What a seeded item links to and carries as its stored body. */
-data class Content(
+/**
+ * What a seeded item carries: an optional feed artist ("by"), link, thumbnail (", a thumbnail") and stored
+ * body. Built from the text the [SEED] parameter matched.
+ */
+data class Seed(
+    val artist: String?,
     val link: String?,
+    val thumbnail: String?,
     val body: String?,
-)
+) {
+    companion object {
+        const val THUMBNAIL = "https://img.example/feed-thumb.jpg"
+        private val ARTIST = Regex(" by \"([^\"]*)\"")
+        private val LINK = Regex("with the link \"([^\"]*)\"")
+        private val BODY = Regex("stored body \"([^\"]*)\"")
 
-/** Steps for reader-pane.feature: seeding posts with bodies and reading the reader fragment. */
+        fun parse(text: String): Seed =
+            Seed(
+                artist = ARTIST.find(text)?.groupValues?.get(1),
+                link = LINK.find(text)?.groupValues?.get(1),
+                thumbnail = if (text.contains(", a thumbnail")) THUMBNAIL else null,
+                body = BODY.find(text)?.groupValues?.get(1),
+            )
+    }
+}
+
+/** Steps for reader-pane.feature and media-detail-view.feature: seeding items and reading the reader fragment. */
 class ReaderSteps {
     private val app = World.app
 
     // ---- seeding -------------------------------------------------------------------------
 
     @ParameterType(
-        "with the link \"([^\"]*)\" and the stored body \"([^\"]*)\"" +
-            "|with the link \"([^\"]*)\" and no stored body|with no link and no stored body",
+        "(?: by \"[^\"]*\")?(?: with the link \"[^\"]*\"| with no link)(?:, a thumbnail)?" +
+            "(?: and the stored body \"[^\"]*\"| and no stored body)?",
     )
-    fun content(
-        linkWithBody: String?,
-        body: String?,
-        linkWithoutBody: String?,
-    ) = Content(linkWithBody ?: linkWithoutBody, body)
+    fun seed(text: String): Seed = Seed.parse(text)
 
-    @Given("the source {string} has an( unread) item {string} {content} published {int} days ago")
+    @Given("the source {string} has an( unread) item {string}{seed} published {int} days ago")
     fun item(
         source: String,
         title: String,
-        content: Content,
+        seed: Seed,
         days: Int,
     ) {
         val sources = app.bean(SourceRepository::class.java)
@@ -47,7 +63,7 @@ class ReaderSteps {
             sources.findAll().firstOrNull { it.title == source }
                 ?: sources.insert("http://$source.test/feed", source)
         val published = Instant.now().minus(Duration.ofDays(days.toLong()))
-        val item = FeedItem(title, title, content.link, published, null, null, content.body)
+        val item = FeedItem(title, title, seed.link, published, seed.artist, seed.thumbnail, seed.body)
         app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), Instant.now())
     }
 
@@ -75,7 +91,7 @@ class ReaderSteps {
     }
 
     @Then("the title of {string} does not request a reader")
-    fun titleDoesNotRequestReader(title: String) = assertFalse(titleTag(title).contains("hx-get"), titleTag(title))
+    fun titleDoesNotRequestReader(title: String) = assertFalse(titleTag(title).contains("/reader\""), titleTag(title))
 
     @Then("the page has a reader pane")
     fun hasReaderPane() = assertTrue(READER_PANE.containsMatchIn(body()), body())
@@ -140,13 +156,9 @@ class ReaderSteps {
 
     private fun group(pattern: Regex) = requireNotNull(pattern.find(body())) { "no $pattern" }.groupValues[1]
 
-    private fun titleTag(title: String): String =
-        requireNotNull(TITLE_LINK.find(World.entry(title))) { "no title link in ${World.entry(title)}" }.value
+    private fun titleTag(title: String): String = World.titleLink(title)
 
-    private fun linkTag(label: String): String? {
-        val link = Regex("<a [^>]*>\\s*${Regex.escape(label)}\\s*</a>")
-        return link.find(body())?.value
-    }
+    private fun linkTag(label: String): String? = Html.anchor(body(), label)
 
     private fun itemId(title: String): Long =
         app
@@ -157,7 +169,6 @@ class ReaderSteps {
             .single()
 
     private companion object {
-        val TITLE_LINK = Regex("<a class=\"title\"[^>]*>")
         val READER_PANE = Regex("<aside[^>]*id=\"reader\"[^>]*>")
         val EMPTY_READER_PANE = Regex("<aside[^>]*id=\"reader\"[^>]*></aside>")
         val READER_TITLE = Regex("<h2 class=\"reader-title\"[^>]*>(.*?)</h2>", RegexOption.DOT_MATCHES_ALL)

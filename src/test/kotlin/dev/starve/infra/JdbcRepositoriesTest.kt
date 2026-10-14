@@ -1,6 +1,8 @@
 package dev.starve.infra
 
+import dev.starve.application.DetailRef
 import dev.starve.application.ItemRef
+import dev.starve.application.Oembed
 import dev.starve.application.PostRef
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
@@ -305,6 +307,42 @@ class JdbcRepositoriesTest {
         key: String,
         thumbnail: String,
     ) = FeedItem(key, key, null, null, null, thumbnail)
+
+    @Test
+    fun `finding a detail returns the feed data of an item and nothing when missing`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val published = Instant.parse("2026-03-04T05:06:07Z")
+        val link = "https://soundcloud.com/a/t"
+        val feed = FeedItem("t", "Track", link, published, "Artist", "https://img.test/t.jpg", "<p>b</p>")
+        items.insertNew(source.id, listOf(feed), Instant.EPOCH)
+        val id = jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
+
+        val thumbnail = "https://img.test/t.jpg"
+        val expected = DetailRef(id, link, "Track", "T", published, "Artist", thumbnail, "<p>b</p>", null)
+        assertEquals(expected, items.findDetail(id))
+        assertNull(items.findDetail(id + 1))
+    }
+
+    @Test
+    fun `a stored oembed is read back with the detail and replaces the earlier one`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("t", "Track")), Instant.EPOCH)
+        val id = jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
+
+        items.saveOembed(id, Oembed("First", null, "<p>one</p>"))
+        items.saveOembed(id, Oembed("Second", "https://i.test/a.jpg", null))
+
+        assertEquals(Oembed("Second", "https://i.test/a.jpg", null), items.findDetail(id)?.oembed)
+    }
+
+    @Test
+    fun `an item with no stored oembed has none in its detail`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("t", "Track")), Instant.EPOCH)
+        val id = jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
+
+        assertNull(items.findDetail(id)?.oembed)
+    }
 
     private fun withBody(
         key: String,
