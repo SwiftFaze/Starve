@@ -59,7 +59,13 @@ class SetupServiceTest {
         val outcome = service.complete(code(), "rob", "correct-horse-1", client)
 
         assertEquals(SetupOutcome.Created("rob"), outcome)
-        assertEquals(listOf(User(1, "rob", "hashed:correct-horse-1", admin = true)), users.rows)
+        assertEquals("rob", (outcome as SetupOutcome.Created).username)
+        val stored = users.rows.single()
+        assertEquals(User(1, "rob", "hashed:correct-horse-1", admin = true), stored)
+        assertEquals(1L, stored.id)
+        assertEquals("rob", stored.username)
+        assertEquals("hashed:correct-horse-1", stored.passwordHash)
+        assertTrue(stored.admin)
     }
 
     @Test
@@ -100,6 +106,7 @@ class SetupServiceTest {
     fun `a short password is reported and nobody is created`() {
         val outcome = service.complete(code(), "rob", "short-pw1", client)
         assertEquals(SetupOutcome.Invalid(AccountRules.PASSWORD_SHORT), outcome)
+        assertEquals(AccountRules.PASSWORD_SHORT, (outcome as SetupOutcome.Invalid).error)
         assertTrue(users.rows.isEmpty())
     }
 
@@ -139,5 +146,18 @@ class SetupServiceTest {
         repeat(5) { service.complete("AAAA-AAAA", "rob", "correct-horse-1", client) }
 
         assertEquals(SetupOutcome.Created("rob"), service.complete(issued, "rob", "correct-horse-1", "198.51.100.2"))
+    }
+
+    @Test
+    fun `completing setup clears the client's earlier failed codes`() {
+        val issued = code()
+        repeat(3) { service.complete("AAAA-AAAA", "rob", "correct-horse-1", client) }
+        service.complete(issued, "rob", "correct-horse-1", client)
+        users.rows.clear()
+        val reissued = code()
+
+        repeat(2) { service.complete("AAAA-AAAA", "rob", "correct-horse-1", client) }
+
+        assertEquals(SetupOutcome.Created("rob"), service.complete(reissued, "rob", "correct-horse-1", client))
     }
 }

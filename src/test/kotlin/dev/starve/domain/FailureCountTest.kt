@@ -1,5 +1,6 @@
 package dev.starve.domain
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -40,5 +41,17 @@ class FailureCountTest {
         assertFalse(count.isBlocked(later))
         repeat(3) { count = count.failed(later) }
         assertFalse(count.isBlocked(later))
+    }
+
+    @Test
+    fun `a failure is counted and the fifth one records when the block ends`() {
+        val first = FailureCount().failed(t0)
+        assertEquals(1, first.failures)
+        assertEquals(null, first.blockedUntil)
+
+        var count = first
+        repeat(4) { count = count.failed(t0) }
+        assertEquals(5, count.failures)
+        assertEquals(t0.plus(Duration.ofMinutes(15)), count.blockedUntil)
     }
 }
