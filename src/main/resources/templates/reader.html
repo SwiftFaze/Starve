@@ -6,6 +6,7 @@
   <header class="reader-head">
     <button type="button" class="reader-close" hx-on:click="closeReader(this)">Close</button>
     <span class="reader-cat" th:text="${post.catalogueNumber}">STV 0132</span>
+    <th:block th:replace="~{star :: star}"></th:block>
     <h2 class="reader-title" th:text="${post.title}">Title</h2>
     <p class="reader-meta">
       <img class="site-icon" th:if="${post.siteIcon}" th:src="${post.siteIcon}" alt="" loading="lazy">

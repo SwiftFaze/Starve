@@ -51,6 +51,16 @@ class ReaderControllerTest {
     }
 
     @Test
+    fun `the reader carries the star for the post's favourite state`() {
+        val model = ConcurrentModel()
+        val post = PostRef(7, "https://blog.example/a", "Title", "Blog", published, null, favourite = true)
+
+        controller(post).reader(7, model)
+
+        assertEquals(StarView("reader-star", 7, true, fromReader = true), model.getAttribute("star"))
+    }
+
+    @Test
     fun `the view exposes each field the template reads`() {
         val model = ConcurrentModel()
 

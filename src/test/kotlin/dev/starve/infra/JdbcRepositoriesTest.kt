@@ -31,6 +31,7 @@ class JdbcRepositoriesTest {
     private lateinit var jdbc: JdbcClient
     private lateinit var sources: JdbcSourceRepository
     private lateinit var items: JdbcItemRepository
+    private lateinit var favourites: JdbcFavouriteRepository
     private lateinit var groups: JdbcGroupRepository
 
     @BeforeEach
@@ -44,6 +45,7 @@ class JdbcRepositoriesTest {
         jdbc = JdbcClient.create(dataSource)
         sources = JdbcSourceRepository(jdbc)
         items = JdbcItemRepository(jdbc)
+        favourites = JdbcFavouriteRepository(jdbc)
         groups = JdbcGroupRepository(jdbc)
     }
 
@@ -292,6 +294,98 @@ class JdbcRepositoriesTest {
         assertNull(sources.findById(alpha.id)?.groupId)
         assertEquals(2, sources.findAll().size)
     }
+
+    @Test
+    fun `favouriting keeps the first favourite time, unfavouriting clears it and unknown items are reported`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
+        val id = idOf("k")
+
+        assertEquals(true, favourites.favourite(id, Instant.ofEpochMilli(100)))
+        assertEquals(true, favourites.favourite(id, Instant.ofEpochMilli(200)))
+        assertEquals(false, favourites.favourite(id + 1, Instant.ofEpochMilli(300)))
+        assertEquals(100L, favouritedAt(id))
+        assertEquals(true, items.findPost(id)!!.favourite)
+
+        assertEquals(true, favourites.unfavourite(id))
+        assertEquals(true, favourites.unfavourite(id))
+        assertEquals(false, favourites.unfavourite(id + 1))
+        assertNull(favouritedAt(id))
+        assertEquals(false, items.findPost(id)!!.favourite)
+    }
+
+    @Test
+    fun `the timeline flags favourites and leaves read state alone`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("a", "a"), item("b", "b")), Instant.EPOCH)
+        favourites.favourite(idOf("b"), Instant.EPOCH)
+
+        assertEquals(listOf(true, false), items.timeline(null, true, 10, null).map { it.favourite })
+        assertEquals(listOf(false, false), items.timeline(null, true, 10, null).map { it.read })
+    }
+
+    @Test
+    fun `favourites are listed newest first, read or not, and paged by cursor`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val old = Instant.parse("2026-10-01T00:00:00Z")
+        val mid = Instant.parse("2026-10-05T00:00:00Z")
+        val new = Instant.parse("2026-10-09T00:00:00Z")
+        items.insertNew(
+            source.id,
+            listOf(dated("old", old), dated("mid", mid), dated("new", new), dated("plain", mid)),
+            Instant.EPOCH,
+        )
+        listOf("old", "mid", "new").forEach { favourites.favourite(idOf(it), Instant.EPOCH) }
+        items.markRead(idOf("new"), Instant.EPOCH)
+
+        assertEquals(listOf("new", "mid", "old"), favourites.favourites(null, 10).map { it.title })
+        assertEquals(listOf(true, false, false), favourites.favourites(null, 10).map { it.read })
+        assertEquals(listOf("mid"), favourites.favourites(Cursor(new, idOf("new")), 1).map { it.title })
+    }
+
+    @Test
+    fun `deleting by cutoff spares favourites until they are unfavourited`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val cutoff = Instant.parse("2026-10-11T12:00:00Z")
+        items.insertNew(source.id, listOf(item("kept", "kept"), item("gone", "gone")), cutoff.minusSeconds(1))
+        favourites.favourite(idOf("kept"), Instant.EPOCH)
+
+        assertEquals(1, items.deleteFirstSeenBefore(cutoff))
+        assertEquals(listOf("kept"), keys())
+
+        favourites.unfavourite(idOf("kept"))
+        assertEquals(1, items.deleteFirstSeenBefore(cutoff))
+        assertEquals(emptyList<String>(), keys())
+    }
+
+    @Test
+    fun `a refetch of a feed keeps the favourite time of an item it already stored`() {
+        val source = sources.insert("http://a.test/f", "T")
+        items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
+        favourites.favourite(idOf("k"), Instant.ofEpochMilli(100))
+
+        items.insertNew(source.id, listOf(item("k", "t"), item("new", "n")), Instant.ofEpochMilli(500))
+
+        assertEquals(100L, favouritedAt(idOf("k")))
+        assertNull(favouritedAt(idOf("new")))
+    }
+
+    private fun idOf(key: String): Long =
+        jdbc
+            .sql("SELECT id FROM items WHERE item_key = ?")
+            .param(key)
+            .query(Long::class.java)
+            .single()
+
+    private fun favouritedAt(id: Long): Long? =
+        jdbc
+            .sql("SELECT favourited_at FROM items WHERE id = ?")
+            .param(id)
+            .query { rs, _ -> rs.getObject(1)?.let { (it as Number).toLong() } }
+            .list()
+            .single()
+
+    private fun keys(): List<String> = jdbc.sql("SELECT item_key FROM items").query(String::class.java).list()
 
     private fun dated(
         key: String,

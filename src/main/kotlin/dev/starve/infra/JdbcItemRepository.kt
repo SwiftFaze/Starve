@@ -23,12 +23,12 @@ class JdbcItemRepository(
         items: List<FeedItem>,
         firstSeenAt: Instant,
     ) {
-        items.forEach { upsert(sourceId, it, firstSeenAt) }
+        items.forEach { jdbc.upsert(sourceId, it, firstSeenAt) }
     }
 
     override fun deleteFirstSeenBefore(cutoff: Instant): Int =
         jdbc
-            .sql("DELETE FROM items WHERE first_seen_at < ?")
+            .sql("DELETE FROM items WHERE first_seen_at < ? AND favourited_at IS NULL")
             .param(cutoff.toEpochMilli())
             .update()
 
@@ -45,20 +45,7 @@ class JdbcItemRepository(
             conditions += "s.group_id = ?"
             params += groupId
         }
-        if (after != null) {
-            conditions += "(i.published_at < ? OR (i.published_at = ? AND i.id < ?))"
-            params.addAll(listOf(after.publishedAt.toEpochMilli(), after.publishedAt.toEpochMilli(), after.id))
-        }
-        val where = if (conditions.isEmpty()) "" else "WHERE " + conditions.joinToString(" AND ")
-        return jdbc
-            .sql(
-                "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, " +
-                    "s.favicon_url, i.read_at IS NOT NULL AS is_read " +
-                    "FROM items i JOIN sources s ON s.id = i.source_id " +
-                    "$where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
-            ).params(params + limit)
-            .query { rs, _ -> rs.toTimelineItem() }
-            .list()
+        return jdbc.pageRows(conditions, params, after, limit)
     }
 
     override fun find(id: Long): ItemRef? =
@@ -82,7 +69,8 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body, " +
-                    "i.thumbnail_url, s.favicon_url FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
+                    "i.thumbnail_url, s.favicon_url, i.favourited_at IS NOT NULL AS is_favourite " +
+                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
             ).param(id)
             .query { rs, _ ->
                 PostRef(
@@ -94,6 +82,7 @@ class JdbcItemRepository(
                     rs.getString("body"),
                     rs.getString("thumbnail_url"),
                     rs.getString("favicon_url"),
+                    rs.getInt("is_favourite") == 1,
                 )
             }.optional()
             .orElse(null)
@@ -150,38 +139,32 @@ class JdbcItemRepository(
                     "AND (? IS NULL OR source_id IN (SELECT id FROM sources WHERE group_id = ?))",
             ).params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli(), groupId, groupId)
             .update()
-
-    /** Inserts a new item; for a known one only fills in a thumbnail or body it did not have yet. */
-    private fun upsert(
-        sourceId: Long,
-        item: FeedItem,
-        firstSeenAt: Instant,
-    ) {
-        jdbc
-            .sql(
-                "INSERT INTO items (source_id, item_key, title, link, published_at, " +
-                    "author, thumbnail_url, body, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                    "ON CONFLICT (source_id, item_key) DO UPDATE " +
-                    "SET thumbnail_url = COALESCE(items.thumbnail_url, excluded.thumbnail_url), " +
-                    "body = COALESCE(items.body, excluded.body)",
-            ).params(
-                listOf(
-                    sourceId,
-                    item.key,
-                    item.title,
-                    item.link,
-                    (item.publishedAt ?: firstSeenAt).toEpochMilli(),
-                    item.author,
-                    item.thumbnailUrl,
-                    item.body,
-                    firstSeenAt.toEpochMilli(),
-                ),
-            ).update()
-    }
 }
 
-/** One timeline row from a joined query: the item, its source title, and whether it is read or playable. */
-private fun ResultSet.toTimelineItem() =
+/** The rows matching [conditions] and the cursor, newest first, at most [limit] of them. */
+internal fun JdbcClient.pageRows(
+    conditions: MutableList<String>,
+    params: MutableList<Any>,
+    after: Cursor?,
+    limit: Int,
+): List<TimelineItem> {
+    if (after != null) {
+        conditions += "(i.published_at < ? OR (i.published_at = ? AND i.id < ?))"
+        params.addAll(listOf(after.publishedAt.toEpochMilli(), after.publishedAt.toEpochMilli(), after.id))
+    }
+    val where = if (conditions.isEmpty()) "" else "WHERE " + conditions.joinToString(" AND ")
+    return sql(
+        "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, s.favicon_url, " +
+            "i.read_at IS NOT NULL AS is_read, i.favourited_at IS NOT NULL AS is_favourite " +
+            "FROM items i JOIN sources s ON s.id = i.source_id " +
+            "$where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
+    ).params(params + limit)
+        .query { rs, _ -> rs.toTimelineItem() }
+        .list()
+}
+
+/** One timeline row from a joined query: the item, its source title and icon, and its read and favourite state. */
+internal fun ResultSet.toTimelineItem() =
     TimelineItem(
         getLong("id"),
         getString("source_title"),
@@ -191,4 +174,32 @@ private fun ResultSet.toTimelineItem() =
         getInt("is_read") == 1,
         Playable.of(getString("link")) != null,
         getString("favicon_url"),
+        getInt("is_favourite") == 1,
     )
+
+/** Inserts a new item; for a known one only fills in a thumbnail or body it did not have yet. */
+private fun JdbcClient.upsert(
+    sourceId: Long,
+    item: FeedItem,
+    firstSeenAt: Instant,
+) {
+    sql(
+        "INSERT INTO items (source_id, item_key, title, link, published_at, " +
+            "author, thumbnail_url, body, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+            "ON CONFLICT (source_id, item_key) DO UPDATE " +
+            "SET thumbnail_url = COALESCE(items.thumbnail_url, excluded.thumbnail_url), " +
+            "body = COALESCE(items.body, excluded.body)",
+    ).params(
+        listOf(
+            sourceId,
+            item.key,
+            item.title,
+            item.link,
+            (item.publishedAt ?: firstSeenAt).toEpochMilli(),
+            item.author,
+            item.thumbnailUrl,
+            item.body,
+            firstSeenAt.toEpochMilli(),
+        ),
+    ).update()
+}

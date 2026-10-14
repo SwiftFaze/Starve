@@ -33,7 +33,7 @@ class HomeControllerTest {
 
     private fun controller(items: TimelineItems) =
         HomeController(
-            TimelineService(items, MemorySources(mutableListOf(source)), Clock.fixed(now, ZoneOffset.UTC)),
+            TimelineService(items, items, MemorySources(mutableListOf(source)), Clock.fixed(now, ZoneOffset.UTC)),
             GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources()),
         )
 
@@ -92,6 +92,72 @@ class HomeControllerTest {
     @Test
     fun `an htmx request without a cursor returns the full page`() {
         assertEquals("home", controller(TimelineItems()).home(TimelineQuery(), "true", ConcurrentModel()))
+    }
+
+    @Test
+    fun `the favourites view lists favourites and ignores the show and group parameters`() {
+        val items = TimelineItems(favouriteRows = listOf(row(1)))
+        val model = ConcurrentModel()
+
+        controller(items).home(TimelineQuery(show = "all", group = "99", favourites = "1"), null, model)
+
+        assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
+        assertNull(items.requested)
+        assertEquals(true, model.getAttribute("favourites"))
+        assertEquals(false, model.getAttribute("showAll"))
+        assertEquals(false, model.getAttribute("emptyFavourites"))
+    }
+
+    @Test
+    fun `an empty favourites view is flagged so the page can say so`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).home(TimelineQuery(favourites = "1"), null, model)
+
+        assertEquals(true, model.getAttribute("emptyFavourites"))
+    }
+
+    @Test
+    fun `the favourites view keeps the filter in its load-more link and has no unread count`() {
+        val items = TimelineItems(favouriteRows = (1L..TimelineRules.PAGE_SIZE + 1).map { row(it) })
+        val model = ConcurrentModel()
+
+        controller(items).home(TimelineQuery(favourites = "1"), null, model)
+
+        assertEquals("/?after=${published.toEpochMilli()}_50&favourites=1", model.getAttribute("moreHref"))
+        assertEquals(SeriesView("Favourites", null), model.getAttribute("series"))
+    }
+
+    @Test
+    fun `the Favourites entry is the one current entry in the favourites view`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).home(TimelineQuery(favourites = "1"), null, model)
+
+        assertEquals(NavEntryView("Favourites", "/?favourites=1", true), model.getAttribute("favouritesEntry"))
+        val groups = model.getAttribute("nav") as List<*>
+        assertEquals(listOf(false, false, false), groups.map { (it as NavEntryView).current })
+    }
+
+    @Test
+    fun `the Favourites entry is not current outside the favourites view`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).home(TimelineQuery(), null, model)
+
+        assertEquals(NavEntryView("Favourites", "/?favourites=1", false), model.getAttribute("favouritesEntry"))
+        val groups = model.getAttribute("nav") as List<*>
+        assertEquals(true, (groups.first() as NavEntryView).current)
+    }
+
+    @Test
+    fun `a row presents its star for the item's favourite state`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(listOf(row(1).copy(favourite = true), row(2)))).home(TimelineQuery(), null, model)
+
+        val stars = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).star }
+        assertEquals(listOf(StarView("star-1", 1, true), StarView("star-2", 2, false)), stars)
     }
 
     @Test
