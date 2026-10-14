@@ -183,7 +183,7 @@ private fun JdbcClient.pageRows(
         .list()
 }
 
-/** One timeline row from a joined query: the item, its source's title and icon, and its read, play and favourite state. */
+/** One timeline row from a joined query: the item, its source title and icon, and its read and favourite state. */
 private fun ResultSet.toTimelineItem() =
     TimelineItem(
         getLong("id"),
