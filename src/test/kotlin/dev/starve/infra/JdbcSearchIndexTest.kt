@@ -168,10 +168,10 @@ class JdbcSearchIndexTest {
     fun `a search result carries the later flag`() {
         val source = sources.insert("http://a.test/f", "Daily")
         items.insertNew(source.id, listOf(feedItem("a", "Queued"), feedItem("b", "Queued too")), now)
-        val savedId = searching.search(SearchRules.matchExpression("queued")!!, null, 10).first { it.title == "Queued" }.id
-        later.save(savedId, now)
+        val match = SearchRules.matchExpression("queued")!!
+        later.save(searching.search(match, null, 10).first { it.title == "Queued" }.id, now)
 
-        val flags = searching.search(SearchRules.matchExpression("queued")!!, null, 10).associate { it.title to it.later }
+        val flags = searching.search(match, null, 10).associate { it.title to it.later }
 
         assertEquals(mapOf("Queued" to true, "Queued too" to false), flags)
     }

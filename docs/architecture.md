@@ -8,7 +8,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 `src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
-`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, so the next migration number is V12 (reserved by #32). Actuator exposes only
+`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, V12 is `item_later`, so the next migration number is V13. Actuator exposes only
 `/actuator/health`. There is no authentication (single user, self-hosted).
 
 ## Modules
@@ -174,6 +174,12 @@ expression (each word quoted and ANDed, the last one a prefix, no operators), so
 user text can never be parsed as query syntax. `SearchService.search` goes through
 `SearchRepository.search` (`JdbcSearchRepository`, its own port like
 favourites); the layer contracts are unchanged.
+Search results ignore the view they were started from, but the search form carries it
+(Favourites, Later, group, show) as hidden origin inputs, so clearing a search returns
+there. The retention purge in `SearchIndex.removeFirstSeenBefore` mirrors the item purge:
+it skips favourites and items saved for later (`later_at IS NOT NULL`), so they stay
+searchable. Result rows use the shared `TIMELINE_COLUMNS`, so they carry the favourite
+and later flags.
 
 ## Dependency rule
 
