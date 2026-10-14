@@ -75,6 +75,15 @@ unread count, e.g. `Music (12)`. Choosing a group (`/?group=<id>`) shows only it
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.
 
+## Favourites
+
+Each timeline row and the reader pane has a star. Starring an item keeps it: the
+retention purge never deletes a favourite, and starring does not change whether
+the item is read. **Favourites** in the navigation (`/?favourites=1`) lists the
+starred items of every source, read or not, newest first, with the same paging.
+Clicking the star again removes the favourite. Removing a source deletes its
+favourites with the rest of its items.
+
 ## Reading posts in the reader pane
 
 Clicking the title of a blog post (any item that is not a YouTube video or

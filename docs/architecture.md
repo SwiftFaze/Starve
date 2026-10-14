@@ -60,6 +60,15 @@ only items with `first_seen_at` at or before it, so items ingested after the
 page was rendered stay unread. `TimelineService` orchestrates; `HomeController`
 only translates requests and formats views.
 
+Favourites: `items.favourited_at` (V9, nullable; the timestamp is the mark) flags a
+favourite. `FavouriteService` (wired by `FavouriteConfig`) stars and unstars through
+`ItemRepository.favourite`/`unfavourite`, both idempotent and independent of read state.
+`TimelineService.favourites` serves the `/?favourites=1` view through
+`ItemRepository.favourites`, which ignores read state, show and group. The retention
+exemption lives in the SQL of `deleteFirstSeenBefore` (`favourited_at IS NULL`), and
+removing a source deletes its favourites through the items' `ON DELETE CASCADE`.
+`FavouriteController` answers htmx toggles with the re-rendered `StarView`.
+
 ## Source groups
 
 `domain/Group.kt` holds `Group` and `GroupRules.checkName` (trim, 1 to 50 chars).
