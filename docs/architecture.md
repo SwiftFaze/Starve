@@ -10,6 +10,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
 `src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, V12 is `item_later`, V13 is `users`, so the next migration number is V14. Actuator exposes only
 `/actuator/health`. Every other route needs a signed-in user; accounts live in the `users` table (migration V13), see `SecurityConfig` and `SetupService`.
+Until the first account exists, `/setup` is the only open page: a code logged at startup gates it, and wrong codes are throttled per client address (`FailureThrottle`, in memory). Sign-ins can be remembered; the remember-me signing key is generated once and stored as plaintext in `app_metadata` (an accepted trade-off: the database file already holds everything the key protects), so remembered sign-ins survive restarts. `server.forward-headers-strategy: native` makes the client address and scheme come from `X-Forwarded-*` headers behind a reverse proxy.
 
 ## Modules
 

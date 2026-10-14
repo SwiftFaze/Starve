@@ -19,7 +19,14 @@ Cucumber-JVM, launched by the JUnit suite `AcceptanceTest`. Every
 run, so each is executable. `ApplicationHarness` starts the real app
 (`SpringApplicationBuilder`, random port, a fresh temp DB file per scenario)
 and can restart it against the same file. Step definitions are shared test
-infrastructure: after changing one, run `./mvnw -B clean verify` twice and
+infrastructure. Every page needs a signed-in user, so "Given the application
+is running" completes first-run setup with the logged code and leaves the
+default browser signed in (and signs it back in after a restart); use "Given the
+application is running with no users yet" or "I am not signed in" to start
+signed out. The harness client is a `Browser` with its own cookie jar that sends
+the CSRF token on form posts, so scenarios exercise the real login and CSRF
+flow; `browserAt(address)` gives another client with its own forwarded address.
+After changing a step, run `./mvnw -B clean verify` twice and
 require identical results. A scenario filter skips the coverage gate (profile
 `single-scenario` in the pom).
 
