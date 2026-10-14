@@ -84,6 +84,17 @@ starred items of every source, read or not, newest first, with the same paging.
 Clicking the star again removes the favourite. Removing a source deletes its
 favourites with the rest of its items.
 
+## Searching
+
+The search box above the list finds items by words in their title, their
+source's name or their post body (the text only; markup is ignored). Every word
+you type must match, and the last word also matches as a prefix, so results
+appear while you type. Results are newest first and include read items; the group
+and **Show read** settings do not apply, and there is no **Mark all read**. The
+URL (`/?q=...`) can be bookmarked, and **Load more** keeps the search. Search
+syntax such as `OR` or `-word` is not interpreted: those are ordinary words.
+Items stored before this feature are indexed automatically on upgrade.
+
 ## Reading posts in the reader pane
 
 Clicking the title of a blog post (any item that is not a YouTube video or

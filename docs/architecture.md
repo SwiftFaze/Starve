@@ -8,7 +8,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 `src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
-`src/main/resources/db/migration/V*.sql` on startup. V5 is the exception: a Java migration bean (`DecodeItemTitlesMigration`), so the next SQL migration is V6. Actuator exposes only
+`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`), so the next SQL migration is V11. Actuator exposes only
 `/actuator/health`. There is no authentication (single user, self-hosted).
 
 ## Modules
@@ -134,6 +134,20 @@ video is a 16:9 strip above the post, and the horizontal `video-splitter` sets i
 the video and 200px for the post). Opening a post never moves a video out of the pane.
 
 No layer contract changes: the sanitiser is an infra detail behind the existing fetcher port.
+
+## Full-text search
+
+`item_search` is a standalone SQLite FTS5 table (V10, rowid = `items.id`; columns
+title, source, body; `unicode61` tokenizer with diacritics removed). SQL triggers
+cannot see the source name or strip body markup, so `infra/SearchIndex` maintains it
+from application code, inside the same transaction as the write, on every path:
+`JdbcItemRepository` (insert, a body filled in later, retention deletes) and
+`JdbcSourceRepository` (rename on `recordSuccess`, `delete`). Bodies are indexed as text
+via `infra/SearchText` (jsoup). `SearchIndexMigration` (V10) back-fills existing items
+with the same code. `domain/SearchRules.matchExpression` turns user input into the FTS5
+expression (each word quoted and ANDed, the last one a prefix, no operators), so
+user text can never be parsed as query syntax. `TimelineService.search` goes through
+`ItemRepository.search`; the layer contracts are unchanged.
 
 ## Dependency rule
 

@@ -27,13 +27,13 @@ class SearchIndexMigrationTest {
         jdbc
             .sql(
                 "INSERT INTO items (id, source_id, item_key, title, body, published_at, first_seen_at) " +
-                    "VALUES (1, 1, 'a', 'Weekend post', '<p>Ancient <a href=\"https://x.test\" " +
+                    "VALUES (5, 1, 'a', 'Weekend post', '<p>Ancient <a href=\"https://x.test\" " +
                     "class=\"fancy\">zeppelin</a> lore</p>', 0, 0)",
             ).update()
         jdbc
             .sql(
                 "INSERT INTO items (id, source_id, item_key, title, published_at, first_seen_at) " +
-                    "VALUES (2, 1, 'b', 'Bodiless', 0, 0)",
+                    "VALUES (9, 1, 'b', 'Bodiless', 0, 0)",
             ).update()
     }
 
@@ -59,9 +59,9 @@ class SearchIndexMigrationTest {
     fun `existing items are back-filled with their title, source and body text`() {
         flyway("10").migrate()
 
-        assertEquals(listOf(1L), matches("\"zeppelin\""))
-        assertEquals(listOf(1L, 2L), matches("\"retro\""))
-        assertEquals(listOf(2L), matches("\"bodiless\""))
+        assertEquals(listOf(5L), matches("\"zeppelin\""))
+        assertEquals(listOf(5L, 9L), matches("\"retro\""))
+        assertEquals(listOf(9L), matches("\"bodiless\""))
     }
 
     @Test
