@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.8](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.7...v1.1.0-beta.8) (2026-10-14)
+
+
+### Features
+
+* accounts, login and first-run admin setup ([#61](https://github.com/SwiftFaze/Starve/issues/61)) ([835b258](https://github.com/SwiftFaze/Starve/commit/835b258aea86dd1bd7f62b9ec694e40583dd4426))
+
 ## [1.1.0-beta.7](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.6...v1.1.0-beta.7) (2026-10-14)
 
 
