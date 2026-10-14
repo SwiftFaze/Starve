@@ -142,15 +142,24 @@ class FeedServer {
         seen += RecordedRequest(path, ifNoneMatch, exchange.requestURI.query, userAgent)
         when (val route = routes[routeKey(exchange)]) {
             null -> respond(exchange, 404, "text/plain", "not found")
-            is Route.Status -> respond(exchange, route.code, "text/plain", "status ${route.code}")
-            is Route.Html -> respond(exchange, 200, "text/html; charset=utf-8", route.body)
-            Route.Icon -> respond(exchange, 200, "image/png", "icon")
-            is Route.Json -> respond(exchange, 200, "application/json", route.body)
-            is Route.Raw -> respond(exchange, 200, route.contentType, resource(route.resource))
             is Route.Feed -> serveFeed(exchange, path, route.spec, ifNoneMatch)
             Route.Stall -> stall(exchange)
             Route.StallBody -> stallBody(exchange)
+            else -> respondFixed(exchange, route)
         }
+    }
+
+    /** Answers a route whose response is fixed up front, whatever the request. */
+    private fun respondFixed(
+        exchange: HttpExchange,
+        route: Route,
+    ) = when (route) {
+        is Route.Status -> respond(exchange, route.code, "text/plain", "status ${route.code}")
+        is Route.Html -> respond(exchange, 200, "text/html; charset=utf-8", route.body)
+        Route.Icon -> respond(exchange, 200, "image/png", "icon")
+        is Route.Json -> respond(exchange, 200, "application/json", route.body)
+        is Route.Raw -> respond(exchange, 200, route.contentType, resource(route.resource))
+        else -> error("not a fixed route: $route")
     }
 
     /** oEmbed queries are routed per video or per SoundCloud track; everything else by path. */
