@@ -3,6 +3,7 @@ package dev.starve.web
 import dev.starve.application.GroupNavigation
 import dev.starve.application.GroupService
 import dev.starve.application.OpenResult
+import dev.starve.application.SearchService
 import dev.starve.application.TimelinePage
 import dev.starve.application.TimelineService
 import dev.starve.domain.Catalogue
@@ -20,7 +21,24 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ResponseStatusException
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.time.Instant
+
+/**
+ * The htmx fragment answering [query], or null for a full page. Load more returns the next rows; a request
+ * carrying the search box's `q` (even blank, when cleared) returns the list pane only.
+ */
+private fun fragmentFor(
+    htmx: String?,
+    query: TimelineQuery,
+): String? =
+    when {
+        htmx == null -> null
+        query.after != null -> "home :: more"
+        query.q != null -> "home :: sheet"
+        else -> null
+    }
 
 data class TimelineItemView(
     val id: Long,
@@ -73,18 +91,30 @@ data class TimelineQuery(
     val after: String? = null,
     val group: String? = null,
     val favourites: String? = null,
+    val q: String? = null,
 )
 
-/** Which timeline is on screen: the Favourites view, or the timeline with read items and an optional group. */
+/**
+ * Which timeline is on screen: search results for [text], the Favourites view, or the timeline with read items
+ * and an optional group. Searching ignores the other settings for its results but keeps them, so clearing the
+ * search returns to the view it started from.
+ */
 private data class Scope(
     val favourites: Boolean,
     val showAll: Boolean,
     val groupId: Long?,
-)
+    val text: String,
+) {
+    val searching get() = text.isNotBlank()
+
+    /** The `q=` URL parameter that keeps the search, or null when not searching. */
+    val searchParam get() = if (searching) "q=" + URLEncoder.encode(text, StandardCharsets.UTF_8) else null
+}
 
 @Controller
 class HomeController(
     private val timeline: TimelineService,
+    private val search: SearchService,
     private val groups: GroupService,
 ) {
     @GetMapping("/")
@@ -93,17 +123,18 @@ class HomeController(
         @RequestHeader("HX-Request", required = false) htmx: String?,
         model: Model,
     ): String {
+        val searching = !query.q.isNullOrBlank()
         val favourites = query.favourites == "1"
         val scope =
             Scope(
                 favourites = favourites,
                 showAll = !favourites && query.show == "all",
-                groupId = if (favourites) null else query.group?.let { resolveGroup(it).id },
+                groupId = if (favourites) null else query.group?.let { groupIdFor(it, searching) },
+                text = query.q.orEmpty(),
             )
         val cursor = Cursor.parse(query.after)
-        val page = if (favourites) timeline.favourites(cursor) else timeline.page(cursor, scope.showAll, scope.groupId)
-        addPage(model, page, scope)
-        if (htmx != null && query.after != null) return "home :: more"
+        addPage(model, pageFor(scope, cursor), scope)
+        fragmentFor(htmx, query)?.let { return it }
         addChrome(model, groups.navigation(), scope)
         return "home"
     }
@@ -135,7 +166,23 @@ class HomeController(
         return "redirect:" + href(group, null, null)
     }
 
+    private fun pageFor(
+        scope: Scope,
+        cursor: Cursor?,
+    ): TimelinePage =
+        when {
+            scope.searching -> search.search(scope.text, cursor)
+            scope.favourites -> timeline.favourites(cursor)
+            else -> timeline.page(cursor, scope.showAll, scope.groupId)
+        }
+
     private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
+
+    /** The group of [raw]; while [searching] an unknown one is dropped instead of answered with 404. */
+    private fun groupIdFor(
+        raw: String,
+        searching: Boolean,
+    ): Long? = if (searching) raw.toLongOrNull()?.let { groups.find(it) }?.id else resolveGroup(raw).id
 
     private fun resolveGroup(raw: String): Group = raw.toLongOrNull()?.let { groups.find(it) } ?: throw notFound()
 
@@ -148,8 +195,10 @@ class HomeController(
         model.addAttribute("appName", "Starve")
         model.addAttribute("showAll", scope.showAll)
         model.addAttribute("favourites", scope.favourites)
+        model.addAttribute("searching", scope.searching)
+        model.addAttribute("query", scope.text)
         model.addAttribute("items", page.items.map { it.toView() })
-        model.addAttribute("emptyFavourites", scope.favourites && page.items.isEmpty())
+        model.addAttribute("emptyFavourites", scope.favourites && !scope.searching && page.items.isEmpty())
         model.addAttribute("hasSources", page.hasSources)
         model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
         model.addAttribute("moreHref", moreHref(page, scope))
@@ -197,7 +246,8 @@ private fun moreHref(
     scope: Scope,
 ): String? =
     page.next?.let {
-        href(scope.groupId, if (scope.showAll) "all" else null, it.encode(), scope.favourites)
+        val show = if (scope.showAll) "all" else null
+        link(listOfNotNull(scope.searchParam) + parts(scope.groupId, show, it.encode(), scope.favourites))
     }
 
 private fun href(
@@ -205,16 +255,22 @@ private fun href(
     show: String?,
     after: String?,
     favourites: Boolean = false,
-): String {
-    val query =
-        listOfNotNull(
-            after?.let { "after=$it" },
-            show?.let { "show=$it" },
-            groupId?.let { "group=$it" },
-            "favourites=1".takeIf { favourites },
-        )
-    return if (query.isEmpty()) "/" else "/?" + query.joinToString("&")
-}
+): String = link(parts(groupId, show, after, favourites))
+
+private fun parts(
+    groupId: Long?,
+    show: String?,
+    after: String?,
+    favourites: Boolean,
+): List<String> =
+    listOfNotNull(
+        after?.let { "after=$it" },
+        show?.let { "show=$it" },
+        groupId?.let { "group=$it" },
+        "favourites=1".takeIf { favourites },
+    )
+
+private fun link(query: List<String>): String = if (query.isEmpty()) "/" else "/?" + query.joinToString("&")
 
 private fun TimelineItem.toView() =
     TimelineItemView(

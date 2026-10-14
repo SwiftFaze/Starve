@@ -74,6 +74,24 @@ class TimelineSteps {
         seededTitles.forEachIndexed { index, title -> seed(source, title, now.minus(Duration.ofMinutes(index + 1L))) }
     }
 
+    @Given("the source {string} has {int} unread items published at one-minute intervals all titled with {string}")
+    fun manyTitledItems(
+        source: String,
+        count: Int,
+        title: String,
+    ) {
+        val now = Instant.now()
+        seededTitles = (1..count).map { title }
+        val sources = app.bean(SourceRepository::class.java)
+        val owner =
+            sources.findAll().firstOrNull { it.title == source } ?: sources.insert("http://$source.test/feed", source)
+        (1..count).forEach { n ->
+            val published = now.minus(Duration.ofMinutes(n.toLong()))
+            val item = FeedItem("$title-$n", title, "http://example.test/$title-$n", published, null, null)
+            app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), Instant.now())
+        }
+    }
+
     @Given("the source {string} receives a new unread item {string} after that page was rendered")
     fun lateItem(
         source: String,
@@ -153,10 +171,10 @@ class TimelineSteps {
     fun listsEveryItemOnce() = assertEquals(seededTitles, titles())
 
     @Then("the timeline offers {string}")
-    fun offers(text: String) = assertTrue(loadMoreTag(World.response.body()) != null && text == "Load more")
+    fun offers(text: String) = assertTrue(World.response.body().contains(">$text<"), "no '$text' control")
 
     @Then("the timeline does not offer {string}")
-    fun doesNotOffer(text: String) = assertTrue(loadMoreTag(World.response.body()) == null && text == "Load more")
+    fun doesNotOffer(text: String) = assertFalse(World.response.body().contains(">$text<"), "offers '$text'")
 
     @Then("the page does not contain {string}")
     fun pageLacks(text: String) = assertFalse(World.response.body().contains(text), "page has '$text'")
