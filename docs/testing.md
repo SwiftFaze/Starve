@@ -30,6 +30,19 @@ After changing a step, run `./mvnw -B clean verify` twice and
 require identical results. A scenario filter skips the coverage gate (profile
 `single-scenario` in the pom).
 
+## Security chain tests
+
+Acceptance scenarios cover the sign-in flow end to end but are excluded from
+PIT, so the security wiring (`SecurityConfig`, `AccountSecurity`,
+`AccountConfig`, the login and setup controllers) has its own fast layer in
+`src/test/kotlin/dev/starve/infra/` (`Security*Test`, `SetupGateTest`,
+`LoginFlowTest`, `SetupFlowTest`). They run the real filter chain behind
+MockMvc (`@WebMvcTest` slice, in-memory accounts, base class
+`SecurityTestBase`). Each test dirties its context on purpose: PIT would
+otherwise reuse a context built before the mutant was applied, and
+mutants in the chain's configuration would survive. Put new sign-in, CSRF,
+throttle or gate behaviour here as well as in a scenario.
+
 ## Gates
 
 - Coverage: JaCoCo, minimum 85% line (`.claude/workflow.md`, Constraints).
