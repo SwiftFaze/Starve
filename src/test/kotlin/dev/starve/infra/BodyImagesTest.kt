@@ -47,4 +47,13 @@ class BodyImagesTest {
         assertNull(BodyImages.firstUrl("<p>No images</p>", base))
         assertNull(BodyImages.firstUrl("""<img src="https://t.example/p.gif" width="1" height="1">""", base))
     }
+
+    @Test
+    fun `a pixel is recognised by its height alone, and padding around the size is ignored`() {
+        val html =
+            """<img src="https://t.example/a.gif" height="1">""" +
+                """<img src="https://t.example/b.gif" width=" 0 ">""" +
+                """<img src="https://img.example/ok.png">"""
+        assertEquals("https://img.example/ok.png", BodyImages.firstUrl(html, base))
+    }
 }

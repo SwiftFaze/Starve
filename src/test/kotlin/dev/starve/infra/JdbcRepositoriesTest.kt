@@ -62,6 +62,22 @@ class JdbcRepositoriesTest {
     }
 
     @Test
+    fun `a recorded favicon and its check time are read back, and a miss keeps the check time`() {
+        val source = sources.insert("http://a.test/f", "T")
+        val at = Instant.parse("2026-10-11T12:00:00Z")
+        assertNull(sources.findById(source.id)!!.faviconCheckedAt)
+
+        sources.recordFavicon(source.id, "http://a.test/i.png", at)
+        val stored = sources.findAll().single()
+        assertEquals("http://a.test/i.png", stored.faviconUrl)
+        assertEquals(at, stored.faviconCheckedAt)
+
+        sources.recordFavicon(source.id, null, at.plusSeconds(60))
+        assertNull(sources.findById(source.id)!!.faviconUrl)
+        assertEquals(at.plusSeconds(60), sources.findById(source.id)!!.faviconCheckedAt)
+    }
+
+    @Test
     fun `a recorded failure is read back and a later success clears it`() {
         val source = sources.insert("http://a.test/f", "T")
 

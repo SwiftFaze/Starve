@@ -55,6 +55,38 @@ class FeedIngestorTest {
         assertEquals(listOf(7L to "boom"), sources.failures)
     }
 
+    @Test
+    fun `a fetched feed has its site icon looked up from its site link`() {
+        val finder = RecordingFinder("https://cdn.test/i.png")
+        val withIcons = FeedIngestor(sources, items, clock, FaviconService(sources, finder))
+
+        withIcons.apply(source, FetchResult.Fetched(Feed("F", emptyList(), "https://site.test/blog"), Validators()))
+
+        assertEquals(listOf("https://site.test/blog"), finder.asked)
+        assertEquals(listOf(Triple(7L, "https://cdn.test/i.png", now)), sources.favicons)
+    }
+
+    @Test
+    fun `a not-modified poll looks up the icon from the feed origin`() {
+        val finder = RecordingFinder(null)
+
+        FeedIngestor(sources, items, clock, FaviconService(sources, finder)).apply(source, FetchResult.NotModified)
+
+        assertEquals(listOf("http://a.test/"), finder.asked)
+        assertEquals(listOf(Triple(7L, null, now)), sources.favicons)
+    }
+
+    private class RecordingFinder(
+        private val icon: String?,
+    ) : FaviconFinder {
+        val asked = mutableListOf<String>()
+
+        override fun find(siteUrl: String): String? {
+            asked += siteUrl
+            return icon
+        }
+    }
+
     private fun item(
         key: String,
         publishedAt: Instant?,
