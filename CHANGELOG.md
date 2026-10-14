@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.7](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.6...v1.1.0-beta.7) (2026-10-14)
+
+
+### Features
+
+* save items for later with a Later filter ([#59](https://github.com/SwiftFaze/Starve/issues/59)) ([8395f90](https://github.com/SwiftFaze/Starve/commit/8395f90f34cf1de13ae7093fa768d67d180f2e0e))
+
 ## [1.1.0-beta.6](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.5...v1.1.0-beta.6) (2026-10-14)
 
 
