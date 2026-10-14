@@ -21,7 +21,9 @@ Feature: Accounts and login with first-run admin setup
   lasts only for the browser session. The remember-me key is generated once and
   kept in app_metadata, so remembered logins survive an application restart.
   "POST /logout" ends the session, deletes
-  the remember-me cookie and shows the login page. An htmx request without a
+  the remember-me cookie and shows the login page. A visitor who is already
+  signed in (including via the remember-me cookie) who requests "GET /login" is
+  redirected to "/"; the login page has no sign-out control. An htmx request without a
   session is told to load "/login" as a full page (HX-Redirect) instead of
   having the login form swapped into a fragment.
 
@@ -283,6 +285,19 @@ Feature: Accounts and login with first-run admin setup
     Then the response redirects to "/login"
     And the persistent login cookie is deleted
     And requesting "/" redirects to "/login"
+
+  Scenario: A signed-in visitor to the login page is sent to the timeline
+    Given a fresh SQLite database file
+    And the application is running with the user "rob" with password "correct-horse-1"
+    Then requesting "/login" redirects to "/"
+
+  Scenario: A visitor restored by remember me is sent from the login page to the timeline
+    Given a fresh SQLite database file
+    And the application is running with the user "rob" with password "correct-horse-1"
+    And I am not signed in
+    And I log in as "rob" with password "correct-horse-1" ticking "Remember me"
+    When the browser session ends
+    Then requesting "/login" redirects to "/"
 
   Scenario: A form post without a CSRF token is rejected
     Given a fresh SQLite database file

@@ -35,11 +35,6 @@
         </div>
         <p class="hint"><label><input type="checkbox" name="remember-me"> Remember me for 30 days</label></p>
       </form>
-
-      <form class="add" method="post" th:action="@{/logout}" th:if="${signedIn}">
-        <p class="hint">You are already signed in.</p>
-        <button type="submit">Sign out</button>
-      </form>
     </aside>
 
     <main class="sheet" id="sheet">

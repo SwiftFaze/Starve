@@ -17,8 +17,8 @@ class LoginController {
         request: HttpServletRequest,
         model: Model,
     ): String {
+        if (request.userPrincipal != null) return "redirect:/"
         model.addAttribute("message", messageFor(error, blocked))
-        model.addAttribute("signedIn", request.userPrincipal != null)
         return "login"
     }
 
