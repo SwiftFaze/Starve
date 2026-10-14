@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.1](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta...v1.1.0-beta.1) (2026-10-14)
+
+
+### Features
+
+* give blog posts an image, falling back to the site favicon ([8e5bac2](https://github.com/SwiftFaze/Starve/commit/8e5bac2edd2f1408cbb5e8f8acb7399da4a45564))
+* give blog posts an image, falling back to the site favicon ([fd09fc8](https://github.com/SwiftFaze/Starve/commit/fd09fc8be0af27f5a253ad0e56516edebf949cf8))
+
 ## [1.1.0-beta](https://github.com/SwiftFaze/Starve/compare/v1.0.0...v1.1.0-beta) (2026-10-13)
 
 
