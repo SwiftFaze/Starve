@@ -8,8 +8,8 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 `src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
-`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, V12 is `item_later`, so the next migration number is V13. Actuator exposes only
-`/actuator/health`. There is no authentication (single user, self-hosted).
+`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, V12 is `item_later`, V13 is `users`, so the next migration number is V14. Actuator exposes only
+`/actuator/health`. Every other route needs a signed-in user; accounts live in the `users` table (migration V13), see `SecurityConfig` and `SetupService`.
 
 ## Modules
 

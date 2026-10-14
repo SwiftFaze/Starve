@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Set up - Starve</title>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/starve.css">
+  <script src="/htmx.min.js"></script>
+</head>
+<body>
+  <header class="bar" id="bar">
+    <p class="wordmark"><a href="/">Starve</a></p>
+  </header>
+
+  <div class="label">
+    <aside class="sleeve" aria-label="Set up Starve">
+      <div class="series-block">
+        <h1 class="series roster-name">Set up Starve</h1>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
+      </div>
+
+      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Invalid setup code</p>
+
+      <form class="add" method="post" th:action="@{/setup}">
+        <label class="field-label" for="code">Setup code</label>
+        <div class="field-row">
+          <input class="field" id="code" type="text" name="code" autocomplete="off" autocapitalize="characters"
+                 spellcheck="false" aria-describedby="code-hint" required>
+        </div>
+        <p class="hint" id="code-hint">Printed in the server log at startup: docker compose logs</p>
+
+        <label class="field-label" for="username">Admin username</label>
+        <div class="field-row">
+          <input class="field" id="username" type="text" name="username" autocomplete="username"
+                 autocapitalize="none" spellcheck="false" aria-describedby="username-hint" required>
+        </div>
+        <p class="hint" id="username-hint">3-32 letters, digits, dots, underscores or hyphens</p>
+
+        <label class="field-label" for="password">Password</label>
+        <div class="field-row">
+          <input class="field" id="password" type="password" name="password" autocomplete="new-password"
+                 aria-describedby="password-hint" required>
+          <button type="submit">Create admin</button>
+        </div>
+        <p class="hint" id="password-hint">At least 10 characters</p>
+      </form>
+    </aside>
+
+    <main class="sheet" id="sheet">
+      <p class="sheet-note">This creates the only account on this instance, with admin rights. The setup code is shown once per start and is only valid until an account exists.</p>
+    </main>
+  </div>
+</body>
+</html>

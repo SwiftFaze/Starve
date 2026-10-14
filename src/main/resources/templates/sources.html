@@ -37,7 +37,7 @@
       <div id="panel" class="panel">
       <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Subscribed to Boiler Room</p>
 
-      <form class="add" method="post" action="/sources" hx-post="/sources"
+      <form class="add" method="post" th:action="@{/sources}" hx-post="/sources"
             hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
         <label class="field-label" for="add-url">Add a source</label>
         <div class="field-row">
@@ -89,7 +89,7 @@
 
       <section class="group-sheet" aria-labelledby="groups-title">
         <h2 class="sheet-title" id="groups-title">Groups</h2>
-        <form class="new-group" method="post" action="/groups" hx-post="/groups"
+        <form class="new-group" method="post" th:action="@{/groups}" hx-post="/groups"
               hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
           <label class="field-label" for="new-group">New group</label>
           <div class="field-row">
