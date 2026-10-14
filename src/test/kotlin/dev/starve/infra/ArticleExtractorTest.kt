@@ -39,6 +39,26 @@ class ArticleExtractorTest {
     }
 
     @Test
+    fun `paragraph text is summed per block, so several paragraphs can outweigh one longer one`() {
+        val body =
+            extract(
+                "<body><div><p>${"a".repeat(40)}</p></div>" +
+                    "<div><p>${"b".repeat(30)}</p><p>${"c".repeat(30)}</p></div></body>",
+            ).body!!
+
+        assertTrue(body.contains("b".repeat(30)))
+        assertFalse(body.contains("a".repeat(40)))
+    }
+
+    @Test
+    fun `blocks with equal paragraph text resolve to the first`() {
+        val body = extract("<body><div><p>First block.</p></div><div><p>Other block.</p></div></body>").body!!
+
+        assertTrue(body.contains("First block."))
+        assertFalse(body.contains("Other block."))
+    }
+
+    @Test
     fun `navigation, header, footer, aside, form and script outside the article are dropped`() {
         val page =
             "<body><nav>Site navigation</nav><header>Masthead</header><aside>Related</aside>" +

@@ -124,6 +124,15 @@ class ReaderServiceTest {
     }
 
     @Test
+    fun `an extraction exactly as long as the teaser keeps the teaser`() {
+        val teaser = post(1, "https://blog.example/a", body = article(300))
+        val (service, items, _) = service(FetchedArticle(article(300).replace("x", "y"), null), teaser)
+
+        assertEquals(article(300), service.open(1)?.body)
+        assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articleChecks)
+    }
+
+    @Test
     fun `a failed fetch keeps the teaser, records the check and still marks the item read`() {
         val (service, items, _) = service(null, post(1, "https://blog.example/a", body = "<p>Teaser</p>"))
 
