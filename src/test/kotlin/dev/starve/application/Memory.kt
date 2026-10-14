@@ -4,6 +4,8 @@ import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
+import dev.starve.domain.LaterCursor
+import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
@@ -156,25 +158,52 @@ open class MemoryItems(
     ) = 0
 }
 
-/** An item repository with canned timeline rows that records read-state and favourite calls. */
+/** An item repository with canned timeline rows that records read-state, favourite and later calls. */
 class TimelineItems(
     private val rows: List<TimelineItem> = emptyList(),
     private val links: Map<Long, String?> = emptyMap(),
     private val markedAllCount: Int = 0,
     private val favouriteRows: List<TimelineItem> = emptyList(),
+    private val savedRows: List<SavedItem> = emptyList(),
 ) : MemoryItems(),
     FavouriteRepository,
-    SearchRepository {
+    SearchRepository,
+    LaterRepository {
     var requested: Triple<Cursor?, Boolean, Int>? = null
     var requestedGroup: Long? = null
     var markAllGroup: Long? = null
     val readCalls = mutableListOf<Pair<Long, Instant>>()
     var markAllCall: Pair<Instant, Instant>? = null
     var favouritesRequested: Pair<Cursor?, Int>? = null
+    var laterRequested: Pair<LaterCursor?, Int>? = null
 
     /** Each favourite call as (id, time); the time is null for an unfavourite. */
     val favouriteCalls = mutableListOf<Pair<Long, Instant?>>()
     var searched: Triple<String, Cursor?, Int>? = null
+
+    /** Each later call as (id, time); the time is null for a clear. */
+    val laterCalls = mutableListOf<Pair<Long, Instant?>>()
+
+    override fun later(
+        after: LaterCursor?,
+        limit: Int,
+    ): List<SavedItem> {
+        laterRequested = after to limit
+        return savedRows
+    }
+
+    override fun save(
+        id: Long,
+        at: Instant,
+    ): Boolean {
+        laterCalls += id to at
+        return links.containsKey(id)
+    }
+
+    override fun clear(id: Long): Boolean {
+        laterCalls += id to null
+        return links.containsKey(id)
+    }
 
     override fun timeline(
         after: Cursor?,

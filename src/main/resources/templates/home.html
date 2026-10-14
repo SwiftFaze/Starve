@@ -28,12 +28,17 @@
          th:attr="aria-current=${favouritesEntry.current} ? 'page',hx-get=${favouritesEntry.href}"
          hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
          hx-push-url="true">Favourites</a>
+      <a class="later-link" th:href="${laterEntry.href}" th:text="${laterEntry.label}"
+         th:attr="aria-current=${laterEntry.current} ? 'page',hx-get=${laterEntry.href}"
+         hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
+         hx-push-url="true">Later</a>
     </nav>
     <form class="search" role="search" action="/" method="get">
       <input type="search" name="q" th:value="${query}" placeholder="Search" aria-label="Search items"
              hx-get="/" hx-trigger="input changed delay:300ms, search" hx-target="#sheet" hx-swap="outerHTML"
              hx-include="closest form" hx-push-url="true">
       <input type="hidden" name="favourites" value="1" th:if="${favourites}">
+      <input type="hidden" name="later" value="1" th:if="${later}">
       <input type="hidden" name="group" th:if="${groupId != null}" th:value="${groupId}">
       <input type="hidden" name="show" value="all" th:if="${showAll}">
     </form>
@@ -45,7 +50,7 @@
         <h2 class="series" th:text="${series.name}">All</h2>
         <p class="series-meta">
           <th:block th:if="${series.unread != null}" th:text="|${series.unread} unread|">9 unread</th:block>
-          <span th:text="${showAll} ? 'Read included, newest first' : 'Newest first'">Newest first</span>
+          <span th:text="${later} ? 'Earliest saved first' : (${showAll} ? 'Read included, newest first' : 'Newest first')">Newest first</span>
           <span class="range" th:unless="${#lists.isEmpty(items)}" th:with="ids=${#lists.sort(items.![id])}"
                 th:text="|STV ${#numbers.formatInteger(ids[0], 4)}–${#numbers.formatInteger(ids[#lists.size(ids) - 1], 4)}|">STV 0131–0155</span>
         </p>
@@ -57,8 +62,8 @@
 
     <main class="sheet" id="sheet" tabindex="-1" th:fragment="sheet">
       <div class="sheet-head">
-        <h2 class="sheet-title" th:text="${searching} ? 'Search results' : (${favourites} ? 'Favourites' : (${showAll} ? 'All releases' : 'New releases'))">New releases</h2>
-        <div class="view-actions" th:if="${hasSources and !favourites}">
+        <h2 class="sheet-title" th:text="${searching} ? 'Search results' : (${favourites} ? 'Favourites' : (${later} ? 'Later' : (${showAll} ? 'All releases' : 'New releases')))">New releases</h2>
+        <div class="view-actions" th:if="${hasSources and !favourites and !later}">
           <a class="read-toggle" th:unless="${searching}" th:href="${toggleHref}" th:attr="hx-get=${toggleHref}"
              hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
              hx-push-url="true" th:text="${showAll} ? 'Hide read' : 'Show read'">Show read</a>
@@ -95,6 +100,7 @@
                       hx-target="#dock" hx-swap="innerHTML"
                       hx-trigger="click[!target.closest('.playing')]" aria-pressed="false">Play</button>
               <th:block th:with="star=${item.star}"><th:block th:replace="~{star :: star}"></th:block></th:block>
+              <th:block th:with="laterToggle=${item.laterToggle}"><th:block th:replace="~{later :: toggle}"></th:block></th:block>
               <form th:unless="${item.read}" method="post" th:action="@{/items/{id}/read(id=${item.id})}"
                     th:attr="hx-post=@{/items/{id}/read(id=${item.id})}" hx-target="closest article" hx-swap="outerHTML">
                 <button type="submit">Mark read</button>
@@ -104,9 +110,10 @@
           <a th:if="${moreHref}" class="load-more" th:href="${moreHref}"
              th:attr="hx-get=${moreHref}" hx-swap="outerHTML">Load more</a>
           <p th:if="${searching and #lists.isEmpty(items)}" class="sheet-note">No matches</p>
-          <p th:if="${moreHref == null and !emptyFavourites and !searching}" class="caught-up">You're all caught up</p>
+          <p th:if="${moreHref == null and !emptyFavourites and !emptyLater and !searching}" class="caught-up">You're all caught up</p>
         </th:block>
         <p class="sheet-note" th:if="${emptyFavourites}">No favourites yet. Star an item on the timeline to keep it here.</p>
+        <p class="sheet-note" th:if="${emptyLater}">Nothing saved for later. Use ⏲ on an item to keep it here.</p>
       </div>
     </main>
     <aside id="reader" class="reader" aria-label="Reader" aria-live="polite"></aside>

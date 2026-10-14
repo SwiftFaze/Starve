@@ -1,6 +1,7 @@
 package dev.starve.web
 
 import dev.starve.application.GroupService
+import dev.starve.application.LaterService
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemorySources
 import dev.starve.application.SearchService
@@ -8,6 +9,7 @@ import dev.starve.application.TimelineItems
 import dev.starve.application.TimelineService
 import dev.starve.domain.Cursor
 import dev.starve.domain.Group
+import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
@@ -39,6 +41,7 @@ class HomeControllerTest {
         HomeController(
             TimelineService(items, items, MemorySources(mutableListOf(source)), clock),
             SearchService(items, MemorySources(mutableListOf(source)), clock),
+            LaterService(items, MemorySources(mutableListOf(source)), clock),
             GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources()),
         )
 
@@ -381,6 +384,42 @@ class HomeControllerTest {
     }
 
     @Test
+    fun `a search keeps the later view it started from for clearing, but still searches everything`() {
+        val items = TimelineItems(listOf(row(1)))
+        val model = ConcurrentModel()
+
+        controller(items).home(TimelineQuery(q = "match", later = "1"), null, model)
+
+        assertEquals(true, model.getAttribute("later"))
+        assertEquals(false, model.getAttribute("emptyLater"))
+        assertEquals(Triple("\"match\"*", null, TimelineRules.PAGE_SIZE + 1), items.searched)
+        assertNull(items.laterRequested)
+    }
+
+    @Test
+    fun `clearing the search in the later view lists the saved items again`() {
+        val items = TimelineItems(listOf(row(1)), savedRows = listOf(SavedItem(row(2), now)))
+
+        val view = controller(items).home(TimelineQuery(q = "", later = "1"), "true", ConcurrentModel())
+
+        assertEquals("home :: sheet", view)
+        assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.laterRequested)
+        assertNull(items.searched)
+    }
+
+    @Test
+    fun `a search with more pages keeps the later view in the next page link`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(rows(TimelineRules.PAGE_SIZE + 1)))
+            .home(TimelineQuery(q = "a", later = "1"), null, model)
+
+        val href = model.getAttribute("moreHref") as String
+        assertTrue(href.startsWith("/?q=a&after="), href)
+        assertTrue(href.endsWith("&later=1"), href)
+    }
+
+    @Test
     fun `an htmx search returns only the sheet fragment`() {
         val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(q = "match"), "true", ConcurrentModel())
 
@@ -392,5 +431,82 @@ class HomeControllerTest {
         val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(), "true", ConcurrentModel())
 
         assertEquals("home", view)
+    }
+
+    @Test
+    fun `the later view lists saved items and ignores the show and group parameters`() {
+        val items = TimelineItems(savedRows = listOf(SavedItem(row(1), now)))
+        val model = ConcurrentModel()
+
+        controller(items).home(TimelineQuery(show = "all", group = "99", later = "1"), null, model)
+
+        assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.laterRequested)
+        assertNull(items.requested)
+        assertEquals(true, model.getAttribute("later"))
+        assertEquals(false, model.getAttribute("showAll"))
+        assertEquals(false, model.getAttribute("emptyLater"))
+    }
+
+    @Test
+    fun `an empty later view is flagged so the page can say so`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).home(TimelineQuery(later = "1"), null, model)
+
+        assertEquals(true, model.getAttribute("emptyLater"))
+    }
+
+    @Test
+    fun `the later view keeps the filter in its load-more link and has no unread count`() {
+        val saved = (1L..TimelineRules.PAGE_SIZE + 1).map { SavedItem(row(it), Instant.ofEpochMilli(it)) }
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(savedRows = saved)).home(TimelineQuery(later = "1"), null, model)
+
+        assertEquals("/?after=50_50&later=1", model.getAttribute("moreHref"))
+        assertEquals(SeriesView("Later", null), model.getAttribute("series"))
+    }
+
+    @Test
+    fun `the Later entry is the one current entry in the later view, after Favourites`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).home(TimelineQuery(later = "1"), null, model)
+
+        assertEquals(NavEntryView("Later", "/?later=1", true), model.getAttribute("laterEntry"))
+        assertEquals(NavEntryView("Favourites", "/?favourites=1", false), model.getAttribute("favouritesEntry"))
+        val groups = model.getAttribute("nav") as List<*>
+        assertEquals(listOf(false, false, false), groups.map { (it as NavEntryView).current })
+    }
+
+    @Test
+    fun `favourites win when both filters are given`() {
+        val items = TimelineItems(favouriteRows = listOf(row(1)))
+
+        controller(items).home(TimelineQuery(favourites = "1", later = "1"), null, ConcurrentModel())
+
+        assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
+        assertNull(items.laterRequested)
+    }
+
+    @Test
+    fun `a row presents its saved for later toggle for the item's state`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(listOf(row(1).copy(later = true), row(2)))).home(TimelineQuery(), null, model)
+
+        val toggles = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).laterToggle }
+        assertEquals(listOf(LaterView("later-1", 1, true), LaterView("later-2", 2, false)), toggles)
+    }
+
+    @Test
+    fun `a row carries the item's saved for later state`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems(listOf(row(1).copy(later = true), row(2)))).home(TimelineQuery(), null, model)
+
+        val views = (model.getAttribute("items") as List<*>).map { it as TimelineItemView }
+        assertTrue(views[0].later)
+        assertFalse(views[1].later)
     }
 }

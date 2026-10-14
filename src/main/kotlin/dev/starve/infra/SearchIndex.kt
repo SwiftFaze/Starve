@@ -56,6 +56,6 @@ class SearchIndex(
     private companion object {
         const val PURGE_SQL =
             "DELETE FROM item_search WHERE rowid IN " +
-                "(SELECT id FROM items WHERE first_seen_at < ? AND favourited_at IS NULL)"
+                "(SELECT id FROM items WHERE first_seen_at < ? AND favourited_at IS NULL AND later_at IS NULL)"
     }
 }

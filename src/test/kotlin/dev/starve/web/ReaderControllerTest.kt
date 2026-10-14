@@ -117,4 +117,14 @@ class ReaderControllerTest {
 
         assertEquals(HttpStatus.NOT_FOUND, failure.statusCode)
     }
+
+    @Test
+    fun `the reader carries the save toggle for the post`() {
+        val model = ConcurrentModel()
+        val post = PostRef(7, "https://blog.example/a", "Title", "Blog", published, "<p>Hi</p>", later = true)
+
+        controller(post).reader(7, model)
+
+        assertEquals(LaterView("reader-later", 7, true, from = "reader"), model.getAttribute("laterToggle"))
+    }
 }

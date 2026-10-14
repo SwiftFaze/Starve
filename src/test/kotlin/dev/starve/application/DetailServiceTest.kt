@@ -1,6 +1,7 @@
 package dev.starve.application
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -70,6 +71,14 @@ class DetailServiceTest {
         id: Long,
         link: String?,
     ) = ItemDetail(id, link, "Title $id", "Source", published, "Feed Artist", feedThumbnail, "<p>Feed</p>")
+
+    @Test
+    fun `the detail reports whether the item is saved for later`() {
+        val (service, _, _) = service(item(1, youtube).copy(later = true), item(2, youtube))
+
+        assertTrue(service.open(1)!!.later)
+        assertFalse(service.open(2)!!.later)
+    }
 
     @Test
     fun `a youtube video shows its feed details and is marked read without an oembed request`() {

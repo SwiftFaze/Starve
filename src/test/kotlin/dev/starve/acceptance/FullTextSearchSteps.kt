@@ -96,6 +96,12 @@ class FullTextSearchSteps {
     @When("I clear the search via htmx while viewing the Favourites")
     fun clearSearchInFavourites() = requestHtmx("/?q=&favourites=1")
 
+    @When("I search for {string} while viewing the Later")
+    fun searchWhileViewingLater(text: String) = requestSearch("/?q=${encode(text)}&later=1")
+
+    @When("I clear the search via htmx while viewing the Later")
+    fun clearSearchInLater() = requestHtmx("/?q=&later=1")
+
     @When("I clear the search via htmx while viewing the group {string}")
     fun clearSearchInGroup(group: String) {
         val groupId = app.bean(GroupRepository::class.java).findByName(group)!!.id

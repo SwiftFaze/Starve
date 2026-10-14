@@ -36,6 +36,7 @@ class DetailController(
     ): String {
         val detail = details.open(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         model.addAttribute("detail", detail.toView())
+        model.addAttribute("laterToggle", LaterView("detail-later", detail.id, detail.later, from = "detail"))
         return "detail :: content"
     }
 

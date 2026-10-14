@@ -33,7 +33,7 @@ class JdbcItemRepository(
     override fun deleteFirstSeenBefore(cutoff: Instant): Int {
         search.removeFirstSeenBefore(cutoff)
         return jdbc
-            .sql("DELETE FROM items WHERE first_seen_at < ? AND favourited_at IS NULL")
+            .sql("DELETE FROM items WHERE first_seen_at < ? AND favourited_at IS NULL AND later_at IS NULL")
             .param(cutoff.toEpochMilli())
             .update()
     }
@@ -76,7 +76,7 @@ class JdbcItemRepository(
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body, " +
                     "i.thumbnail_url, s.favicon_url, i.favourited_at IS NOT NULL AS is_favourite, " +
-                    "i.article_checked_at " +
+                    "i.article_checked_at, i.later_at IS NOT NULL AS is_later " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
             ).param(id)
             .query { rs, _ ->
@@ -91,6 +91,7 @@ class JdbcItemRepository(
                     rs.getString("favicon_url"),
                     rs.getInt("is_favourite") == 1,
                     rs.getLong("article_checked_at").takeUnless { rs.wasNull() }?.let(Instant::ofEpochMilli),
+                    rs.getInt("is_later") == 1,
                 )
             }.optional()
             .orElse(null)
@@ -99,7 +100,7 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.author, " +
-                    "i.thumbnail_url, i.body, i.oembed_json " +
+                    "i.thumbnail_url, i.body, i.oembed_json, i.later_at IS NOT NULL AS is_later " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
             ).param(id)
             .query { rs, _ ->
@@ -113,6 +114,7 @@ class JdbcItemRepository(
                     rs.getString("thumbnail_url"),
                     rs.getString("body"),
                     OembedJson.decode(rs.getString("oembed_json")),
+                    rs.getInt("is_later") == 1,
                 )
             }.optional()
             .orElse(null)
@@ -208,16 +210,22 @@ internal fun JdbcClient.pageRows(
     }
     val where = if (conditions.isEmpty()) "" else "WHERE " + conditions.joinToString(" AND ")
     return sql(
-        "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, s.favicon_url, " +
-            "i.read_at IS NOT NULL AS is_read, i.favourited_at IS NOT NULL AS is_favourite " +
-            "FROM items i JOIN sources s ON s.id = i.source_id " +
-            "$where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
+        "SELECT $TIMELINE_COLUMNS $TIMELINE_FROM $where ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
     ).params(params + limit)
         .query { rs, _ -> rs.toTimelineItem() }
         .list()
 }
 
-/** One timeline row from a joined query: the item, its source title and icon, and its read and favourite state. */
+/** The columns every timeline row query selects, in the shape [toTimelineItem] reads. */
+internal const val TIMELINE_COLUMNS =
+    "i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, s.favicon_url, " +
+        "i.read_at IS NOT NULL AS is_read, i.favourited_at IS NOT NULL AS is_favourite, " +
+        "i.later_at IS NOT NULL AS is_later"
+
+/** The tables a timeline row query reads, with the source join. */
+internal const val TIMELINE_FROM = "FROM items i JOIN sources s ON s.id = i.source_id"
+
+/** One timeline row from a joined query: the item, its source icon, and its read, favourite and later state. */
 internal fun ResultSet.toTimelineItem() =
     TimelineItem(
         getLong("id"),
@@ -229,4 +237,5 @@ internal fun ResultSet.toTimelineItem() =
         Playable.of(getString("link")) != null,
         getString("favicon_url"),
         getInt("is_favourite") == 1,
+        getInt("is_later") == 1,
     )

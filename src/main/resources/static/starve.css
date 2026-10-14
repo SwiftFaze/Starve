@@ -390,7 +390,8 @@ input[type="file"].field::file-selector-button {
 
 .tab,
 .group-link,
-.favourites-link {
+.favourites-link,
+.later-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -405,20 +406,23 @@ input[type="file"].field::file-selector-button {
 
 .tab:hover,
 .group-link:hover,
-.favourites-link:hover {
+.favourites-link:hover,
+.later-link:hover {
   color: var(--text);
 }
 
-/* The current page, group or Favourites gets the obi's red square. */
+/* The current page, group, Favourites or Later gets the obi's red square. */
 .tab[aria-current],
 .group-link[aria-current],
-.favourites-link[aria-current] {
+.favourites-link[aria-current],
+.later-link[aria-current] {
   color: var(--text);
 }
 
 .tab[aria-current]::before,
 .group-link[aria-current]::before,
-.favourites-link[aria-current]::before {
+.favourites-link[aria-current]::before,
+.later-link[aria-current]::before {
   content: "";
   width: 0.5rem;
   height: 0.5rem;
@@ -438,6 +442,22 @@ input[type="file"].field::file-selector-button {
 }
 
 .star[data-favourite="true"] button {
+  color: var(--red);
+}
+
+/* The ⏲ save-for-later toggle: a plain button like the star, red once the item is saved for later. */
+.later {
+  margin: 0;
+}
+
+.later button {
+  min-height: 0;
+  padding: 0.125rem 0.5rem;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.later button.saved {
   color: var(--red);
 }
 
@@ -2158,10 +2178,13 @@ body[data-video="mini"] .reader-view {
   grid-row: 1 / span 2;
 }
 
-/* Under the catalogue number, left of the close button's column, above the title. */
-.reader-head .star {
+/* Under the catalogue number, left of the close button's column, above the title: the star and the ⏲ share the row. */
+.reader-toggles {
   grid-column: 1;
   justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .reader-title {

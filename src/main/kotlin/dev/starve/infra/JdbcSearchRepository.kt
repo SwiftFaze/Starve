@@ -22,9 +22,7 @@ class JdbcSearchRepository(
         }
         return jdbc
             .sql(
-                "SELECT i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, " +
-                    "s.favicon_url, i.read_at IS NOT NULL AS is_read, i.favourited_at IS NOT NULL AS is_favourite " +
-                    "FROM item_search " +
+                "SELECT $TIMELINE_COLUMNS FROM item_search " +
                     "JOIN items i ON i.id = item_search.rowid JOIN sources s ON s.id = i.source_id " +
                     "WHERE item_search MATCH ? $cursor ORDER BY i.published_at DESC, i.id DESC LIMIT ?",
             ).params(params + limit)

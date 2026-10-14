@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- One ⏲ save toggle from the model attribute "laterToggle"; the form posts the reverse toggle, without JavaScript too. -->
+<th:block th:fragment="toggle">
+  <form method="post" class="later" th:id="${laterToggle.domId}" th:action="${laterToggle.action}" hx-swap="outerHTML"
+        th:attr="hx-post=${laterToggle.action},hx-target=${'#' + laterToggle.domId},hx-swap-oob=${laterToggle.oob} ? 'true' : null,data-later=${laterToggle.saved ? 'true' : 'false'}">
+    <button type="submit" th:classappend="${laterToggle.saved} ? 'saved'"
+            th:attr="aria-pressed=${laterToggle.saved ? 'true' : 'false'},aria-label=${laterToggle.saved} ? 'Remove from Later' : 'Save for later'">⏲</button>
+  </form>
+</th:block>
+
+<!-- The pane's toggle ("laterToggle") and the timeline row's toggle ("rowLater"), answered together to an htmx toggle. -->
+<th:block th:fragment="pair">
+  <th:block th:replace="~{::toggle}"></th:block>
+  <th:block th:with="laterToggle=${rowLater}"><th:block th:replace="~{::toggle}"></th:block></th:block>
+</th:block>
+</body>
+</html>
