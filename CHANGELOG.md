@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.2](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.1...v1.1.0-beta.2) (2026-10-14)
+
+
+### Features
+
+* add the obi overlay mark as the favicon, with brand docs ([#49](https://github.com/SwiftFaze/Starve/issues/49)) ([e6925ff](https://github.com/SwiftFaze/Starve/commit/e6925ff116813905ec593e5e0192089f4455b931)), closes [#48](https://github.com/SwiftFaze/Starve/issues/48)
+
 ## [1.1.0-beta.1](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta...v1.1.0-beta.1) (2026-10-14)
 
 
