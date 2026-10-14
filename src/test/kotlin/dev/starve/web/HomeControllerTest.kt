@@ -146,6 +146,8 @@ class HomeControllerTest {
         controller(TimelineItems()).home(TimelineQuery(), null, model)
 
         assertEquals(NavEntryView("Favourites", "/?favourites=1", false), model.getAttribute("favouritesEntry"))
+        val groups = model.getAttribute("nav") as List<*>
+        assertEquals(true, (groups.first() as NavEntryView).current)
     }
 
     @Test

@@ -21,17 +21,23 @@ class FavouriteControllerTest {
 
     @Test
     fun `favouriting answers htmx with the filled star`() {
-        val view = controller(TimelineItems(links = mapOf(5L to null))).favourite("5", null, "true")
+        val items = TimelineItems(links = mapOf(5L to null))
+
+        val view = controller(items).favourite("5", null, "true")
 
         assertEquals("star :: star", view.viewName)
+        assertEquals(listOf(5L to now), items.favouriteCalls)
         assertEquals(StarView("star-5", 5, true), view.model["star"])
     }
 
     @Test
     fun `unfavouriting answers htmx with the empty star`() {
-        val view = controller(TimelineItems(links = mapOf(5L to null))).unfavourite("5", null, "true")
+        val items = TimelineItems(links = mapOf(5L to null))
+
+        val view = controller(items).unfavourite("5", null, "true")
 
         assertEquals("star :: star", view.viewName)
+        assertEquals(listOf<Pair<Long, Instant?>>(5L to null), items.favouriteCalls)
         assertEquals(StarView("star-5", 5, false), view.model["star"])
     }
 
