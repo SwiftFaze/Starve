@@ -76,10 +76,10 @@ class FullTextSearchSteps {
      * (`"cats"`, `a"b'c`), which a {string} parameter cannot carry. The lookahead keeps the group form out.
      */
     @When("^I search for \"(?!.*\" while )(.*)\"$")
-    fun search(text: String) = requestSearch("/?q=${encode(text)}")
+    fun search(text: String) = requestSearch("/feed?q=${encode(text)}")
 
     @When("I search for {string} while showing only unread items")
-    fun searchWhileShowingUnread(text: String) = requestSearch("/?q=${encode(text)}")
+    fun searchWhileShowingUnread(text: String) = requestSearch("/feed?q=${encode(text)}")
 
     @When("I search for {string} while viewing the group {string}")
     fun searchWhileViewingGroup(
@@ -87,30 +87,30 @@ class FullTextSearchSteps {
         group: String,
     ) {
         val groupId = app.bean(GroupRepository::class.java).findByName(group)!!.id
-        requestSearch("/?q=${encode(text)}&group=$groupId")
+        requestSearch("/feed?q=${encode(text)}&group=$groupId")
     }
 
     @When("I search for {string} while viewing the Favourites")
-    fun searchWhileViewingFavourites(text: String) = requestSearch("/?q=${encode(text)}&favourites=1")
+    fun searchWhileViewingFavourites(text: String) = requestSearch("/feed?q=${encode(text)}&favourites=1")
 
     @When("I clear the search via htmx while viewing the Favourites")
-    fun clearSearchInFavourites() = requestHtmx("/?q=&favourites=1")
+    fun clearSearchInFavourites() = requestHtmx("/feed?q=&favourites=1")
 
     @When("I search for {string} while viewing the Later")
-    fun searchWhileViewingLater(text: String) = requestSearch("/?q=${encode(text)}&later=1")
+    fun searchWhileViewingLater(text: String) = requestSearch("/feed?q=${encode(text)}&later=1")
 
     @When("I clear the search via htmx while viewing the Later")
-    fun clearSearchInLater() = requestHtmx("/?q=&later=1")
+    fun clearSearchInLater() = requestHtmx("/feed?q=&later=1")
 
     @When("I clear the search via htmx while viewing the group {string}")
     fun clearSearchInGroup(group: String) {
         val groupId = app.bean(GroupRepository::class.java).findByName(group)!!.id
-        requestHtmx("/?q=&group=$groupId")
+        requestHtmx("/feed?q=&group=$groupId")
     }
 
     @When("I search for {string} via htmx")
     fun searchViaHtmx(text: String) {
-        World.response = app.get("/?q=${encode(text)}", HTMX)
+        World.response = app.get("/feed?q=${encode(text)}", HTMX)
         World.pages = listOf(World.response.body())
     }
 
@@ -156,7 +156,7 @@ class FullTextSearchSteps {
 
     @Then("the search box requests the timeline via htmx as you type with a debounce")
     fun requestsViaHtmxWithDebounce() {
-        assertTrue(searchBox().contains("hx-get=\"/\""), searchBox())
+        assertTrue(searchBox().contains("hx-get=\"/feed\""), searchBox())
         assertTrue(searchBox().contains("hx-trigger=\"input changed delay:300ms, search\""), searchBox())
     }
 

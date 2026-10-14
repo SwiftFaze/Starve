@@ -79,10 +79,10 @@ class GroupSteps {
     }
 
     @When("I request the timeline of the group {string}")
-    fun requestGroupTimeline(group: String) = fetch("/?group=${groupId(group)}")
+    fun requestGroupTimeline(group: String) = fetch("/feed?group=${groupId(group)}")
 
     @When("I request the timeline of the group {string} showing read items")
-    fun requestGroupTimelineShowingRead(group: String) = fetch("/?show=all&group=${groupId(group)}")
+    fun requestGroupTimelineShowingRead(group: String) = fetch("/feed?show=all&group=${groupId(group)}")
 
     // ---- assertions on the sources page --------------------------------------------------
 

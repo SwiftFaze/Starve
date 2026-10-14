@@ -1,15 +1,15 @@
 Feature: Chronological feed with read state
-  The home page "/" is a single, strictly chronological, unranked timeline of
+  The home page "/feed" is a single, strictly chronological, unranked timeline of
   unread items from all sources, newest first, with read state, "mark all
   read", a "Show read" toggle, paging via htmx, and an explicit end-of-feed
   state.
 
-  Covers: the unread timeline on "/" (ordering newest first by published date,
+  Covers: the unread timeline on "/feed" (ordering newest first by published date,
   ties by item id descending); item display (source title, item title,
   published date, thumbnail); opening an item via /items/{id}/open (marks it
   read, redirects 302 to its link); marking one item read via POST
   /items/{id}/read; "Mark all read" limited to items first seen at or before
-  the page render time; the "Show read" toggle (/?show=all); paging of 50
+  the page render time; the "Show read" toggle (/feed?show=all); paging of 50
   items with "Load more"; the "You're all caught up" end-of-feed state; 404
   for unknown item ids; a nullable read_at column on items.
   Supersedes: the placeholder nature of the home page in project-skeleton.feature.
@@ -32,7 +32,7 @@ Feature: Chronological feed with read state
     Given the source "Alpha" has an unread item "A-old" published 3 days ago
     And the source "Beta" has an unread item "B-mid" published 2 days ago
     And the source "Alpha" has an unread item "A-new" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the response status is 200
     And the timeline lists the items in this order
       | A-new |
@@ -41,7 +41,7 @@ Feature: Chronological feed with read state
 
   Scenario: Items with the same published date are ordered by id descending
     Given the source "Alpha" has unread items "First", "Second" and "Third" stored in that order with the same published date
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists the items in this order
       | Third  |
       | Second |
@@ -50,7 +50,7 @@ Feature: Chronological feed with read state
   Scenario: Each item shows its source, title, date and thumbnail
     Given the source "Alpha" has an unread item "With Pic" published 1 days ago with a thumbnail
     And the source "Alpha" has an unread item "No Pic" published 2 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "With Pic" shows the source "Alpha"
     And the timeline entry "With Pic" shows a published date
     And the timeline entry "With Pic" shows a thumbnail
@@ -62,13 +62,13 @@ Feature: Chronological feed with read state
     Then the response status is 302
     And the response redirects to the link of "Story"
     And the item "Story" is read
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline does not list "Story"
 
   Scenario: Scrolling past an item does not mark it read
     Given the source "Alpha" has an unread item "Story" published 1 days ago
-    When I request the home page "/"
-    And I request the home page "/"
+    When I request the home page "/feed"
+    And I request the home page "/feed"
     Then the item "Story" is unread
     And the timeline lists "Story"
 
@@ -77,7 +77,7 @@ Feature: Chronological feed with read state
     And the source "Alpha" has an unread item "Done" published 2 days ago
     When I mark the item "Done" read
     Then the item "Done" is read
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists "Keep"
     And the timeline does not list "Done"
 
@@ -90,25 +90,25 @@ Feature: Chronological feed with read state
   Scenario: Mark all read leads to the all-caught-up state
     Given the source "Alpha" has an unread item "One" published 1 days ago
     And the source "Beta" has an unread item "Two" published 2 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     And I mark all read from the page I received
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline lists no items
     And the page contains "You're all caught up"
 
   Scenario: Items that arrive after the page was rendered survive mark all read
     Given the source "Alpha" has an unread item "Seen" published 2 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     And the source "Alpha" receives a new unread item "Late" after that page was rendered
     And I mark all read from the page I received
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline lists "Late"
     And the timeline does not list "Seen"
 
   Scenario: Show read lists read items marked as read
     Given the source "Alpha" has an unread item "Fresh" published 1 days ago
     And the source "Alpha" has a read item "Old" published 2 days ago
-    When I request the home page "/?show=all"
+    When I request the home page "/feed?show=all"
     Then the timeline lists the items in this order
       | Fresh |
       | Old   |
@@ -117,24 +117,24 @@ Feature: Chronological feed with read state
 
   Scenario: The default view hides read items
     Given the source "Alpha" has a read item "Old" published 2 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline does not list "Old"
     And the page contains "You're all caught up"
 
   Scenario: No sources shows the empty state with a link to sources
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the response status is 200
     And the page contains "Starve"
     And the page contains "No sources yet"
     And the page contains "/sources"
 
   Scenario: The page is usable at phone width
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the page contains a viewport meta tag
 
   Scenario: Long timelines are paged 50 at a time with Load more
     Given the source "Alpha" has 120 unread items published at one-minute intervals
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists 50 items
     And the timeline offers "Load more"
     And the page does not contain "You're all caught up"
@@ -148,7 +148,7 @@ Feature: Chronological feed with read state
 
   Scenario: Pages do not repeat or skip items
     Given the source "Alpha" has 120 unread items published at one-minute intervals
-    When I request the home page "/"
+    When I request the home page "/feed"
     And I load more
     And I load more
     Then the timeline lists every item exactly once, newest first

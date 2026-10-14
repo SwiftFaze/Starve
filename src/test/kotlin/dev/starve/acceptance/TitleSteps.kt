@@ -52,7 +52,7 @@ class TitleSteps {
 
     @Then("the timeline shows an item titled {string}")
     fun timelineShowsTitle(title: String) {
-        val page = app.get("/").body()
+        val page = app.get("/feed").body()
         assertTrue(page.contains("data-title=\"${Html.escape(title)}\""), "timeline lacks '$title'")
     }
 }

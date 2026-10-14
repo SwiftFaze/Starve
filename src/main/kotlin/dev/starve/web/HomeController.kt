@@ -140,7 +140,7 @@ class HomeController(
     private val laterService: LaterService,
     private val groups: GroupService,
 ) {
-    @GetMapping("/")
+    @GetMapping("/feed")
     fun home(
         @ModelAttribute query: TimelineQuery,
         @RequestHeader("HX-Request", required = false) htmx: String?,
@@ -159,7 +159,7 @@ class HomeController(
     ): String =
         when (val result = timeline.open(id)) {
             OpenResult.Missing -> throw notFound()
-            is OpenResult.Opened -> "redirect:" + (result.link ?: "/")
+            is OpenResult.Opened -> "redirect:" + (result.link ?: "/feed")
         }
 
     @PostMapping("/items/{id}/read")
@@ -168,7 +168,7 @@ class HomeController(
         @RequestHeader("HX-Request", required = false) htmx: String?,
     ): Any {
         if (!timeline.markRead(id)) throw notFound()
-        return if (htmx != null) ResponseEntity.ok("") else "redirect:/"
+        return if (htmx != null) ResponseEntity.ok("") else "redirect:/feed"
     }
 
     @PostMapping("/read-all")
@@ -308,7 +308,7 @@ private fun parts(
         filter,
     )
 
-private fun link(query: List<String>): String = if (query.isEmpty()) "/" else "/?" + query.joinToString("&")
+private fun link(query: List<String>): String = if (query.isEmpty()) "/feed" else "/feed?" + query.joinToString("&")
 
 private fun TimelineItem.toView() =
     TimelineItemView(

@@ -32,7 +32,7 @@ Feature: Docked player that keeps playing while I browse the timeline
 
   Scenario: The timeline has a dock and the Play control loads into it
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline has a player dock
     And the Play control of "Clip" loads its player into the dock
     And the Play control of "Clip" replaces whatever the dock holds
@@ -59,20 +59,20 @@ Feature: Docked player that keeps playing while I browse the timeline
   Scenario: Group links replace only the release sheet and keep their URL
     Given the group "Music" exists
     And the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then every group link replaces only the release sheet via htmx
     And every group link pushes its URL to the browser history
     And every group link still works without JavaScript
 
   Scenario: The read toggle replaces only the release sheet
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the read toggle replaces only the release sheet via htmx
     And the read toggle still works without JavaScript
 
   Scenario: Mark all read replaces only the release sheet
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the Mark all read form replaces only the release sheet via htmx
     And the Mark all read form still works without JavaScript
 

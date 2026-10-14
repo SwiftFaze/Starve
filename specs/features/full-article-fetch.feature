@@ -75,7 +75,7 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
     Given the feed server serves "/blog.xml" as an RSS 2.0 feed titled "Blog" whose entry has the link "<feed server>/posts/one" and the description "<p>Teaser</p>"
     And the feed server serves "/posts/one" as an HTML page with an article of 800 characters of text
     When I add the feed URL "/blog.xml"
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the feed server received 0 requests for "/posts/one"
 
   Scenario Outline: Playable items and items without a link are never fetched
@@ -159,7 +159,7 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
     Given the source "Blog" has an item "Post" with the link "<feed server>/posts/one" and no stored body published 1 days ago
     And the source "Blog" has an unread item "Other" published 2 days ago
     And the feed server does not respond in time for "/posts/one"
-    When I request the reader of the item "Post" via htmx and, meanwhile, the home page "/"
+    When I request the reader of the item "Post" via htmx and, meanwhile, the home page "/feed"
     Then the home page answers without waiting for the reader
     And the timeline lists "Other"
 
@@ -226,7 +226,7 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
     And the source "Blog" has an item "Post" with the link "<feed server>/posts/one" and no stored body and no thumbnail published 1 days ago
     And the feed server serves "/posts/one" as an HTML page with an article of 800 characters of text and the og:image "https://img.example/og.jpg"
     When I request the reader of the item "Post" via htmx
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline shows "https://img.example/og.jpg" as the thumbnail of "Post"
     And the timeline shows no site icon for "Post"
 
@@ -235,7 +235,7 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
     And the source "Blog" has an item "Post" with the link "<feed server>/posts/one" and no stored body and no thumbnail published 1 days ago
     And the feed server serves "/posts/one" as an HTML page with an article of 800 characters of text
     When I request the reader of the item "Post" via htmx
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline shows the favicon "https://cdn.example/icon.png" as the site icon of "Post"
 
   Scenario: An item with a full body gets no og:image, as its page is not fetched

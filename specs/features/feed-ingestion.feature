@@ -183,7 +183,7 @@ Feature: Feed ingestion
     And the source "Other" has 2 stored items
 
   Scenario: The home page links to the sources page
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the page contains "/sources"
 
   Scenario: Retention deletes items first seen more than 90 days ago and keeps newer ones

@@ -347,7 +347,7 @@ class FullArticleSteps {
 
     /** The timeline entry of [title] on the all-items view, which still lists a post once it is read. */
     private fun timelineEntry(title: String): String {
-        World.pages = listOf(app.get("/?show=all").body())
+        World.pages = listOf(app.get("/feed?show=all").body())
         return World.entry(title)
     }
 

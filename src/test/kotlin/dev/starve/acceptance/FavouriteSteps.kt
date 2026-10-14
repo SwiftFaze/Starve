@@ -98,7 +98,7 @@ class FavouriteSteps {
                 .param(group)
                 .query(Long::class.java)
                 .single()
-        fetch("/?group=$id&favourites=1")
+        fetch("/feed?group=$id&favourites=1")
     }
 
     // ---- assertions on the toggle responses ----------------------------------------------

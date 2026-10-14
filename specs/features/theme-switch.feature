@@ -26,7 +26,7 @@ Feature: Theme switch and page shutter
 
     Examples:
       | page     |
-      | /        |
+      | /feed        |
       | /sources |
       | /import  |
 

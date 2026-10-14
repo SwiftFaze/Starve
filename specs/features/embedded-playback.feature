@@ -25,7 +25,7 @@ Feature: Embedded playback for YouTube and SoundCloud items
 
   Scenario: A YouTube item shows a Play control
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Clip" has a Play control
 
   Scenario Outline: The player fragment embeds the privacy-enhanced YouTube player
@@ -47,7 +47,7 @@ Feature: Embedded playback for YouTube and SoundCloud items
 
   Scenario: A SoundCloud item shows a Play control and embeds the widget
     Given the source "Sound" has an unread item "Track" with the link "https://soundcloud.com/some-artist/some-track" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Track" has a Play control
     When I request the player of the item "Track" via htmx
     Then the response status is 200
@@ -57,12 +57,12 @@ Feature: Embedded playback for YouTube and SoundCloud items
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
     When I request the player of the item "Clip" via htmx
     Then the item "Clip" is read
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline does not list "Clip"
 
   Scenario: A non-playable item has no Play control and no player
     Given the source "Blog" has an unread item "Story" with the link "https://example.com/story" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists "Story"
     And the timeline entry "Story" has no Play control
     When I request the player of the item "Story" via htmx

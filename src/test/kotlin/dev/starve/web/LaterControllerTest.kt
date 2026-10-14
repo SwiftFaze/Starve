@@ -64,8 +64,8 @@ class LaterControllerTest {
     fun `a plain request redirects to the timeline`() {
         val c = controller(TimelineItems(links = mapOf(5L to null)))
 
-        assertEquals("redirect:/", c.save("5", null, null).viewName)
-        assertEquals("redirect:/", c.clear("5", null, null).viewName)
+        assertEquals("redirect:/feed", c.save("5", null, null).viewName)
+        assertEquals("redirect:/feed", c.clear("5", null, null).viewName)
     }
 
     @Test

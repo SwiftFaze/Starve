@@ -105,7 +105,7 @@ class LaterSteps {
                 .param(group)
                 .query(Long::class.java)
                 .single()
-        World.response = app.get("/?group=$id&later=1")
+        World.response = app.get("/feed?group=$id&later=1")
         World.pages = listOf(World.response.body())
     }
 

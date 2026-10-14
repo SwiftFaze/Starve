@@ -1,6 +1,6 @@
 Feature: Accounts and login with first-run admin setup
-  Every route requires a signed-in user, except "/setup", "/login", static
-  assets and "/actuator/health". Users live in a "users" table (username unique
+  Every route requires a signed-in user, except "/" (the public landing page),
+  "/setup", "/login", static assets and "/actuator/health". Users live in a "users" table (username unique
   case-insensitively, BCrypt password hash, admin flag).
 
   First run: while no user exists, every route except health and static
@@ -21,9 +21,9 @@ Feature: Accounts and login with first-run admin setup
   lasts only for the browser session. The remember-me key is generated once and
   kept in app_metadata, so remembered logins survive an application restart.
   "POST /logout" ends the session, deletes
-  the remember-me cookie and shows the login page. A visitor who is already
+  the remember-me cookie and lands on "/", the landing page. A visitor who is already
   signed in (including via the remember-me cookie) who requests "GET /login" is
-  redirected to "/"; the login page has no sign-out control. An htmx request without a
+  redirected to "/feed"; the login page has no sign-out control. An htmx request without a
   session is told to load "/login" as a full page (HX-Redirect) instead of
   having the login form swapped into a fragment.
 
@@ -38,8 +38,8 @@ Feature: Accounts and login with first-run admin setup
   Supersedes: the "authentication" exclusion in project-skeleton.feature and
   chronological-feed.feature, and "There is no authentication" in
   docs/architecture.md.
-  Out of scope: the public landing page, "/feed" and the top-bar logout control
-  (#42); per-user data (#43); signup (#44); account page, password change and
+  Out of scope:
+  per-user data (#43); signup (#44); account page, password change and
   user management (#45); email reset, OAuth, 2FA.
 
   # ---------- First-run setup ----------
@@ -74,10 +74,10 @@ Feature: Accounts and login with first-run admin setup
     Given a fresh SQLite database file
     And the application is running with no users yet
     When I complete setup with the logged code as "rob" with password "correct-horse-1"
-    Then the response redirects to "/"
+    Then the response redirects to "/feed"
     And the user "rob" exists and is an admin
     And the stored password of "rob" is a BCrypt hash, not "correct-horse-1"
-    And requesting "/" now returns status 200
+    And requesting "/feed" now returns status 200
 
   Scenario: The setup code is accepted in lower case and without its hyphen
     Given a fresh SQLite database file
@@ -158,7 +158,7 @@ Feature: Accounts and login with first-run admin setup
 
     Examples:
       | path     |
-      | /        |
+      | /feed    |
       | /sources |
       | /import  |
 
@@ -181,19 +181,19 @@ Feature: Accounts and login with first-run admin setup
     Then the response redirects to "/sources"
     And requesting "/sources" now returns status 200
 
-  Scenario: Logging in without a pending page lands on the home page
+  Scenario: Logging in without a pending page lands on the timeline
     Given a fresh SQLite database file
     And the application is running with the user "rob" with password "correct-horse-1"
     And I am not signed in
     When I log in as "rob" with password "correct-horse-1"
-    Then the response redirects to "/"
+    Then the response redirects to "/feed"
 
   Scenario: Usernames are case-insensitive at login
     Given a fresh SQLite database file
     And the application is running with the user "Rob" with password "correct-horse-1"
     And I am not signed in
     When I log in as "rOB" with password "correct-horse-1"
-    Then requesting "/" now returns status 200
+    Then requesting "/feed" now returns status 200
 
   Scenario Outline: Wrong credentials get one generic error
     Given a fresh SQLite database file
@@ -201,7 +201,7 @@ Feature: Accounts and login with first-run admin setup
     And I am not signed in
     When I log in as "<username>" with password "<password>"
     Then the login form is shown again with the error "Invalid username or password"
-    And requesting "/" still redirects to "/login"
+    And requesting "/feed" still redirects to "/login"
 
     Examples:
       | username | password        |
@@ -217,7 +217,7 @@ Feature: Accounts and login with first-run admin setup
     When I log in as "rob" with password "wrong-password" 5 times
     And I log in as "rob" with password "correct-horse-1"
     Then the login form is shown again with the error "Too many failed attempts. Try again later."
-    And requesting "/" still redirects to "/login"
+    And requesting "/feed" still redirects to "/login"
 
   Scenario: The block lifts after 15 minutes
     Given a fresh SQLite database file
@@ -226,7 +226,7 @@ Feature: Accounts and login with first-run admin setup
     And I log in as "rob" with password "wrong-password" 5 times
     When 15 minutes pass
     And I log in as "rob" with password "correct-horse-1"
-    Then requesting "/" now returns status 200
+    Then requesting "/feed" now returns status 200
 
   Scenario: A success resets the failure count
     Given a fresh SQLite database file
@@ -237,7 +237,7 @@ Feature: Accounts and login with first-run admin setup
     And I log out
     When I log in as "rob" with password "wrong-password" 4 times
     And I log in as "rob" with password "correct-horse-1"
-    Then requesting "/" now returns status 200
+    Then requesting "/feed" now returns status 200
 
   Scenario: Another client is not blocked by someone else's failures
     Given a fresh SQLite database file
@@ -245,7 +245,7 @@ Feature: Accounts and login with first-run admin setup
     And I am not signed in
     And the client "203.0.113.7" logs in as "rob" with password "wrong-password" 5 times
     When the client "198.51.100.2" logs in as "rob" with password "correct-horse-1"
-    Then that client can request "/" with status 200
+    Then that client can request "/feed" with status 200
 
   # ---------- Session, remember me, logout ----------
 
@@ -256,7 +256,7 @@ Feature: Accounts and login with first-run admin setup
     And I log in as "rob" with password "correct-horse-1"
     Then no persistent login cookie is set
     When the browser session ends
-    Then requesting "/" redirects to "/login"
+    Then requesting "/feed" redirects to "/login"
 
   Scenario: Remember me keeps the user signed in after the browser session ends
     Given a fresh SQLite database file
@@ -265,7 +265,7 @@ Feature: Accounts and login with first-run admin setup
     And I log in as "rob" with password "correct-horse-1" ticking "Remember me"
     Then a persistent login cookie is set that expires in 30 days
     When the browser session ends
-    Then requesting "/" now returns status 200
+    Then requesting "/feed" now returns status 200
 
   Scenario: Remember me keeps the user signed in across an application restart
     Given a fresh SQLite database file
@@ -274,7 +274,7 @@ Feature: Accounts and login with first-run admin setup
     And I log in as "rob" with password "correct-horse-1" ticking "Remember me"
     When the browser session ends
     And the application is restarted with the same database file
-    Then requesting "/" now returns status 200
+    Then requesting "/feed" now returns status 200
 
   Scenario: Logout ends the session and forgets remember me
     Given a fresh SQLite database file
@@ -282,14 +282,14 @@ Feature: Accounts and login with first-run admin setup
     And I am not signed in
     And I log in as "rob" with password "correct-horse-1" ticking "Remember me"
     When I log out
-    Then the response redirects to "/login"
+    Then the response redirects to "/"
     And the persistent login cookie is deleted
-    And requesting "/" redirects to "/login"
+    And requesting "/feed" redirects to "/login"
 
   Scenario: A signed-in visitor to the login page is sent to the timeline
     Given a fresh SQLite database file
     And the application is running with the user "rob" with password "correct-horse-1"
-    Then requesting "/login" redirects to "/"
+    Then requesting "/login" redirects to "/feed"
 
   Scenario: A visitor restored by remember me is sent from the login page to the timeline
     Given a fresh SQLite database file
@@ -297,7 +297,7 @@ Feature: Accounts and login with first-run admin setup
     And I am not signed in
     And I log in as "rob" with password "correct-horse-1" ticking "Remember me"
     When the browser session ends
-    Then requesting "/login" redirects to "/"
+    Then requesting "/login" redirects to "/feed"
 
   Scenario: A form post without a CSRF token is rejected
     Given a fresh SQLite database file
@@ -315,7 +315,7 @@ Feature: Accounts and login with first-run admin setup
     And the page carries the theme switch
 
   # Non-goals:
-  #   - Top-bar logout control and moving the timeline to /feed (#42).
+  #   - (Done in #42: top-bar logout control and the timeline at /feed.)
   #   - Any per-user scoping of sources/items (#43): every signed-in user still
   #     sees the one shared dataset in this issue (only one user can exist anyway).
   #   - Throttle persistence across restarts; distributed/multi-instance throttling.

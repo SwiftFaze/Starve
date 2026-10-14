@@ -247,33 +247,33 @@ Feature: Post images from the feed, falling back to the site favicon
 
   Scenario: The timeline shows an item's feed image as its thumbnail
     Given the source "Blog" has an unread item "Post" with the stored thumbnail "https://img.example/thumb.jpg" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Post" shows the thumbnail "https://img.example/thumb.jpg"
     And the timeline entry "Post" shows no site icon
 
   Scenario: The timeline shows the site favicon for an item without an image
     Given the source "Blog" has the favicon "https://cdn.example/icon.png"
     And the source "Blog" has an unread item "Post" with no stored thumbnail published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Post" shows the site icon "https://cdn.example/icon.png"
     And the timeline entry "Post" shows no thumbnail
 
   Scenario: A feed image wins over the favicon
     Given the source "Blog" has the favicon "https://cdn.example/icon.png"
     And the source "Blog" has an unread item "Post" with the stored thumbnail "https://img.example/thumb.jpg" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Post" shows the thumbnail "https://img.example/thumb.jpg"
     And the timeline entry "Post" shows no site icon
 
   Scenario: Items stored before the favicon was found show it too
     Given the source "Blog" has an unread item "Old post" with no stored thumbnail published 30 days ago
     And the source "Blog" has the favicon "https://cdn.example/icon.png"
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Old post" shows the site icon "https://cdn.example/icon.png"
 
   Scenario: An item with no image and a source with no favicon shows the blank state
     Given the source "Blog" has an unread item "Post" with no stored thumbnail published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Post" shows no thumbnail
     And the timeline entry "Post" shows no site icon
 

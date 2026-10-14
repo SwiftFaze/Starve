@@ -35,7 +35,7 @@ Feature: Sources keeps the player deck playing
     And a feed server is running
 
   Scenario: The page tabs on the timeline swap the page via htmx and keep their URL
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then every page tab requests its page via htmx without swapping the dock
     And every page tab pushes its URL to the browser history
     And every page tab still works without JavaScript
@@ -54,7 +54,7 @@ Feature: Sources keeps the player deck playing
 
     Examples:
       | page     |
-      | /        |
+      | /feed        |
       | /sources |
 
   Scenario: Loading Sources directly renders a full page
@@ -76,14 +76,14 @@ Feature: Sources keeps the player deck playing
 
     Examples:
       | page     | heading       |
-      | /        | New releases  |
+      | /feed        | New releases  |
       | /sources | Subscriptions |
 
   Scenario: Returning to the timeline from Sources shows the timeline in full
     Given the group "Music" exists
     And the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
     When I request the page "/sources" via htmx
-    And I request the page "/" via htmx
+    And I request the page "/feed" via htmx
     Then the timeline lists "Clip"
     And every group link replaces only the release sheet via htmx
     And every page tab requests its page via htmx without swapping the dock

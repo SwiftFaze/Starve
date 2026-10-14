@@ -40,7 +40,7 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
   Scenario: A playable item's title opens the detail view via htmx and keeps a plain link for no-JS
     Given the source "Cloud" has an unread item "Track" with the link "https://soundcloud.com/artist/track" published 1 days ago
     And the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the title of "Track" requests its detail view into the reader pane via htmx
     And the title of "Track" still links to its open endpoint without JavaScript
     And the title of "Clip" requests its detail view into the reader pane via htmx
@@ -143,7 +143,7 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
     When I request the detail view of the item "Clip" via htmx
     Then the item "Clip" is read
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline does not list "Clip"
 
   Scenario: The detail view offers Open original, which opens externally
@@ -201,7 +201,7 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
 
   Scenario: A post's title still opens the reader, not the detail view
     Given the source "Blog" has an unread item "Post" with the link "https://blog.example/post" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the title of "Post" requests its reader into the reader pane via htmx
     And the title of "Post" does not request a detail view
 

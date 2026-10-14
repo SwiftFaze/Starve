@@ -12,9 +12,9 @@
 </head>
 <body>
   <header class="bar" id="bar">
-    <h1 class="wordmark"><a href="/" th:text="${appName}">Starve</a></h1>
+    <h1 class="wordmark"><a href="/feed" th:text="${appName}">Starve</a></h1>
     <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/" aria-current="page" hx-get="/" hx-target="#sheet" hx-select="#sheet"
+      <a class="tab" href="/feed" aria-current="page" hx-get="/feed" hx-target="#sheet" hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
       <a class="tab" href="/sources" hx-get="/sources" hx-target="#sheet" hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Sources</a>
@@ -33,15 +33,16 @@
          hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
          hx-push-url="true">Later</a>
     </nav>
-    <form class="search" role="search" action="/" method="get">
+    <form class="search" role="search" action="/feed" method="get">
       <input type="search" name="q" th:value="${query}" placeholder="Search" aria-label="Search items"
-             hx-get="/" hx-trigger="input changed delay:300ms, search" hx-target="#sheet" hx-swap="outerHTML"
+             hx-get="/feed" hx-trigger="input changed delay:300ms, search" hx-target="#sheet" hx-swap="outerHTML"
              hx-include="closest form" hx-push-url="true">
       <input type="hidden" name="favourites" value="1" th:if="${favourites}">
       <input type="hidden" name="later" value="1" th:if="${later}">
       <input type="hidden" name="group" th:if="${groupId != null}" th:value="${groupId}">
       <input type="hidden" name="show" value="all" th:if="${showAll}">
     </form>
+    <th:block th:replace="~{signout :: signout}"></th:block>
   </header>
 
   <div class="label">

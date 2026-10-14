@@ -7,10 +7,10 @@ Feature: Favourite items
   items already stored are not favourites); POST /items/{id}/favourite and
   POST /items/{id}/unfavourite, both idempotent, answering an htmx request
   with the re-rendered star (filled or empty) and a plain request with a
-  redirect to "/"; the star on every timeline row and in the reader; a
+  redirect to "/feed"; the star on every timeline row and in the reader; a
   toggle made in the reader also updating that item's row (out-of-band swap);
   favouriting leaving read state alone; a "Favourites" entry in the left
-  navigation after "All" and the groups, linking to "/?favourites=1"; the
+  navigation after "All" and the groups, linking to "/feed?favourites=1"; the
   Favourites view listing favourited items newest first (published date, then
   id descending) whether read or not, paged 50 at a time with "Load more"
   keeping the filter, with no "Show read" or "Mark all read" control and an
@@ -39,7 +39,7 @@ Feature: Favourite items
 
   Scenario: Every timeline row has an empty star that favourites via htmx
     Given the source "Alpha" has an unread item "Song" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Song" has an empty star
     And the star of "Song" favourites it via htmx without a page reload
 
@@ -62,7 +62,7 @@ Feature: Favourite items
     Given the source "Alpha" has an unread item "Song" published 1 days ago
     And the source "Alpha" has an unread item "Talk" published 2 days ago
     And the item "Song" is a favourite
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Song" has a filled star
     And the timeline entry "Talk" has an empty star
 
@@ -81,7 +81,7 @@ Feature: Favourite items
   Scenario: Favouriting without JavaScript redirects back to the timeline
     Given the source "Alpha" has an unread item "Song" published 1 days ago
     When I favourite the item "Song"
-    Then the response redirects to "/"
+    Then the response redirects to "/feed"
     And the item "Song" is a favourite
 
   Scenario: Favouriting does not change read state
@@ -95,9 +95,9 @@ Feature: Favourite items
   Scenario: A read favourite stays out of the default timeline but keeps its star with Show read
     Given the source "Alpha" has a read item "Old" published 2 days ago
     And the item "Old" is a favourite
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline does not list "Old"
-    When I request the home page "/?show=all"
+    When I request the home page "/feed?show=all"
     Then the timeline entry "Old" has a filled star
 
   Scenario Outline: Favouriting or unfavouriting an unknown item returns 404
@@ -146,8 +146,8 @@ Feature: Favourite items
 
   Scenario: The left navigation offers Favourites after All and the groups
     Given the group "Music" exists
-    When I request the home page "/"
-    Then the navigation has the "Favourites" entry linking to "/?favourites=1"
+    When I request the home page "/feed"
+    Then the navigation has the "Favourites" entry linking to "/feed?favourites=1"
     And the "Favourites" entry follows the group "Music"
 
   Scenario: The Favourites view lists favourites newest first, read or not
@@ -158,7 +158,7 @@ Feature: Favourite items
     And the item "Middle" is a favourite
     And the item "Newest" is a favourite
     And the item "Oldest" is a favourite
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline lists the items in this order
       | Newest |
       | Middle |
@@ -170,7 +170,7 @@ Feature: Favourite items
     And the item "First" is a favourite
     And the item "Second" is a favourite
     And the item "Third" is a favourite
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline lists the items in this order
       | Third  |
       | Second |
@@ -179,7 +179,7 @@ Feature: Favourite items
   Scenario: The Favourites entry is marked as current in the Favourites view
     Given the source "Alpha" has an unread item "Song" published 1 days ago
     And the item "Song" is a favourite
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the "Favourites" entry is marked as current
     And no group entry is marked as current
 
@@ -190,7 +190,7 @@ Feature: Favourite items
     And the source "Beta" has an unread item "Talk" published 1 days ago
     And the item "Song" is a favourite
     And the item "Talk" is a favourite
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline lists the items in this order
       | Talk |
       | Song |
@@ -208,23 +208,23 @@ Feature: Favourite items
 
   Scenario: Favouriting an item makes it appear in the Favourites view
     Given the source "Alpha" has an unread item "Song" published 1 days ago
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline does not list "Song"
     When I favourite the item "Song" via htmx
-    And I request the home page "/?favourites=1"
+    And I request the home page "/feed?favourites=1"
     Then the timeline lists "Song"
 
   Scenario: Unfavouriting an item removes it from the Favourites view
     Given the source "Alpha" has an unread item "Song" published 1 days ago
     And the item "Song" is a favourite
     When I unfavourite the item "Song" via htmx
-    And I request the home page "/?favourites=1"
+    And I request the home page "/feed?favourites=1"
     Then the timeline lists no items
 
   Scenario: The Favourites view has a star on every row and no read controls
     Given the source "Alpha" has an unread item "Song" published 1 days ago
     And the item "Song" is a favourite
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline entry "Song" has a filled star
     And the page has no "Mark all read" control
     And the page has no "Show read" control
@@ -232,12 +232,12 @@ Feature: Favourite items
   Scenario: The Favourites view ignores the show parameter
     Given the source "Alpha" has a read item "Old" published 2 days ago
     And the item "Old" is a favourite
-    When I request the home page "/?favourites=1&show=all"
+    When I request the home page "/feed?favourites=1&show=all"
     Then the timeline lists "Old"
 
   Scenario: Favourites with nothing favourited shows an empty state
     Given the source "Alpha" has an unread item "Song" published 1 days ago
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline lists no items
     And the page contains "No favourites yet"
     And the page does not contain "You're all caught up"
@@ -246,7 +246,7 @@ Feature: Favourite items
     Given the source "Alpha" has 120 unread items published at one-minute intervals
     And every item is a favourite
     And the source "Alpha" has an unread item "Plain" published 60 days ago
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline lists 50 items
     When I load more
     And I load more
@@ -305,7 +305,7 @@ Feature: Favourite items
     Given the database is migrated only up to before favourites
     And it holds a source "Blog" with a stored item titled "Old post"
     And the application is running
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the timeline lists no items
     When I favourite the item "Old post" via htmx
     Then the item "Old post" is a favourite

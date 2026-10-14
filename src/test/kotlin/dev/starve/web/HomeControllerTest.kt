@@ -89,7 +89,7 @@ class HomeControllerTest {
         controller(items).home(TimelineQuery(show = "all"), null, model)
 
         assertEquals(true, items.requested!!.second)
-        assertEquals("/?after=${published.toEpochMilli()}_50&show=all", model.getAttribute("moreHref"))
+        assertEquals("/feed?after=${published.toEpochMilli()}_50&show=all", model.getAttribute("moreHref"))
     }
 
     @Test
@@ -134,7 +134,7 @@ class HomeControllerTest {
 
         controller(items).home(TimelineQuery(favourites = "1"), null, model)
 
-        assertEquals("/?after=${published.toEpochMilli()}_50&favourites=1", model.getAttribute("moreHref"))
+        assertEquals("/feed?after=${published.toEpochMilli()}_50&favourites=1", model.getAttribute("moreHref"))
         assertEquals(SeriesView("Favourites", null), model.getAttribute("series"))
     }
 
@@ -144,7 +144,7 @@ class HomeControllerTest {
 
         controller(TimelineItems()).home(TimelineQuery(favourites = "1"), null, model)
 
-        assertEquals(NavEntryView("Favourites", "/?favourites=1", true), model.getAttribute("favouritesEntry"))
+        assertEquals(NavEntryView("Favourites", "/feed?favourites=1", true), model.getAttribute("favouritesEntry"))
         val groups = model.getAttribute("nav") as List<*>
         assertEquals(listOf(false, false, false), groups.map { (it as NavEntryView).current })
     }
@@ -155,7 +155,7 @@ class HomeControllerTest {
 
         controller(TimelineItems()).home(TimelineQuery(), null, model)
 
-        assertEquals(NavEntryView("Favourites", "/?favourites=1", false), model.getAttribute("favouritesEntry"))
+        assertEquals(NavEntryView("Favourites", "/feed?favourites=1", false), model.getAttribute("favouritesEntry"))
         val groups = model.getAttribute("nav") as List<*>
         assertEquals(true, (groups.first() as NavEntryView).current)
     }
@@ -186,7 +186,7 @@ class HomeControllerTest {
         val c = controller(TimelineItems(links = mapOf(1L to "http://x.test/a", 2L to null)))
 
         assertEquals("redirect:http://x.test/a", c.open(1))
-        assertEquals("redirect:/", c.open(2))
+        assertEquals("redirect:/feed", c.open(2))
     }
 
     @Test
@@ -204,7 +204,7 @@ class HomeControllerTest {
 
         assertEquals(HttpStatus.OK, htmx.statusCode)
         assertEquals("", htmx.body)
-        assertEquals("redirect:/", c.markRead(1, null))
+        assertEquals("redirect:/feed", c.markRead(1, null))
     }
 
     @Test
@@ -220,7 +220,7 @@ class HomeControllerTest {
 
         val view = controller(items).markAllRead(published.toEpochMilli(), null)
 
-        assertEquals("redirect:/", view)
+        assertEquals("redirect:/feed", view)
         assertEquals(published to now, items.markAllCall)
     }
 
@@ -232,8 +232,8 @@ class HomeControllerTest {
         controller(items).home(TimelineQuery(show = "all", group = "2"), null, model)
 
         assertEquals(2L, items.requestedGroup)
-        assertEquals("/?after=${published.toEpochMilli()}_50&show=all&group=2", model.getAttribute("moreHref"))
-        assertEquals("/?group=2", model.getAttribute("toggleHref"))
+        assertEquals("/feed?after=${published.toEpochMilli()}_50&show=all&group=2", model.getAttribute("moreHref"))
+        assertEquals("/feed?group=2", model.getAttribute("toggleHref"))
         assertEquals(2L, model.getAttribute("groupId"))
     }
 
@@ -257,15 +257,15 @@ class HomeControllerTest {
 
         val expected =
             listOf(
-                NavEntryView("All (5)", "/", false),
-                NavEntryView("music (3)", "/?group=1", true),
-                NavEntryView("News (0)", "/?group=2", false),
+                NavEntryView("All (5)", "/feed", false),
+                NavEntryView("music (3)", "/feed?group=1", true),
+                NavEntryView("News (0)", "/feed?group=2", false),
             )
         assertEquals(expected, model.getAttribute("nav"))
 
         val all = ConcurrentModel()
         controller(TimelineItems()).home(TimelineQuery(), null, all)
-        assertEquals("/?show=all", all.getAttribute("toggleHref"))
+        assertEquals("/feed?show=all", all.getAttribute("toggleHref"))
     }
 
     @Test
@@ -286,7 +286,7 @@ class HomeControllerTest {
 
         val view = controller(items).markAllRead(published.toEpochMilli(), 2)
 
-        assertEquals("redirect:/?group=2", view)
+        assertEquals("redirect:/feed?group=2", view)
         assertEquals(2L, items.markAllGroup)
     }
 
@@ -333,7 +333,7 @@ class HomeControllerTest {
             .home(TimelineQuery(q = "a b"), null, model)
 
         val href = model.getAttribute("moreHref") as String
-        assertTrue(href.startsWith("/?q=a+b&after="), href)
+        assertTrue(href.startsWith("/feed?q=a+b&after="), href)
     }
 
     @Test
@@ -379,7 +379,7 @@ class HomeControllerTest {
             .home(TimelineQuery(q = "a", favourites = "1"), null, model)
 
         val href = model.getAttribute("moreHref") as String
-        assertTrue(href.startsWith("/?q=a&after="), href)
+        assertTrue(href.startsWith("/feed?q=a&after="), href)
         assertTrue(href.endsWith("&favourites=1"), href)
     }
 
@@ -415,7 +415,7 @@ class HomeControllerTest {
             .home(TimelineQuery(q = "a", later = "1"), null, model)
 
         val href = model.getAttribute("moreHref") as String
-        assertTrue(href.startsWith("/?q=a&after="), href)
+        assertTrue(href.startsWith("/feed?q=a&after="), href)
         assertTrue(href.endsWith("&later=1"), href)
     }
 
@@ -463,7 +463,7 @@ class HomeControllerTest {
 
         controller(TimelineItems(savedRows = saved)).home(TimelineQuery(later = "1"), null, model)
 
-        assertEquals("/?after=50_50&later=1", model.getAttribute("moreHref"))
+        assertEquals("/feed?after=50_50&later=1", model.getAttribute("moreHref"))
         assertEquals(SeriesView("Later", null), model.getAttribute("series"))
     }
 
@@ -473,8 +473,8 @@ class HomeControllerTest {
 
         controller(TimelineItems()).home(TimelineQuery(later = "1"), null, model)
 
-        assertEquals(NavEntryView("Later", "/?later=1", true), model.getAttribute("laterEntry"))
-        assertEquals(NavEntryView("Favourites", "/?favourites=1", false), model.getAttribute("favouritesEntry"))
+        assertEquals(NavEntryView("Later", "/feed?later=1", true), model.getAttribute("laterEntry"))
+        assertEquals(NavEntryView("Favourites", "/feed?favourites=1", false), model.getAttribute("favouritesEntry"))
         val groups = model.getAttribute("nav") as List<*>
         assertEquals(listOf(false, false, false), groups.map { (it as NavEntryView).current })
     }

@@ -17,7 +17,7 @@ class LoginController {
         request: HttpServletRequest,
         model: Model,
     ): String {
-        if (request.userPrincipal != null) return "redirect:/"
+        if (request.userPrincipal != null) return "redirect:/feed"
         model.addAttribute("message", messageFor(error, blocked))
         return "login"
     }

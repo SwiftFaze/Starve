@@ -35,13 +35,13 @@ Feature: Reader pane for blog posts
 
   Scenario: A blog post's title opens the reader via htmx and keeps a plain link for no-JS
     Given the source "Blog" has an unread item "Post" with the link "https://blog.example/post" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the title of "Post" requests its reader into the reader pane via htmx
     And the title of "Post" still links to its open endpoint without JavaScript
 
   Scenario: The home page has an empty reader pane beside the list
     Given the source "Blog" has an unread item "Post" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the page has a reader pane
     And the reader pane is empty
 
@@ -65,7 +65,7 @@ Feature: Reader pane for blog posts
     Given the source "Blog" has an unread item "Post" with the link "https://blog.example/post" and the stored body "<p>Hi</p>" published 1 days ago
     When I request the reader of the item "Post" via htmx
     Then the item "Post" is read
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline does not list "Post"
 
   Scenario: The reader offers Open original, which opens externally
@@ -117,7 +117,7 @@ Feature: Reader pane for blog posts
 
   Scenario: A YouTube video's title requests its detail view, not the reader
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the title of "Clip" does not request a reader
     And the title of "Clip" requests its detail view into the reader pane via htmx
     And the title of "Clip" still links to its open endpoint without JavaScript
@@ -126,7 +126,7 @@ Feature: Reader pane for blog posts
 
   Scenario: A SoundCloud track's title requests its detail view, not the reader
     Given the source "Cloud" has an unread item "Track" with the link "https://soundcloud.com/artist/track" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the title of "Track" does not request a reader
     And the title of "Track" requests its detail view into the reader pane via htmx
     When I request the reader of the item "Track" via htmx

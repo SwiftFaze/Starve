@@ -16,7 +16,7 @@ Feature: Project skeleton
 
   Scenario: Home page shows the app name and an empty state
     Given the application is running
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the response status is 200
     And the page contains "Starve"
     And the page contains "No sources yet"

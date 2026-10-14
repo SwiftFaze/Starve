@@ -12,13 +12,14 @@
 </head>
 <body>
   <header class="bar" id="bar">
-    <p class="wordmark"><a href="/">Starve</a></p>
+    <p class="wordmark"><a href="/feed">Starve</a></p>
     <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/" hx-get="/" hx-target="#sheet" hx-select="#sheet"
+      <a class="tab" href="/feed" hx-get="/feed" hx-target="#sheet" hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
       <a class="tab" href="/sources" aria-current="page" hx-get="/sources" hx-target="#sheet" hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Sources</a>
     </nav>
+    <th:block th:replace="~{signout :: signout}"></th:block>
   </header>
 
   <div class="label">

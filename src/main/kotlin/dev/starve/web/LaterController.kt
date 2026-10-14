@@ -43,7 +43,7 @@ class LaterController(
         if (!found) throw ResponseStatusException(HttpStatus.NOT_FOUND)
         val pane = from?.takeIf { it in PANES }
         return when {
-            htmx == null -> ModelAndView("redirect:/")
+            htmx == null -> ModelAndView("redirect:/feed")
             pane != null -> paneAnswer(id, saved, pane)
             else -> ModelAndView("later :: toggle", mapOf("laterToggle" to LaterView("later-$id", id, saved)))
         }

@@ -54,8 +54,8 @@ class FavouriteControllerTest {
     fun `a plain request redirects to the timeline`() {
         val c = controller(TimelineItems(links = mapOf(5L to null)))
 
-        assertEquals("redirect:/", c.favourite("5", null, null).viewName)
-        assertEquals("redirect:/", c.unfavourite("5", null, null).viewName)
+        assertEquals("redirect:/feed", c.favourite("5", null, null).viewName)
+        assertEquals("redirect:/feed", c.unfavourite("5", null, null).viewName)
     }
 
     @Test
