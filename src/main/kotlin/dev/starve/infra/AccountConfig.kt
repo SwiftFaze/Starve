@@ -4,6 +4,8 @@ import dev.starve.application.AppMetadata
 import dev.starve.application.FailureThrottle
 import dev.starve.application.RememberMeKeyProvider
 import dev.starve.application.SetupService
+import dev.starve.application.SignupService
+import dev.starve.application.SignupSettings
 import dev.starve.application.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -16,20 +18,32 @@ import java.time.Clock
 
 /** Wires the account services; the security chain itself lives in [SecurityConfig]. */
 @Configuration
-class AccountConfig {
+class AccountConfig(
+    private val clock: Clock,
+) {
     @Bean
     fun rememberMeKeys(metadata: AppMetadata) = RememberMeKeyProvider(metadata)
 
     @Bean
-    fun failureThrottle(clock: Clock) = FailureThrottle(clock)
+    fun failureThrottle() = FailureThrottle(clock)
 
     @Bean
     fun setupService(
         users: UserRepository,
         encoder: PasswordEncoder,
         throttle: FailureThrottle,
-        clock: Clock,
     ) = SetupService(users, { encoder.encode(it) }, throttle, clock)
+
+    @Bean
+    fun signupSettings(metadata: AppMetadata) = SignupSettings(metadata)
+
+    @Bean
+    fun signupService(
+        users: UserRepository,
+        encoder: PasswordEncoder,
+        throttle: FailureThrottle,
+        settings: SignupSettings,
+    ) = SignupService(users, { encoder.encode(it) }, throttle, clock, settings)
 }
 
 /** Logs this run's setup code once the application is ready, but only while no account exists. */

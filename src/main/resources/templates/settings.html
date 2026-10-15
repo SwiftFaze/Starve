@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings - Starve</title>
+  <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/starve.css">
+  <script src="/htmx.min.js"></script>
+</head>
+<body>
+  <header class="bar" id="bar">
+    <p class="wordmark"><a href="/feed">Starve</a></p>
+    <nav class="pages" aria-label="Pages">
+      <a class="tab" href="/feed">Timeline</a>
+      <a class="tab" href="/sources">Sources</a>
+    </nav>
+    <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
+  </header>
+
+  <div class="label">
+    <aside class="sleeve" aria-label="Settings">
+      <div class="series-block">
+        <h1 class="series roster-name">Settings</h1>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
+      </div>
+
+      <form class="add" method="post" th:action="@{/settings/signups}">
+        <input type="hidden" name="allow" th:value="${!signupsOn}">
+        <span class="field-label" id="signups-label">Allow new signups</span>
+        <div class="field-row">
+          <button type="submit" role="switch" aria-labelledby="signups-label" th:attr="aria-checked=${signupsOn}"
+                  th:text="${signupsOn} ? 'On' : 'Off'">Off</button>
+        </div>
+        <p class="hint">While on, anyone who can reach this instance can create a regular account at /signup.</p>
+      </form>
+    </aside>
+
+    <main class="sheet" id="sheet">
+      <p class="sheet-note">Settings that apply to the whole instance. Only admins see this page.</p>
+    </main>
+  </div>
+</body>
+</html>

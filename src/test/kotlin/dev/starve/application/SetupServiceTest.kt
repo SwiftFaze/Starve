@@ -35,6 +35,12 @@ private class FakeUsers(
         passwordHash: String,
         at: Instant,
     ): User = User(rows.size + 1L, username, passwordHash, admin = false).also { rows += it }
+
+    override fun insertIfFree(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User? = if (findByUsername(username) != null) null else insert(username, passwordHash, at)
 }
 
 class SetupServiceTest {
@@ -145,6 +151,12 @@ class SetupServiceTest {
                     passwordHash: String,
                     at: Instant,
                 ): User = error("unused")
+
+                override fun insertIfFree(
+                    username: String,
+                    passwordHash: String,
+                    at: Instant,
+                ): User? = error("unused")
             }
         val raced = SetupService(racing, { it }, throttle, clock, SecureRandom())
         val issued = requireNotNull(raced.startRun())

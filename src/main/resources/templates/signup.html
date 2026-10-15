@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign up - Starve</title>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/starve.css">
+  <script src="/htmx.min.js"></script>
+</head>
+<body>
+  <header class="bar" id="bar">
+    <p class="wordmark"><a href="/">Starve</a></p>
+  </header>
+
+  <div class="label">
+    <aside class="sleeve" aria-label="Sign up">
+      <div class="series-block">
+        <h1 class="series roster-name" th:text="${open} ? 'Sign up' : 'Signups are closed'">Sign up</h1>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
+      </div>
+
+      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">That username is already taken</p>
+
+      <form class="add" method="post" th:action="@{/signup}" th:if="${open}">
+        <label class="field-label" for="username">Username</label>
+        <div class="field-row">
+          <input class="field" id="username" type="text" name="username" autocomplete="username"
+                 autocapitalize="none" spellcheck="false" aria-describedby="username-hint" required>
+        </div>
+        <p class="hint" id="username-hint">3-32 letters, digits, dots, underscores or hyphens</p>
+
+        <label class="field-label" for="password">Password</label>
+        <div class="field-row">
+          <input class="field" id="password" type="password" name="password" autocomplete="new-password"
+                 aria-describedby="password-hint" required>
+          <button type="submit">Sign up</button>
+        </div>
+        <p class="hint" id="password-hint">At least 10 characters</p>
+      </form>
+    </aside>
+
+    <main class="sheet" id="sheet">
+      <p class="sheet-note" th:unless="${open}">New accounts are not being accepted on this instance right now.</p>
+      <p class="sheet-note" th:if="${open}">This creates a regular account on this instance.</p>
+      <a class="read-toggle" href="/login">Sign in</a>
+    </main>
+  </div>
+</body>
+</html>

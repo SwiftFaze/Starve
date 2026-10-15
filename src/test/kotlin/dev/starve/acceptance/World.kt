@@ -6,7 +6,7 @@ import java.net.http.HttpResponse
 object World {
     /** The account every scenario that is not about accounts runs as. */
     const val OWNER = "owner"
-    const val OWNER_PASSWORD = "owner-pass-1"
+    const val OWNER_PASSWORD = "correct-horse-1"
 
     /** Stands in for YouTube oEmbed; started once because the application needs its URL when it starts. */
     val oembed: FeedServer by lazy { FeedServer() }

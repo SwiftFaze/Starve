@@ -34,7 +34,18 @@ private const val CSRF_HEADER = "X-CSRF-TOKEN"
 private typealias Registry = AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
 
 private val PUBLIC_PATHS =
-    listOf("/", "/setup", "/login", "/error", "/actuator/health", "/*.css", "/*.js", "/fonts/**", "/favicon.ico")
+    listOf(
+        "/",
+        "/setup",
+        "/login",
+        "/signup",
+        "/error",
+        "/actuator/health",
+        "/*.css",
+        "/*.js",
+        "/fonts/**",
+        "/favicon.ico",
+    )
 
 /**
  * What the login chain needs: the throttled password check, the account lookup, and the remember-me key.
@@ -98,6 +109,7 @@ class SecurityConfig {
 
     private fun authorise(registry: Registry) {
         PUBLIC_PATHS.forEach { registry.requestMatchers(it).permitAll() }
+        registry.requestMatchers("/settings", "/settings/**").hasRole("ADMIN")
         registry.anyRequest().authenticated()
     }
 

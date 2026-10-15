@@ -34,7 +34,7 @@ class SecurityAccessTest : SecurityTestBase() {
     @ParameterizedTest
     @ValueSource(
         strings = [
-            "/", "/login", "/actuator/health", "/starve.css", "/htmx.min.js", "/fonts/mono.woff2",
+            "/", "/login", "/signup", "/actuator/health", "/starve.css", "/htmx.min.js", "/fonts/mono.woff2",
             "/fonts/a/b.woff2", "/favicon.ico",
         ],
     )

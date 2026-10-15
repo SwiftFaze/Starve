@@ -430,6 +430,13 @@ interface UserRepository {
         passwordHash: String,
         at: Instant,
     ): User
+
+    /** Stores [username] as an ordinary account unless the name is taken (ignoring case); null when it is. */
+    fun insertIfFree(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User?
 }
 
 /** Hashes a raw password for storage. */
@@ -446,4 +453,10 @@ interface AppMetadata {
         key: String,
         value: String,
     ): Boolean
+
+    /** Stores [value] under [key], replacing any value already there. */
+    fun put(
+        key: String,
+        value: String,
+    )
 }

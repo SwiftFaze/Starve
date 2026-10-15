@@ -6,10 +6,7 @@ import dev.starve.domain.AccountRules
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -45,7 +42,7 @@ class SetupController(
     ): String =
         when (val outcome = setup.complete(form.code, form.username, form.password, request.remoteAddr)) {
             is SetupOutcome.Created -> {
-                signIn(outcome.username, request, response)
+                signInSession(accounts, outcome.username, request, response)
                 "redirect:/feed"
             }
 
@@ -72,20 +69,5 @@ class SetupController(
     ): String {
         model.addAttribute("message", message)
         return "setup"
-    }
-
-    /** Signs the new admin in on this session, with a fresh session id as a login does. */
-    private fun signIn(
-        username: String,
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-    ) {
-        val principal = accounts.loadUserByUsername(username)
-        val context = SecurityContextHolder.createEmptyContext()
-        val authentication = UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.authorities)
-        context.authentication = authentication
-        request.getSession(true)
-        request.changeSessionId()
-        HttpSessionSecurityContextRepository().saveContext(context, request, response)
     }
 }

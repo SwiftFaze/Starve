@@ -77,6 +77,24 @@ class JdbcAccountRepositoriesTest {
     }
 
     @Test
+    fun `insertIfFree stores a free name as a non-admin that can be found again`() {
+        users.insertFirstAdmin("rob", "hash", now)
+
+        val inserted = users.insertIfFree("Amy", "h2", now)
+
+        assertEquals(User(2, "Amy", "h2", admin = false), inserted)
+        assertEquals(inserted, users.findByUsername("amy"))
+    }
+
+    @Test
+    fun `insertIfFree refuses a name taken in any case and changes nothing`() {
+        users.insertFirstAdmin("rob", "hash", now)
+
+        assertNull(users.insertIfFree("ROB", "other", now))
+        assertEquals("hash", users.findByUsername("rob")!!.passwordHash)
+    }
+
+    @Test
     fun `an unknown username finds nobody`() {
         users.insertFirstAdmin("rob", "hash", now)
 
@@ -99,5 +117,14 @@ class JdbcAccountRepositoriesTest {
         assertFalse(metadata.putIfAbsent("k", "two"))
 
         assertEquals("one", metadata.find("k"))
+    }
+
+    @Test
+    fun `put stores a new value and replaces an old one`() {
+        metadata.put("k", "one")
+        assertEquals("one", metadata.find("k"))
+
+        metadata.put("k", "two")
+        assertEquals("two", metadata.find("k"))
     }
 }

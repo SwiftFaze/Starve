@@ -25,4 +25,16 @@ class JdbcAppMetadata(
             .sql("INSERT OR IGNORE INTO app_metadata (key, value) VALUES (?, ?)")
             .params(key, value)
             .update() == 1
+
+    override fun put(
+        key: String,
+        value: String,
+    ) {
+        jdbc
+            .sql(
+                "INSERT INTO app_metadata (key, value) VALUES (?, ?) " +
+                    "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            ).params(key, value)
+            .update()
+    }
 }

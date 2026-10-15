@@ -20,6 +20,13 @@ private class MapMetadata(
         values[key] = value
         return true
     }
+
+    override fun put(
+        key: String,
+        value: String,
+    ) {
+        values[key] = value
+    }
 }
 
 class RememberMeKeyProviderTest {

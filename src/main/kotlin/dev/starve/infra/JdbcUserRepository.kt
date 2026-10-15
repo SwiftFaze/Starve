@@ -52,6 +52,22 @@ class JdbcUserRepository(
                 .single()
         return User(id, username, passwordHash, admin = false)
     }
+
+    /** One statement, so two signups for one name cannot both pass the check; the loser gets null, not an error. */
+    override fun insertIfFree(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User? =
+        jdbc
+            .sql(
+                "INSERT INTO users (username, password_hash, admin, created_at) " +
+                    "SELECT ?, ?, 0, ? WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = ?) RETURNING id",
+            ).params(username, passwordHash, at.toEpochMilli(), username)
+            .query(Long::class.java)
+            .optional()
+            .map { User(it, username, passwordHash, admin = false) }
+            .orElse(null)
 }
 
 private fun ResultSet.toUser() =

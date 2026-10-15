@@ -2,10 +2,13 @@ package dev.starve.infra
 
 import dev.starve.application.AppMetadata
 import dev.starve.application.SetupService
+import dev.starve.application.SignupSettings
 import dev.starve.application.UserRepository
 import dev.starve.domain.User
 import dev.starve.web.LoginController
+import dev.starve.web.SettingsController
 import dev.starve.web.SetupController
+import dev.starve.web.SignupController
 import jakarta.servlet.http.Cookie
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -69,6 +72,12 @@ class FakeUsers : UserRepository {
         at: Instant,
     ): User = User(accounts.size + 1L, username, passwordHash, false).also { accounts += it }
 
+    override fun insertIfFree(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User? = if (findByUsername(username) != null) null else insert(username, passwordHash, at)
+
     private companion object {
         val HASHER = BCryptPasswordEncoder(4)
     }
@@ -83,6 +92,13 @@ class FakeMetadata : AppMetadata {
         key: String,
         value: String,
     ) = values.putIfAbsent(key, value) == null
+
+    override fun put(
+        key: String,
+        value: String,
+    ) {
+        values[key] = value
+    }
 }
 
 /**
@@ -122,7 +138,9 @@ class SecurityTestBeans {
  * The real security chain and account controllers behind MockMvc, with in-memory accounts. Each test gets its own
  * context, because mutation testing would otherwise reuse a context built before the mutant was applied.
  */
-@WebMvcTest(controllers = [LoginController::class, SetupController::class])
+@WebMvcTest(
+    controllers = [LoginController::class, SetupController::class, SignupController::class, SettingsController::class],
+)
 @Import(SecurityConfig::class, AccountConfig::class, SecurityTestBeans::class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 abstract class SecurityTestBase {
@@ -134,6 +152,9 @@ abstract class SecurityTestBase {
 
     @Autowired
     protected lateinit var setup: SetupService
+
+    @Autowired
+    protected lateinit var signups: SignupSettings
 
     protected fun withAccounts() {
         users.add(ADMIN, admin = true)

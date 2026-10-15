@@ -21,6 +21,7 @@ object AccountRules {
     const val PASSWORD_LONG = "Password is too long"
     const val LOGIN_FAILED = "Invalid username or password"
     const val TOO_MANY_ATTEMPTS = "Too many failed attempts. Try again later."
+    const val USERNAME_TAKEN = "That username is already taken"
     const val INVALID_SETUP_CODE = "Invalid setup code"
 
     private const val MIN_PASSWORD_CHARS = 10

@@ -38,6 +38,12 @@ class CurrentUserIdResolverTest {
                 passwordHash: String,
                 at: Instant,
             ) = error("unused")
+
+            override fun insertIfFree(
+                username: String,
+                passwordHash: String,
+                at: Instant,
+            ) = error("unused")
         }
     private val resolver = CurrentUserIdResolver(users)
     private val request = ServletWebRequest(MockHttpServletRequest())

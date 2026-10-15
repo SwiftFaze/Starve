@@ -399,6 +399,16 @@ input[type="file"].field::file-selector-button {
   margin-left: 0;
 }
 
+/* The admin-only Settings link sits just left of Sign out, taking over its push to the right edge. */
+.settings-link {
+  margin-left: auto;
+}
+
+.search + .settings-link,
+.settings-link + .signout {
+  margin-left: 0;
+}
+
 .signout button {
   min-height: 2rem;
 }

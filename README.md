@@ -33,6 +33,14 @@ Behind a reverse proxy, forward `X-Forwarded-For` and `X-Forwarded-Proto`
 (`server.forward-headers-strategy: native` is set), so failed attempts are
 throttled per real client address rather than per proxy.
 
+## Letting a friend in
+
+Signups are off by default. As the admin, open **Settings** in the top bar and
+turn on **Allow new signups**; your friend visits `/signup`, picks a username
+and a password and is signed in with their own empty account (never an admin).
+Turn the switch off again when they are in. Failed signup attempts are throttled
+per client address.
+
 ## Subscribing to feeds
 
 Open **Sources** (<http://localhost:8080/sources>) and paste a feed URL, or just
