@@ -1,6 +1,6 @@
 Feature: Accounts and login with first-run admin setup
   Every route requires a signed-in user, except "/" (the public landing page),
-  "/setup", "/login", static assets and "/actuator/health". Users live in a "users" table (username unique
+  "/setup", "/login", "/signup" (while signups are on, see self-signup.feature), static assets and "/actuator/health". Users live in a "users" table (username unique
   case-insensitively, BCrypt password hash, admin flag).
 
   First run: while no user exists, every route except health and static
@@ -39,7 +39,7 @@ Feature: Accounts and login with first-run admin setup
   chronological-feed.feature, and "There is no authentication" in
   docs/architecture.md.
   Out of scope:
-  per-user data (#43); signup (#44); account page, password change and
+  per-user data (#43); account page, password change and
   user management (#45); email reset, OAuth, 2FA.
 
   # ---------- First-run setup ----------

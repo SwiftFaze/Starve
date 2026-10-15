@@ -1,5 +1,6 @@
 package dev.starve.web
 
+import dev.starve.application.SignupSettings
 import dev.starve.domain.AccountRules
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Controller
@@ -9,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam
 
 /** The login page. The form posts to Spring Security, which is where a password is checked. */
 @Controller
-class LoginController {
+class LoginController(
+    private val signups: SignupSettings,
+) {
     @GetMapping("/login")
     fun login(
         @RequestParam(required = false) error: String?,
@@ -19,6 +22,7 @@ class LoginController {
     ): String {
         if (request.userPrincipal != null) return "redirect:/feed"
         model.addAttribute("message", messageFor(error, blocked))
+        model.addAttribute("signupsOpen", signups.enabled())
         return "login"
     }
 

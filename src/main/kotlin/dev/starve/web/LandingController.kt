@@ -1,5 +1,6 @@
 package dev.starve.web
 
+import dev.starve.application.SignupSettings
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -13,7 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping
  * sent to the timeline at "/feed", keeping the query so old timeline URLs still work.
  */
 @Controller
-class LandingController {
+class LandingController(
+    private val signups: SignupSettings,
+) {
     @GetMapping("/")
     fun home(
         request: HttpServletRequest,
@@ -21,6 +24,7 @@ class LandingController {
     ): Any {
         if (request.userPrincipal == null) {
             model.addAttribute("appName", "Starve")
+            model.addAttribute("signupsOpen", signups.enabled())
             return "landing"
         }
         val query = request.queryString?.let { "?$it" }.orEmpty()

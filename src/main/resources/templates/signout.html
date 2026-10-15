@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
-<!-- The top bar's sign-out button: a plain POST form, so it works without JavaScript and inside every swapped bar. -->
+<!-- The top bar's Settings link (admins only) and sign-out button: a plain POST form, so it works without JavaScript and inside every swapped bar. -->
 <th:block th:fragment="signout">
+  <a class="tab settings-link" href="/settings" th:if="${admin}">Settings</a>
   <form class="signout" method="post" th:action="@{/logout}">
     <button type="submit">Sign out</button>
   </form>

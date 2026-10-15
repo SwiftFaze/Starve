@@ -15,8 +15,8 @@ class SetupGateTest : SecurityTestBase() {
     @ParameterizedTest
     @ValueSource(
         strings = [
-            "/", "/login", "/sources", "/nested/page.css", "/nested/app.js", "/fonts", "/page.css.map",
-            "/setup/x",
+            "/", "/login", "/signup", "/settings", "/sources", "/nested/page.css", "/nested/app.js",
+            "/fonts", "/page.css.map", "/setup/x",
         ],
     )
     fun `while no account exists everything else goes to setup`(path: String) {

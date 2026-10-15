@@ -2,8 +2,9 @@ Feature: Public home page presenting Starve, with the timeline at /feed
   "/" is a public landing page for anonymous visitors: what Starve is (a
   short pitch), a few highlights (feeds, YouTube and SoundCloud playback,
   import from YouTube Takeout or OPML), and a "Sign in" link to "/login". It
-  carries the theme switch and works at phone width, and shows no screenshots
-  and no sign-up link. A signed-in visitor to "/" is redirected to "/feed",
+  carries the theme switch and works at phone width, and shows no screenshots;
+  a "Sign up" link to "/signup" appears only while signups are on
+  (self-signup.feature). A signed-in visitor to "/" is redirected to "/feed",
   keeping any query string, so old timeline URLs keep working. The timeline,
   with all its views and URLs, now lives at "/feed": the group, Favourites,
   Later, search and "show=all" parameters and the "after" paging fragment
@@ -87,7 +88,7 @@ Feature: Public home page presenting Starve, with the timeline at /feed
     - Any other occurrence found with
       `grep -rn 'home page "/\|page "/"' specs/features`.
 
-  Out of scope: the "Sign up" link (#44); per-user data (#43); account page
+  Out of scope: per-user data (#43); account page
   and password change (#45). Browser behaviour (the theme actually flipping,
   the 375px layout, the shutter, htmx history) is covered by the human
   playtest, as in theme-switch.feature; exact landing wording is settled at
@@ -110,12 +111,11 @@ Feature: Public home page presenting Starve, with the timeline at /feed
     And the page contains "OPML"
     And the landing page has a "Sign in" link to "/login"
 
-  Scenario: The landing page has no screenshots, no sign-up link and no sign-out control
+  Scenario: The landing page has no screenshots and no sign-out control
     Given the application is running
     And I am not signed in
     When I request "/"
     Then the page contains no images
-    And the page does not contain "Sign up"
     And the page has no sign-out control
 
   Scenario: The landing page follows the theme switch and phone width
@@ -320,7 +320,7 @@ Feature: Public home page presenting Starve, with the timeline at /feed
     And requesting "/feed" now returns status 200
 
   # Non-goals:
-  #   - A "Sign up" link or any registration (#44); per-user data (#43);
+  #   - Per-user data (#43);
   #     account page (#45).
   #   - Screenshots, animation or analytics on the landing page; exact copy.
   #   - Real browser behaviour: theme flipping, 375px layout, the shutter,

@@ -17,7 +17,11 @@ class PublicHomeSteps {
     fun landingHasLink(
         label: String,
         href: String,
-    ) = assertHasLink(body(), label, href)
+    ) {
+        // Fetched here, so the step also holds right after arranging state, with no request of its own before it.
+        World.response = app.get("/")
+        assertHasLink(body(), label, href)
+    }
 
     @Then("requesting {string} returns the landing page with a {string} link to {string}")
     fun requestingReturnsLanding(
