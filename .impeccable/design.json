@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T00:00:00Z",
+  "generatedAt": "2026-10-15T00:00:00Z",
   "title": "Design System: Starve",
   "extensions": {
     "colorMeta": {
@@ -140,7 +140,7 @@
         ],
         "cssVar": "--text-3",
         "lightCounterpart": "ink-faint",
-        "note": "3.9:1 on ink, 3.7:1 on ink-raised: de-emphasis only, not reading text."
+        "note": "Clears 4.5:1 on every ground (>=4.68:1) but exists to recede: read rows, placeholders, crosses, code comments."
       },
       "obi-red": {
         "role": "primary",
@@ -157,7 +157,8 @@
           "oklch(95% 0.2 30)"
         ],
         "cssVar": "--red",
-        "lightCounterpart": "paper-red"
+        "lightCounterpart": "paper-red",
+        "note": "Obi, live/playing state, and the sanctioned active-panel outline (issue #38)."
       },
       "obi-red-text": {
         "role": "primary",
@@ -191,7 +192,44 @@
           "oklch(95% 0.11 183)"
         ],
         "cssVar": "--cyan",
-        "lightCounterpart": "deep-cyan"
+        "lightCounterpart": "deep-cyan",
+        "note": "Focus, the pressed layout button, a drop target / lifted title bar, an active splitter."
+      },
+      "code-amber": {
+        "role": "tertiary",
+        "displayName": "Code Amber",
+        "canonical": "oklch(79% 0.13 78)",
+        "tonalRamp": [
+          "oklch(15% 0.13 78)",
+          "oklch(26% 0.13 78)",
+          "oklch(37% 0.13 78)",
+          "oklch(48% 0.13 78)",
+          "oklch(59% 0.13 78)",
+          "oklch(70% 0.13 78)",
+          "oklch(82% 0.13 78)",
+          "oklch(95% 0.13 78)"
+        ],
+        "cssVar": "--code-amber",
+        "lightCounterpart": "code-amber-paper",
+        "note": "Docs highlighter only: flags and operators."
+      },
+      "code-violet": {
+        "role": "tertiary",
+        "displayName": "Code Violet",
+        "canonical": "oklch(76% 0.13 290)",
+        "tonalRamp": [
+          "oklch(15% 0.13 290)",
+          "oklch(26% 0.13 290)",
+          "oklch(37% 0.13 290)",
+          "oklch(48% 0.13 290)",
+          "oklch(59% 0.13 290)",
+          "oklch(70% 0.13 290)",
+          "oklch(82% 0.13 290)",
+          "oklch(95% 0.13 290)"
+        ],
+        "cssVar": "--code-violet",
+        "lightCounterpart": "code-violet-paper",
+        "note": "Docs highlighter only: strings and values."
       },
       "paper": {
         "role": "neutral",
@@ -304,7 +342,7 @@
           "oklch(95% 0.025 290)"
         ],
         "cssVar": "--text-3 (light)",
-        "note": "4.3:1 on paper: de-emphasis only, not reading text."
+        "note": "Clears 4.5:1 on every ground but exists to recede: read rows, placeholders, crosses, code comments."
       },
       "paper-red": {
         "role": "primary",
@@ -354,6 +392,38 @@
         ],
         "cssVar": "--cyan (light)"
       },
+      "code-amber-paper": {
+        "role": "tertiary",
+        "displayName": "Code Amber on Paper",
+        "canonical": "oklch(50% 0.11 75)",
+        "tonalRamp": [
+          "oklch(15% 0.11 75)",
+          "oklch(26% 0.11 75)",
+          "oklch(37% 0.11 75)",
+          "oklch(48% 0.11 75)",
+          "oklch(59% 0.11 75)",
+          "oklch(70% 0.11 75)",
+          "oklch(82% 0.11 75)",
+          "oklch(95% 0.11 75)"
+        ],
+        "cssVar": "--code-amber (light)"
+      },
+      "code-violet-paper": {
+        "role": "tertiary",
+        "displayName": "Code Violet on Paper",
+        "canonical": "oklch(48% 0.2 285)",
+        "tonalRamp": [
+          "oklch(15% 0.2 285)",
+          "oklch(26% 0.2 285)",
+          "oklch(37% 0.2 285)",
+          "oklch(48% 0.2 285)",
+          "oklch(59% 0.2 285)",
+          "oklch(70% 0.2 285)",
+          "oklch(82% 0.2 285)",
+          "oklch(95% 0.2 285)"
+        ],
+        "cssVar": "--code-violet (light)"
+      },
       "obi-ink-light": {
         "canonical": "oklch(100% 0 0)",
         "cssVar": "--on-obi",
@@ -378,15 +448,21 @@
         "fontStretch": "125%",
         "textTransform": "uppercase"
       },
+      "cover-title": {
+        "displayName": "Cover Title",
+        "purpose": "The landing's cover line only; clamp(2rem, 9.6vw, 3.75rem) on phones.",
+        "fontStretch": "125%",
+        "textTransform": "uppercase"
+      },
       "display": {
         "displayName": "Display",
-        "purpose": "The series name on the obi; vertical on desktop, 2.125rem for Sources/Import, clamp(1.25rem, 7vw, 1.75rem) horizontal on phones.",
+        "purpose": "The series name on the obi; vertical on desktop, 2.125rem for Sources/Import/Docs, clamp(3rem, 6.2vw, 6rem) on the landing, clamp(1.25rem, 7vw, 1.75rem) horizontal on phones.",
         "fontStretch": "125%",
         "textTransform": "uppercase"
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "The sheet heading; 1.25rem below 60rem.",
+        "purpose": "The sheet heading; 1.25rem below 60rem. Docs section heads use the voice at 1.25rem/1.1.",
         "fontStretch": "125%",
         "textTransform": "uppercase"
       },
@@ -414,6 +490,10 @@
         "displayName": "Body",
         "purpose": "Page default with tabular figures; notes 1rem, hints 0.8125rem."
       },
+      "docs-body": {
+        "displayName": "Docs Body",
+        "purpose": "The docs reading column, capped at 44rem; lede 1.1875rem/1.5."
+      },
       "catalogue": {
         "displayName": "Catalogue",
         "purpose": "STV/SRC numbers heading each row."
@@ -424,11 +504,15 @@
       },
       "nav": {
         "displayName": "Nav",
-        "purpose": "Page tabs and group links, uppercase."
+        "purpose": "Page tabs, group links (counts in square brackets), Docs and Sign in, uppercase."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Every button and field label, uppercase."
+        "purpose": "Every button and field label, panel names, uppercase."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Code blocks on the docs page; inline code is mono 500 at 0.8125em, reversed out."
       }
     },
     "fonts": {
@@ -436,10 +520,6 @@
         "file": "/fonts/akira-expanded.ttf",
         "weight": 800,
         "licence": "Personal-use; user-supplied, gitignored, never committed."
-      },
-      "akira-expanded-outline": {
-        "file": "/fonts/akira-expanded-outline.otf",
-        "licence": "Personal-use; user-supplied, gitignored, never committed. Declared (--outline) but used by no rule."
       },
       "archivo": {
         "file": "/fonts/archivo-latin.woff2, /fonts/archivo-latin-ext.woff2",
@@ -455,15 +535,15 @@
       }
     },
     "themes": {
-      "switch": "prefers-color-scheme",
+      "switch": "prefers-color-scheme, overridden by data-theme on :root (starve.theme)",
       "dark": "default :root",
-      "light": "@media (prefers-color-scheme: light) :root"
+      "light": "@media (prefers-color-scheme: light) :root:not([data-theme=dark]), and :root[data-theme=light]"
     },
     "shadows": [],
     "effects": [
       {
         "name": "film-grain",
-        "value": "fractalNoise SVG, baseFrequency .9, 160px tile, mix-blend-mode overlay, opacity 0.06 dark / 0.08 light, fixed, z-index 50, pointer-events none",
+        "value": "a full-screen layer in var(--text), masked by a fractalNoise SVG (baseFrequency .9, 2 octaves; feColorMatrix alpha = 3.2R - 1.25) on a 160px tile, so only text-coloured specks show; opacity 0.035 dark / 0.04 light, normal blend, fixed, z-index 50, pointer-events none",
         "purpose": "Fine print grain over the whole page."
       },
       {
@@ -473,25 +553,60 @@
       },
       {
         "name": "registration-cross",
-        "value": "0.75rem hairline cross in --text-3, 1.125rem outside the sheet head's top corners",
-        "purpose": "Spec-panel corner marks; hidden below 60rem and in the STV strip."
+        "value": "0.75rem hairline cross in --text-3, 1.125rem outside the sheet head's top corners (0.875rem outside the landing demo)",
+        "purpose": "Spec-panel corner marks; dropped on the Sources groups head, in tiled list panels and below 60rem."
+      },
+      {
+        "name": "barcode",
+        "value": "repeating-linear-gradient(90deg, var(--text) 0 2px, transparent 2px 4px, var(--text) 4px 7px, transparent 7px 9px, var(--text) 9px 10px, transparent 10px 13px); 7rem x 2.5rem",
+        "purpose": "The landing colophon (and, in obi ink, the shutter)."
+      },
+      {
+        "name": "active-panel",
+        "value": "1px solid var(--red) frame and title-bar border; 0.375rem marker turns red",
+        "purpose": "The workspace panel last clicked or focused. Sanctioned exception to the Obi Red Rule (issue #38)."
+      },
+      {
+        "name": "drop-target",
+        "value": "2px solid var(--cyan); background color-mix(in srgb, var(--cyan) 8%, transparent)",
+        "purpose": "The panel a dragged title bar would swap with."
       }
     ],
     "motion": [
       {
         "name": "quick",
         "value": "150ms cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "State changes: hover fills, color, splitter handle."
+        "purpose": "State changes: hover fills, color, splitter handle, panel frames."
       },
       {
         "name": "move",
         "value": "240ms cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Video box moving between pane, mini and deck."
+        "purpose": "Panel swaps (every tile slides), search widening, the phone reader head tucking."
       },
       {
         "name": "fold",
         "value": "280ms cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "List folding to and from the STV strip: list width, video left edge and splitter slide together; rows fade in from -0.75rem."
+        "purpose": "List folding to and from the STV strip; rows fade in from -0.75rem."
+      },
+      {
+        "name": "mark-read",
+        "value": "320ms; strike cubic-bezier(0.65, 0, 0.35, 1), dim to 0.45 cubic-bezier(0.16, 1, 0.3, 1); stagger 22ms per row (max 12)",
+        "purpose": "Rows strike through and dim before the server answers."
+      },
+      {
+        "name": "settle",
+        "value": "260ms cubic-bezier(0.16, 1, 0.3, 1) from opacity 0.45",
+        "purpose": "Newly read rows land without blinking."
+      },
+      {
+        "name": "demo-read",
+        "value": "520ms cubic-bezier(0.65, 0, 0.35, 1), 1.2s + n * 0.55s; caught-up line at 4.7s over 600ms",
+        "purpose": "The landing demo list strikes itself read once."
+      },
+      {
+        "name": "shutter",
+        "value": "1.25s in, 0.4s hold, 1.25s out, cubic-bezier(0.65, 0, 0.35, 1); obi ink transitions over 600ms",
+        "purpose": "Theme changes and page switches."
       },
       {
         "name": "ticker",
@@ -501,7 +616,7 @@
       {
         "name": "reduced-motion",
         "value": "prefers-reduced-motion: reduce",
-        "purpose": "All transitions off, no fold animation, ticker replaced by ellipsis."
+        "purpose": "All transitions off; no fold, strike, settle, demo, shutter or ticker animation; finished states shown."
       }
     ],
     "breakpoints": [
@@ -509,7 +624,13 @@
         "name": "narrow",
         "value": "60rem",
         "kind": "media max-width",
-        "purpose": "Phone layout: horizontal obi, two-line deck, single video placement, 1rem gutter."
+        "purpose": "Phone layout: three-line bar, horizontal obi, two-line deck, one video placement, full-screen reader, 1rem gutter."
+      },
+      {
+        "name": "landing-stack",
+        "value": "72rem",
+        "kind": "media max-width",
+        "purpose": "Landing cover copy and demo stack."
       },
       {
         "name": "roster-fold",
@@ -538,50 +659,54 @@
       {
         "name": "list-strip",
         "value": "610px",
-        "kind": "script (list width beside the pane)",
-        "purpose": "Below this the list folds to the 8.5rem STV strip."
+        "kind": "script (first column width)",
+        "purpose": "Below this the list folds to the 8.5rem (136px) STV strip."
       },
       {
         "name": "list-default",
         "value": "720px",
         "kind": "script",
-        "purpose": "Default list width beside the pane; double-click on the splitter resets to it."
+        "purpose": "Default list column width; double-click on the splitter resets to it."
+      },
+      {
+        "name": "panel-min",
+        "value": "280px columns, 120px rows",
+        "kind": "script",
+        "purpose": "Smallest tile a splitter allows."
       }
     ],
     "layout": {
       "barHeight": "3.5rem",
-      "obiWidth": "5.5rem",
-      "panelWidth": "22rem",
+      "obiWidth": "5.5rem (landing clamp(6rem, 9vw, 9.5rem))",
       "stripWidth": "8.5rem",
+      "paneBarHeight": "1.75rem (28px)",
       "gutter": "2rem (1rem below 60rem)",
-      "rowColumns": "7rem 4rem minmax(0,1fr) 12.5rem 13.5rem",
+      "rowColumns": "7rem 4rem minmax(0,1fr) 12.5rem 18.5rem",
       "deckMinHeight": "5.5rem",
-      "videoSizesPx": {
-        "mini": {
-          "min": 240,
-          "max": 720,
-          "start": 320
-        },
-        "deck": {
-          "min": 288,
-          "max": 640,
-          "start": 384
-        }
-      },
       "splitterKeyStepPx": 32,
       "localStorage": [
-        "starve.list",
-        "starve.video.mini",
-        "starve.video.deck",
+        "starve.theme",
+        "starve.tree",
+        "starve.center",
         "starve.volume"
       ],
       "zIndex": {
         "bar": 20,
+        "paneFrame": 24,
         "video": 25,
-        "splitter": 26,
+        "paneBar": 26,
+        "activeFrame": 26,
+        "dropTarget": 27,
+        "splitter": 28,
         "deck": 30,
-        "grain": 50
-      }
+        "phoneReader": 35,
+        "toTop": 36,
+        "liftedBar": 40,
+        "grain": 50,
+        "shutter": 100
+      },
+      "arrangement": "a tree of row/col splits made by dragging title bars onto panels (sides split, middle swaps, outer 28px edge spans); default list | (video over post)",
+      "panelMinPx": 200
     }
   },
   "components": [
@@ -602,12 +727,20 @@
       "css": ".ds-btn-filled{display:inline-flex;align-items:center;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-btn-filled:hover{background:transparent;color:var(--text,#f0ece4)}.ds-btn-filled:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
-      "name": "Placement Switch",
-      "kind": "chip",
-      "refersTo": "placement-active",
-      "description": "Pane / Mini / Deck segmented control in the deck; pressed state in cyan. Desktop only.",
-      "html": "<div class=\"ds-place\"><button aria-pressed=\"true\">Pane</button><button aria-pressed=\"false\">Mini</button><button aria-pressed=\"false\">Deck</button></div>",
-      "css": ".ds-place{display:flex}.ds-place button{min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--line-strong,#454556);background:transparent;color:var(--text,#f0ece4)}.ds-place button+button{margin-left:-1px}.ds-place button:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-place button[aria-pressed=true]{position:relative;border-color:var(--cyan,#2fd2c4);color:var(--cyan,#2fd2c4)}.ds-place button[aria-pressed=true]:hover{background:var(--cyan,#2fd2c4);color:var(--ground,#0c0c12)}.ds-place button:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
+      "name": "Primary Form Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The access form's one action: full width, filled, 3rem tall.",
+      "html": "<button class=\"ds-primary\">Sign in</button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1),border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:transparent;color:var(--text,#f0ece4);width:100%;min-height:3rem;font-size:.75rem;background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-primary:hover{background:transparent;color:var(--text,#f0ece4)}.ds-primary:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
+    },
+    {
+      "name": "Icon Toggle",
+      "kind": "button",
+      "refersTo": "icon-toggle",
+      "description": "Favourite star / save-for-later clock: a 2.25rem square SVG button; pressed inverts, never red.",
+      "html": "<div class=\"ds-toggles\"><button class=\"ds-toggle\" aria-pressed=\"false\" aria-label=\"Add to favourites\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z\"/></svg></button><button class=\"ds-toggle\" aria-pressed=\"true\" aria-label=\"Remove from favourites\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z\"/></svg></button></div>",
+      "css": ".ds-toggles{display:flex;gap:.5rem}.ds-toggle{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1),border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:transparent;color:var(--text,#f0ece4);width:2.25rem;padding:0}.ds-toggle svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.25;stroke-linejoin:round}.ds-toggle:hover,.ds-toggle[aria-pressed=true]{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-toggle[aria-pressed=true] svg{fill:currentColor}.ds-toggle[aria-pressed=true]:hover{background:transparent;color:var(--text,#f0ece4)}.ds-toggle:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
       "name": "Field",
@@ -618,11 +751,19 @@
       "css": ".ds-label{display:block;margin-bottom:.5rem;font:500 .6875rem/1.2 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2,#a3a2b3)}.ds-field{width:100%;min-height:2.5rem;padding:.5rem .75rem;border:1px solid var(--line-strong,#454556);border-radius:0;background:var(--sunk,#08080c);color:var(--text,#f0ece4);caret-color:var(--red,#ff3b2f);font:400 .9375rem/1.3 Archivo,system-ui,sans-serif}.ds-field::placeholder{color:var(--text-3,#85849a)}.ds-field:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px;border-color:var(--cyan,#2fd2c4)}"
     },
     {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "Sunk well in the top bar with a drawn magnifier; 9.5rem idle, 14rem focused or filled.",
+      "html": "<form class=\"ds-search\" role=\"search\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M6.75 1.5a5.25 5.25 0 0 1 4.2 8.4l3.3 3.3-1.06 1.06-3.3-3.3A5.25 5.25 0 1 1 6.75 1.5zm0 1.5a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5z\"/></svg><input type=\"search\" placeholder=\"Search\" aria-label=\"Search items\"></form>",
+      "css": ".ds-search{position:relative;display:inline-flex;align-items:center}.ds-search svg{position:absolute;left:.625rem;width:.875rem;height:.875rem;fill:var(--text-2,#a3a2b3);pointer-events:none}.ds-search input{width:9.5rem;min-height:2.25rem;padding:.375rem .625rem .375rem 2rem;border:1px solid var(--line-strong,#454556);border-radius:0;background:var(--sunk,#08080c);color:var(--text,#f0ece4);caret-color:var(--red,#ff3b2f);font:400 .875rem/1.3 Archivo,system-ui,sans-serif;transition:border-color 150ms cubic-bezier(0.16, 1, 0.3, 1),width 240ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-search input::placeholder{color:var(--text-3,#85849a);font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase}.ds-search input:focus,.ds-search input:not(:placeholder-shown){width:14rem}.ds-search input:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px;border-color:var(--cyan,#2fd2c4)}"
+    },
+    {
       "name": "Top Bar Navigation",
       "kind": "nav",
-      "description": "Akira wordmark, mono uppercase tabs; current page marked by a 0.5rem square.",
-      "html": "<header class=\"ds-bar\"><span class=\"ds-wordmark\">Starve</span><nav class=\"ds-tabs\"><a href=\"#\" aria-current=\"page\">Timeline</a><a href=\"#\">Sources</a></nav></header>",
-      "css": ".ds-bar{display:flex;align-items:center;gap:2rem;min-height:3.5rem;padding:0 2rem;border-bottom:1px solid var(--line,#2a2a36);background:var(--ground,#0c0c12)}.ds-wordmark{font:800 1.125rem/1 \"Akira Expanded\",Archivo,system-ui,sans-serif;font-stretch:125%;letter-spacing:.01em;text-transform:uppercase;color:var(--text,#f0ece4)}.ds-tabs{display:flex;align-self:stretch;gap:1.5rem}.ds-tabs a{display:inline-flex;align-items:center;gap:.5rem;font:500 .75rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2,#a3a2b3);text-decoration:none;transition:color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-tabs a:hover,.ds-tabs a[aria-current]{color:var(--text,#f0ece4)}.ds-tabs a[aria-current]::before{content:\"\";width:.5rem;height:.5rem;background:currentColor}.ds-tabs a:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
+      "description": "Akira wordmark, mono uppercase tabs and group links with bracketed counts; current page marked by a 0.5rem square.",
+      "html": "<header class=\"ds-bar\"><span class=\"ds-wordmark\">Starve</span><nav class=\"ds-tabs\"><a href=\"#\" aria-current=\"page\">Timeline</a><a href=\"#\">Sources</a></nav><nav class=\"ds-tabs ds-groups\"><a href=\"#\" aria-current=\"page\">All [40]</a><a href=\"#\">Music [12]</a></nav></header>",
+      "css": ".ds-bar{display:flex;align-items:center;gap:2rem;min-height:3.5rem;padding:0 2rem;border-bottom:1px solid var(--line,#2a2a36);background:var(--ground,#0c0c12)}.ds-wordmark{font:800 1.125rem/1 \"Akira Expanded\",Archivo,system-ui,sans-serif;font-stretch:125%;letter-spacing:.01em;text-transform:uppercase;color:var(--text,#f0ece4)}.ds-tabs{display:flex;align-self:stretch;gap:1.5rem}.ds-groups{padding-left:2rem;border-left:1px solid var(--line,#2a2a36)}.ds-tabs a{display:inline-flex;align-items:center;gap:.5rem;font:500 .75rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2,#a3a2b3);text-decoration:none;transition:color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-tabs a:hover,.ds-tabs a[aria-current]{color:var(--text,#f0ece4)}.ds-tabs a[aria-current]::before{content:\"\";width:.5rem;height:.5rem;background:var(--red,#ff3b2f)}.ds-tabs a:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
       "name": "Obi Strip",
@@ -641,34 +782,56 @@
       "css": ".ds-row{display:grid;grid-template-columns:7rem 4rem minmax(0,1fr) 12.5rem 13.5rem;align-items:center;gap:.25rem 1.25rem;padding:.875rem .75rem;border-bottom:1px solid var(--line,#2a2a36);color:var(--text,#f0ece4);transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-row:hover,.ds-playing{background:var(--raised,#14141c)}.ds-cat{justify-self:start;font:500 .75rem/1.2 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.04em;white-space:nowrap}.ds-playing .ds-cat{padding:.25rem .375rem;background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12)}.ds-art{width:4rem;height:4rem}.ds-title{display:block;font:500 1rem/1.35 Archivo,system-ui,sans-serif;color:inherit;text-decoration:none}.ds-title:hover{text-decoration:underline}.ds-src,.ds-date{display:block;font:400 .75rem/1.3 \"Martian Mono\",ui-monospace,monospace;color:var(--text-2,#a3a2b3)}.ds-src{margin-top:.25rem}.ds-actions{display:flex;justify-content:flex-end;gap:.5rem}.ds-play{min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--red,#ff3b2f);background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12)}.ds-play:focus-visible,.ds-title:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
     },
     {
+      "name": "Workspace Panel",
+      "kind": "custom",
+      "refersTo": "pane-bar",
+      "description": "A tiled panel: 1.75rem mono title bar with swap arrows over a hairline frame. Active panel (red) shown beside an idle one.",
+      "html": "<div class=\"ds-panes\"><section class=\"ds-pane ds-active\"><div class=\"ds-pane-bar\"><span class=\"ds-pane-name\">List</span><button class=\"ds-pane-move\" disabled aria-label=\"Move list panel left\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M10.5 3L5.5 8l5 5\"/></svg></button><button class=\"ds-pane-move\" aria-label=\"Move list panel right\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M5.5 3l5 5-5 5\"/></svg></button></div><div class=\"ds-pane-body\">STV 0132</div></section><section class=\"ds-pane\"><div class=\"ds-pane-bar\"><span class=\"ds-pane-name\">Post</span><button class=\"ds-pane-move\" aria-label=\"Move post panel left\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M10.5 3L5.5 8l5 5\"/></svg></button><button class=\"ds-pane-move\" disabled aria-label=\"Move post panel right\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M5.5 3l5 5-5 5\"/></svg></button></div><div class=\"ds-pane-body\">Notes on a quieter internet</div></section></div>",
+      "css": ".ds-panes{display:grid;grid-template-columns:1fr 1fr;height:12rem;background:var(--ground,#0c0c12);color:var(--text,#f0ece4)}.ds-pane{display:flex;flex-direction:column;border:1px solid var(--line,#2a2a36);transition:border-color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-pane-bar{display:flex;align-items:center;gap:.125rem;height:1.75rem;padding:0 .25rem 0 .75rem;border-bottom:1px solid var(--line,#2a2a36);background:var(--raised,#14141c);cursor:grab;user-select:none}.ds-pane-name{flex:1;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2,#a3a2b3)}.ds-pane-name::before{content:\"\";display:inline-block;width:.375rem;height:.375rem;margin-right:.5rem;vertical-align:.1em;background:var(--line-strong,#454556)}.ds-active{border-color:var(--red,#ff3b2f)}.ds-active .ds-pane-name{color:var(--text,#f0ece4)}.ds-active .ds-pane-name::before{background:var(--red,#ff3b2f)}.ds-pane-move{display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;padding:0;border:1px solid transparent;border-radius:0;background:transparent;color:var(--text-2,#a3a2b3);cursor:pointer}.ds-pane-move svg{width:.75rem;height:.75rem;fill:none;stroke:currentColor;stroke-width:1.6}.ds-pane-move:hover{border-color:var(--text,#f0ece4);background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-pane-move:disabled{visibility:hidden}.ds-pane-move:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}.ds-pane-body{padding:1rem .75rem;font:500 .75rem/1.2 \"Martian Mono\",ui-monospace,monospace}"
+    },
+    {
       "name": "Player Deck",
       "kind": "custom",
       "refersTo": "player-deck",
-      "description": "Tape-transport bar: red top rule, Akira STV number, a waveform that fills red as it plays and seeks on release.",
-      "html": "<div class=\"ds-deck\"><span class=\"ds-now-art\">STV 0132</span><div class=\"ds-now\"><span class=\"ds-now-cat\">STV 0132</span><span class=\"ds-now-title\">Live from the warehouse</span><span class=\"ds-now-src\">Boiler Room</span></div><div class=\"ds-transport\"><button class=\"ds-pause\" aria-label=\"Pause\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 2h3v12H4zM9 2h3v12H9z\"/></svg></button><time class=\"ds-t\">1:12</time><div class=\"ds-wave\" style=\"--progress:.4\"></div><time class=\"ds-t\">4:05</time></div><button class=\"ds-stop\">Stop</button></div>",
-      "css": ".ds-deck{display:grid;grid-template-columns:auto minmax(10rem,18rem) minmax(0,1fr) auto;align-items:center;gap:1.25rem;min-height:5.5rem;padding-right:1.25rem;border-top:1px solid var(--red,#ff3b2f);background:var(--raised,#14141c);color:var(--text,#f0ece4)}.ds-now-art{display:flex;align-items:flex-end;width:5.5rem;height:5.5rem;padding:.5rem;background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12);font:600 .625rem/1 \"Martian Mono\",ui-monospace,monospace}.ds-now{display:flex;flex-direction:column;gap:.2rem;min-width:0}.ds-now-cat{font:800 1.125rem/1 \"Akira Expanded\",Archivo,system-ui,sans-serif;font-stretch:125%;color:var(--red-text,#ff5a4f)}.ds-now-title{font:600 .9375rem/1.25 Archivo,system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ds-now-src,.ds-t{font:400 .75rem/1.2 \"Martian Mono\",ui-monospace,monospace;color:var(--text-2,#a3a2b3)}.ds-transport{display:flex;align-items:center;gap:.875rem;min-width:0}.ds-wave{flex:1;min-width:6rem;height:3rem;background:linear-gradient(90deg,var(--red,#ff3b2f) calc(var(--progress)*100%),var(--line-strong,#454556) 0);-webkit-mask:repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 5px);mask:repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 5px)}.ds-pause,.ds-stop{display:inline-flex;align-items:center;justify-content:center;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:transparent;color:var(--text,#f0ece4)}.ds-pause{width:2.5rem;height:2.5rem;padding:0}.ds-pause:hover,.ds-stop:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-pause:focus-visible,.ds-stop:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
+      "description": "Tape-transport bar: red top rule, Akira STV number, a waveform that fills red as it plays and seeks on release, and Eject.",
+      "html": "<div class=\"ds-deck\"><span class=\"ds-now-art\">STV 0132</span><div class=\"ds-now\"><span class=\"ds-now-cat\">STV 0132</span><span class=\"ds-now-title\">Live from the warehouse</span><span class=\"ds-now-src\">Boiler Room</span></div><div class=\"ds-transport\"><button class=\"ds-pause\" aria-label=\"Pause\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 2h3v12H4zM9 2h3v12H9z\"/></svg></button><time class=\"ds-t\">1:12</time><div class=\"ds-wave\" style=\"--progress:.4\"></div><time class=\"ds-t\">4:05</time></div><button class=\"ds-stop\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M8 2.5l6 6.5H2zM2 11h12v2.5H2z\"/></svg>Eject</button></div>",
+      "css": ".ds-deck{display:grid;grid-template-columns:auto minmax(10rem,18rem) minmax(0,1fr) auto;align-items:center;gap:1.25rem;min-height:5.5rem;padding-right:1.25rem;border-top:1px solid var(--red,#ff3b2f);background:var(--raised,#14141c);color:var(--text,#f0ece4)}.ds-now-art{display:flex;align-items:flex-end;width:5.5rem;height:5.5rem;padding:.5rem;background:var(--red,#ff3b2f);color:var(--on-red,#0c0c12);font:600 .625rem/1 \"Martian Mono\",ui-monospace,monospace}.ds-now{display:flex;flex-direction:column;gap:.2rem;min-width:0}.ds-now-cat{font:800 1.125rem/1 \"Akira Expanded\",Archivo,system-ui,sans-serif;font-stretch:125%;color:var(--red-text,#ff5a4f)}.ds-now-title{font:600 .9375rem/1.25 Archivo,system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ds-now-src,.ds-t{font:400 .75rem/1.2 \"Martian Mono\",ui-monospace,monospace;color:var(--text-2,#a3a2b3)}.ds-transport{display:flex;align-items:center;gap:.875rem;min-width:0}.ds-wave{flex:1;min-width:6rem;height:3rem;background:linear-gradient(90deg,var(--red,#ff3b2f) calc(var(--progress)*100%),var(--line-strong,#454556) 0);-webkit-mask:repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 5px);mask:repeating-linear-gradient(90deg,#000 0 3px,transparent 3px 5px)}.ds-pause,.ds-stop{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.25rem;padding:.5rem .875rem;border-radius:0;font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--text,#f0ece4);background:transparent;color:var(--text,#f0ece4)}.ds-pause{width:2.5rem;height:2.5rem;padding:0}.ds-pause:hover,.ds-stop:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-pause:focus-visible,.ds-stop:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}"
+    },
+    {
+      "name": "Code Block",
+      "kind": "custom",
+      "refersTo": "code-block",
+      "description": "Docs code block: sunk well, language label, Copy button, amber flags and violet strings; inline code reversed out.",
+      "html": "<p class=\"ds-p\">Run <code class=\"ds-inline\">docker compose up</code> once.</p><pre class=\"ds-pre\"><span class=\"ds-lang\">Shell</span><button class=\"ds-copy\">Copy</button><code><span class=\"ds-cmd\">docker</span> compose up<span class=\"ds-flag\"> -d</span> <span class=\"ds-cmt\"># start in the background</span>\n<span class=\"ds-cmd\">echo</span> <span class=\"ds-str\">\"done\"</span></code></pre>",
+      "css": ".ds-p{font:400 1rem/1.65 Archivo,system-ui,sans-serif;color:var(--text,#f0ece4)}.ds-inline{padding:.15em .35em;background:var(--text,#f0ece4);color:var(--ground,#0c0c12);font:500 .8125em/1 \"Martian Mono\",ui-monospace,monospace;white-space:nowrap}.ds-pre{position:relative;margin:0;padding:.875rem 9rem .875rem 1rem;border:1px solid var(--line-strong,#454556);background:var(--sunk,#08080c);color:var(--text,#f0ece4);font:400 .8125rem/1.6 \"Martian Mono\",ui-monospace,monospace;white-space:pre-wrap}.ds-pre code{font:inherit}.ds-lang{position:absolute;top:.875rem;right:4.75rem;font:500 .625rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3,#85849a)}.ds-copy{position:absolute;top:.5rem;right:.5rem;min-height:1.75rem;padding:.25rem .625rem;border:1px solid var(--text,#f0ece4);border-radius:0;background:var(--ground,#0c0c12);color:var(--text,#f0ece4);font:500 .625rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-copy:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-copy:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px}.ds-cmd{font-weight:700}.ds-flag{color:var(--code-amber,#e8b04a)}.ds-str{color:var(--code-violet,#b3a6ff)}.ds-cmt{color:var(--text-3,#85849a)}"
     }
   ],
   "narrative": {
     "northStar": "The Obi Deck",
-    "overview": "Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Akira caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. A playing video sits in a theatre pane beside the list, in a floating mini window, or in a 16:9 slot standing up out of the deck.\n\nThe same drawing exists twice. Dark is the cover on ink and light is the cover on bone paper, chosen by `prefers-color-scheme`. Both keep square corners, outlined mono controls, and a fine film grain over everything. Display type is loud and expanded, but reading text stays in mixed-case Archivo at reading sizes. The poster attitude belongs to the frame. The list itself is for reading.\n\nThe world rejects the reader/music-app default of a grey sidebar, rounded cards and pill buttons. It also rejects all-caps reading text.",
+    "overview": "Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Akira caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. On a desktop the list, a playing video and an open post are tiled beside the obi like terminal panels, each with a mono title bar, split by draggable rules, and dragging one title bar onto another splits or swaps them.\n\nThe same drawing exists twice. Dark is the cover on ink and light is the cover on bone paper, chosen by `prefers-color-scheme` unless the obi's switch has chosen. Both keep square corners, outlined mono controls, and a fine film grain over everything. Display type is loud and expanded, but reading text stays in mixed-case Archivo at reading sizes. The poster attitude belongs to the frame. The list itself is for reading. Signed out, the same world plays at full volume: the landing is the cassette's J-card, with a wider obi and a cover title at poster size.\n\nThe world rejects the reader/music-app default of a grey sidebar, rounded cards and pill buttons. It also rejects all-caps reading text.",
     "keyCharacteristics": [
-      "A full-height red obi band (5.5rem) at the left on desktop, a horizontal red band under the top bar on phones.",
+      "A full-height red obi band (5.5rem; wider on the landing) at the left on desktop, a horizontal red band under the top bar on phones.",
       "A spec-panel list: STV number, art cell, title over source, date, actions, all on hairline rules.",
+      "A tiled desktop workspace: list, video and post as panels with title bars, hairline frames and splitters; the active panel outlined in red.",
       "A fixed player deck with a red top rule and a waveform seek bar.",
-      "Three type voices with strict jobs: Akira for display, Archivo for reading, Martian Mono for numbers and controls.",
+      "Three type voices with strict jobs: Akira for display, Archivo for reading, Martian Mono for numbers, controls and code.",
       "Square corners everywhere, with no shadows. Depth comes from tone, rules and grain.",
-      "Red means obi or live. Cyan means current placement, focus or active splitter."
+      "Red means obi, live, or the active panel. Cyan means focus, the chosen layout, a drop target or an active splitter."
     ],
     "rules": [
       {
         "name": "The Obi Red Rule",
-        "body": "Red is for the obi and for live/playing state only, meaning what plays now and the video that is playing. Never use it as a general accent, link color or emphasis.",
+        "body": "Red is for the obi and for live/playing state only, meaning what plays now and the video that is playing. Never use it as a general accent, link color or emphasis. One sanctioned exception, asked for by the user (issue #38): the active workspace panel, the one last clicked or focused, is outlined in red and its title-bar marker turns red. It does not extend to any other \"selected\" or \"current\" state.",
         "section": "colors"
       },
       {
         "name": "The Scanline Rule",
-        "body": "Cyan means current placement, focus or active splitter, nothing else. If it isn't telling you where focus is or where the video lives, it isn't cyan.",
+        "body": "Cyan means focus, the chosen layout, where a dragged panel will land, or an active splitter, nothing else. If it isn't telling you where focus is or where something goes, it isn't cyan.",
+        "section": "colors"
+      },
+      {
+        "name": "The Code Ink Rule",
+        "body": "Amber and violet exist only inside code blocks. They never colour a control, a heading or a state.",
         "section": "colors"
       },
       {
@@ -678,7 +841,7 @@
       },
       {
         "name": "The Three Voices Rule",
-        "body": "Akira is for display only: the wordmark, the obi series name, sheet headings, the deck STV number and \"caught up\". Archivo, in mixed case, carries every title and all body text. Martian Mono carries STV/SRC numbers, dates, sources and control labels. Never set reading text in Akira, and never set reading text in all caps.",
+        "body": "Akira is for display only: the wordmark, the obi series name, the landing's cover title, sheet and docs headings, the deck STV number and \"caught up\". Archivo, in mixed case, carries every title and all body text. Martian Mono carries STV/SRC numbers, dates, sources, control labels and code. Never set reading text in Akira, and never set reading text in all caps.",
         "section": "typography"
       },
       {
@@ -688,22 +851,28 @@
       }
     ],
     "dos": [
-      "**Do** set the wordmark, obi series name, sheet headings, the deck STV number and \"caught up\" in Akira Expanded 800, uppercase, at `font-stretch: 125%`.",
-      "**Do** set every title and all body text in Archivo, mixed case. Set STV/SRC numbers, dates, sources and control labels in Martian Mono.",
-      "**Do** ship every color in both themes, following `prefers-color-scheme`.",
+      "**Do** set the wordmark, obi series name, cover title, sheet and docs headings, the deck STV number and \"caught up\" in Akira Expanded 800, uppercase, at `font-stretch: 125%`.",
+      "**Do** set every title and all body text in Archivo, mixed case. Set STV/SRC numbers, dates, sources, control labels and code in Martian Mono.",
+      "**Do** ship every color in both themes, following `prefers-color-scheme` unless the obi switch has set `data-theme` on the root.",
       "**Do** keep row dates aligned with the fixed 13.5rem actions column, and keep an empty art cell when a row has no art.",
       "**Do** let rows respond to the sheet's container width (64rem fold, 34rem buttons-under-title), not the viewport.",
-      "**Do** keep state changes at 150ms (`cubic-bezier(0.16, 1, 0.3, 1)`), placement moves at 240ms and the list fold at 280ms. Under `prefers-reduced-motion`, use no transitions, no fold animation and no ticker.",
-      "**Do** move only the video's box between placements, never the iframe, so playback never restarts.",
-      "**Do** give phones a single placement: video full width above the deck."
+      "**Do** make a button beside a field, or in a row that contains one, 2.5rem tall.",
+      "**Do** draw icons as inline SVG in `currentColor`; show a pressed toggle by inverting it, not by colouring it.",
+      "**Do** keep state changes at 150ms (`cubic-bezier(0.16, 1, 0.3, 1)`), panel swaps, the search widening and the reader head's tuck at 240ms, and the list fold at 280ms. Under `prefers-reduced-motion`, use no transitions, no fold animation, no strike or demo animation and no ticker.",
+      "**Do** move only the video's box between panels and layouts, never the iframe, so playback never restarts.",
+      "**Do** give phones a single video placement: full width above the deck.",
+      "**Do** run theme changes and page switches through the shutter, at one speed, and keep the scrollbar gutter reserved (`scrollbar-gutter: stable`) so switching pages never changes the page width."
     ],
     "donts": [
       "**Don't** use Akira for reading text, and don't set reading text in all caps.",
-      "**Don't** use red for anything but the obi and live/playing state.",
-      "**Don't** use cyan for anything but current placement, focus or the active splitter.",
+      "**Don't** use red for anything but the obi, live/playing state and the active workspace panel.",
+      "**Don't** use cyan for anything but focus, the chosen layout, a drop target or the active splitter.",
+      "**Don't** use the code hues (amber, violet) outside code blocks.",
       "**Don't** round corners, use pill buttons or cards, or add shadows.",
-      "**Don't** use the faint text tier (`bone-faint` / `ink-faint`) for text that must be read. It is below 4.5:1 on ink.",
-      "**Don't** commit the Akira font files. They are personal-use and gitignored."
+      "**Don't** use unicode glyphs as icons.",
+      "**Don't** use the faint text tier (`bone-faint` / `ink-faint`) as the main voice: it clears 4.5:1 on every ground (≥4.68:1) but exists to recede, for read rows and placeholders.",
+      "**Don't** commit the Akira font files. They are personal-use and gitignored.",
+      "**Don't** colour the page scrollbar: it stays the strong hairline on the ground (tried in red and rejected)."
     ]
   }
 }

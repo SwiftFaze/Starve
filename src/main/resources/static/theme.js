@@ -8,6 +8,18 @@
   var root = document.documentElement;
   var KEY = 'starve.theme';
 
+  // Scripts run: controls that only exist for pages without them (a Set group button) can step aside.
+  root.classList.add('js');
+
+  // Arriving from a full-page switch (Docs, Settings, Sign out...): the page starts under the shutter,
+  // hidden until the panel is drawn over it, then the panel sweeps out.
+  var arriving = null;
+  try {
+    arriving = JSON.parse(sessionStorage.getItem('starve.shutter') || 'null');
+    sessionStorage.removeItem('starve.shutter');
+  } catch (e) { arriving = null; }
+  if (arriving) root.dataset.shutter = 'arriving';
+
   try {
     var saved = localStorage.getItem(KEY);
     if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
@@ -95,7 +107,8 @@
     part(frame, 'shutter-chevrons');
     part(frame, 'shutter-scan');
     panel.appendChild(frame);
-    document.body.appendChild(panel);
+    // Before the body exists (a page arriving under the shutter), the panel hangs off the root element.
+    (document.body || document.documentElement).appendChild(panel);
     return panel;
   }
 
@@ -132,8 +145,10 @@
   // The page you are already on: glide back to the top instead of reloading, or, already at
   // the top, blink the tab's marker to say "you are here".
   function here(link) {
-    if (window.scrollY > 0) {
-      window.scrollTo({ top: 0, behavior: still() ? 'auto' : 'smooth' });
+    var sheet = document.body.dataset.split === 'on' ? document.getElementById('sheet') : null;
+    var scroller = sheet || document.scrollingElement || document.documentElement;
+    if (scroller.scrollTop > 0) {
+      scroller.scrollTo({ top: 0, behavior: still() ? 'auto' : 'smooth' });
       return;
     }
     link.classList.remove('here');
@@ -228,6 +243,60 @@
     document.querySelectorAll('.shutter').forEach(function (panel) { panel.remove(); });
     pending = null;
     busy = false;
+  });
+
+  // ---- Full-page switches: the bar's plain links (Docs, Settings, Account, Sign in, the wordmark) and
+  // Sign out run behind the same shutter. It sweeps in here; the next page opens covered and sweeps it out.
+
+  // The links that switch to another page of the app: the bar's, the landing's, the access pages' and docs'.
+  var SWITCH_LINKS = '#bar a[href], .cover a[href], .access a[href], .docs-end a[href]';
+
+  function leave(label, href, go) {
+    if (busy) return;
+    busy = true;
+    var panel = shutter(label, '-130%', 'Page', '→ ' + href);
+    sweepIn(panel).then(function () {
+      try { sessionStorage.setItem('starve.shutter', JSON.stringify({ label: label, href: href })); } catch (e) { /* storage blocked */ }
+      go();
+    }, go);
+  }
+
+  document.addEventListener('click', function (event) {
+    if (event.defaultPrevented || still()) return;
+    var link = event.target.closest(SWITCH_LINKS);
+    if (!link || link.hasAttribute('hx-get') || link.target === '_blank') return;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (link.origin !== window.location.origin) return;
+    event.preventDefault();
+    leave(link.textContent.trim() || 'Starve', link.getAttribute('href'), function () { window.location.href = link.href; });
+  });
+
+  // Sign out, and the sign-in, sign-up and setup forms, which all land on another page.
+  document.addEventListener('submit', function (event) {
+    var form = event.target.closest('#bar form.signout, .access-form');
+    if (!form || event.defaultPrevented || still() || !form.reportValidity()) return;
+    event.preventDefault();
+    var button = form.querySelector('button[type="submit"]');
+    var label = button ? button.textContent.trim() : 'Starve';
+    leave(label, form.getAttribute('action') || '/', function () { HTMLFormElement.prototype.submit.call(form); });
+  });
+
+  // The arriving page's panel is drawn now, from its first frame, so the switch reads as one sheet. The
+  // page is shown, and the panel leaves, only once its fonts are in: otherwise the text would visibly jump
+  // as the web fonts swap in under a page that is already uncovered.
+  var arrivingPanel = arriving ? shutter(arriving.label, '0%', 'Page', '→ ' + arriving.href) : null;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!arrivingPanel) return;
+    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    var timeout = new Promise(function (resolve) { setTimeout(resolve, 1500); });
+    Promise.race([fonts, timeout]).then(function () {
+      var panel = arrivingPanel;
+      delete root.dataset.shutter;
+      if (still()) { panel.remove(); return; }
+      busy = true;
+      sweepOut(panel, 150).then(function () { busy = false; }, function () { busy = false; });
+    });
   });
 
   // The obi on the timeline is swapped by htmx, so its new switch is labelled again.

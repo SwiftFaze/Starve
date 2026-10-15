@@ -260,9 +260,9 @@ class HomeControllerTest {
 
         val expected =
             listOf(
-                NavEntryView("All (5)", "/feed", false),
-                NavEntryView("music (3)", "/feed?group=1", true),
-                NavEntryView("News (0)", "/feed?group=2", false),
+                NavEntryView("All [5]", "/feed", false),
+                NavEntryView("music [3]", "/feed?group=1", true),
+                NavEntryView("News [0]", "/feed?group=2", false),
             )
         assertEquals(expected, model.getAttribute("nav"))
 

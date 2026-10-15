@@ -10,7 +10,9 @@ Feature: Post bodies stored from feeds and sanitised on ingest
   style attribute, and any URL whose scheme is not http, https or (for links
   only) mailto, e.g. javascript: and data:; keeping structural and text markup
   (paragraphs, headings, lists, quotes, code, tables, figures, links, images);
-  links gaining target="_blank" and rel="noopener noreferrer"; relative link
+  heading permalink marks removed (a link inside a heading whose whole text is
+  "#", "¶", "§" or "🔗", or one with the class "headerlink", as Sphinx and
+  similar generators add); links gaining target="_blank" and rel="noopener noreferrer"; relative link
   and image URLs resolved against the item's link (dropped when the item has no
   link); a size cap of 200000 characters on the raw body before sanitising; a
   body being filled in for an already known item only when it had none (as
@@ -98,6 +100,17 @@ Feature: Post bodies stored from feeds and sanitised on ingest
     And the stored body of the item of "Blog" contains no "data:"
     And the stored body of the item of "Blog" contains the link "mailto:me@example.com"
     And the stored body of the item of "Blog" contains the text "bad"
+
+  Scenario: Heading permalink marks are removed and the heading stays
+    Given the feed server serves "/blog.xml" as an RSS 2.0 feed titled "Blog" whose entry has the content:encoded
+      """
+      <h2>Workshop<a class="headerlink" href="#workshop" title="Link to this heading">#</a></h2><h3>Notes<a href="#notes">¶</a></h3><p>Text with <a href="#top">a link</a></p>
+      """
+    When I add the feed URL "/blog.xml"
+    Then the stored body of the item of "Blog" contains "<h2>Workshop</h2>"
+    And the stored body of the item of "Blog" contains "<h3>Notes</h3>"
+    And the stored body of the item of "Blog" contains the text "a link"
+    And the stored body of the item of "Blog" contains no "¶"
 
   Scenario: Links open externally without handing over the opener
     Given the feed server serves "/blog.xml" as an RSS 2.0 feed titled "Blog" whose entry has the content:encoded

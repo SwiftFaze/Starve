@@ -40,10 +40,12 @@ private val PUBLIC_PATHS =
         "/setup",
         "/login",
         "/signup",
+        "/docs",
         "/error",
         "/actuator/health",
         "/*.css",
         "/*.js",
+        "/*.svg",
         "/fonts/**",
         "/favicon.ico",
     )

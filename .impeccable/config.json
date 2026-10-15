@@ -885,6 +885,60 @@
         ],
         "createdAt": "2026-10-12T16:30:33.292Z",
         "reason": "Claude: spent decision-round sketch (code-led preview), never shipped"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/landing.html"
+        ],
+        "createdAt": "2026-10-15T05:54:05.074Z",
+        "reason": "model judgement: the scale lives in starve.css (Akira sheet title 1.75rem, landing cover 4.75rem, docs h3 1.25rem over 0.9375-1rem body); the template-only scan cannot see it"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/login.html"
+        ],
+        "createdAt": "2026-10-15T05:54:05.306Z",
+        "reason": "model judgement: the scale lives in starve.css (Akira sheet title 1.75rem, landing cover 4.75rem, docs h3 1.25rem over 0.9375-1rem body); the template-only scan cannot see it"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/signup.html"
+        ],
+        "createdAt": "2026-10-15T05:54:05.582Z",
+        "reason": "model judgement: the scale lives in starve.css (Akira sheet title 1.75rem, landing cover 4.75rem, docs h3 1.25rem over 0.9375-1rem body); the template-only scan cannot see it"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/setup.html"
+        ],
+        "createdAt": "2026-10-15T05:54:05.849Z",
+        "reason": "model judgement: the scale lives in starve.css (Akira sheet title 1.75rem, landing cover 4.75rem, docs h3 1.25rem over 0.9375-1rem body); the template-only scan cannot see it"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/settings.html"
+        ],
+        "createdAt": "2026-10-15T05:54:06.104Z",
+        "reason": "model judgement: the scale lives in starve.css (Akira sheet title 1.75rem, landing cover 4.75rem, docs h3 1.25rem over 0.9375-1rem body); the template-only scan cannot see it"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "src/main/resources/templates/docs.html"
+        ],
+        "createdAt": "2026-10-15T05:54:06.391Z",
+        "reason": "model judgement: the scale lives in starve.css (Akira sheet title 1.75rem, landing cover 4.75rem, docs h3 1.25rem over 0.9375-1rem body); the template-only scan cannot see it"
       }
     ]
   }

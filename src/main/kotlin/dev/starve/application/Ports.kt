@@ -336,6 +336,8 @@ data class PostRef(
     /** When the article page was last fetched for this item; null when never. */
     val articleCheckedAt: Instant? = null,
     val later: Boolean = false,
+    /** The source's own feed URL. */
+    val sourceUrl: String? = null,
 )
 
 /** SoundCloud's public oEmbed details of a track; a field is null when oEmbed did not give it. */
@@ -360,6 +362,8 @@ data class DetailRef(
     val body: String?,
     val oembed: Oembed?,
     val later: Boolean = false,
+    /** The source's own feed URL. */
+    val sourceUrl: String? = null,
 )
 
 /** What the detail view shows: the feed data with SoundCloud's oEmbed details laid over it. */
@@ -373,6 +377,8 @@ data class ItemDetail(
     val thumbnailUrl: String?,
     val description: String?,
     val later: Boolean = false,
+    /** The source's own feed URL. */
+    val sourceUrl: String? = null,
 )
 
 fun interface SoundCloudOembed {

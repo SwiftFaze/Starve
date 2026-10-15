@@ -3,38 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Starve: a feed reader with no algorithm</title>
+  <title>Starve</title>
+  <meta name="description" content="Starve is a self-hosted feed reader: one chronological timeline of the feeds, channels and artists you chose, with no ranking and an end.">
+  <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
+  <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
 </head>
-<body>
-  <header class="bar" id="bar">
-    <p class="wordmark"><a href="/">Starve</a></p>
-  </header>
+<body class="landing">
+  <header th:replace="~{public-bar :: public-bar('landing')}"></header>
 
   <div class="label">
     <aside class="sleeve" aria-label="Starve">
       <div class="series-block">
-        <h1 class="series roster-name">Starve</h1>
+        <h1 class="series">Starve</h1>
+        <p class="series-meta">
+          <span>STV 0001</span>
+          <span>Side A / Side B</span>
+        </p>
         <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
     </aside>
 
-    <main class="sheet" id="sheet">
-      <div class="sheet-head">
-        <h2 class="sheet-title">Your feeds, in order</h2>
-      </div>
+    <main class="sheet cover" id="sheet">
+      <section class="cover-front" aria-labelledby="cover-title">
+        <div class="cover-copy">
+          <h2 class="cover-title" id="cover-title">Starve the algorithm</h2>
+          <p class="cover-pitch">One timeline of the feeds, channels and artists you chose, newest first.
+            Nothing ranked, nothing suggested, and it ends.</p>
+          <div class="cover-actions">
+            <a class="read-toggle filled" href="/login">Sign in</a>
+            <a class="read-toggle" href="/signup" th:if="${signupsOpen}">Sign up</a>
+          </div>
+          <p class="cover-small" th:unless="${signupsOpen}">Accounts on this instance are made by its owner.
+            Run your own: <a href="/docs">install guide</a>.</p>
+          <p class="cover-small" th:if="${signupsOpen}">Signups are open on this instance.</p>
+        </div>
 
-      <p class="sheet-note">Starve is a self-hosted feed reader. One chronological timeline of everything you follow, newest first, with no ranking and no algorithm deciding what you see.</p>
+        <figure class="demo" aria-labelledby="demo-caption">
+          <figcaption class="demo-head" id="demo-caption">
+            <span>New releases</span>
+            <span class="demo-tag">Demo &middot; your sources go here</span>
+          </figcaption>
+          <ol class="demo-list">
+            <li class="demo-row"><span class="cat">STV 0418</span><span class="demo-art art-a" aria-hidden="true"></span>
+              <span class="demo-body"><span class="demo-title">Why bridges hum in the wind</span><span class="source">A science channel &middot; YouTube</span></span>
+              <time class="date">09:41</time></li>
+            <li class="demo-row"><span class="cat">STV 0417</span><span class="demo-art art-b" aria-hidden="true"></span>
+              <span class="demo-body"><span class="demo-title">Side B, recorded live</span><span class="source">An artist you follow &middot; SoundCloud</span></span>
+              <time class="date">08:15</time></li>
+            <li class="demo-row"><span class="cat">STV 0416</span><span class="demo-art art-c" aria-hidden="true"></span>
+              <span class="demo-body"><span class="demo-title">Notes on a quieter internet</span><span class="source">A blog you read &middot; RSS</span></span>
+              <time class="date">07:52</time></li>
+            <li class="demo-row"><span class="cat">STV 0415</span><span class="demo-art art-d" aria-hidden="true"></span>
+              <span class="demo-body"><span class="demo-title">Restoring a 1989 tape deck</span><span class="source">A repair channel &middot; YouTube</span></span>
+              <time class="date">Yesterday</time></li>
+            <li class="demo-row"><span class="cat">STV 0414</span><span class="demo-art art-e" aria-hidden="true"></span>
+              <span class="demo-body"><span class="demo-title">The week in local news</span><span class="source">A news site &middot; Atom</span></span>
+              <time class="date">Yesterday</time></li>
+            <li class="demo-row"><span class="cat">STV 0413</span><span class="demo-art art-b" aria-hidden="true"></span>
+              <span class="demo-body"><span class="demo-title">An ambient set for a rainy morning</span><span class="source">A label you follow &middot; SoundCloud</span></span>
+              <time class="date">Monday</time></li>
+          </ol>
+          <p class="caught-up demo-end">You're all caught up</p>
+        </figure>
+      </section>
 
-      <ul class="highlights">
-        <li><strong>Feeds</strong>Follow RSS and Atom feeds, YouTube channels and SoundCloud profiles from one list, and group them as you like.</li>
-        <li><strong>Playback</strong>Play YouTube and SoundCloud right in the page, and keep listening while you browse your sources.</li>
-        <li><strong>Import</strong>Bring your subscriptions with you from a YouTube Takeout file or an OPML export.</li>
-      </ul>
+      <section class="tracklist" aria-labelledby="tracks-title">
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="tracks-title">Tracklist</h2>
+        </div>
+        <div class="sides">
+          <ol class="side" aria-label="Side A: gather">
+            <li><span class="track">A1</span><strong>Follow</strong>
+              Paste a feed, a YouTube channel, a SoundCloud profile or any website, and Starve finds its feed.</li>
+            <li><span class="track">A2</span><strong>Group</strong>
+              File sources under groups like Music or Tech news, and narrow the timeline to one.</li>
+            <li><span class="track">A3</span><strong>Import</strong>
+              Bring every subscription over from a YouTube Takeout file or an OPML export.</li>
+          </ol>
+          <ol class="side" aria-label="Side B: finish">
+            <li><span class="track">B1</span><strong>Play in place</strong>
+              YouTube and SoundCloud play inside the timeline, in a deck that keeps going while you browse.</li>
+            <li><span class="track">B2</span><strong>Read in place</strong>
+              Posts open beside the list, so you never land on a page that picks what comes next.</li>
+            <li><span class="track">B3</span><strong>Reach the end</strong>
+              Seen items drop out. When the list is empty, you are done for now.</li>
+          </ol>
+        </div>
+      </section>
 
-      <a class="read-toggle" href="/login">Sign in</a>
-      <a class="read-toggle" href="/signup" th:if="${signupsOpen}">Sign up</a>
+      <section class="specs" aria-labelledby="specs-title">
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="specs-title">Specifications</h2>
+        </div>
+        <dl class="spec-table">
+          <div><dt>Order</dt><dd>Publish time, newest first. Nothing else.</dd></div>
+          <div><dt>Ranking</dt><dd>None</dd></div>
+          <div><dt>Suggestions</dt><dd>None</dd></div>
+          <div><dt>Sources</dt><dd>RSS and Atom feeds, YouTube channels, SoundCloud profiles</dd></div>
+          <div><dt>Format</dt><dd>Self-hosted: one Docker image or one jar</dd></div>
+          <div><dt>Storage</dt><dd>One SQLite file</dd></div>
+          <div><dt>Polling</dt><dd>Every source, every 30 minutes</dd></div>
+          <div><dt>Tracking</dt><dd>None: no analytics, no ads, no third-party scripts or fonts</dd></div>
+        </dl>
+        <div class="colophon" aria-hidden="true">
+          <span class="barcode"></span>
+          <span>STV-0001</span>
+          <span>Starve &middot; No algorithm</span>
+        </div>
+      </section>
     </main>
   </div>
 </body>

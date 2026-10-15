@@ -4,9 +4,11 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
   external site: large artwork, title, artist or channel, published date,
   description and a Play control (Pause when that item is already playing).
 
-  Covers: the title link of a playable item requesting GET /items/{id}/detail
-  via htmx into the reader pane while its plain href stays /items/{id}/open
-  (the no-JS path); the view showing artwork, title, artist/channel, published
+  Covers: the title link of a playable item playing it, requesting
+  GET /items/{id}/player via htmx into the deck exactly as its Play does
+  (since #38; it used to open this detail view), while its plain href stays
+  /items/{id}/open (the no-JS path); the detail view itself, served at
+  GET /items/{id}/detail but no longer linked from the timeline; the view showing artwork, title, artist/channel, published
   date and description; SoundCloud details coming from the feed plus
   SoundCloud's public oEmbed (thumbnail, author and description, no API key),
   YouTube details from the feed only; the description inserted as sanitised
@@ -15,7 +17,8 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
   falling back to the feed data; a Play control that loads the item into the
   deck exactly as the row's Play does; the view keyed to its item so the deck
   can show Pause while it plays; an "Open original" link (new tab,
-  rel="noopener noreferrer"); opening the view marking the item read; the view
+  rel="noopener noreferrer"); a link to the source's own RSS/Atom feed (new
+  tab); opening the view marking the item read; the view
   never asking a video in the pane to step down; a Close control; 404 for an
   unknown item and for a non-playable one.
   Supersedes: in part chronological-feed.feature, embedded-playback.feature and
@@ -37,13 +40,13 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
     And the application is running
     And a feed server is running
 
-  Scenario: A playable item's title opens the detail view via htmx and keeps a plain link for no-JS
+  Scenario: A playable item's title plays it in the deck via htmx and keeps a plain link for no-JS
     Given the source "Cloud" has an unread item "Track" with the link "https://soundcloud.com/artist/track" published 1 days ago
     And the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
     When I request the home page "/feed"
-    Then the title of "Track" requests its detail view into the reader pane via htmx
+    Then the title of "Track" requests its player into the deck via htmx
     And the title of "Track" still links to its open endpoint without JavaScript
-    And the title of "Clip" requests its detail view into the reader pane via htmx
+    And the title of "Clip" requests its player into the deck via htmx
     And the title of "Clip" still links to its open endpoint without JavaScript
 
   Scenario: A SoundCloud track shows its oEmbed details
@@ -127,6 +130,11 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
     And the detail view description contains "<p>About the clip</p>"
     And the detail view has a Play control
     And no SoundCloud oEmbed request was made
+
+  Scenario: The detail view links to the source's own feed
+    Given the source "Tube" has an item "Clip" by "Some Channel" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ", a thumbnail and the stored body "<p>About the clip</p>" published 1 days ago
+    When I request the detail view of the item "Clip" via htmx
+    Then the reader links to the feed of the source "Tube", opening in a new tab
 
   Scenario: The Play control loads the item into the deck
     Given the source "Tube" has an item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
@@ -225,7 +233,7 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
 #     or another item starts) is deck.js behaviour; the human playtest must
 #     cover: play from the row then open the view; play from the view; pause
 #     from the deck; start another item while a view is open.
-#   - "Video stays in the pane" is browser behaviour: playtest YouTube in Pane
+#   - "Video stays in the pane" is browser behaviour: playtest YouTube in the default arrangement
 #     then open a detail view, a post, and another detail view.
 #   - SoundCloud may change its oEmbed shape; the fallback to feed data bounds
 #     the damage.

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docs - Starve</title>
+  <meta name="description" content="How to install Starve with Docker Compose or from source, create the admin account and add your first sources.">
+  <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/starve.css">
+  <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/docs.js" defer></script>
+</head>
+<body class="docs-page">
+  <header th:replace="~{public-bar :: public-bar('docs')}"></header>
+
+  <div class="label">
+    <aside class="sleeve" aria-label="Docs">
+      <div class="series-block">
+        <h1 class="series roster-name">Docs</h1>
+        <p class="series-meta">
+          <span>Install</span>
+          <span>Set up</span>
+        </p>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
+      </div>
+    </aside>
+
+    <main class="sheet docs" id="sheet">
+      <div class="sheet-head">
+        <h2 class="sheet-title">Install and set up</h2>
+      </div>
+
+      <div class="docs-layout">
+        <nav class="docs-toc" aria-label="On this page">
+          <ol>
+            <li><a href="#install">Install</a></li>
+            <li><a href="#first-run">First run</a></li>
+            <li><a href="#data">Your data</a></li>
+            <li><a href="#config">Configuration</a></li>
+            <li><a href="#update">Update</a></li>
+          </ol>
+        </nav>
+
+        <article class="docs-body">
+          <p class="docs-lede">How to host your own Starve: it runs as one Docker container or one jar, keeps
+            everything in one SQLite file, and is reached in a browser. Setting it up takes about five minutes.</p>
+
+          <section id="install" aria-labelledby="install-title">
+            <h3 id="install-title">Install</h3>
+            <h4>One command, straight from the repository</h4>
+            <p>You need Docker. This builds the image from the <code>master</code> branch (the stable release)
+              and starts it, with nothing to clone:</p>
+            <pre><code class="language-shell">docker build -t starve https://github.com/SwiftFaze/Starve.git#master &amp;&amp; docker run -d --name starve --restart unless-stopped -p 8080:8080 -v starve-data:/data starve</code></pre>
+            <p>The database lives in the <code>starve-data</code> volume, so it survives updates.</p>
+            <p>Open <code>http://&lt;your-server&gt;:8080</code> and go on to <a href="#first-run">first run</a>.
+              The setup code is in <code>docker logs starve</code>.</p>
+
+            <h4>With Docker Compose</h4>
+            <p>Better if you want to change settings in a file. You need Docker with the Compose plugin:</p>
+            <pre><code class="language-shell">git clone https://github.com/SwiftFaze/Starve.git
+cd Starve
+docker compose up -d</code></pre>
+            <p>Compose builds the image, keeps the database in a named volume (<code>starve-data</code>, mounted at
+              <code>/data</code>), restarts Starve with the machine and checks its health at
+              <code>/actuator/health</code>. Starve listens on port <code>8080</code>: open
+              <code>http://&lt;your-server&gt;:8080</code>.</p>
+
+            <h4>From source</h4>
+            <p>You need JDK 21 or later. Run it straight from the checkout:</p>
+            <pre><code class="language-shell">./mvnw spring-boot:run</code></pre>
+            <p>Or build a jar once and run that:</p>
+            <pre><code class="language-shell">./mvnw -B package -DskipTests
+java -jar target/starve-*.jar</code></pre>
+            <p>Run this way, the database is <code>./data/starve.db</code> next to where you started it.</p>
+          </section>
+
+          <section id="first-run" aria-labelledby="first-run-title">
+            <h3 id="first-run-title">First run: the admin account</h3>
+            <p>A fresh Starve has no accounts, so every page sends you to <code>/setup</code>. It asks for a
+              one-time setup code, which Starve prints to its log when it starts:</p>
+            <pre><code class="language-log">Starve setup code: XATS-W5KJ</code></pre>
+            <p>From source, it is in the terminal where you ran <code>./mvnw spring-boot:run</code>. With the
+              one-command install:</p>
+            <pre><code class="language-shell">docker logs starve 2&gt;&amp;1 | grep "setup code"</code></pre>
+            <p>With Docker Compose:</p>
+            <pre><code class="language-shell">docker compose logs starve | grep "setup code"</code></pre>
+            <ol class="steps">
+              <li>Enter the code. It lives in memory only; each restart prints a new one until an account exists.</li>
+              <li>Choose an admin username: 3 to 32 letters, digits, dots, underscores or hyphens.</li>
+              <li>Choose a password of at least 10 characters. There is no email reset, so keep it safe.</li>
+            </ol>
+            <p>You are signed in and land on the timeline. From then on <code>/setup</code> is closed and the
+              code stops working. Everything after that happens inside Starve itself.</p>
+          </section>
+
+          <section id="data" aria-labelledby="data-title">
+            <h3 id="data-title">Your data</h3>
+            <p>Everything lives in one SQLite file: <code>/data/starve.db</code> in Docker, or
+              <code>./data/starve.db</code> from source. Point it elsewhere with <code>STARVE_DB_PATH</code>
+              or <code>--starve.db.path</code>. To back up, stop Starve and copy that file.</p>
+            <p>Items are kept 90 days. Favourites and items saved for Later are kept until you clear them.</p>
+
+            <h4>What Starve records</h4>
+            <ul>
+              <li>No analytics, no tracking and no ads. Every script and font is served by Starve itself.</li>
+              <li>No activity log. The server log holds the first-run setup code and nothing about what anyone
+                reads or watches.</li>
+              <li>What you read, star and save is stored in the database, because the feed needs it, and never
+                leaves your server.</li>
+              <li>The server only reaches out to fetch your sources: their feeds, article pages, icons and
+                SoundCloud track details.</li>
+              <li>In the browser, thumbnails and post images load straight from the sites that publish them, and
+                playing a video or track loads YouTube's privacy-enhanced player (<code>youtube-nocookie.com</code>)
+                or SoundCloud's widget, so that service sees the play.</li>
+            </ul>
+          </section>
+
+          <section id="config" aria-labelledby="config-title">
+            <h3 id="config-title">Configuration</h3>
+            <p>Set these as environment variables (in <code>docker-compose.yml</code> under
+              <code>environment</code>) or as <code>--</code> arguments:</p>
+            <table class="docs-table">
+              <thead><tr><th scope="col">Variable</th><th scope="col">Default</th><th scope="col">What it sets</th></tr></thead>
+              <tbody>
+                <tr><td><code>STARVE_DB_PATH</code></td><td><code>./data/starve.db</code></td><td>Where the database file lives</td></tr>
+                <tr><td><code>STARVE_POLL_INTERVAL</code></td><td><code>PT30M</code></td><td>How often every source is fetched</td></tr>
+                <tr><td><code>STARVE_RETENTION_MAX_AGE</code></td><td><code>P90D</code></td><td>How long items are kept</td></tr>
+                <tr><td><code>SERVER_PORT</code></td><td><code>8080</code></td><td>The port Starve listens on</td></tr>
+              </tbody>
+            </table>
+            <p>Durations use the ISO 8601 form: <code>PT15M</code> is 15 minutes, <code>P30D</code> is 30
+              days.</p>
+          </section>
+
+          <section id="update" aria-labelledby="update-title">
+            <h3 id="update-title">Update</h3>
+            <p>One-command install: build again from <code>master</code> and replace the container. The volume
+              keeps your data.</p>
+            <pre><code class="language-shell">docker build -t starve https://github.com/SwiftFaze/Starve.git#master &amp;&amp; docker rm -f starve &amp;&amp; docker run -d --name starve --restart unless-stopped -p 8080:8080 -v starve-data:/data starve</code></pre>
+            <p>Docker Compose:</p>
+            <pre><code class="language-shell">git pull
+docker compose up -d --build</code></pre>
+            <p>The database is upgraded in place when Starve starts. From source, pull and run it again.</p>
+          </section>
+
+          <p class="docs-end"><a class="read-toggle filled" href="/login">Sign in</a></p>
+        </article>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

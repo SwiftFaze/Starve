@@ -257,7 +257,7 @@ class LaterSteps {
         val form = toggleForm(page, domId)
         assertTrue(form.contains("data-later=\"$saved\""), form)
         assertTrue(form.contains("aria-pressed=\"$saved\""), form)
-        assertEquals(saved, form.contains("class=\"saved\""), form)
+        assertEquals(saved, SAVED_CLASS.containsMatchIn(form), form)
     }
 
     private fun assertToggleAction(
@@ -293,6 +293,7 @@ class LaterSteps {
     private companion object {
         val HTMX = mapOf("HX-Request" to "true")
         const val YOUTUBE = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        val SAVED_CLASS = Regex("class=\"[^\"]*\\bsaved\\b")
         val TITLE = Regex("<article[^>]*data-title=\"([^\"]*)\"")
     }
 }

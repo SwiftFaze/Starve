@@ -80,7 +80,7 @@ class JdbcItemRepository(
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body, " +
                     "i.thumbnail_url, s.favicon_url, i.favourited_at IS NOT NULL AS is_favourite, " +
-                    "i.article_checked_at, i.later_at IS NOT NULL AS is_later " +
+                    "i.article_checked_at, i.later_at IS NOT NULL AS is_later, s.url AS source_url " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
             ).params(id, owner)
             .query { rs, _ ->
@@ -96,6 +96,7 @@ class JdbcItemRepository(
                     rs.getInt("is_favourite") == 1,
                     rs.getLong("article_checked_at").takeUnless { rs.wasNull() }?.let(Instant::ofEpochMilli),
                     rs.getInt("is_later") == 1,
+                    rs.getString("source_url"),
                 )
             }.optional()
             .orElse(null)
@@ -107,7 +108,8 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.author, " +
-                    "i.thumbnail_url, i.body, i.oembed_json, i.later_at IS NOT NULL AS is_later " +
+                    "i.thumbnail_url, i.body, i.oembed_json, i.later_at IS NOT NULL AS is_later, " +
+                    "s.url AS source_url " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
             ).params(id, owner)
             .query { rs, _ ->
@@ -122,6 +124,7 @@ class JdbcItemRepository(
                     rs.getString("body"),
                     OembedJson.decode(rs.getString("oembed_json")),
                     rs.getInt("is_later") == 1,
+                    rs.getString("source_url"),
                 )
             }.optional()
             .orElse(null)

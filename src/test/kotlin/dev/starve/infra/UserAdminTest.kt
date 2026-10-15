@@ -113,10 +113,10 @@ class UserAdminTest : SecurityTestBase() {
 
         val rows = ROW.findAll(page).map { it.value }.toList()
         assertEquals(3, rows.size)
-        assertTrue("data-username=\"rob\"" in rows[0] && "Admin" in rows[0] && "(you)" in rows[0])
+        assertTrue("data-username=\"rob\"" in rows[0] && "Admin" in rows[0] && "[you]" in rows[0])
         assertFalse("Reset password" in rows[0] || "Delete" in rows[0])
         assertTrue("1970-01-01" in rows[1] && "Created" in rows[1])
-        assertFalse("Admin" in rows[1] || "(you)" in rows[1])
+        assertFalse("Admin" in rows[1] || "[you]" in rows[1])
         assertTrue("action=\"/settings/users/2/reset\"" in rows[1] && "name=\"_csrf\"" in rows[1])
         assertTrue("href=\"/settings/users/2/delete\"" in rows[1])
         assertTrue("data-username=\"amy\"" in rows[2] && "/settings/users/3/delete" in rows[2])

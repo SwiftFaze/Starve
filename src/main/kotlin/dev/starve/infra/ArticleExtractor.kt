@@ -18,7 +18,9 @@ object ArticleExtractor {
         link: String,
     ): FetchedArticle {
         page.select(CHROME).remove()
-        val body = mainElement(page)?.html()?.let { BodySanitizer.sanitize(it, link) }
+        val main = mainElement(page)
+        main?.let(::dropLeadingTitle)
+        val body = main?.html()?.let { BodySanitizer.sanitize(it, link) }
         return FetchedArticle(body, ogImage(page, link))
     }
 
@@ -30,6 +32,12 @@ object ArticleExtractor {
                 .groupBy { it.parent() }
                 .maxByOrNull { (_, paragraphs) -> paragraphs.sumOf { it.text().length } }
                 ?.key
+
+    // An article usually opens with its own title as an <h1>, which the reader already shows above the body.
+    private fun dropLeadingTitle(main: Element) {
+        val first = main.select("h1, p").firstOrNull()
+        if (first?.tagName() == "h1") first.remove()
+    }
 
     private fun ogImage(
         page: Document,

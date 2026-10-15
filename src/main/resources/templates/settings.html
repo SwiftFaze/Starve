@@ -7,7 +7,8 @@
   <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
-  <script src="/htmx.min.js"></script>
+  <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
   <header class="bar" id="bar">
@@ -16,46 +17,64 @@
       <a class="tab" href="/feed">Timeline</a>
       <a class="tab" href="/sources">Sources</a>
     </nav>
-    <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
+    <th:block th:with="onSettings=true"><th:block th:replace="~{bar-actions :: bar-actions}"></th:block></th:block>
   </header>
 
   <div class="label">
     <aside class="sleeve" aria-label="Settings">
       <div class="series-block">
         <h1 class="series roster-name">Settings</h1>
+        <p class="series-meta">
+          <span th:text="${#lists.size(users) == 1} ? '1 user' : |${#lists.size(users)} users|">2 users</span>
+          <span th:text="${signupsOn} ? 'Signups open' : 'Signups closed'">Signups closed</span>
+        </p>
         <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
-
-      <form class="add" method="post" th:action="@{/settings/signups}">
-        <input type="hidden" name="allow" th:value="${!signupsOn}">
-        <span class="field-label" id="signups-label">Allow new signups</span>
-        <div class="field-row">
-          <button type="submit" role="switch" aria-labelledby="signups-label" th:attr="aria-checked=${signupsOn}"
-                  th:text="${signupsOn} ? 'On' : 'Off'">Off</button>
-        </div>
-        <p class="hint">While on, anyone who can reach this instance can create a regular account at /signup.</p>
-      </form>
     </aside>
 
-    <main class="sheet" id="sheet">
+    <main class="sheet settings" id="sheet">
+      <div class="sheet-head">
+        <h2 class="sheet-title">Settings</h2>
+      </div>
+      <p class="sheet-note">Settings for the whole instance. Only admins see this page.</p>
+
       <p class="message" id="notice" role="status" th:if="${notice}" th:text="${notice}">Deleted user friend</p>
-      <h2 class="sheet-title">Users</h2>
-      <ul id="user-list" class="roster">
-        <li class="user" th:each="user : ${users}" th:attr="data-username=${user.username}">
-          <div class="body">
-            <strong class="name" th:text="${user.username}">rob</strong>
-            <span class="badge" th:if="${user.admin}">Admin</span>
-            <span class="you" th:if="${user.you}">(you)</span>
+
+      <section class="setting-group" aria-labelledby="instance-title">
+        <h3 class="setting-group-title" id="instance-title">Instance</h3>
+
+        <form class="setting" method="post" th:action="@{/settings/signups}">
+          <input type="hidden" name="allow" th:value="${!signupsOn}">
+          <div class="setting-text">
+            <span class="setting-name" id="signups-label">Allow new signups</span>
+            <p class="hint" id="signups-hint">While on, anyone who can reach this instance can create a regular
+              account at <code>/signup</code>.</p>
           </div>
-          <span class="created">Created <time th:datetime="${user.created}" th:text="${user.created}">2026-10-12</time></span>
-          <div class="actions" th:unless="${user.you}">
-            <form method="post" th:action="@{/settings/users/{id}/reset(id=${user.id})}">
-              <button type="submit">Reset password</button>
-            </form>
-            <a class="read-toggle" th:href="@{/settings/users/{id}/delete(id=${user.id})}">Delete</a>
-          </div>
-        </li>
-      </ul>
+          <button type="submit" class="switch" role="switch" aria-labelledby="signups-label"
+                  aria-describedby="signups-hint" th:attr="aria-checked=${signupsOn}"><span
+              class="switch-off" aria-hidden="true">Off</span><span class="switch-on" aria-hidden="true">On</span></button>
+        </form>
+      </section>
+
+      <section class="setting-group" aria-labelledby="users-title">
+        <h3 class="setting-group-title" id="users-title">Users</h3>
+        <ul id="user-list" class="user-list">
+          <li class="user" th:each="user : ${users}" th:attr="data-username=${user.username}">
+            <div class="user-name">
+              <strong class="name" th:text="${user.username}">rob</strong>
+              <span class="badge" th:if="${user.admin}">Admin</span>
+              <span class="you" th:if="${user.you}">[you]</span>
+            </div>
+            <span class="created">Created <time th:datetime="${user.created}" th:text="${user.created}">2026-10-12</time></span>
+            <div class="actions" th:unless="${user.you}">
+              <form method="post" th:action="@{/settings/users/{id}/reset(id=${user.id})}">
+                <button type="submit">Reset password</button>
+              </form>
+              <a class="read-toggle" th:href="@{/settings/users/{id}/delete(id=${user.id})}">Delete</a>
+            </div>
+          </li>
+        </ul>
+      </section>
     </main>
   </div>
 </body>

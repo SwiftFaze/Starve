@@ -17,6 +17,10 @@ object BodySanitizer {
 
     private const val ACTIVE = "script, style, iframe, object, embed, form, input, link, noscript, template"
 
+    // The "link to this heading" marks site generators put in headings (Sphinx, MkDocs, Hugo and the like).
+    private const val HEADINGS = "h1, h2, h3, h4, h5, h6"
+    private val PERMALINK_MARKS = setOf("#", "¶", "§", "🔗", "")
+
     private val safelist: Safelist =
         Safelist
             .relaxed()
@@ -55,11 +59,21 @@ object BodySanitizer {
     ): String {
         val parsed = Jsoup.parseBodyFragment(html, baseUrl)
         parsed.select(ACTIVE).remove()
+        dropPermalinks(parsed)
         val cleaned: Document = Cleaner(safelist).clean(parsed)
         cleaned.outputSettings().prettyPrint(false)
         dropEmptyBlocks(cleaned.body())
         collapseLineBreaks(cleaned.body())
         return cleaned.body().html().trim()
+    }
+
+    private fun dropPermalinks(page: Document) {
+        page.select("a.headerlink").remove()
+        page
+            .select(HEADINGS)
+            .flatMap { it.select("a") }
+            .filter { it.text().trim() in PERMALINK_MARKS && it.select("img").isEmpty() }
+            .forEach { it.remove() }
     }
 
     // Feeds pad posts with empty paragraphs and <br> runs for spacing; each renders as a blank line.

@@ -6,6 +6,17 @@ Feed features are tracked in the GitHub issues. Today you can subscribe to
 RSS/Atom feeds; Starve fetches them in the background and shows their items in
 a single chronological timeline.
 
+## Install with one command
+
+With Docker, this builds `master` straight from GitHub and starts Starve on port 8080,
+keeping the database in the `starve-data` volume:
+
+```
+docker build -t starve https://github.com/SwiftFaze/Starve.git#master && docker run -d --name starve --restart unless-stopped -p 8080:8080 -v starve-data:/data starve
+```
+
+The full install and setup guide is also served by Starve itself at `/docs`.
+
 ## Run locally
 
 Needs JDK 21+.
@@ -105,7 +116,7 @@ unread. **Show read** adds already-read items back to the list. Read items are
 kept until the retention age removes them.
 
 Above the list, a navigation shows **All** and each group (alphabetical) with its
-unread count, e.g. `Music (12)`. Choosing a group (`/feed?group=<id>`) shows only its
+unread count, e.g. `Music [12]`. Choosing a group (`/feed?group=<id>`) shows only its
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.
 
@@ -120,7 +131,7 @@ favourites with the rest of its items.
 
 ## Later
 
-Each timeline row, the reader pane and the detail view have a clock (⏲) that saves the
+Each timeline row, the reader pane and the detail view have a clock button that saves the
 item for later. **Later** in the navigation (`/feed?later=1`, after Favourites) lists the
 saved items of every source, read or not, earliest saved first, 50 at a time with
 **Load more**; it has no **Show read** or **Mark all read**. Saving does not change
@@ -167,13 +178,18 @@ over 1 MB, and keeps the teaser if the page has no longer text. A failed or empt
 is retried at most once a day, so reopening a post does not hammer its site. A fetched
 article is searchable like any other post body.
 
-The post sits in a fixed column that scrolls on its own, so scrolling the list never
-moves it. Drag the splitter between the list and the post to resize them; the width is
-remembered. A video playing in the pane stays there when a post opens and sits above the
-post as a 16:9 strip; drag the horizontal splitter under it (or press the Up and Down
-arrow keys) to resize it, and the height is remembered too. The list, the video and the
-post share the window, so resizing one never hides another. Empty paragraphs and runs
-of line breaks are dropped from posts, so feed padding does not show as blank lines.
+On a desktop the list, an open post and a playing video are tiled like tmux panels,
+each scrolling on its own under a small title bar (see **Video layouts** below). Drag
+the splitters between panels (or focus one and press the arrow keys; double-click
+resets) to resize them; sizes are remembered. Drag a panel's title bar onto another
+panel to swap the two; its × closes the post or ejects the video. The panel you last clicked is
+outlined in red. Empty paragraphs and long runs of line breaks are dropped from posts,
+so feed padding does not show as blank lines.
+
+On a phone a post opens full screen above the player; the top bar, list and video step
+aside until **Close**, which returns you to the same place in the list. The post's head
+tucks away while you read down and comes back as soon as you scroll up, and a button
+returns to the top of a long post or list.
 
 ## Detail view for tracks and videos
 
@@ -199,6 +215,15 @@ leaving the timeline, and marks the item read. YouTube plays from
 disabled embedding, a message and a link to watch it on YouTube replace the
 player. If YouTube cannot be asked, Starve assumes embedding is allowed. Other
 items keep the open-link behavior only.
+
+On a desktop a playing YouTube video gets a panel of its own beside the list and any open
+post. Drag a panel's title bar onto another panel to split it on that side (left, right,
+top or bottom), onto its middle to swap the two, or onto an edge of the window to give it
+that whole edge, for example a full-width band along the bottom. A cyan preview shows
+where it will land; the arrangement and every size are remembered. Inside a panel the
+video keeps 16:9 at the largest size that fits, so there are no black bars. **Eject** stops playback and closes the deck. On a
+phone the video always sits full width above the deck, and the waveform runs across
+the top of the deck where it is easy to reach.
 
 Switching between **Timeline** and **Sources**, and adding, removing or grouping
 sources, swaps the page around the player, so whatever is playing keeps playing.

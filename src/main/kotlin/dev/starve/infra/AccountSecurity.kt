@@ -87,7 +87,8 @@ class SetupGate(
     }
 
     private companion object {
-        val OPEN_WHILE_SETUP = Regex("/setup|/error|/actuator/health|/favicon\\.ico|/fonts/.+|/[^/]+\\.(css|js)")
+        val OPEN_WHILE_SETUP =
+            Regex("/setup|/docs|/error|/actuator/health|/favicon\\.ico|/fonts/.+|/[^/]+\\.(css|js|svg)")
     }
 }
 

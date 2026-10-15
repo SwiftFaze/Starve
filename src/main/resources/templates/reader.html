@@ -5,10 +5,18 @@
 <article class="reader-view" th:attr="data-item=${post.catalogueNumber}">
   <header class="reader-head">
     <button type="button" class="reader-close" hx-on:click="closeReader(this)">Close</button>
-    <span class="reader-cat" th:text="${post.catalogueNumber}">STV 0132</span>
+    <span class="reader-cat"><th:block th:text="${post.catalogueNumber}">STV 0132</th:block><span
+        class="read-tag" title="Opening a post marks it read">Read</span></span>
     <div class="reader-toggles">
       <th:block th:replace="~{star :: star}"></th:block>
       <th:block th:replace="~{later :: toggle}"></th:block>
+      <a class="toggle feed-link" th:if="${post.feedUrl}" th:href="${post.feedUrl}" target="_blank"
+         rel="noopener noreferrer" th:attr="aria-label=|Open the feed of ${post.sourceTitle}|"
+         title="Open the source's feed"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
+          d="M2 2.5a11.5 11.5 0 0 1 11.5 11.5h-2A9.5 9.5 0 0 0 2 4.5zm0 4.25A7.25 7.25 0 0 1 9.25 14h-2A5.25 5.25 0 0 0 2 8.75zM2 11h3v3H2z"/></svg></a>
+      <button type="button" class="toggle center-toggle" aria-pressed="false" aria-label="Centre the post"
+              title="Centre the post"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
+          d="M2 3h12v1.5H2zM4 6.25h8v1.5H4zM2 9.5h12V11H2zM4 12.75h8v1.5H4z"/></svg></button>
     </div>
     <h2 class="reader-title" th:text="${post.title}">Title</h2>
     <p class="reader-meta">

@@ -7,6 +7,8 @@
   <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
+  <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
   <script src="/htmx.min.js"></script>
   <script src="/deck.js" defer></script>
 </head>
@@ -34,6 +36,7 @@
          hx-push-url="true">Later</a>
     </nav>
     <form class="search" role="search" action="/feed" method="get">
+      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 1.5a5.25 5.25 0 0 1 4.2 8.4l3.3 3.3-1.06 1.06-3.3-3.3A5.25 5.25 0 1 1 6.75 1.5zm0 1.5a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5z"/></svg>
       <input type="search" name="q" th:value="${query}" placeholder="Search" aria-label="Search items"
              hx-get="/feed" hx-trigger="input changed delay:300ms, search" hx-target="#sheet" hx-swap="outerHTML"
              hx-include="closest form" hx-push-url="true">
@@ -61,15 +64,15 @@
       <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>
     </aside>
 
-    <main class="sheet" id="sheet" tabindex="-1" th:fragment="sheet">
+    <main class="sheet" id="sheet" tabindex="-1" data-page="timeline" th:fragment="sheet">
       <div class="sheet-head">
         <h2 class="sheet-title" th:text="${searching} ? 'Search results' : (${favourites} ? 'Favourites' : (${later} ? 'Later' : (${showAll} ? 'All releases' : 'New releases')))">New releases</h2>
         <div class="view-actions" th:if="${hasSources and !favourites and !later}">
           <a class="read-toggle" th:unless="${searching}" th:href="${toggleHref}" th:attr="hx-get=${toggleHref}"
              hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
              hx-push-url="true" th:text="${showAll} ? 'Hide read' : 'Show read'">Show read</a>
-          <form th:unless="${searching}" method="post" th:action="@{/read-all}" hx-post="/read-all"
-                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML">
+          <form th:unless="${searching}" class="read-all" method="post" th:action="@{/read-all}" hx-post="/read-all"
+                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML swap:420ms">
             <input type="hidden" name="before" th:value="${renderedAt}">
             <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
             <button type="submit">Mark all read</button>
@@ -83,15 +86,15 @@
         <th:block th:fragment="more">
           <article th:each="item : ${items}" th:class="${item.read} ? 'item read' : 'item'"
                    th:attr="data-title=${item.title},data-item=${item.catalogueNumber}">
-            <span class="cat" th:text="${item.catalogueNumber}">STV 0132</span>
+            <span class="cat" th:text="${item.catalogueNumber}" th:title="${item.title}">STV 0132</span>
             <img class="thumb" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="" loading="lazy">
             <img class="site-icon" th:if="${item.thumbnailUrl == null and item.faviconUrl != null}"
                  th:src="${item.faviconUrl}" alt="" loading="lazy">
             <span class="blank" th:unless="${item.thumbnailUrl != null or item.faviconUrl != null}"></span>
             <div class="body">
               <a class="title" th:href="@{/items/{id}/open(id=${item.id})}" th:text="${item.title}"
-                 th:attr="hx-get=${item.playable} ? @{/items/{id}/detail(id=${item.id})} : @{/items/{id}/reader(id=${item.id})}"
-                 hx-target="#reader" hx-swap="innerHTML">Title</a>
+                 th:attr="hx-get=${item.playable} ? @{/items/{id}/player(id=${item.id})} : @{/items/{id}/reader(id=${item.id})},hx-target=${item.playable} ? '#dock' : '#reader'"
+                 hx-trigger="click[!target.closest('.playing')]" hx-swap="innerHTML">Title</a>
               <span class="source" th:text="${item.sourceTitle}">Source</span>
             </div>
             <time class="date" th:datetime="${item.publishedIso}" th:text="${item.published}">date</time>
@@ -103,7 +106,7 @@
               <th:block th:with="star=${item.star}"><th:block th:replace="~{star :: star}"></th:block></th:block>
               <th:block th:with="laterToggle=${item.laterToggle}"><th:block th:replace="~{later :: toggle}"></th:block></th:block>
               <form th:unless="${item.read}" method="post" th:action="@{/items/{id}/read(id=${item.id})}"
-                    th:attr="hx-post=@{/items/{id}/read(id=${item.id})}" hx-target="closest article" hx-swap="outerHTML">
+                    th:attr="hx-post=@{/items/{id}/read(id=${item.id})}" hx-target="closest article" hx-swap="outerHTML swap:360ms">
                 <button type="submit">Mark read</button>
               </form>
             </div>
@@ -114,14 +117,16 @@
           <p th:if="${moreHref == null and !emptyFavourites and !emptyLater and !searching}" class="caught-up">You're all caught up</p>
         </th:block>
         <p class="sheet-note" th:if="${emptyFavourites}">No favourites yet. Star an item on the timeline to keep it here.</p>
-        <p class="sheet-note" th:if="${emptyLater}">Nothing saved for later. Use ⏲ on an item to keep it here.</p>
+        <p class="sheet-note" th:if="${emptyLater}">Nothing saved for later. Use the clock on an item to keep it here.</p>
       </div>
     </main>
     <aside id="reader" class="reader" aria-label="Reader" aria-live="polite"></aside>
     <div class="video-splitter" role="separator" aria-orientation="horizontal" aria-controls="reader"
-         aria-label="Resize video" tabindex="0"></div>
+         aria-label="Resize panels" tabindex="0"></div>
     <div class="splitter" role="separator" aria-orientation="vertical" aria-controls="sheet"
          aria-label="Resize list" tabindex="0"></div>
+    <div class="splitter-2" role="separator" aria-orientation="vertical"
+         aria-label="Resize the middle panel" tabindex="0"></div>
   </div>
 </body>
 </html>
