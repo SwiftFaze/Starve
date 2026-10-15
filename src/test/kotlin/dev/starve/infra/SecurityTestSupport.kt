@@ -63,6 +63,12 @@ class FakeUsers : UserRepository {
         return true
     }
 
+    override fun insert(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User = User(accounts.size + 1L, username, passwordHash, false).also { accounts += it }
+
     private companion object {
         val HASHER = BCryptPasswordEncoder(4)
     }

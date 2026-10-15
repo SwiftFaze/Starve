@@ -18,6 +18,7 @@ class LegacyDatabase(
     /** Stops the application, starts a fresh file and migrates it only up to [version]. */
     fun migrateOnlyTo(version: String) {
         app.freshDatabase()
+        app.markLegacy()
         Flyway
             .configure()
             .dataSource(dataSource())

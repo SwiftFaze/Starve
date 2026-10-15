@@ -31,10 +31,11 @@ class DetailController(
     /** The detail view fragment of a SoundCloud track or YouTube video; requesting it marks the item read. */
     @GetMapping("/items/{id}/detail")
     fun detail(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
         model: Model,
     ): String {
-        val detail = details.open(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val detail = details.open(owner, id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         model.addAttribute("detail", detail.toView())
         model.addAttribute("laterToggle", LaterView("detail-later", detail.id, detail.later, from = "detail"))
         return "detail :: content"

@@ -269,10 +269,7 @@ class PostImageSteps {
 
     private fun daysAgo(days: Int): Instant = Instant.now().minus(Duration.ofDays(days.toLong()))
 
-    private fun owner(source: String) =
-        app.bean(SourceRepository::class.java).let { sources ->
-            sources.findAll().firstOrNull { it.title == source } ?: sources.insert("http://$source.test/feed", source)
-        }
+    private fun owner(source: String) = app.ownedSource(source)
 
     private fun seed(
         source: String,
@@ -284,27 +281,26 @@ class PostImageSteps {
         assignments: String,
         vararg params: Any?,
     ) {
-        owner(source)
         app
             .jdbc()
-            .sql("UPDATE sources SET $assignments WHERE title = ?")
-            .params(params.toList() + source)
+            .sql("UPDATE sources SET $assignments WHERE id = ?")
+            .params(params.toList() + owner(source).id)
             .update()
     }
 
     private fun thumbnails(feed: String): List<String?> =
         app
             .jdbc()
-            .sql("SELECT i.thumbnail_url FROM items i JOIN sources s ON s.id = i.source_id WHERE s.title = ?")
-            .param(feed)
+            .sql("SELECT i.thumbnail_url FROM items i WHERE i.source_id = ?")
+            .param(app.sourceId(feed))
             .query { rs, _ -> rs.getString(1) }
             .list()
 
     private fun favicon(source: String): String? =
         app
             .jdbc()
-            .sql("SELECT favicon_url FROM sources WHERE title = ?")
-            .param(source)
+            .sql("SELECT favicon_url FROM sources WHERE id = ?")
+            .param(app.sourceId(source))
             .query { rs, _ -> rs.getString(1) }
             .list()
             .single()

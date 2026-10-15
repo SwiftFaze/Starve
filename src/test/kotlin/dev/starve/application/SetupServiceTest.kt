@@ -29,6 +29,12 @@ private class FakeUsers(
         rows += User(rows.size + 1L, username, passwordHash, admin = true)
         return true
     }
+
+    override fun insert(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User = User(rows.size + 1L, username, passwordHash, admin = false).also { rows += it }
 }
 
 class SetupServiceTest {
@@ -133,6 +139,12 @@ class SetupServiceTest {
                     passwordHash: String,
                     at: Instant,
                 ): Boolean = false
+
+                override fun insert(
+                    username: String,
+                    passwordHash: String,
+                    at: Instant,
+                ): User = error("unused")
             }
         val raced = SetupService(racing, { it }, throttle, clock, SecureRandom())
         val issued = requireNotNull(raced.startRun())

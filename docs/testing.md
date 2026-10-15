@@ -26,6 +26,13 @@ application is running with no users yet" or "I am not signed in" to start
 signed out. The harness client is a `Browser` with its own cookie jar that sends
 the CSRF token on form posts, so scenarios exercise the real login and CSRF
 flow; `browserAt(address)` gives another client with its own forwarded address.
+A second user is created with "Given the user {string} exists" and the default
+browser switches to them with "When I sign in as {string}"; steps that name an
+item, source or group pick the signed-in user's own row first, so two users can hold
+same-named rows. Scenarios that build an older database with `LegacyDatabase` start from
+a pre-accounts database file: the harness migrates it to V13, seeds the `owner`
+account, and only then starts the app, whose own startup applies V14 and assigns the
+old rows to that owner.
 After changing a step, run `./mvnw -B clean verify` twice and
 require identical results. A scenario filter skips the coverage gate (profile
 `single-scenario` in the pom).

@@ -92,12 +92,7 @@ class FavouriteSteps {
     @When("I request the timeline of the group {string} with the Favourites filter")
     fun requestGroupWithFavourites(group: String) {
         val id =
-            app
-                .jdbc()
-                .sql("SELECT id FROM groups WHERE name = ?")
-                .param(group)
-                .query(Long::class.java)
-                .single()
+            app.groupId(group)
         fetch("/feed?group=$id&favourites=1")
     }
 
@@ -237,7 +232,9 @@ class FavouriteSteps {
         World.pages = listOf(World.response.body())
     }
 
-    private fun favourite(id: Long) = app.bean(FavouriteRepository::class.java).favourite(id, Instant.now())
+    private fun favourite(id: Long) {
+        app.bean(FavouriteRepository::class.java).favourite(app.ownerOfItem(id), id, Instant.now())
+    }
 
     private fun firstStar(): String = requireNotNull(STAR.find(body())) { "no star in ${body()}" }.value
 
@@ -260,7 +257,7 @@ class FavouriteSteps {
     private fun navAnchors(): List<Pair<String, String>> = World.navAnchors(body())
 
     private fun isFavourite(title: String): Boolean =
-        count("SELECT COUNT(*) FROM items WHERE title = ? AND favourited_at IS NOT NULL", title) == 1L
+        count("SELECT COUNT(*) FROM items WHERE id = ? AND favourited_at IS NOT NULL", itemId(title)) == 1L
 
     private fun countItems(title: String): Long = count("SELECT COUNT(*) FROM items WHERE title = ?", title)
 
@@ -269,13 +266,7 @@ class FavouriteSteps {
         favourite: Boolean,
     ) = assertTrue(tag.contains("data-favourite=\"$favourite\""), tag)
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     /** The item first seen [days] ago; the backdating steps spread items a few days apart, so an hour is plenty. */
     private fun idFirstSeenDaysAgo(days: Int): Long {

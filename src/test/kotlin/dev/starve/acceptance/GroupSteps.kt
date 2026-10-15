@@ -99,7 +99,10 @@ class GroupSteps {
     fun groupCountPlural(count: Int) = groupCount(count)
 
     @Then("there is {int} group")
-    fun groupCount(count: Int) = assertEquals(count.toLong(), scalar("SELECT COUNT(*) FROM groups"))
+    fun groupCount(count: Int) {
+        val mine = scalar("SELECT COUNT(*) FROM groups WHERE owner_id = ${app.currentUserId()}")
+        assertEquals(count.toLong(), mine)
+    }
 
     @Then("the source {string} is ungrouped")
     fun sourceUngrouped(source: String) = assertNull(groupNameOf(source))
@@ -135,26 +138,17 @@ class GroupSteps {
         source: String,
         group: String,
     ) {
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == source }
-                ?: sources.insert("http://$source.test/feed", source)
+        val owner = app.ownedSource(source)
         app.postForm("/sources/${owner.id}/group", "group" to group)
     }
 
-    private fun groupId(name: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM groups WHERE name = ?")
-            .param(name)
-            .query(Long::class.java)
-            .single()
+    private fun groupId(name: String): Long = app.groupId(name)
 
     private fun groupNameOf(source: String): String? =
         app
             .jdbc()
-            .sql("SELECT g.name FROM sources s LEFT JOIN groups g ON g.id = s.group_id WHERE s.title = ?")
-            .param(source)
+            .sql("SELECT g.name FROM sources s LEFT JOIN groups g ON g.id = s.group_id WHERE s.id = ?")
+            .param(app.sourceId(source))
             .query(String::class.java)
             .list()
             .single()

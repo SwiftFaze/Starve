@@ -3,6 +3,7 @@ package dev.starve.web
 import dev.starve.application.DetailRef
 import dev.starve.application.DetailService
 import dev.starve.application.MemoryItems
+import dev.starve.application.OWNER
 import dev.starve.application.SoundCloudOembed
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -22,7 +23,10 @@ class DetailControllerTest {
         DetailController(
             DetailService(
                 object : MemoryItems() {
-                    override fun findDetail(id: Long) = items.firstOrNull { it.id == id }
+                    override fun findDetail(
+                        owner: Long,
+                        id: Long,
+                    ) = items.firstOrNull { it.id == id }
                 },
                 SoundCloudOembed { null },
                 Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
@@ -35,7 +39,7 @@ class DetailControllerTest {
         val thumbnail = "https://img.test/t.jpg"
         val item = DetailRef(7, youtube, "Title", "Channel", published, "Artist", thumbnail, "<p>Hi</p>", null)
 
-        val view = controller(item).detail(7, model)
+        val view = controller(item).detail(OWNER, 7, model)
 
         assertEquals("detail :: content", view)
         // Thymeleaf reads the view through its getters, so assert through them rather than data-class equality.
@@ -61,9 +65,9 @@ class DetailControllerTest {
     fun `an item that is not playable, or unknown, has no detail view`() {
         val post = DetailRef(7, "https://blog.example/post", "Post", "Blog", published, null, null, null, null)
 
-        assertThrows(ResponseStatusException::class.java) { controller(post).detail(7, ConcurrentModel()) }
+        assertThrows(ResponseStatusException::class.java) { controller(post).detail(OWNER, 7, ConcurrentModel()) }
             .also { assertEquals(HttpStatus.NOT_FOUND, it.statusCode) }
-        assertThrows(ResponseStatusException::class.java) { controller(post).detail(9, ConcurrentModel()) }
+        assertThrows(ResponseStatusException::class.java) { controller(post).detail(OWNER, 9, ConcurrentModel()) }
             .also { assertEquals(HttpStatus.NOT_FOUND, it.statusCode) }
     }
 
@@ -86,7 +90,7 @@ class DetailControllerTest {
         val model = ConcurrentModel()
         val item = DetailRef(7, youtube, "Title", "Channel", published, null, null, null, null, later = true)
 
-        controller(item).detail(7, model)
+        controller(item).detail(OWNER, 7, model)
 
         assertEquals(LaterView("detail-later", 7, true, from = "detail"), model.getAttribute("laterToggle"))
     }

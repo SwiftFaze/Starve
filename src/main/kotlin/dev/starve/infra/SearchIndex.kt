@@ -2,11 +2,11 @@ package dev.starve.infra
 
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Component
-import java.time.Instant
 
 /**
  * Keeps `item_search` (FTS5, rowid = `items.id`) in step with `items` and `sources`. Every items write calls
  * into here inside the same transaction, because SQL triggers cannot see the source name or strip body markup.
+ * Deletes need no call: the `items_search_cleanup` trigger drops the row of every item however it is deleted.
  */
 @Component
 class SearchIndex(
@@ -37,25 +37,5 @@ class SearchIndex(
             .sql("UPDATE item_search SET source = ? WHERE rowid IN (SELECT id FROM items WHERE source_id = ?)")
             .params(title, sourceId)
             .update()
-    }
-
-    fun removeOfSource(sourceId: Long) {
-        jdbc
-            .sql("DELETE FROM item_search WHERE rowid IN (SELECT id FROM items WHERE source_id = ?)")
-            .param(sourceId)
-            .update()
-    }
-
-    fun removeFirstSeenBefore(cutoff: Instant) {
-        jdbc
-            .sql(PURGE_SQL)
-            .param(cutoff.toEpochMilli())
-            .update()
-    }
-
-    private companion object {
-        const val PURGE_SQL =
-            "DELETE FROM item_search WHERE rowid IN " +
-                "(SELECT id FROM items WHERE first_seen_at < ? AND favourited_at IS NULL AND later_at IS NULL)"
     }
 }

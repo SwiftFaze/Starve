@@ -25,8 +25,7 @@ class SkeletonSteps {
 
     @Given("the application is running")
     fun applicationIsRunning() {
-        app.start()
-        app.completeSetup(World.OWNER, World.OWNER_PASSWORD)
+        app.startAsOwner()
     }
 
     @When("the application starts")

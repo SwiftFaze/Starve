@@ -5,6 +5,7 @@ import dev.starve.application.ItemRef
 import dev.starve.application.ItemRepository
 import dev.starve.application.Oembed
 import dev.starve.application.PostRef
+import dev.starve.application.TimelineFilter
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Playable
@@ -29,37 +30,37 @@ class JdbcItemRepository(
         items.forEach { upsert(sourceId, it, firstSeenAt) }
     }
 
-    @Transactional
-    override fun deleteFirstSeenBefore(cutoff: Instant): Int {
-        search.removeFirstSeenBefore(cutoff)
-        return jdbc
+    override fun deleteFirstSeenBefore(cutoff: Instant): Int =
+        jdbc
             .sql("DELETE FROM items WHERE first_seen_at < ? AND favourited_at IS NULL AND later_at IS NULL")
             .param(cutoff.toEpochMilli())
             .update()
-    }
 
     override fun timeline(
+        owner: Long,
         after: Cursor?,
-        showRead: Boolean,
+        filter: TimelineFilter,
         limit: Int,
-        groupId: Long?,
     ): List<TimelineItem> {
-        val conditions = mutableListOf<String>()
-        val params = mutableListOf<Any>()
-        if (!showRead) conditions += "i.read_at IS NULL"
-        if (groupId != null) {
+        val conditions = mutableListOf("s.owner_id = ?")
+        val params = mutableListOf<Any>(owner)
+        if (!filter.showRead) conditions += "i.read_at IS NULL"
+        if (filter.groupId != null) {
             conditions += "s.group_id = ?"
-            params += groupId
+            params += filter.groupId
         }
         return jdbc.pageRows(conditions, params, after, limit)
     }
 
-    override fun find(id: Long): ItemRef? =
+    override fun find(
+        owner: Long,
+        id: Long,
+    ): ItemRef? =
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.thumbnail_url " +
-                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
-            ).param(id)
+                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
+            ).params(id, owner)
             .query { rs, _ ->
                 ItemRef(
                     rs.getLong("id"),
@@ -71,14 +72,17 @@ class JdbcItemRepository(
             }.optional()
             .orElse(null)
 
-    override fun findPost(id: Long): PostRef? =
+    override fun findPost(
+        owner: Long,
+        id: Long,
+    ): PostRef? =
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body, " +
                     "i.thumbnail_url, s.favicon_url, i.favourited_at IS NOT NULL AS is_favourite, " +
                     "i.article_checked_at, i.later_at IS NOT NULL AS is_later " +
-                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
-            ).param(id)
+                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
+            ).params(id, owner)
             .query { rs, _ ->
                 PostRef(
                     rs.getLong("id"),
@@ -96,13 +100,16 @@ class JdbcItemRepository(
             }.optional()
             .orElse(null)
 
-    override fun findDetail(id: Long): DetailRef? =
+    override fun findDetail(
+        owner: Long,
+        id: Long,
+    ): DetailRef? =
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.author, " +
                     "i.thumbnail_url, i.body, i.oembed_json, i.later_at IS NOT NULL AS is_later " +
-                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ?",
-            ).param(id)
+                    "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
+            ).params(id, owner)
             .query { rs, _ ->
                 DetailRef(
                     rs.getLong("id"),
@@ -130,15 +137,17 @@ class JdbcItemRepository(
     }
 
     override fun markRead(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean =
         jdbc
-            .sql("UPDATE items SET read_at = COALESCE(read_at, ?) WHERE id = ?")
-            .params(at.toEpochMilli(), id)
+            .sql("UPDATE items SET read_at = COALESCE(read_at, ?) WHERE id = ? AND $OWNED")
+            .params(at.toEpochMilli(), id, owner)
             .update() > 0
 
     override fun markAllRead(
+        owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
         groupId: Long?,
@@ -146,8 +155,8 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "UPDATE items SET read_at = ? WHERE read_at IS NULL AND first_seen_at <= ? " +
-                    "AND (? IS NULL OR source_id IN (SELECT id FROM sources WHERE group_id = ?))",
-            ).params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli(), groupId, groupId)
+                    "AND source_id IN (SELECT id FROM sources WHERE owner_id = ? AND (? IS NULL OR group_id = ?))",
+            ).params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli(), owner, groupId, groupId)
             .update()
 
     /**
@@ -196,6 +205,9 @@ class JdbcItemRepository(
                 "body = COALESCE(items.body, excluded.body) RETURNING id"
     }
 }
+
+/** Restricts an `items` write to the rows of one owner's sources; its parameter is the owner id. */
+internal const val OWNED = "source_id IN (SELECT id FROM sources WHERE owner_id = ?)"
 
 /** The rows matching [conditions] and the cursor, newest first, at most [limit] of them. */
 internal fun JdbcClient.pageRows(

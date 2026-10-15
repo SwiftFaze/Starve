@@ -14,15 +14,19 @@ class ReaderService(
     private val text: HtmlText,
 ) {
     /**
-     * The post to show in the reader, marked read; null for an unknown item and for a playable one, which
-     * keeps opening through the player. A teaser-only post first has its article page fetched.
+     * The post of [owner]'s item to show in the reader, marked read; null for an unknown or another user's item and
+     * for a playable one, which keeps opening through the player. A teaser-only post first has its article page
+     * fetched.
      */
-    fun open(id: Long): PostRef? {
-        val post = items.findPost(id)
+    fun open(
+        owner: Long,
+        id: Long,
+    ): PostRef? {
+        val post = items.findPost(owner, id)
         if (post == null || Playable.of(post.link) != null) return null
         val now = clock.instant()
         val shown = withArticle(post, now)
-        items.markRead(id, now)
+        items.markRead(owner, id, now)
         return shown
     }
 

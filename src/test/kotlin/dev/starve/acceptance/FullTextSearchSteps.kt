@@ -65,7 +65,8 @@ class FullTextSearchSteps {
         current: String,
         renamed: String,
     ) {
-        val source = app.bean(SourceRepository::class.java).findAll().single { it.title == current }
+        val sources = app.bean(SourceRepository::class.java)
+        val source = sources.findAllOf(app.currentUserId()).single { it.title == current }
         app.bean(SourceRepository::class.java).recordSuccess(source.id, renamed, Validators(), Instant.now())
     }
 
@@ -86,7 +87,7 @@ class FullTextSearchSteps {
         text: String,
         group: String,
     ) {
-        val groupId = app.bean(GroupRepository::class.java).findByName(group)!!.id
+        val groupId = app.groupId(group)
         requestSearch("/feed?q=${encode(text)}&group=$groupId")
     }
 
@@ -104,7 +105,7 @@ class FullTextSearchSteps {
 
     @When("I clear the search via htmx while viewing the group {string}")
     fun clearSearchInGroup(group: String) {
-        val groupId = app.bean(GroupRepository::class.java).findByName(group)!!.id
+        val groupId = app.groupId(group)
         requestHtmx("/feed?q=&group=$groupId")
     }
 
@@ -135,9 +136,7 @@ class FullTextSearchSteps {
         searchFormCarries(
             "group",
             app
-                .bean(GroupRepository::class.java)
-                .findByName(group)!!
-                .id
+                .groupId(group)
                 .toString(),
         )
 
@@ -204,13 +203,7 @@ class FullTextSearchSteps {
         Regex("<input type=\"search\"[^>]*>").find(World.response.body())?.value
             ?: error("no search box on the page")
 
-    private fun ownerOf(source: String) =
-        app
-            .bean(SourceRepository::class.java)
-            .findAll()
-            .firstOrNull { it.title == source }
-            ?.id
-            ?: app.bean(SourceRepository::class.java).insert("http://$source.test/feed", source).id
+    private fun ownerOf(source: String) = app.ownedSource(source).id
 
     private fun encode(text: String): String = URLEncoder.encode(text, StandardCharsets.UTF_8)
 

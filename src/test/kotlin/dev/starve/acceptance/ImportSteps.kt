@@ -1,10 +1,18 @@
 package dev.starve.acceptance
 
+import io.cucumber.datatable.DataTable
+import io.cucumber.java.DataTableType
+import io.cucumber.java.DocStringType
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+
+/** OPML text for the feed server: written out as a doc string, or given as a table of feed paths. */
+class FeedOpml(
+    val text: String,
+)
 
 class ImportSteps {
     private val app = World.app
@@ -13,6 +21,17 @@ class ImportSteps {
     @Given("YouTube feeds are configured to be served by the feed server")
     fun youtubeUsesFeedServer() =
         app.restartWith("--starve.youtube.feed-url-template=${World.feedServer().baseUrl}$YOUTUBE_PATH?channel_id={id}")
+
+    @DocStringType
+    fun opmlText(text: String) = FeedOpml(text)
+
+    /** One feed per row, the first column being its path on the feed server. */
+    @DataTableType
+    fun opmlOfPaths(table: DataTable): FeedOpml {
+        val outlines =
+            table.cells().joinToString("") { """<outline type="rss" title="Feed" xmlUrl="$FEED_SERVER${it[0]}"/>""" }
+        return FeedOpml("""<?xml version="1.0" encoding="UTF-8"?><opml version="2.0"><body>$outlines</body></opml>""")
+    }
 
     @Given("the feed server records requests")
     fun feedServerRecordsRequests() = Unit
@@ -40,20 +59,20 @@ class ImportSteps {
     @When("I import the file {string} containing the feed server OPML:")
     fun importOpml(
         name: String,
-        content: String,
-    ) = act(name, withFeedServer(content))
+        content: FeedOpml,
+    ) = act(name, withFeedServer(content.text))
 
     @Given("I have imported the file {string} containing the feed server OPML:")
     fun haveImportedOpml(
         name: String,
-        content: String,
-    ) = upload(name, withFeedServer(content))
+        content: FeedOpml,
+    ) = upload(name, withFeedServer(content.text))
 
     @When("I import the file {string} containing the feed server OPML without waiting for the background poll:")
     fun importOpmlWithoutWaiting(
         name: String,
-        content: String,
-    ) = act(name, withFeedServer(content))
+        content: FeedOpml,
+    ) = act(name, withFeedServer(content.text))
 
     @When("I import a file {string} of {int} MB")
     fun importLargeFile(

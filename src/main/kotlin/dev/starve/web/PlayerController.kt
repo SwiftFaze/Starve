@@ -28,11 +28,12 @@ class PlayerController(
     /** The docked player fragment of an item; requesting it marks the item read. */
     @GetMapping("/items/{id}/player")
     fun player(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
         model: Model,
     ): String {
         model.addAttribute("waveform", Waveform.bars(id))
-        when (val result = player.player(id)) {
+        when (val result = player.player(owner, id)) {
             PlayerResult.NotPlayable -> {
                 throw ResponseStatusException(HttpStatus.NOT_FOUND)
             }

@@ -41,7 +41,7 @@ class ImportServiceTest {
             "https://yt.test/{id}",
         )
 
-    private fun import(text: String) = service.importFile(text.toByteArray())
+    private fun import(text: String) = service.importFile(OWNER, text.toByteArray())
 
     private fun summary(outcome: ImportOutcome) = (outcome as ImportOutcome.Done).summary
 
@@ -98,7 +98,7 @@ class ImportServiceTest {
 
         assertEquals(ImportSummary(5, 0, listOf("outline 'x': not an http(s) URL")), summary)
         assertEquals(1, summary.failed)
-        assertEquals(listOf("Music", "news", "y".repeat(50)), groups.findAll().map { it.name })
+        assertEquals(listOf("Music", "news", "y".repeat(50)), groups.findAll(OWNER).map { it.name })
         assertEquals(listOf(1L to 1L, 2L to 2L, 3L to 2L, 5L to 3L), memory.assignments)
     }
 
@@ -123,7 +123,7 @@ class ImportServiceTest {
         import("<opml/>")
 
         assertTrue(memory.assignments.isEmpty())
-        assertEquals(1, groups.findAll().size)
+        assertEquals(1, groups.findAll(OWNER).size)
     }
 
     @Test
@@ -146,6 +146,19 @@ class ImportServiceTest {
         assertEquals(1, summary.added)
         assertEquals(1, summary.alreadySubscribed)
         assertEquals(1, stored.size)
+    }
+
+    @Test
+    fun `another user's subscription to the same url is not counted as already subscribed`() {
+        stored += Source(1, "http://a.test/f", "A", Validators(), null, null)
+        opml(ImportEntry("http://a.test/f", "A", "News"))
+
+        val summary = summary(service.importFile(OTHER_OWNER, "<opml/>".toByteArray()))
+
+        assertEquals(1, summary.added)
+        assertEquals(0, summary.alreadySubscribed)
+        assertEquals(OTHER_OWNER, memory.insertedFor.getValue(2))
+        assertEquals(OTHER_OWNER, groups.created.getValue(2))
     }
 
     @Test

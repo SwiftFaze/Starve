@@ -24,12 +24,15 @@ class PlayerService(
     private val embeds: EmbedChecker,
     private val clock: Clock,
 ) {
-    /** Resolves the player of an item and marks the item read when it is playable. */
-    fun player(id: Long): PlayerResult {
-        val item = items.find(id)
+    /** Resolves the player of [owner]'s item and marks the item read when it is playable. */
+    fun player(
+        owner: Long,
+        id: Long,
+    ): PlayerResult {
+        val item = items.find(owner, id)
         val playable = Playable.of(item?.link)
         if (item == null || playable == null) return PlayerResult.NotPlayable
-        items.markRead(id, clock.instant())
+        items.markRead(owner, id, clock.instant())
         return if (playable is Playable.YouTube && !embeds.allowsEmbedding(playable)) {
             PlayerResult.EmbeddingDisabled(playable.watchUrl, item)
         } else {

@@ -61,24 +61,41 @@ interface FeedFetcher {
 }
 
 interface SourceRepository {
+    /** Every source of every owner: what the background poll covers. */
     fun findAll(): List<Source>
 
+    /** The sources owned by user [owner], oldest first. */
+    fun findAllOf(owner: Long): List<Source>
+
+    /** The source with this id whoever owns it: for background work, never for a request. */
     fun findById(id: Long): Source?
 
-    fun existsByUrl(url: String): Boolean
+    fun existsByUrl(
+        owner: Long,
+        url: String,
+    ): Boolean
 
     fun insert(
+        owner: Long,
         url: String,
         title: String,
     ): Source
 
-    fun delete(id: Long)
+    /** Deletes [owner]'s source [id]; false when [owner] has no such source. */
+    fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean
 
-    /** Puts the source in [groupId], or ungroups it when null. */
+    /**
+     * Puts [owner]'s source in [groupId] (one of [owner]'s groups), or ungroups it when null; false when [owner]
+     * has no such source or group.
+     */
     fun assignGroup(
+        owner: Long,
         sourceId: Long,
         groupId: Long?,
-    )
+    ): Boolean
 
     fun recordSuccess(
         id: Long,
@@ -108,56 +125,76 @@ interface FaviconFinder {
 }
 
 interface GroupRepository {
-    /** All groups, alphabetical ignoring case. */
-    fun findAll(): List<Group>
+    /** [owner]'s groups, alphabetical ignoring case. */
+    fun findAll(owner: Long): List<Group>
 
-    fun findById(id: Long): Group?
+    /** [owner]'s group [id], or null when [owner] has no such group. */
+    fun findById(
+        owner: Long,
+        id: Long,
+    ): Group?
 
-    /** The group with this name, ignoring case. */
-    fun findByName(name: String): Group?
+    /** [owner]'s group with this name, ignoring case. */
+    fun findByName(
+        owner: Long,
+        name: String,
+    ): Group?
 
-    fun insert(name: String): Group
+    fun insert(
+        owner: Long,
+        name: String,
+    ): Group
 
     fun rename(
+        owner: Long,
         id: Long,
         name: String,
     )
 
-    /** Deletes the group; its sources become ungrouped. */
-    fun delete(id: Long)
+    /** Deletes [owner]'s group, whose sources become ungrouped; false when [owner] has no such group. */
+    fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean
 
-    /** Every group (alphabetical ignoring case) with its unread item count. */
-    fun unreadCounts(): List<GroupSummary>
+    /** Every group of [owner] (alphabetical ignoring case) with its unread item count. */
+    fun unreadCounts(owner: Long): List<GroupSummary>
 
-    /** Unread items across all sources, grouped or not. */
-    fun totalUnread(): Int
+    /** [owner]'s unread items across all their sources, grouped or not. */
+    fun totalUnread(owner: Long): Int
 }
 
 /** Persistence of the favourite mark and the Favourites view. */
 interface FavouriteRepository {
-    /** Newest-first favourites older than [after] (all when null), read or not; at most [limit]. */
+    /** [owner]'s newest-first favourites older than [after] (all when null), read or not; at most [limit]. */
     fun favourites(
+        owner: Long,
         after: Cursor?,
         limit: Int,
     ): List<TimelineItem>
 
-    /** Marks the item a favourite at [at] unless it already is; returns false when no such item exists. */
+    /** Marks [owner]'s item a favourite at [at] unless it already is; returns false when [owner] has no such item. */
     fun favourite(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean
 
-    /** Clears the favourite mark; returns false when no such item exists. */
-    fun unfavourite(id: Long): Boolean
+    /** Clears the favourite mark; returns false when [owner] has no such item. */
+    fun unfavourite(
+        owner: Long,
+        id: Long,
+    ): Boolean
 }
 
 /** Persistence of full-text search over titles, source names and post bodies. */
 interface SearchRepository {
     /**
-     * Items whose title, source name or body matches the FTS5 [match] expression, newest first, older than [after]
-     * (all when null); at most [limit]. Read state, group and the show setting do not apply.
+     * [owner]'s items whose title, source name or body matches the FTS5 [match] expression, newest first, older than
+     * [after] (all when null); at most [limit]. Read state, group and the show setting do not apply.
      */
     fun search(
+        owner: Long,
         match: String,
         after: Cursor?,
         limit: Int,
@@ -180,20 +217,25 @@ interface ArticleRepository {
 
 /** Persistence of the read-later mark and the Later view. */
 interface LaterRepository {
-    /** Saved items earliest-saved first (ties by id ascending), after [after] (from the start when null). */
+    /** [owner]'s saved items earliest-saved first (ties by id ascending), after [after] (from the start when null). */
     fun later(
+        owner: Long,
         after: LaterCursor?,
         limit: Int,
     ): List<SavedItem>
 
-    /** Saves the item for later at [at] unless it already is saved; returns false when no such item exists. */
+    /** Saves [owner]'s item for later at [at] unless it already is saved; false when [owner] has no such item. */
     fun save(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean
 
-    /** Clears the saved mark; returns false when no such item exists. */
-    fun clear(id: Long): Boolean
+    /** Clears the saved mark; returns false when [owner] has no such item. */
+    fun clear(
+        owner: Long,
+        id: Long,
+    ): Boolean
 }
 
 interface ItemRepository {
@@ -210,24 +252,31 @@ interface ItemRepository {
      */
     fun deleteFirstSeenBefore(cutoff: Instant): Int
 
-    /**
-     * Newest-first items older than [after] (all when null); at most [limit]; read ones only when [showRead];
-     * only those of group [groupId] when it is given.
-     */
+    /** [owner]'s newest-first items older than [after] (all when null), narrowed by [filter]; at most [limit]. */
     fun timeline(
+        owner: Long,
         after: Cursor?,
-        showRead: Boolean,
+        filter: TimelineFilter,
         limit: Int,
-        groupId: Long?,
     ): List<TimelineItem>
 
-    fun find(id: Long): ItemRef?
+    /** [owner]'s item [id], or null when [owner] has no such item. */
+    fun find(
+        owner: Long,
+        id: Long,
+    ): ItemRef?
 
-    /** The item with its published date, stored body and favourite and saved-for-later state, for the reader. */
-    fun findPost(id: Long): PostRef?
+    /** [owner]'s item with its published date, stored body and favourite and saved-for-later state, for the reader. */
+    fun findPost(
+        owner: Long,
+        id: Long,
+    ): PostRef?
 
-    /** The item with its feed data and stored oEmbed details, for the detail view. */
-    fun findDetail(id: Long): DetailRef?
+    /** [owner]'s item with its feed data and stored oEmbed details, for the detail view. */
+    fun findDetail(
+        owner: Long,
+        id: Long,
+    ): DetailRef?
 
     /** Stores the oEmbed details of an item, replacing any stored before. */
     fun saveOembed(
@@ -235,19 +284,30 @@ interface ItemRepository {
         oembed: Oembed,
     )
 
-    /** Marks the item read at [at] unless already read; returns false when no such item exists. */
+    /** Marks [owner]'s item read at [at] unless already read; returns false when [owner] has no such item. */
     fun markRead(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean
 
-    /** Marks every unread item first seen at or before [firstSeenCutoff] as read at [at], within [groupId] if given. */
+    /**
+     * Marks every unread item of [owner] first seen at or before [firstSeenCutoff] as read at [at], within
+     * [groupId] if given.
+     */
     fun markAllRead(
+        owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
         groupId: Long?,
     ): Int
 }
+
+/** Narrows a timeline: read items are listed only when [showRead]; only group [groupId] when it is given. */
+data class TimelineFilter(
+    val showRead: Boolean,
+    val groupId: Long? = null,
+)
 
 /** One item as needed to open it, or to name it while it plays. */
 data class ItemRef(
@@ -363,6 +423,13 @@ interface UserRepository {
         passwordHash: String,
         at: Instant,
     ): Boolean
+
+    /** Stores [username] as an ordinary (non-admin) account; the username must be unused. */
+    fun insert(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User
 }
 
 /** Hashes a raw password for storage. */

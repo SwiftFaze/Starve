@@ -12,10 +12,11 @@ class JdbcLaterRepository(
     private val jdbc: JdbcClient,
 ) : LaterRepository {
     override fun later(
+        owner: Long,
         after: LaterCursor?,
         limit: Int,
     ): List<SavedItem> {
-        val params = mutableListOf<Any>()
+        val params = mutableListOf<Any>(owner)
         val cursor =
             if (after == null) {
                 ""
@@ -26,7 +27,7 @@ class JdbcLaterRepository(
         params.add(limit)
         val sql =
             "SELECT $TIMELINE_COLUMNS, i.later_at AS saved_at $TIMELINE_FROM " +
-                "WHERE i.later_at IS NOT NULL$cursor ORDER BY i.later_at ASC, i.id ASC LIMIT ?"
+                "WHERE s.owner_id = ? AND i.later_at IS NOT NULL$cursor ORDER BY i.later_at ASC, i.id ASC LIMIT ?"
         return jdbc
             .sql(sql)
             .params(params)
@@ -35,17 +36,21 @@ class JdbcLaterRepository(
     }
 
     override fun save(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean =
         jdbc
-            .sql("UPDATE items SET later_at = COALESCE(later_at, ?) WHERE id = ?")
-            .params(at.toEpochMilli(), id)
+            .sql("UPDATE items SET later_at = COALESCE(later_at, ?) WHERE id = ? AND $OWNED")
+            .params(at.toEpochMilli(), id, owner)
             .update() > 0
 
-    override fun clear(id: Long): Boolean =
+    override fun clear(
+        owner: Long,
+        id: Long,
+    ): Boolean =
         jdbc
-            .sql("UPDATE items SET later_at = NULL WHERE id = ?")
-            .param(id)
+            .sql("UPDATE items SET later_at = NULL WHERE id = ? AND $OWNED")
+            .params(id, owner)
             .update() > 0
 }

@@ -27,12 +27,7 @@ class DeckSteps {
     fun sameWaveformAgain(title: String) {
         val first = waveform(body())
         val id =
-            app
-                .jdbc()
-                .sql("SELECT id FROM items WHERE title = ?")
-                .param(title)
-                .query(Long::class.java)
-                .single()
+            app.itemId(title)
         val again = app.get("/items/$id/player", mapOf("HX-Request" to "true")).body()
         assertEquals(first, waveform(again))
     }

@@ -29,51 +29,69 @@ class GroupService(
     private val groups: GroupRepository,
     private val sources: SourceRepository,
 ) {
-    fun list(): List<Group> = groups.findAll()
+    fun list(owner: Long): List<Group> = groups.findAll(owner)
 
-    fun find(id: Long): Group? = groups.findById(id)
+    fun find(
+        owner: Long,
+        id: Long,
+    ): Group? = groups.findById(owner, id)
 
-    fun navigation(): GroupNavigation = GroupNavigation(groups.totalUnread(), groups.unreadCounts())
+    fun navigation(owner: Long): GroupNavigation {
+        val perGroup = groups.unreadCounts(owner)
+        return GroupNavigation(groups.totalUnread(owner), perGroup)
+    }
 
-    fun create(rawName: String): GroupResult =
+    fun create(
+        owner: Long,
+        rawName: String,
+    ): GroupResult =
         withValidName(rawName) { name ->
-            if (groups.findByName(name) != null) GroupResult.Duplicate else GroupResult.Saved(groups.insert(name))
+            if (groups.findByName(owner, name) != null) {
+                GroupResult.Duplicate
+            } else {
+                GroupResult.Saved(groups.insert(owner, name))
+            }
         }
 
-    /** Renames group [id]; a case-variant of its own name is allowed, a clash with another group is not. */
+    /** Renames [owner]'s group [id]; a case-variant of its own name is allowed, a clash with another is not. */
     fun rename(
+        owner: Long,
         id: Long,
         rawName: String,
     ): GroupResult {
-        val existing = groups.findById(id) ?: return GroupResult.Missing
+        val existing = groups.findById(owner, id) ?: return GroupResult.Missing
         return withValidName(rawName) { name ->
-            if (clashesWithOther(id, name)) {
+            if (clashesWithOther(owner, id, name)) {
                 GroupResult.Duplicate
             } else {
-                groups.rename(id, name)
+                groups.rename(owner, id, name)
                 GroupResult.Saved(existing.copy(name = name))
             }
         }
     }
 
-    /** Deletes the group; its sources become ungrouped. */
-    fun delete(id: Long) = groups.delete(id)
+    /** Deletes [owner]'s group, whose sources become ungrouped; false when [owner] has no such group. */
+    fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean = groups.delete(owner, id)
 
-    /** Puts [sourceId] in [groupId], or ungroups it when null; false when the group does not exist. */
+    /** Puts [owner]'s [sourceId] in [groupId], or ungroups it when null; false when either is not [owner]'s. */
     fun assign(
+        owner: Long,
         sourceId: Long,
         groupId: Long?,
     ): Boolean {
-        if (groupId != null && groups.findById(groupId) == null) return false
-        sources.assignGroup(sourceId, groupId)
-        return true
+        if (groupId != null && groups.findById(owner, groupId) == null) return false
+        return sources.assignGroup(owner, sourceId, groupId)
     }
 
     private fun clashesWithOther(
+        owner: Long,
         id: Long,
         name: String,
     ): Boolean {
-        val other = groups.findByName(name)
+        val other = groups.findByName(owner, name)
         return other != null && other.id != id
     }
 

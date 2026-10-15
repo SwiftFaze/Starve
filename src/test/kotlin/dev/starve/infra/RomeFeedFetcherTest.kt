@@ -294,16 +294,26 @@ class RomeFeedFetcherTest {
 
         override fun findById(id: Long) = all.firstOrNull { it.id == id }
 
-        override fun existsByUrl(url: String) = all.any { it.url == url }
+        override fun findAllOf(owner: Long) = all
+
+        override fun existsByUrl(
+            owner: Long,
+            url: String,
+        ) = all.any { it.url == url }
 
         override fun insert(
+            owner: Long,
             url: String,
             title: String,
         ): Source = error("unused")
 
-        override fun delete(id: Long) = error("unused")
+        override fun delete(
+            owner: Long,
+            id: Long,
+        ) = error("unused")
 
         override fun assignGroup(
+            owner: Long,
             sourceId: Long,
             groupId: Long?,
         ) = error("unused")

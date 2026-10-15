@@ -309,10 +309,7 @@ class FullArticleSteps {
     // ---- helpers -------------------------------------------------------------------------
 
     private fun insertBlog(item: FeedItem) {
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == BLOG }
-                ?: sources.insert("http://$BLOG.test/feed", BLOG)
+        val owner = app.ownedSource(BLOG)
         app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), Instant.now())
     }
 
@@ -359,13 +356,7 @@ class FullArticleSteps {
         assertFalse(World.feedServer().requests.isEmpty(), "the reader never asked for the article page")
     }
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     private fun storedBody(title: String): String? = column("body", title)
 

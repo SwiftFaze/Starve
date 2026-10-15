@@ -32,72 +32,84 @@ class SourcesController(
     private val groups: GroupService,
 ) {
     @GetMapping("/sources")
-    fun sources(model: Model): String = render(model, null)
+    fun sources(
+        @CurrentUserId owner: Long,
+        model: Model,
+    ): String = render(owner, model, null)
 
     @PostMapping("/sources")
     fun add(
+        @CurrentUserId owner: Long,
         @RequestParam url: String,
         model: Model,
-    ): String = render(model, messageFor(subscriptions.subscribe(url)))
+    ): String = render(owner, model, messageFor(subscriptions.subscribe(owner, url)))
 
+    /** Another user's source is answered like an unknown one: 404. */
     @PostMapping("/sources/{id}/delete")
     fun remove(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
     ): String {
-        subscriptions.unsubscribe(id)
+        if (!subscriptions.unsubscribe(owner, id)) throw notFound()
         return "redirect:/sources"
     }
 
     @PostMapping("/groups")
     fun createGroup(
+        @CurrentUserId owner: Long,
         @RequestParam name: String,
         model: Model,
-    ): String = groupOutcome(groups.create(name), model)
+    ): String = groupOutcome(owner, groups.create(owner, name), model)
 
     @PostMapping("/groups/{id}/rename")
     fun renameGroup(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
-        @RequestParam name: String,
+        @RequestParam(required = false) name: String?,
         model: Model,
-    ): String = groupOutcome(groups.rename(id, name), model)
+    ): String = groupOutcome(owner, groups.rename(owner, id, name.orEmpty()), model)
 
     @PostMapping("/groups/{id}/delete")
     fun deleteGroup(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
     ): String {
-        groups.delete(id)
+        if (!groups.delete(owner, id)) throw notFound()
         return "redirect:/sources"
     }
 
     /** An empty or absent [group] puts the source back in "Ungrouped". */
     @PostMapping("/sources/{id}/group")
     fun assignGroup(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
         @RequestParam(required = false) group: String?,
     ): String {
         val groupId = group?.takeIf { it.isNotBlank() }?.let { it.toLongOrNull() ?: throw notFound() }
-        if (!groups.assign(id, groupId)) throw notFound()
+        if (!groups.assign(owner, id, groupId)) throw notFound()
         return "redirect:/sources"
     }
 
     private fun groupOutcome(
+        owner: Long,
         result: GroupResult,
         model: Model,
     ): String =
         when (result) {
             is GroupResult.Saved -> "redirect:/sources"
             GroupResult.Missing -> throw notFound()
-            GroupResult.Blank -> render(model, "group name is required")
-            GroupResult.TooLong -> render(model, "at most ${GroupRules.MAX_NAME_LENGTH} characters")
-            GroupResult.Duplicate -> render(model, "a group with that name already exists")
+            GroupResult.Blank -> render(owner, model, "group name is required")
+            GroupResult.TooLong -> render(owner, model, "at most ${GroupRules.MAX_NAME_LENGTH} characters")
+            GroupResult.Duplicate -> render(owner, model, "a group with that name already exists")
         }
 
     private fun render(
+        owner: Long,
         model: Model,
         message: String?,
     ): String {
-        model.addAttribute("sources", subscriptions.list().map { it.toView() })
-        model.addAttribute("groups", groups.list())
+        model.addAttribute("sources", subscriptions.list(owner).map { it.toView() })
+        model.addAttribute("groups", groups.list(owner))
         model.addAttribute("message", message)
         return "sources"
     }

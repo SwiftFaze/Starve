@@ -7,9 +7,15 @@ class FavouriteService(
     private val favourites: FavouriteRepository,
     private val clock: Clock,
 ) {
-    /** Returns false when the item does not exist. */
-    fun favourite(id: Long): Boolean = favourites.favourite(id, clock.instant())
+    /** Returns false when [owner] has no such item. */
+    fun favourite(
+        owner: Long,
+        id: Long,
+    ): Boolean = favourites.favourite(owner, id, clock.instant())
 
-    /** Returns false when the item does not exist. */
-    fun unfavourite(id: Long): Boolean = favourites.unfavourite(id)
+    /** Returns false when [owner] has no such item. */
+    fun unfavourite(
+        owner: Long,
+        id: Long,
+    ): Boolean = favourites.unfavourite(owner, id)
 }

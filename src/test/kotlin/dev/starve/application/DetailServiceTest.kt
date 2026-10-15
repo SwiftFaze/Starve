@@ -22,9 +22,13 @@ class DetailServiceTest {
         val read = mutableListOf<Pair<Long, Instant>>()
         val saved = mutableMapOf<Long, Oembed>()
 
-        override fun findDetail(id: Long): DetailRef? = items[id]
+        override fun findDetail(
+            owner: Long,
+            id: Long,
+        ): DetailRef? = items[id]
 
         override fun markRead(
+            owner: Long,
             id: Long,
             at: Instant,
         ): Boolean {
@@ -76,15 +80,15 @@ class DetailServiceTest {
     fun `the detail reports whether the item is saved for later`() {
         val (service, _, _) = service(item(1, youtube).copy(later = true), item(2, youtube))
 
-        assertTrue(service.open(1)!!.later)
-        assertFalse(service.open(2)!!.later)
+        assertTrue(service.open(OWNER, 1)!!.later)
+        assertFalse(service.open(OWNER, 2)!!.later)
     }
 
     @Test
     fun `a youtube video shows its feed details and is marked read without an oembed request`() {
         val (service, items, oembeds) = service(item(1, youtube))
 
-        assertEquals(feedDetail(1, youtube), service.open(1))
+        assertEquals(feedDetail(1, youtube), service.open(OWNER, 1))
         assertEquals(listOf(1L to now), items.read)
         assertTrue(oembeds.asked.isEmpty())
     }
@@ -95,7 +99,7 @@ class DetailServiceTest {
         val (service, items, oembeds) = service(item(1, track), answer = oembed)
 
         val laidOver = feedDetail(1, track).copy(artist = "Oembed Artist", thumbnailUrl = "https://i1.example/art.jpg")
-        assertEquals(laidOver.copy(description = "<p>Oembed</p>"), service.open(1))
+        assertEquals(laidOver.copy(description = "<p>Oembed</p>"), service.open(OWNER, 1))
         assertEquals(listOf(track), oembeds.asked)
         assertEquals(mapOf(1L to oembed), items.saved)
     }
@@ -105,7 +109,7 @@ class DetailServiceTest {
         val cached = Oembed("Cached Artist", null, null)
         val (service, _, oembeds) = service(item(1, track, oembed = cached))
 
-        assertEquals("Cached Artist", service.open(1)?.artist)
+        assertEquals("Cached Artist", service.open(OWNER, 1)?.artist)
         assertTrue(oembeds.asked.isEmpty())
     }
 
@@ -113,7 +117,7 @@ class DetailServiceTest {
     fun `a failed oembed fetch shows the feed data and is not stored`() {
         val (service, items, _) = service(item(1, track), answer = null)
 
-        assertEquals(feedDetail(1, track), service.open(1))
+        assertEquals(feedDetail(1, track), service.open(OWNER, 1))
         assertTrue(items.saved.isEmpty())
         assertEquals(listOf(1L to now), items.read)
     }
@@ -122,14 +126,14 @@ class DetailServiceTest {
     fun `an oembed without a description or author keeps the feed's description and author`() {
         val (service, _, _) = service(item(1, track), answer = Oembed(null, "https://i1.example/art.jpg", null))
 
-        assertEquals(feedDetail(1, track).copy(thumbnailUrl = "https://i1.example/art.jpg"), service.open(1))
+        assertEquals(feedDetail(1, track).copy(thumbnailUrl = "https://i1.example/art.jpg"), service.open(OWNER, 1))
     }
 
     @Test
     fun `a non-playable item has no detail view and nothing is marked read`() {
         val (service, items, _) = service(item(1, "https://blog.example/post"))
 
-        assertNull(service.open(1))
+        assertNull(service.open(OWNER, 1))
         assertTrue(items.read.isEmpty())
     }
 
@@ -137,7 +141,7 @@ class DetailServiceTest {
     fun `an unknown item has no detail view`() {
         val (service, items, _) = service()
 
-        assertNull(service.open(9))
+        assertNull(service.open(OWNER, 9))
         assertTrue(items.read.isEmpty())
     }
 }

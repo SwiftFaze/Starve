@@ -25,10 +25,11 @@ class ImportController(
 
     @PostMapping("/import")
     fun upload(
+        @CurrentUserId owner: Long,
         @RequestParam file: MultipartFile,
         model: Model,
     ): String {
-        when (val outcome = imports.importFile(file.bytes)) {
+        when (val outcome = imports.importFile(owner, file.bytes)) {
             ImportOutcome.Unrecognised -> model.addAttribute("message", UNRECOGNISED_FILE)
             is ImportOutcome.Done -> model.addAttribute("summary", outcome.summary)
         }

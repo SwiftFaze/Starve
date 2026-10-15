@@ -9,6 +9,8 @@ import dev.starve.application.LocateResult
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
+import dev.starve.application.OTHER_OWNER
+import dev.starve.application.OWNER
 import dev.starve.application.SubscriptionService
 import dev.starve.application.quietFavicons
 import dev.starve.domain.Feed
@@ -18,6 +20,7 @@ import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus
 import org.springframework.ui.ConcurrentModel
 import org.springframework.web.server.ResponseStatusException
 import java.time.Clock
@@ -53,7 +56,7 @@ class SourcesControllerTest {
     fun `lists each source with its formatted fetch time and error`() {
         val model = ConcurrentModel()
 
-        val view = controller.sources(model)
+        val view = controller.sources(OWNER, model)
 
         assertEquals("sources", view)
         val views = (model.getAttribute("sources") as List<*>).map { it as SourceView }
@@ -69,8 +72,9 @@ class SourcesControllerTest {
     fun `subscribing reports the new title`() {
         val model = ConcurrentModel()
 
-        controller.add("http://c.test/feed", model)
+        val view = controller.add(OWNER, "http://c.test/feed", model)
 
+        assertEquals("sources", view)
         assertEquals("Subscribed to New", model.getAttribute("message"))
     }
 
@@ -78,14 +82,23 @@ class SourcesControllerTest {
     fun `an invalid url is reported without subscribing`() {
         val model = ConcurrentModel()
 
-        controller.add("ftp://c.test/feed", model)
+        controller.add(OWNER, "ftp://c.test/feed", model)
 
         assertEquals("The feed URL must be an http or https URL", model.getAttribute("message"))
     }
 
     @Test
+    fun `a url already followed is reported rather than subscribed twice`() {
+        val model = ConcurrentModel()
+
+        controller.add(OWNER, "http://a.test/feed", model)
+
+        assertEquals("You are already subscribed to that feed", model.getAttribute("message"))
+    }
+
+    @Test
     fun `removing a source unsubscribes it and redirects to the list`() {
-        val redirect = controller.remove(4)
+        val redirect = controller.remove(OWNER, 4)
 
         assertEquals("redirect:/sources", redirect)
         assertEquals(listOf(5L), sources.findAll().map { it.id })
@@ -93,44 +106,83 @@ class SourcesControllerTest {
 
     @Test
     fun `creating a group redirects, and invalid names re-render the page with a message`() {
-        assertEquals("redirect:/sources", controller.createGroup("News", ConcurrentModel()))
+        assertEquals("redirect:/sources", controller.createGroup(OWNER, "News", ConcurrentModel()))
         val messages =
             listOf("  ", "x".repeat(51), "music").map {
-                ConcurrentModel().also { model -> assertEquals("sources", controller.createGroup(it, model)) }
+                ConcurrentModel().also { model -> assertEquals("sources", controller.createGroup(OWNER, it, model)) }
             }
 
         assertEquals(
             listOf("group name is required", "at most 50 characters", "a group with that name already exists"),
             messages.map { it.getAttribute("message") },
         )
-        assertEquals(listOf("Music", "News"), groups.findAll().map { it.name })
+        assertEquals(listOf("Music", "News"), groups.findAll(OWNER).map { it.name })
     }
 
     @Test
     fun `renaming redirects, rejects clashes and reports an unknown group as not found`() {
-        assertEquals("redirect:/sources", controller.renameGroup(1, "Tunes", ConcurrentModel()))
-        assertEquals("redirect:/sources", controller.createGroup("News", ConcurrentModel()))
+        assertEquals("redirect:/sources", controller.renameGroup(OWNER, 1, "Tunes", ConcurrentModel()))
+        assertEquals("redirect:/sources", controller.createGroup(OWNER, "News", ConcurrentModel()))
         val model = ConcurrentModel()
 
-        controller.renameGroup(2, "tunes", model)
+        controller.renameGroup(OWNER, 2, "tunes", model)
 
         assertEquals("a group with that name already exists", model.getAttribute("message"))
-        assertThrows(ResponseStatusException::class.java) { controller.renameGroup(9, "x", ConcurrentModel()) }
+        assertThrows(ResponseStatusException::class.java) { controller.renameGroup(OWNER, 9, "x", ConcurrentModel()) }
     }
 
     @Test
     fun `deleting a group redirects to the list`() {
-        assertEquals("redirect:/sources", controller.deleteGroup(1))
+        assertEquals("redirect:/sources", controller.deleteGroup(OWNER, 1))
         assertEquals(listOf(1L), groups.deleted)
     }
 
     @Test
     fun `assigning a source sets its group, blank means ungrouped and unknown groups are not found`() {
-        assertEquals("redirect:/sources", controller.assignGroup(4, "1"))
-        assertEquals("redirect:/sources", controller.assignGroup(4, ""))
-        assertEquals("redirect:/sources", controller.assignGroup(5, null))
+        assertEquals("redirect:/sources", controller.assignGroup(OWNER, 4, "1"))
+        assertEquals("redirect:/sources", controller.assignGroup(OWNER, 4, ""))
+        assertEquals("redirect:/sources", controller.assignGroup(OWNER, 5, null))
         assertEquals(listOf<Pair<Long, Long?>>(4L to 1L, 4L to null, 5L to null), sources.assignments)
-        assertThrows(ResponseStatusException::class.java) { controller.assignGroup(4, "9") }
-        assertThrows(ResponseStatusException::class.java) { controller.assignGroup(4, "abc") }
+        assertThrows(ResponseStatusException::class.java) { controller.assignGroup(OWNER, 4, "9") }
+        assertThrows(ResponseStatusException::class.java) { controller.assignGroup(OWNER, 4, "abc") }
+    }
+
+    @Test
+    fun `another user's source and groups are not found, and nothing of theirs is listed`() {
+        val model = ConcurrentModel()
+
+        controller.sources(OTHER_OWNER, model)
+
+        assertEquals(emptyList<Any>(), model.getAttribute("sources"))
+        assertEquals(emptyList<Any>(), model.getAttribute("groups"))
+        assertNotFound { controller.remove(OTHER_OWNER, 4) }
+        assertNotFound { controller.deleteGroup(OTHER_OWNER, 1) }
+        assertNotFound { controller.renameGroup(OTHER_OWNER, 1, "Tunes", ConcurrentModel()) }
+        assertNotFound { controller.renameGroup(OTHER_OWNER, 1, null, ConcurrentModel()) }
+        assertNotFound { controller.assignGroup(OTHER_OWNER, 4, "1") }
+        assertNotFound { controller.assignGroup(OTHER_OWNER, 4, null) }
+        assertEquals(listOf(4L, 5L), sources.findAll().map { it.id })
+        assertEquals(listOf("Music"), groups.findAll(OWNER).map { it.name })
+    }
+
+    @Test
+    fun `a rename without a name asks for one`() {
+        val model = ConcurrentModel()
+
+        assertEquals("sources", controller.renameGroup(OWNER, 1, null, model))
+
+        assertEquals("group name is required", model.getAttribute("message"))
+    }
+
+    @Test
+    fun `removing or deleting what does not exist is not found`() {
+        assertNotFound { controller.remove(OWNER, 99) }
+        assertNotFound { controller.deleteGroup(OWNER, 99) }
+        assertNotFound { controller.assignGroup(OWNER, 99, null) }
+    }
+
+    private fun assertNotFound(action: () -> Unit) {
+        val failure = assertThrows(ResponseStatusException::class.java) { action() }
+        assertEquals(HttpStatus.NOT_FOUND, failure.statusCode)
     }
 }

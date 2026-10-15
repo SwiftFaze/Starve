@@ -316,8 +316,9 @@ Feature: Accounts and login with first-run admin setup
 
   # Non-goals:
   #   - (Done in #42: top-bar logout control and the timeline at /feed.)
-  #   - Any per-user scoping of sources/items (#43): every signed-in user still
-  #     sees the one shared dataset in this issue (only one user can exist anyway).
+  #   - Any per-user scoping of sources/items (#43): this issue left every signed-in
+  #     user on the one shared dataset (only one user could exist anyway); #43
+  #     scopes it per user, see per-user-data.feature.
   #   - Throttle persistence across restarts; distributed/multi-instance throttling.
   #
   # Risks:

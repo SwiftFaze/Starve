@@ -20,6 +20,13 @@ class JdbcSourceRepository(
             .query { rs, _ -> rs.toSource() }
             .list()
 
+    override fun findAllOf(owner: Long): List<Source> =
+        jdbc
+            .sql("SELECT * FROM sources WHERE owner_id = ? ORDER BY id")
+            .param(owner)
+            .query { rs, _ -> rs.toSource() }
+            .list()
+
     override fun findById(id: Long): Source? =
         jdbc
             .sql("SELECT * FROM sources WHERE id = ?")
@@ -28,38 +35,52 @@ class JdbcSourceRepository(
             .optional()
             .orElse(null)
 
-    override fun existsByUrl(url: String): Boolean =
+    override fun existsByUrl(
+        owner: Long,
+        url: String,
+    ): Boolean =
         jdbc
-            .sql("SELECT COUNT(*) FROM sources WHERE url = ?")
-            .param(url)
+            .sql("SELECT COUNT(*) FROM sources WHERE owner_id = ? AND url = ?")
+            .params(owner, url)
             .query(Long::class.java)
             .single() > 0
 
     override fun insert(
+        owner: Long,
         url: String,
         title: String,
     ): Source {
         val id =
             jdbc
-                .sql("INSERT INTO sources (url, title) VALUES (?, ?) RETURNING id")
-                .params(url, title)
+                .sql("INSERT INTO sources (owner_id, url, title) VALUES (?, ?, ?) RETURNING id")
+                .params(owner, url, title)
                 .query(Long::class.java)
                 .single()
         return Source(id, url, title, Validators(), null, null)
     }
 
-    @Transactional
-    override fun delete(id: Long) {
-        search.removeOfSource(id)
-        jdbc.sql("DELETE FROM sources WHERE id = ?").param(id).update()
-    }
+    /** The search rows of the source's items go with them, through the `items_search_cleanup` trigger. */
+    override fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean =
+        jdbc
+            .sql("DELETE FROM sources WHERE id = ? AND owner_id = ?")
+            .params(id, owner)
+            .update() > 0
 
+    /** A group the owner does not own cannot be assigned: the update then matches no row. */
     override fun assignGroup(
+        owner: Long,
         sourceId: Long,
         groupId: Long?,
-    ) {
-        jdbc.sql("UPDATE sources SET group_id = ? WHERE id = ?").params(groupId, sourceId).update()
-    }
+    ): Boolean =
+        jdbc
+            .sql(
+                "UPDATE sources SET group_id = ? WHERE id = ? AND owner_id = ? " +
+                    "AND (? IS NULL OR EXISTS (SELECT 1 FROM groups WHERE id = ? AND owner_id = ?))",
+            ).params(groupId, sourceId, owner, groupId, groupId, owner)
+            .update() > 0
 
     @Transactional
     override fun recordSuccess(

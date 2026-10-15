@@ -58,10 +58,7 @@ class ReaderSteps {
         seed: Seed,
         days: Int,
     ) {
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == source }
-                ?: sources.insert("http://$source.test/feed", source)
+        val owner = app.ownedSource(source)
         val published = Instant.now().minus(Duration.ofDays(days.toLong()))
         val link = seed.link?.let { World.expandFeedServer(it) }
         val item = FeedItem(title, title, link, published, seed.artist, seed.thumbnail, seed.body)
@@ -171,13 +168,7 @@ class ReaderSteps {
 
     private fun linkTag(label: String): String? = Html.anchor(body(), label)
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     private companion object {
         val READER_PANE = Regex("<aside[^>]*id=\"reader\"[^>]*>")
