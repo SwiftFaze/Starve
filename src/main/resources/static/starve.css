@@ -3751,6 +3751,52 @@ body[data-reader-center] .reader-view .reader-head {
   max-width: 40rem;
 }
 
+/* A post's images open large on click. */
+.reader-body img,
+.reader-image {
+  cursor: zoom-in;
+}
+
+.lightbox {
+  max-width: none;
+  max-height: none;
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+  padding: clamp(1rem, 4vw, 3rem);
+  border: 0;
+  background: transparent;
+  cursor: zoom-out;
+}
+
+.lightbox[open] {
+  display: grid;
+  place-items: center;
+}
+
+.lightbox::backdrop {
+  background: color-mix(in srgb, #08080c 92%, transparent);
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: calc(100dvh - 2 * clamp(1rem, 4vw, 3rem));
+  object-fit: contain;
+  border: 1px solid var(--line-strong);
+  background: var(--sunk);
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: 2.75rem;
+  padding: 0;
+  border-color: #f0ece4;
+  background: #0c0c12;
+  color: #f0ece4;
+}
+
 /* Posts put whole sentences in inline code: there it wraps, each line keeping its reversed chip. */
 .reader-body :not(pre) > code {
   white-space: normal;

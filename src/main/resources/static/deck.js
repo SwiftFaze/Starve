@@ -885,6 +885,37 @@
     if (close && phone()) close.focus({ preventScroll: true });
   }
 
+  // ---- A post's image, clicked, opens large over the page; a click, Escape or × closes it -------------
+
+  function lightbox() {
+    var box = document.getElementById('lightbox');
+    if (box) return box;
+    box = document.createElement('dialog');
+    box.id = 'lightbox';
+    box.className = 'lightbox';
+    box.setAttribute('aria-label', 'Image');
+    box.innerHTML = '<img alt=""><button type="button" class="lightbox-close" aria-label="Close the image" ' +
+      'title="Close"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" ' +
+      'fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>';
+    box.addEventListener('click', function () { box.close(); });
+    body.appendChild(box);
+    return box;
+  }
+
+  document.addEventListener('click', function (event) {
+    var image = event.target.closest && event.target.closest('.reader-body img, .reader-image');
+    if (!image || !image.currentSrc) return;
+    // A picture that links to a larger copy shows that copy here, without leaving the app.
+    var link = image.closest('a[href]');
+    var large = link && /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(link.href) ? link.href : image.currentSrc;
+    event.preventDefault();
+    var box = lightbox();
+    var shown = box.querySelector('img');
+    shown.src = large;
+    shown.alt = image.alt || '';
+    if (box.showModal) box.showModal();
+  });
+
   // Centre mode for posts: remembered in this browser, applied to every post.
   function syncCenter() {
     var on = stored('starve.center') === 'on';
