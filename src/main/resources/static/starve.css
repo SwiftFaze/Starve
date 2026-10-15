@@ -3934,14 +3934,30 @@ body[data-reader-center] .reader-view .reader-head {
 
 /* ---- Changing group: the list deals in row by row, the obi's name slides up ------------------------ */
 
-.sheet.dealing .item,
-.sheet.dealing .sheet-head {
+body.dealing .sheet .item,
+body.dealing .sheet .sheet-head {
   animation: deal-in 300ms cubic-bezier(0.16, 1, 0.3, 1) var(--deal, 0ms) both;
 }
 
-#series.dealing .series,
-#series.dealing .series-meta {
-  animation: series-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+body.dealing #timeline > .item:nth-child(1) { --deal: 0ms; }
+body.dealing #timeline > .item:nth-child(2) { --deal: 28ms; }
+body.dealing #timeline > .item:nth-child(3) { --deal: 56ms; }
+body.dealing #timeline > .item:nth-child(4) { --deal: 84ms; }
+body.dealing #timeline > .item:nth-child(5) { --deal: 112ms; }
+body.dealing #timeline > .item:nth-child(6) { --deal: 140ms; }
+body.dealing #timeline > .item:nth-child(7) { --deal: 168ms; }
+body.dealing #timeline > .item:nth-child(8) { --deal: 196ms; }
+body.dealing #timeline > .item:nth-child(9) { --deal: 224ms; }
+body.dealing #timeline > .item:nth-child(10) { --deal: 252ms; }
+body.dealing #timeline > .item:nth-child(11) { --deal: 280ms; }
+body.dealing #timeline > .item:nth-child(12) { --deal: 308ms; }
+
+body.dealing #series .series {
+  animation: series-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+body.dealing #series .series-meta {
+  animation: series-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
 }
 
 @keyframes deal-in {
@@ -3951,18 +3967,19 @@ body[data-reader-center] .reader-view .reader-head {
   }
 }
 
+/* The obi's name and meta slide in from its left edge (the band clips them on the way in). */
 @keyframes series-in {
   from {
     opacity: 0;
-    translate: 0 1.5rem;
+    translate: -110% 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheet.dealing .item,
-  .sheet.dealing .sheet-head,
-  #series.dealing .series,
-  #series.dealing .series-meta {
+  body.dealing .sheet .item,
+  body.dealing .sheet .sheet-head,
+  body.dealing #series .series,
+  body.dealing #series .series-meta {
     animation: none;
   }
 }

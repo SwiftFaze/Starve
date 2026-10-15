@@ -1048,22 +1048,15 @@
   }
 
   // Changing group (or Favourites, Later): the new list deals in row by row and the obi's name slides up.
-  document.addEventListener('htmx:afterSettle', function (event) {
+  // Armed before the swap, so the new rows are inserted already animating from invisible and never blink.
+  var dealTimer = null;
+
+  document.addEventListener('htmx:beforeSwap', function (event) {
     var elt = event.detail && event.detail.requestConfig && event.detail.requestConfig.elt;
     if (!elt || !elt.matches || !elt.matches('.group-link, .favourites-link, .later-link')) return;
-    var sheet = document.getElementById('sheet');
-    if (sheet) {
-      sheet.querySelectorAll('.item').forEach(function (row, index) {
-        if (index < 12) row.style.setProperty('--deal', index * 28 + 'ms');
-      });
-    }
-    [sheet, document.getElementById('series')].forEach(function (node) {
-      if (!node) return;
-      node.classList.remove('dealing');
-      void node.offsetWidth;
-      node.classList.add('dealing');
-      setTimeout(function () { node.classList.remove('dealing'); }, 900);
-    });
+    body.classList.add('dealing');
+    clearTimeout(dealTimer);
+    dealTimer = setTimeout(function () { body.classList.remove('dealing'); }, 1000);
   });
 
   // Sources swaps its whole sheet after every change; each column keeps its scroll position across it.
