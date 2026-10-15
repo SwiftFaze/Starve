@@ -3932,6 +3932,41 @@ body[data-reader-center] .reader-view .reader-head {
   }
 }
 
+/* ---- Changing group: the list deals in row by row, the obi's name slides up ------------------------ */
+
+.sheet.dealing .item,
+.sheet.dealing .sheet-head {
+  animation: deal-in 300ms cubic-bezier(0.16, 1, 0.3, 1) var(--deal, 0ms) both;
+}
+
+#series.dealing .series,
+#series.dealing .series-meta {
+  animation: series-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes series-in {
+  from {
+    opacity: 0;
+    translate: 0 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet.dealing .item,
+  .sheet.dealing .sheet-head,
+  #series.dealing .series,
+  #series.dealing .series-meta {
+    animation: none;
+  }
+}
+
 /* ---- Marking read: the title strikes through and the row dims, then the server's row lands ---- */
 
 .item.clearing {
