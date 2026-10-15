@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.12](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.11...v1.1.0-beta.12) (2026-10-15)
+
+
+### Features
+
+* account page and admin user management ([#69](https://github.com/SwiftFaze/Starve/issues/69)) ([a95cd09](https://github.com/SwiftFaze/Starve/commit/a95cd096d63441d896c3ff0b0aaec5d628514be5))
+
 ## [1.1.0-beta.11](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.10...v1.1.0-beta.11) (2026-10-15)
 
 
