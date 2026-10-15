@@ -507,7 +507,18 @@ class JdbcRepositoriesTest {
 
         val thumbnail = "https://img.test/t.jpg"
         val expected =
-            DetailRef(id, link, "Track", "T", published, "Artist", thumbnail, "<p>b</p>", null, sourceUrl = "http://a.test/f")
+            DetailRef(
+                id,
+                link,
+                "Track",
+                "T",
+                published,
+                "Artist",
+                thumbnail,
+                "<p>b</p>",
+                null,
+                sourceUrl = "http://a.test/f",
+            )
         assertEquals(expected, items.findDetail(OWNER, id))
         assertNull(items.findDetail(OWNER, id + 1))
     }
