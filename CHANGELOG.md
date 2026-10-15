@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.13](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.12...v1.1.0-beta.13) (2026-10-15)
+
+
+### Bug Fixes
+
+* set board fields without an external jq ([30d3cf9](https://github.com/SwiftFaze/Starve/commit/30d3cf914585cf0ebd3b6a0141b0f959d4549463))
+* set board fields without an external jq ([57ccf59](https://github.com/SwiftFaze/Starve/commit/57ccf598a5740d51fb23571d7bdfa9cac2263c4b)), closes [#71](https://github.com/SwiftFaze/Starve/issues/71)
+
 ## [1.1.0-beta.12](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.11...v1.1.0-beta.12) (2026-10-15)
 
 
