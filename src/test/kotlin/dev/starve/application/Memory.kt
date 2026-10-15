@@ -11,9 +11,16 @@ import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
 import java.time.Instant
 
-/** Records what the application services ask of the source repository. */
+/** The user the unit tests act as. */
+const val OWNER = 7L
+
+/** Another user, for tests that show one user cannot reach the other's data. */
+const val OTHER_OWNER = 8L
+
+/** Records what the application services ask of the source repository; sources belong to [OWNER] unless listed. */
 class MemorySources(
     private val stored: MutableList<Source> = mutableListOf(),
+    private val owners: MutableMap<Long, Long> = mutableMapOf(),
 ) : SourceRepository {
     data class Success(
         val id: Long,
@@ -26,28 +33,47 @@ class MemorySources(
     val failures = mutableListOf<Pair<Long, String>>()
     var reread: Source? = null
 
+    /** Who a source was inserted for, by source id. */
+    val insertedFor = mutableMapOf<Long, Long>()
+
+    private fun ownerOf(source: Source) = owners[source.id] ?: insertedFor[source.id] ?: OWNER
+
     override fun findAll(): List<Source> = stored.toList()
+
+    override fun findAllOf(owner: Long): List<Source> = stored.filter { ownerOf(it) == owner }
 
     override fun findById(id: Long): Source? = reread
 
-    override fun existsByUrl(url: String) = stored.any { it.url == url }
+    override fun existsByUrl(
+        owner: Long,
+        url: String,
+    ) = findAllOf(owner).any { it.url == url }
 
     override fun insert(
+        owner: Long,
         url: String,
         title: String,
-    ): Source = Source(stored.size + 1L, url, title, Validators(), null, null).also { stored += it }
+    ): Source =
+        Source(stored.size + 1L, url, title, Validators(), null, null).also {
+            stored += it
+            insertedFor[it.id] = owner
+        }
 
-    override fun delete(id: Long) {
-        stored.removeIf { it.id == id }
-    }
+    override fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean = stored.removeIf { it.id == id && ownerOf(it) == owner }
 
     val assignments = mutableListOf<Pair<Long, Long?>>()
 
     override fun assignGroup(
+        owner: Long,
         sourceId: Long,
         groupId: Long?,
-    ) {
-        assignments += sourceId to groupId
+    ): Boolean {
+        val owned = findAllOf(owner).any { it.id == sourceId }
+        if (owned) assignments += sourceId to groupId
+        return owned
     }
 
     override fun recordSuccess(
@@ -115,6 +141,9 @@ open class MemoryItems(
     val inserted = mutableListOf<FeedItem>()
     var cutoff: Instant? = null
 
+    /** The owner each owner-scoped call was made for, most recent last. */
+    val calledFor = mutableListOf<Long>()
+
     override fun insertNew(
         sourceId: Long,
         items: List<FeedItem>,
@@ -129,17 +158,26 @@ open class MemoryItems(
     }
 
     override fun timeline(
+        owner: Long,
         after: Cursor?,
-        showRead: Boolean,
+        filter: TimelineFilter,
         limit: Int,
-        groupId: Long?,
     ): List<TimelineItem> = emptyList()
 
-    override fun find(id: Long): ItemRef? = null
+    override fun find(
+        owner: Long,
+        id: Long,
+    ): ItemRef? = null
 
-    override fun findPost(id: Long): PostRef? = null
+    override fun findPost(
+        owner: Long,
+        id: Long,
+    ): PostRef? = null
 
-    override fun findDetail(id: Long): DetailRef? = null
+    override fun findDetail(
+        owner: Long,
+        id: Long,
+    ): DetailRef? = null
 
     override fun saveOembed(
         id: Long,
@@ -147,11 +185,13 @@ open class MemoryItems(
     ) = Unit
 
     override fun markRead(
+        owner: Long,
         id: Long,
         at: Instant,
     ) = false
 
     override fun markAllRead(
+        owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
         groupId: Long?,
@@ -185,119 +225,176 @@ class TimelineItems(
     val laterCalls = mutableListOf<Pair<Long, Instant?>>()
 
     override fun later(
+        owner: Long,
         after: LaterCursor?,
         limit: Int,
     ): List<SavedItem> {
+        calledFor += owner
         laterRequested = after to limit
         return savedRows
     }
 
     override fun save(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean {
+        calledFor += owner
         laterCalls += id to at
         return links.containsKey(id)
     }
 
-    override fun clear(id: Long): Boolean {
+    override fun clear(
+        owner: Long,
+        id: Long,
+    ): Boolean {
+        calledFor += owner
         laterCalls += id to null
         return links.containsKey(id)
     }
 
     override fun timeline(
+        owner: Long,
         after: Cursor?,
-        showRead: Boolean,
+        filter: TimelineFilter,
         limit: Int,
-        groupId: Long?,
     ): List<TimelineItem> {
-        requested = Triple(after, showRead, limit)
-        requestedGroup = groupId
+        calledFor += owner
+        requested = Triple(after, filter.showRead, limit)
+        requestedGroup = filter.groupId
         return rows
     }
 
     override fun favourites(
+        owner: Long,
         after: Cursor?,
         limit: Int,
     ): List<TimelineItem> {
+        calledFor += owner
         favouritesRequested = after to limit
         return favouriteRows
     }
 
     override fun favourite(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean {
+        calledFor += owner
         favouriteCalls += id to at
         return links.containsKey(id)
     }
 
-    override fun unfavourite(id: Long): Boolean {
+    override fun unfavourite(
+        owner: Long,
+        id: Long,
+    ): Boolean {
+        calledFor += owner
         favouriteCalls += id to null
         return links.containsKey(id)
     }
 
     override fun search(
+        owner: Long,
         match: String,
         after: Cursor?,
         limit: Int,
     ): List<TimelineItem> {
+        calledFor += owner
         searched = Triple(match, after, limit)
         return rows
     }
 
-    override fun find(id: Long): ItemRef? = if (links.containsKey(id)) ref(id, links[id]) else null
+    override fun find(
+        owner: Long,
+        id: Long,
+    ): ItemRef? {
+        calledFor += owner
+        return if (links.containsKey(id)) ref(id, links[id]) else null
+    }
 
     override fun markRead(
+        owner: Long,
         id: Long,
         at: Instant,
     ): Boolean {
+        calledFor += owner
         readCalls += id to at
         return links.containsKey(id)
     }
 
     override fun markAllRead(
+        owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
         groupId: Long?,
     ): Int {
+        calledFor += owner
         markAllCall = firstSeenCutoff to at
         markAllGroup = groupId
         return markedAllCount
     }
 }
 
-/** An in-memory group store; names are matched ignoring case. */
+/**
+ * An in-memory group store; names are matched ignoring case. Groups belong to [OWNER] unless [owners] says otherwise
+ * (by group id), and [created] records who each inserted group was made for.
+ */
 class MemoryGroups(
     private val stored: MutableList<Group> = mutableListOf(),
     private val unread: Map<Long, Int> = emptyMap(),
     private val total: Int = 0,
+    private val owners: MutableMap<Long, Long> = mutableMapOf(),
 ) : GroupRepository {
     val deleted = mutableListOf<Long>()
+    val created = mutableMapOf<Long, Long>()
 
-    override fun findAll(): List<Group> = stored.sortedBy { it.name.lowercase() }
+    private fun ownerOf(group: Group) = owners[group.id] ?: created[group.id] ?: OWNER
 
-    override fun findById(id: Long): Group? = stored.firstOrNull { it.id == id }
+    private fun of(owner: Long) = stored.filter { ownerOf(it) == owner }
 
-    override fun findByName(name: String): Group? = stored.firstOrNull { it.name.equals(name, ignoreCase = true) }
+    override fun findAll(owner: Long): List<Group> = of(owner).sortedBy { it.name.lowercase() }
 
-    override fun insert(name: String): Group = Group(stored.size + 1L, name).also { stored += it }
+    override fun findById(
+        owner: Long,
+        id: Long,
+    ): Group? = of(owner).firstOrNull { it.id == id }
+
+    override fun findByName(
+        owner: Long,
+        name: String,
+    ): Group? = of(owner).firstOrNull { it.name.equals(name, ignoreCase = true) }
+
+    override fun insert(
+        owner: Long,
+        name: String,
+    ): Group =
+        Group(stored.size + 1L, name).also {
+            stored += it
+            created[it.id] = owner
+        }
 
     override fun rename(
+        owner: Long,
         id: Long,
         name: String,
     ) {
-        stored.replaceAll { if (it.id == id) it.copy(name = name) else it }
+        stored.replaceAll { if (it.id == id && ownerOf(it) == owner) it.copy(name = name) else it }
     }
 
-    override fun delete(id: Long) {
-        deleted += id
-        stored.removeIf { it.id == id }
+    override fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean {
+        val owned = of(owner).any { it.id == id }
+        if (owned) deleted += id
+        stored.removeIf { it.id == id && ownerOf(it) == owner }
+        return owned
     }
 
-    override fun unreadCounts(): List<GroupSummary> = findAll().map { GroupSummary(it, unread[it.id] ?: 0) }
+    override fun unreadCounts(owner: Long) = findAll(owner).map { GroupSummary(it, unread[it.id] ?: 0) }
 
-    override fun totalUnread(): Int = total
+    override fun totalUnread(owner: Long): Int = total
 }
 
 /** The [ItemRef] the in-memory repositories return for item [id] with [link]. */

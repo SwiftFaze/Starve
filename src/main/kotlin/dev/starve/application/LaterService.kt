@@ -11,16 +11,25 @@ class LaterService(
     private val sources: SourceRepository,
     private val clock: Clock,
 ) {
-    /** Saves the item, keeping its original saved time if it already is saved; false when it does not exist. */
-    fun save(id: Long): Boolean = later.save(id, clock.instant())
+    /** Saves [owner]'s item, keeping its original saved time if it already is saved; false when it does not exist. */
+    fun save(
+        owner: Long,
+        id: Long,
+    ): Boolean = later.save(owner, id, clock.instant())
 
-    /** Clears the saved mark; returns false when the item does not exist. */
-    fun clear(id: Long): Boolean = later.clear(id)
+    /** Clears the saved mark; returns false when [owner] has no such item. */
+    fun clear(
+        owner: Long,
+        id: Long,
+    ): Boolean = later.clear(owner, id)
 
-    /** The Later view: saved items of every source, read or not, earliest saved first. */
-    fun page(after: LaterCursor?): TimelinePage {
+    /** The Later view: [owner]'s saved items of every source, read or not, earliest saved first. */
+    fun page(
+        owner: Long,
+        after: LaterCursor?,
+    ): TimelinePage {
         val renderedAt = clock.instant()
-        val (shown, next) = LaterRules.paginate(later.later(after, TimelineRules.PAGE_SIZE + 1))
-        return TimelinePage(shown.map { it.item }, next, renderedAt, sources.findAll().isNotEmpty())
+        val (shown, next) = LaterRules.paginate(later.later(owner, after, TimelineRules.PAGE_SIZE + 1))
+        return TimelinePage(shown.map { it.item }, next, renderedAt, sources.findAllOf(owner).isNotEmpty())
     }
 }

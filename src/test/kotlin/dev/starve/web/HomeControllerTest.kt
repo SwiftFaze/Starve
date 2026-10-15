@@ -4,6 +4,7 @@ import dev.starve.application.GroupService
 import dev.starve.application.LaterService
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemorySources
+import dev.starve.application.OWNER
 import dev.starve.application.SearchService
 import dev.starve.application.TimelineItems
 import dev.starve.application.TimelineService
@@ -53,7 +54,7 @@ class HomeControllerTest {
     fun `home renders formatted views and the render timestamp`() {
         val model = ConcurrentModel()
 
-        val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(), null, model)
+        val view = controller(TimelineItems(listOf(row(1)))).home(OWNER, TimelineQuery(), null, model)
 
         assertEquals("home", view)
         val item = (model.getAttribute("items") as List<*>).single() as TimelineItemView
@@ -75,7 +76,7 @@ class HomeControllerTest {
     fun `an unread row is presented as unread`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems(listOf(row(2)))).home(TimelineQuery(), null, model)
+        controller(TimelineItems(listOf(row(2)))).home(OWNER, TimelineQuery(), null, model)
 
         val item = (model.getAttribute("items") as List<*>).single() as TimelineItemView
         assertFalse(item.read)
@@ -86,7 +87,7 @@ class HomeControllerTest {
         val items = TimelineItems((1L..TimelineRules.PAGE_SIZE + 1).map { row(it) })
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(show = "all"), null, model)
+        controller(items).home(OWNER, TimelineQuery(show = "all"), null, model)
 
         assertEquals(true, items.requested!!.second)
         assertEquals("/feed?after=${published.toEpochMilli()}_50&show=all", model.getAttribute("moreHref"))
@@ -94,14 +95,14 @@ class HomeControllerTest {
 
     @Test
     fun `an htmx request with a cursor returns only the fragment`() {
-        val view = controller(TimelineItems()).home(TimelineQuery(after = "1_2"), "true", ConcurrentModel())
+        val view = controller(TimelineItems()).home(OWNER, TimelineQuery(after = "1_2"), "true", ConcurrentModel())
 
         assertEquals("home :: more", view)
     }
 
     @Test
     fun `an htmx request without a cursor returns the full page`() {
-        assertEquals("home", controller(TimelineItems()).home(TimelineQuery(), "true", ConcurrentModel()))
+        assertEquals("home", controller(TimelineItems()).home(OWNER, TimelineQuery(), "true", ConcurrentModel()))
     }
 
     @Test
@@ -109,7 +110,7 @@ class HomeControllerTest {
         val items = TimelineItems(favouriteRows = listOf(row(1)))
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(show = "all", group = "99", favourites = "1"), null, model)
+        controller(items).home(OWNER, TimelineQuery(show = "all", group = "99", favourites = "1"), null, model)
 
         assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
         assertNull(items.requested)
@@ -122,7 +123,7 @@ class HomeControllerTest {
     fun `an empty favourites view is flagged so the page can say so`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems()).home(TimelineQuery(favourites = "1"), null, model)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(favourites = "1"), null, model)
 
         assertEquals(true, model.getAttribute("emptyFavourites"))
     }
@@ -132,7 +133,7 @@ class HomeControllerTest {
         val items = TimelineItems(favouriteRows = (1L..TimelineRules.PAGE_SIZE + 1).map { row(it) })
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(favourites = "1"), null, model)
+        controller(items).home(OWNER, TimelineQuery(favourites = "1"), null, model)
 
         assertEquals("/feed?after=${published.toEpochMilli()}_50&favourites=1", model.getAttribute("moreHref"))
         assertEquals(SeriesView("Favourites", null), model.getAttribute("series"))
@@ -142,7 +143,7 @@ class HomeControllerTest {
     fun `the Favourites entry is the one current entry in the favourites view`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems()).home(TimelineQuery(favourites = "1"), null, model)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(favourites = "1"), null, model)
 
         assertEquals(NavEntryView("Favourites", "/feed?favourites=1", true), model.getAttribute("favouritesEntry"))
         val groups = model.getAttribute("nav") as List<*>
@@ -153,7 +154,7 @@ class HomeControllerTest {
     fun `the Favourites entry is not current outside the favourites view`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems()).home(TimelineQuery(), null, model)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(), null, model)
 
         assertEquals(NavEntryView("Favourites", "/feed?favourites=1", false), model.getAttribute("favouritesEntry"))
         val groups = model.getAttribute("nav") as List<*>
@@ -164,7 +165,8 @@ class HomeControllerTest {
     fun `a row presents its star for the item's favourite state`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems(listOf(row(1).copy(favourite = true), row(2)))).home(TimelineQuery(), null, model)
+        val items = TimelineItems(listOf(row(1).copy(favourite = true), row(2)))
+        controller(items).home(OWNER, TimelineQuery(), null, model)
 
         val stars = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).star }
         assertEquals(listOf(StarView("star-1", 1, true), StarView("star-2", 2, false)), stars)
@@ -175,7 +177,7 @@ class HomeControllerTest {
         val model = ConcurrentModel()
         val playable = row(3).copy(playable = true)
 
-        controller(TimelineItems(listOf(playable, row(4)))).home(TimelineQuery(), null, model)
+        controller(TimelineItems(listOf(playable, row(4)))).home(OWNER, TimelineQuery(), null, model)
 
         val views = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).playable }
         assertEquals(listOf(true, false), views)
@@ -185,13 +187,13 @@ class HomeControllerTest {
     fun `opening redirects to the link or home when there is none`() {
         val c = controller(TimelineItems(links = mapOf(1L to "http://x.test/a", 2L to null)))
 
-        assertEquals("redirect:http://x.test/a", c.open(1))
-        assertEquals("redirect:/feed", c.open(2))
+        assertEquals("redirect:http://x.test/a", c.open(OWNER, 1))
+        assertEquals("redirect:/feed", c.open(OWNER, 2))
     }
 
     @Test
     fun `opening an unknown item is not found`() {
-        val e = assertThrows(ResponseStatusException::class.java) { controller(TimelineItems()).open(9) }
+        val e = assertThrows(ResponseStatusException::class.java) { controller(TimelineItems()).open(OWNER, 9) }
 
         assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
     }
@@ -200,16 +202,17 @@ class HomeControllerTest {
     fun `marking read answers htmx with an empty body and others with a redirect`() {
         val c = controller(TimelineItems(links = mapOf(1L to null)))
 
-        val htmx = c.markRead(1, "true") as ResponseEntity<*>
+        val htmx = c.markRead(OWNER, 1, "true") as ResponseEntity<*>
 
         assertEquals(HttpStatus.OK, htmx.statusCode)
         assertEquals("", htmx.body)
-        assertEquals("redirect:/feed", c.markRead(1, null))
+        assertEquals("redirect:/feed", c.markRead(OWNER, 1, null))
     }
 
     @Test
     fun `marking an unknown item read is not found`() {
-        val e = assertThrows(ResponseStatusException::class.java) { controller(TimelineItems()).markRead(9, null) }
+        val c = controller(TimelineItems())
+        val e = assertThrows(ResponseStatusException::class.java) { c.markRead(OWNER, 9, null) }
 
         assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
     }
@@ -218,7 +221,7 @@ class HomeControllerTest {
     fun `mark all read hands the render time to the service and redirects home`() {
         val items = TimelineItems()
 
-        val view = controller(items).markAllRead(published.toEpochMilli(), null)
+        val view = controller(items).markAllRead(OWNER, published.toEpochMilli(), null)
 
         assertEquals("redirect:/feed", view)
         assertEquals(published to now, items.markAllCall)
@@ -229,7 +232,7 @@ class HomeControllerTest {
         val items = TimelineItems((1L..TimelineRules.PAGE_SIZE + 1).map { row(it) })
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(show = "all", group = "2"), null, model)
+        controller(items).home(OWNER, TimelineQuery(show = "all", group = "2"), null, model)
 
         assertEquals(2L, items.requestedGroup)
         assertEquals("/feed?after=${published.toEpochMilli()}_50&show=all&group=2", model.getAttribute("moreHref"))
@@ -242,8 +245,8 @@ class HomeControllerTest {
         val group = ConcurrentModel()
         val all = ConcurrentModel()
 
-        controller(TimelineItems()).home(TimelineQuery(group = "1"), null, group)
-        controller(TimelineItems()).home(TimelineQuery(), null, all)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(group = "1"), null, group)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(), null, all)
 
         assertEquals(SeriesView("music", 3), group.getAttribute("series"))
         assertEquals(SeriesView("All", 5), all.getAttribute("series"))
@@ -253,7 +256,7 @@ class HomeControllerTest {
     fun `the navigation lists All then groups alphabetically with unread counts and marks the current one`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems()).home(TimelineQuery(group = "1"), null, model)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(group = "1"), null, model)
 
         val expected =
             listOf(
@@ -264,7 +267,7 @@ class HomeControllerTest {
         assertEquals(expected, model.getAttribute("nav"))
 
         val all = ConcurrentModel()
-        controller(TimelineItems()).home(TimelineQuery(), null, all)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(), null, all)
         assertEquals("/feed?show=all", all.getAttribute("toggleHref"))
     }
 
@@ -273,7 +276,7 @@ class HomeControllerTest {
         listOf("99", "abc", "").forEach { raw ->
             val e =
                 assertThrows(ResponseStatusException::class.java) {
-                    controller(TimelineItems()).home(TimelineQuery(group = raw), null, ConcurrentModel())
+                    controller(TimelineItems()).home(OWNER, TimelineQuery(group = raw), null, ConcurrentModel())
                 }
 
             assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
@@ -284,7 +287,7 @@ class HomeControllerTest {
     fun `mark all read inside a group is scoped and redirects back to the group`() {
         val items = TimelineItems()
 
-        val view = controller(items).markAllRead(published.toEpochMilli(), 2)
+        val view = controller(items).markAllRead(OWNER, published.toEpochMilli(), 2)
 
         assertEquals("redirect:/feed?group=2", view)
         assertEquals(2L, items.markAllGroup)
@@ -295,7 +298,7 @@ class HomeControllerTest {
         val items = TimelineItems(listOf(row(1)))
         val model = ConcurrentModel()
 
-        val view = controller(items).home(TimelineQuery(q = "match"), null, model)
+        val view = controller(items).home(OWNER, TimelineQuery(q = "match"), null, model)
 
         assertEquals("home", view)
         assertEquals("match", model.getAttribute("query"))
@@ -308,7 +311,7 @@ class HomeControllerTest {
     fun `a search ignores the group and show settings`() {
         val items = TimelineItems(listOf(row(1)))
 
-        controller(items).home(TimelineQuery(q = "match", show = "all", group = "99"), null, ConcurrentModel())
+        controller(items).home(OWNER, TimelineQuery(q = "match", show = "all", group = "99"), null, ConcurrentModel())
 
         assertNull(items.requestedGroup)
         assertNull(items.requested)
@@ -319,7 +322,7 @@ class HomeControllerTest {
         val items = TimelineItems(listOf(row(1)))
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(q = "   "), null, model)
+        controller(items).home(OWNER, TimelineQuery(q = "   "), null, model)
 
         assertEquals(false, model.getAttribute("searching"))
         assertEquals(Triple<Cursor?, Boolean, Int>(null, false, TimelineRules.PAGE_SIZE + 1), items.requested)
@@ -330,7 +333,7 @@ class HomeControllerTest {
         val model = ConcurrentModel()
 
         controller(TimelineItems(rows(TimelineRules.PAGE_SIZE + 1)))
-            .home(TimelineQuery(q = "a b"), null, model)
+            .home(OWNER, TimelineQuery(q = "a b"), null, model)
 
         val href = model.getAttribute("moreHref") as String
         assertTrue(href.startsWith("/feed?q=a+b&after="), href)
@@ -341,7 +344,7 @@ class HomeControllerTest {
         val items = TimelineItems(listOf(row(1)))
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(q = "match", favourites = "1"), null, model)
+        controller(items).home(OWNER, TimelineQuery(q = "match", favourites = "1"), null, model)
 
         assertEquals(true, model.getAttribute("favourites"))
         assertEquals(false, model.getAttribute("emptyFavourites"))
@@ -354,7 +357,7 @@ class HomeControllerTest {
         val model = ConcurrentModel()
 
         controller(TimelineItems(listOf(row(1))))
-            .home(TimelineQuery(q = "match", show = "all", group = "1"), null, model)
+            .home(OWNER, TimelineQuery(q = "match", show = "all", group = "1"), null, model)
 
         assertEquals(1L, model.getAttribute("groupId"))
         assertEquals(true, model.getAttribute("showAll"))
@@ -364,7 +367,7 @@ class HomeControllerTest {
     fun `clearing the search in the favourites view lists the favourites again`() {
         val items = TimelineItems(listOf(row(1)), favouriteRows = listOf(row(2)))
 
-        val view = controller(items).home(TimelineQuery(q = "", favourites = "1"), "true", ConcurrentModel())
+        val view = controller(items).home(OWNER, TimelineQuery(q = "", favourites = "1"), "true", ConcurrentModel())
 
         assertEquals("home :: sheet", view)
         assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
@@ -376,7 +379,7 @@ class HomeControllerTest {
         val model = ConcurrentModel()
 
         controller(TimelineItems(rows(TimelineRules.PAGE_SIZE + 1)))
-            .home(TimelineQuery(q = "a", favourites = "1"), null, model)
+            .home(OWNER, TimelineQuery(q = "a", favourites = "1"), null, model)
 
         val href = model.getAttribute("moreHref") as String
         assertTrue(href.startsWith("/feed?q=a&after="), href)
@@ -388,7 +391,7 @@ class HomeControllerTest {
         val items = TimelineItems(listOf(row(1)))
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(q = "match", later = "1"), null, model)
+        controller(items).home(OWNER, TimelineQuery(q = "match", later = "1"), null, model)
 
         assertEquals(true, model.getAttribute("later"))
         assertEquals(false, model.getAttribute("emptyLater"))
@@ -400,7 +403,7 @@ class HomeControllerTest {
     fun `clearing the search in the later view lists the saved items again`() {
         val items = TimelineItems(listOf(row(1)), savedRows = listOf(SavedItem(row(2), now)))
 
-        val view = controller(items).home(TimelineQuery(q = "", later = "1"), "true", ConcurrentModel())
+        val view = controller(items).home(OWNER, TimelineQuery(q = "", later = "1"), "true", ConcurrentModel())
 
         assertEquals("home :: sheet", view)
         assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.laterRequested)
@@ -412,7 +415,7 @@ class HomeControllerTest {
         val model = ConcurrentModel()
 
         controller(TimelineItems(rows(TimelineRules.PAGE_SIZE + 1)))
-            .home(TimelineQuery(q = "a", later = "1"), null, model)
+            .home(OWNER, TimelineQuery(q = "a", later = "1"), null, model)
 
         val href = model.getAttribute("moreHref") as String
         assertTrue(href.startsWith("/feed?q=a&after="), href)
@@ -421,14 +424,15 @@ class HomeControllerTest {
 
     @Test
     fun `an htmx search returns only the sheet fragment`() {
-        val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(q = "match"), "true", ConcurrentModel())
+        val c = controller(TimelineItems(listOf(row(1))))
+        val view = c.home(OWNER, TimelineQuery(q = "match"), "true", ConcurrentModel())
 
         assertEquals("home :: sheet", view)
     }
 
     @Test
     fun `an htmx request for the timeline without a query still returns the full page`() {
-        val view = controller(TimelineItems(listOf(row(1)))).home(TimelineQuery(), "true", ConcurrentModel())
+        val view = controller(TimelineItems(listOf(row(1)))).home(OWNER, TimelineQuery(), "true", ConcurrentModel())
 
         assertEquals("home", view)
     }
@@ -438,7 +442,7 @@ class HomeControllerTest {
         val items = TimelineItems(savedRows = listOf(SavedItem(row(1), now)))
         val model = ConcurrentModel()
 
-        controller(items).home(TimelineQuery(show = "all", group = "99", later = "1"), null, model)
+        controller(items).home(OWNER, TimelineQuery(show = "all", group = "99", later = "1"), null, model)
 
         assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.laterRequested)
         assertNull(items.requested)
@@ -451,7 +455,7 @@ class HomeControllerTest {
     fun `an empty later view is flagged so the page can say so`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems()).home(TimelineQuery(later = "1"), null, model)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(later = "1"), null, model)
 
         assertEquals(true, model.getAttribute("emptyLater"))
     }
@@ -461,7 +465,7 @@ class HomeControllerTest {
         val saved = (1L..TimelineRules.PAGE_SIZE + 1).map { SavedItem(row(it), Instant.ofEpochMilli(it)) }
         val model = ConcurrentModel()
 
-        controller(TimelineItems(savedRows = saved)).home(TimelineQuery(later = "1"), null, model)
+        controller(TimelineItems(savedRows = saved)).home(OWNER, TimelineQuery(later = "1"), null, model)
 
         assertEquals("/feed?after=50_50&later=1", model.getAttribute("moreHref"))
         assertEquals(SeriesView("Later", null), model.getAttribute("series"))
@@ -471,7 +475,7 @@ class HomeControllerTest {
     fun `the Later entry is the one current entry in the later view, after Favourites`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems()).home(TimelineQuery(later = "1"), null, model)
+        controller(TimelineItems()).home(OWNER, TimelineQuery(later = "1"), null, model)
 
         assertEquals(NavEntryView("Later", "/feed?later=1", true), model.getAttribute("laterEntry"))
         assertEquals(NavEntryView("Favourites", "/feed?favourites=1", false), model.getAttribute("favouritesEntry"))
@@ -483,7 +487,7 @@ class HomeControllerTest {
     fun `favourites win when both filters are given`() {
         val items = TimelineItems(favouriteRows = listOf(row(1)))
 
-        controller(items).home(TimelineQuery(favourites = "1", later = "1"), null, ConcurrentModel())
+        controller(items).home(OWNER, TimelineQuery(favourites = "1", later = "1"), null, ConcurrentModel())
 
         assertEquals(null to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
         assertNull(items.laterRequested)
@@ -493,7 +497,7 @@ class HomeControllerTest {
     fun `a row presents its saved for later toggle for the item's state`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems(listOf(row(1).copy(later = true), row(2)))).home(TimelineQuery(), null, model)
+        controller(TimelineItems(listOf(row(1).copy(later = true), row(2)))).home(OWNER, TimelineQuery(), null, model)
 
         val toggles = (model.getAttribute("items") as List<*>).map { (it as TimelineItemView).laterToggle }
         assertEquals(listOf(LaterView("later-1", 1, true), LaterView("later-2", 2, false)), toggles)
@@ -503,7 +507,7 @@ class HomeControllerTest {
     fun `a row carries the item's saved for later state`() {
         val model = ConcurrentModel()
 
-        controller(TimelineItems(listOf(row(1).copy(later = true), row(2)))).home(TimelineQuery(), null, model)
+        controller(TimelineItems(listOf(row(1).copy(later = true), row(2)))).home(OWNER, TimelineQuery(), null, model)
 
         val views = (model.getAttribute("items") as List<*>).map { it as TimelineItemView }
         assertTrue(views[0].later)

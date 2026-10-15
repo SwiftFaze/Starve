@@ -1,6 +1,7 @@
 package dev.starve.web
 
 import dev.starve.application.EmbedChecker
+import dev.starve.application.OWNER
 import dev.starve.application.PlayerService
 import dev.starve.application.TimelineItems
 import dev.starve.domain.Playable
@@ -34,7 +35,7 @@ class PlayerControllerTest {
     fun `a youtube item renders the youtube player`() {
         val model = ConcurrentModel()
 
-        val view = controller(mapOf(1L to "https://youtu.be/dQw4w9WgXcQ")).player(1, model)
+        val view = controller(mapOf(1L to "https://youtu.be/dQw4w9WgXcQ")).player(OWNER, 1, model)
 
         assertEquals("player :: content", view)
         assertEquals("youtube", model.getAttribute("kind"))
@@ -49,7 +50,7 @@ class PlayerControllerTest {
     fun `the player names the playing item with its catalogue number`() {
         val model = ConcurrentModel()
 
-        controller(mapOf(7L to "https://soundcloud.com/a/b")).player(7, model)
+        controller(mapOf(7L to "https://soundcloud.com/a/b")).player(OWNER, 7, model)
 
         assertEquals(NowPlayingView("STV 0007", "Item 7", "Source", null), model.getAttribute("item"))
     }
@@ -58,7 +59,7 @@ class PlayerControllerTest {
     fun `the player carries a waveform seeded by the item id`() {
         val model = ConcurrentModel()
 
-        controller(mapOf(7L to "https://soundcloud.com/a/b")).player(7, model)
+        controller(mapOf(7L to "https://soundcloud.com/a/b")).player(OWNER, 7, model)
 
         assertEquals(Waveform.bars(7), model.getAttribute("waveform"))
     }
@@ -67,7 +68,7 @@ class PlayerControllerTest {
     fun `a soundcloud item renders the soundcloud player`() {
         val model = ConcurrentModel()
 
-        controller(mapOf(1L to "https://soundcloud.com/a/b")).player(1, model)
+        controller(mapOf(1L to "https://soundcloud.com/a/b")).player(OWNER, 1, model)
 
         assertEquals("soundcloud", model.getAttribute("kind"))
         assertEquals(
@@ -80,7 +81,7 @@ class PlayerControllerTest {
     fun `a video with embedding disabled renders the notice with the watch url`() {
         val model = ConcurrentModel()
 
-        controller(mapOf(1L to "https://youtu.be/dQw4w9WgXcQ"), allowed = false).player(1, model)
+        controller(mapOf(1L to "https://youtu.be/dQw4w9WgXcQ"), allowed = false).player(OWNER, 1, model)
 
         assertEquals("disabled", model.getAttribute("kind"))
         assertEquals("https://www.youtube.com/watch?v=dQw4w9WgXcQ", model.getAttribute("watchUrl"))
@@ -92,7 +93,7 @@ class PlayerControllerTest {
         val c = controller(mapOf(1L to "https://example.com/x"))
 
         listOf(1L, 2L).forEach {
-            val e = assertThrows(ResponseStatusException::class.java) { c.player(it, ConcurrentModel()) }
+            val e = assertThrows(ResponseStatusException::class.java) { c.player(OWNER, it, ConcurrentModel()) }
             assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
         }
     }

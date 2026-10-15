@@ -31,11 +31,14 @@ class ImportService(
     private val background: BackgroundPoller,
     private val youtubeFeedUrlTemplate: String,
 ) {
-    /** Detects the type of [content], stores its subscriptions and polls the new ones in the background. */
-    fun importFile(content: ByteArray): ImportOutcome {
+    /** Detects the type of [content], stores its subscriptions for [owner] and polls the new ones in the background. */
+    fun importFile(
+        owner: Long,
+        content: ByteArray,
+    ): ImportOutcome {
         val text = String(content, Charsets.UTF_8).removePrefix("\uFEFF")
         val parsed = parse(text) ?: return ImportOutcome.Unrecognised
-        val session = Run()
+        val session = Run(owner)
         parsed.entries.forEach { session.apply(it) }
         if (session.addedIds.isNotEmpty()) background.poll(session.addedIds.toList())
         return ImportOutcome.Done(ImportSummary(session.addedIds.size, session.alreadySubscribed, parsed.failures))
@@ -44,15 +47,17 @@ class ImportService(
     private fun parse(text: String): ParsedImport? =
         if (text.trimStart().startsWith("<")) opml.read(text) else TakeoutCsv.parse(text, youtubeFeedUrlTemplate)
 
-    private inner class Run {
-        private val known: MutableMap<String, Source> = sources.findAll().associateBy { it.url }.toMutableMap()
+    private inner class Run(
+        private val owner: Long,
+    ) {
+        private val known: MutableMap<String, Source> = sources.findAllOf(owner).associateBy { it.url }.toMutableMap()
         private val groupIds = mutableMapOf<String, Long>()
         val addedIds = mutableListOf<Long>()
         var alreadySubscribed = 0
 
         fun apply(entry: ImportEntry) {
             val existing = known[entry.url]
-            val source = existing ?: sources.insert(entry.url, entry.title).also { addedIds += it.id }
+            val source = existing ?: sources.insert(owner, entry.url, entry.title).also { addedIds += it.id }
             if (existing != null) alreadySubscribed++
             known[entry.url] = if (source.groupId == null) grouped(source, entry.folder) else source
         }
@@ -62,13 +67,15 @@ class ImportService(
             folder: String?,
         ): Source {
             val groupId = folder?.let { groupFor(it) } ?: return source
-            sources.assignGroup(source.id, groupId)
+            sources.assignGroup(owner, source.id, groupId)
             return source.copy(groupId = groupId)
         }
 
         private fun groupFor(folder: String): Long? {
             val name = GroupRules.truncatedName(folder) ?: return null
-            return groupIds.getOrPut(name.lowercase()) { (groups.findByName(name) ?: groups.insert(name)).id }
+            return groupIds.getOrPut(name.lowercase()) {
+                (groups.findByName(owner, name) ?: groups.insert(owner, name)).id
+            }
         }
     }
 }

@@ -66,13 +66,7 @@ class PlayerSteps {
             .groupValues[1]
             .replace("&amp;", "&")
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     private companion object {
         val WRAPPER = Regex("""class="ratio-16x9"[^>]*>\s*<iframe""")

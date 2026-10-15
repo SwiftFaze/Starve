@@ -48,7 +48,7 @@ class SubscriptionServiceTest {
 
     @Test
     fun `a resolved feed that is already subscribed is not fetched again`() {
-        sources.insert("http://a.test/real.xml", "Existing")
+        sources.insert(OWNER, "http://a.test/real.xml", "Existing")
         val fetched = mutableListOf<String>()
 
         val result = subscribe(Feed("Named", emptyList()), LocateResult.Found("http://a.test/real.xml"), fetched)
@@ -59,7 +59,7 @@ class SubscriptionServiceTest {
 
     @Test
     fun `a pasted url that is already subscribed is not even located`() {
-        sources.insert("http://a.test/feed", "Existing")
+        sources.insert(OWNER, "http://a.test/feed", "Existing")
         val located = mutableListOf<String>()
         val locator =
             object : FeedLocator {
@@ -71,7 +71,7 @@ class SubscriptionServiceTest {
 
         val service = SubscriptionService(sources, locator, fetcherOf(Feed(null, emptyList())), ingestor)
 
-        val result = service.subscribe(PASTED)
+        val result = service.subscribe(OWNER, PASTED)
 
         assertEquals(SubscribeResult.AlreadySubscribed, result)
         assertEquals(emptyList<String>(), located)
@@ -86,7 +86,7 @@ class SubscriptionServiceTest {
     @Test
     fun `a non http url is rejected before locating`() {
         val result = SubscriptionService(sources, FailingLocator, fetcherOf(Feed(null, emptyList())), ingestor)
-        assertEquals(SubscribeResult.NotHttpUrl, result.subscribe("ftp://a.test/x"))
+        assertEquals(SubscribeResult.NotHttpUrl, result.subscribe(OWNER, "ftp://a.test/x"))
     }
 
     @Test
@@ -104,8 +104,8 @@ class SubscriptionServiceTest {
         val unreachable = SubscriptionService(sources, locator, failing(FeedFetchException("x")), ingestor)
         val invalid = SubscriptionService(sources, locator, failing(InvalidFeedException("x")), ingestor)
 
-        assertEquals(SubscribeResult.Unreachable, unreachable.subscribe(PASTED))
-        assertEquals(SubscribeResult.NotAFeed, invalid.subscribe(PASTED))
+        assertEquals(SubscribeResult.Unreachable, unreachable.subscribe(OWNER, PASTED))
+        assertEquals(SubscribeResult.NotAFeed, invalid.subscribe(OWNER, PASTED))
     }
 
     private fun subscribe(
@@ -123,7 +123,7 @@ class SubscriptionServiceTest {
                     return FetchResult.Fetched(feed, Validators())
                 }
             }
-        return SubscriptionService(sources, locatorOf(located), fetcher, ingestor).subscribe(PASTED)
+        return SubscriptionService(sources, locatorOf(located), fetcher, ingestor).subscribe(OWNER, PASTED)
     }
 
     private fun fetcherOf(feed: Feed) =
@@ -145,5 +145,27 @@ class SubscriptionServiceTest {
 
     private companion object {
         const val PASTED = "http://a.test/feed"
+    }
+
+    @Test
+    fun `a url another user follows does not count as already subscribed`() {
+        sources.insert(OTHER_OWNER, "http://a.test/feed", "Theirs")
+
+        val result = subscribe(Feed("Mine", emptyList()))
+
+        assertEquals("Mine", (result as SubscribeResult.Subscribed).source.title)
+        assertEquals(OWNER, sources.insertedFor.getValue(2))
+    }
+
+    @Test
+    fun `only a user's own sources are listed and unsubscribed`() {
+        sources.insert(OWNER, "http://a.test/one", "One")
+        sources.insert(OTHER_OWNER, "http://a.test/two", "Two")
+        val service = SubscriptionService(sources, FailingLocator, fetcherOf(Feed(null, emptyList())), ingestor)
+
+        assertEquals(listOf("One"), service.list(OWNER).map { it.title })
+        assertEquals(false, service.unsubscribe(OWNER, 2))
+        assertEquals(true, service.unsubscribe(OWNER, 1))
+        assertEquals(listOf("Two"), service.list(OTHER_OWNER).map { it.title })
     }
 }

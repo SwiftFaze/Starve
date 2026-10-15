@@ -26,21 +26,31 @@ class SubscriptionService(
     private val fetcher: FeedFetcher,
     private val ingestor: FeedIngestor,
 ) {
-    fun list(): List<Source> = sources.findAll()
+    fun list(owner: Long): List<Source> = sources.findAllOf(owner)
 
-    fun unsubscribe(id: Long) = sources.delete(id)
+    /** Removes [owner]'s source; false when [owner] has no such source. */
+    fun unsubscribe(
+        owner: Long,
+        id: Long,
+    ): Boolean = sources.delete(owner, id)
 
-    /** Resolves [rawUrl] to a feed and fetches it; stores the subscription only if it yields a feed. */
-    fun subscribe(rawUrl: String): SubscribeResult {
+    /** Resolves [rawUrl] to a feed and fetches it; stores [owner]'s subscription only if it yields a feed. */
+    fun subscribe(
+        owner: Long,
+        rawUrl: String,
+    ): SubscribeResult {
         val url = rawUrl.trim()
         return when {
             !FeedRules.isHttpUrl(url) -> SubscribeResult.NotHttpUrl
-            sources.existsByUrl(url) -> SubscribeResult.AlreadySubscribed
-            else -> subscribeResolved(url)
+            sources.existsByUrl(owner, url) -> SubscribeResult.AlreadySubscribed
+            else -> subscribeResolved(owner, url)
         }
     }
 
-    private fun subscribeResolved(url: String): SubscribeResult =
+    private fun subscribeResolved(
+        owner: Long,
+        url: String,
+    ): SubscribeResult =
         when (val located = locator.locate(url)) {
             LocateResult.NoFeed -> {
                 SubscribeResult.NoFeedFound
@@ -51,19 +61,22 @@ class SubscriptionService(
             }
 
             is LocateResult.Found -> {
-                if (sources.existsByUrl(located.feedUrl)) {
+                if (sources.existsByUrl(owner, located.feedUrl)) {
                     SubscribeResult.AlreadySubscribed
                 } else {
-                    fetchAndStore(located.feedUrl)
+                    fetchAndStore(owner, located.feedUrl)
                 }
             }
         }
 
-    private fun fetchAndStore(url: String): SubscribeResult =
+    private fun fetchAndStore(
+        owner: Long,
+        url: String,
+    ): SubscribeResult =
         try {
             when (val result = fetcher.fetch(url, Validators())) {
                 FetchResult.NotModified -> SubscribeResult.Unreachable
-                is FetchResult.Fetched -> SubscribeResult.Subscribed(store(url, result))
+                is FetchResult.Fetched -> SubscribeResult.Subscribed(store(owner, url, result))
             }
         } catch (_: FeedFetchException) {
             SubscribeResult.Unreachable
@@ -72,11 +85,12 @@ class SubscriptionService(
         }
 
     private fun store(
+        owner: Long,
         url: String,
         fetched: FetchResult.Fetched,
     ): Source {
         val title = fetched.feed.title?.takeIf { it.isNotBlank() } ?: url
-        val source = sources.insert(url, title)
+        val source = sources.insert(owner, url, title)
         ingestor.apply(source, fetched)
         return sources.findById(source.id) ?: source
     }

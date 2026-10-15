@@ -142,67 +142,79 @@ class HomeController(
 ) {
     @GetMapping("/feed")
     fun home(
+        @CurrentUserId owner: Long,
         @ModelAttribute query: TimelineQuery,
         @RequestHeader("HX-Request", required = false) htmx: String?,
         model: Model,
     ): String {
-        val scope = scopeOf(query)
-        addPage(model, pageFor(scope, query.after), scope)
+        val scope = scopeOf(owner, query)
+        addPage(model, pageFor(owner, scope, query.after), scope)
         fragmentFor(htmx, query)?.let { return it }
-        addChrome(model, groups.navigation(), scope)
+        addChrome(model, groups.navigation(owner), scope)
         return "home"
     }
 
     @GetMapping("/items/{id}/open")
     fun open(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
     ): String =
-        when (val result = timeline.open(id)) {
+        when (val result = timeline.open(owner, id)) {
             OpenResult.Missing -> throw notFound()
             is OpenResult.Opened -> "redirect:" + (result.link ?: "/feed")
         }
 
     @PostMapping("/items/{id}/read")
     fun markRead(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
         @RequestHeader("HX-Request", required = false) htmx: String?,
     ): Any {
-        if (!timeline.markRead(id)) throw notFound()
+        if (!timeline.markRead(owner, id)) throw notFound()
         return if (htmx != null) ResponseEntity.ok("") else "redirect:/feed"
     }
 
     @PostMapping("/read-all")
     fun markAllRead(
+        @CurrentUserId owner: Long,
         @RequestParam before: Long,
         @RequestParam(required = false) group: Long?,
     ): String {
-        timeline.markAllRead(Instant.ofEpochMilli(before), group)
+        timeline.markAllRead(owner, Instant.ofEpochMilli(before), group)
         return "redirect:" + href(group, null, null)
     }
 
     private fun pageFor(
+        owner: Long,
         scope: Scope,
         after: String?,
     ): TimelinePage =
         when {
-            scope.searching -> search.search(scope.text, Cursor.parse(after))
-            scope.favourites -> timeline.favourites(Cursor.parse(after))
-            scope.later -> laterService.page(LaterCursor.parse(after))
-            else -> timeline.page(Cursor.parse(after), scope.showAll, scope.groupId)
+            scope.searching -> search.search(owner, scope.text, Cursor.parse(after))
+            scope.favourites -> timeline.favourites(owner, Cursor.parse(after))
+            scope.later -> laterService.page(owner, LaterCursor.parse(after))
+            else -> timeline.page(owner, Cursor.parse(after), scope.showAll, scope.groupId)
         }
 
     private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
 
     /** The group of [raw]; while [searching] an unknown one is dropped instead of answered with 404. */
     private fun groupIdFor(
+        owner: Long,
         raw: String,
         searching: Boolean,
-    ): Long? = if (searching) raw.toLongOrNull()?.let { groups.find(it) }?.id else resolveGroup(raw).id
+    ): Long? = if (searching) raw.toLongOrNull()?.let { groups.find(owner, it) }?.id else resolveGroup(owner, raw).id
 
-    private fun resolveGroup(raw: String): Group = raw.toLongOrNull()?.let { groups.find(it) } ?: throw notFound()
+    private fun resolveGroup(
+        owner: Long,
+        raw: String,
+    ): Group = raw.toLongOrNull()?.let { groups.find(owner, it) } ?: throw notFound()
 
     /** Which view the query selects: Favourites wins over Later, and neither takes a group or read state. */
-    private fun scopeOf(query: TimelineQuery): Scope {
+    private fun scopeOf(
+        owner: Long,
+        query: TimelineQuery,
+    ): Scope {
         val favourites = query.favourites == "1"
         val later = !favourites && query.later == "1"
         val plain = !favourites && !later
@@ -210,7 +222,7 @@ class HomeController(
             favourites = favourites,
             later = later,
             showAll = plain && query.show == "all",
-            groupId = if (plain) query.group?.let { groupIdFor(it, !query.q.isNullOrBlank()) } else null,
+            groupId = if (plain) query.group?.let { groupIdFor(owner, it, !query.q.isNullOrBlank()) } else null,
             text = query.q.orEmpty(),
         )
     }

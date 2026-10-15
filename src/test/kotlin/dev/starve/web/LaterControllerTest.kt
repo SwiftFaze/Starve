@@ -2,6 +2,7 @@ package dev.starve.web
 
 import dev.starve.application.LaterService
 import dev.starve.application.MemorySources
+import dev.starve.application.OWNER
 import dev.starve.application.TimelineItems
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -23,7 +24,7 @@ class LaterControllerTest {
     fun `saving answers htmx with the saved toggle`() {
         val items = TimelineItems(links = mapOf(5L to null))
 
-        val view = controller(items).save("5", null, "true")
+        val view = controller(items).save(OWNER, "5", null, "true")
 
         assertEquals("later :: toggle", view.viewName)
         assertEquals(listOf(5L to now), items.laterCalls)
@@ -34,7 +35,7 @@ class LaterControllerTest {
     fun `clearing answers htmx with the unsaved toggle`() {
         val items = TimelineItems(links = mapOf(5L to null))
 
-        val view = controller(items).clear("5", null, "true")
+        val view = controller(items).clear(OWNER, "5", null, "true")
 
         assertEquals("later :: toggle", view.viewName)
         assertEquals(listOf<Pair<Long, Instant?>>(5L to null), items.laterCalls)
@@ -44,7 +45,7 @@ class LaterControllerTest {
     @Test
     fun `a toggle from the reader or the detail view answers with its own toggle and the row's out of band`() {
         listOf("reader", "detail").forEach { pane ->
-            val view = controller(TimelineItems(links = mapOf(5L to null))).save("5", pane, "true")
+            val view = controller(TimelineItems(links = mapOf(5L to null))).save(OWNER, "5", pane, "true")
 
             assertEquals("later :: pair", view.viewName)
             assertEquals(LaterView("$pane-later", 5, true, from = pane), view.model["laterToggle"])
@@ -54,7 +55,7 @@ class LaterControllerTest {
 
     @Test
     fun `a pane the endpoint does not know gets only the row toggle`() {
-        val view = controller(TimelineItems(links = mapOf(5L to null))).save("5", "elsewhere", "true")
+        val view = controller(TimelineItems(links = mapOf(5L to null))).save(OWNER, "5", "elsewhere", "true")
 
         assertEquals("later :: toggle", view.viewName)
         assertEquals(LaterView("later-5", 5, true), view.model["laterToggle"])
@@ -64,8 +65,8 @@ class LaterControllerTest {
     fun `a plain request redirects to the timeline`() {
         val c = controller(TimelineItems(links = mapOf(5L to null)))
 
-        assertEquals("redirect:/feed", c.save("5", null, null).viewName)
-        assertEquals("redirect:/feed", c.clear("5", null, null).viewName)
+        assertEquals("redirect:/feed", c.save(OWNER, "5", null, null).viewName)
+        assertEquals("redirect:/feed", c.clear(OWNER, "5", null, null).viewName)
     }
 
     @Test
@@ -73,8 +74,8 @@ class LaterControllerTest {
         val c = controller(TimelineItems(links = mapOf(5L to null)))
 
         listOf("9999", "abc").forEach { id ->
-            val save = assertThrows(ResponseStatusException::class.java) { c.save(id, null, "true") }
-            val clear = assertThrows(ResponseStatusException::class.java) { c.clear(id, null, "true") }
+            val save = assertThrows(ResponseStatusException::class.java) { c.save(OWNER, id, null, "true") }
+            val clear = assertThrows(ResponseStatusException::class.java) { c.clear(OWNER, id, null, "true") }
             assertEquals(HttpStatus.NOT_FOUND, save.statusCode)
             assertEquals(HttpStatus.NOT_FOUND, clear.statusCode)
         }

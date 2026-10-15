@@ -33,7 +33,7 @@ class PlayerServiceTest {
     fun `an unknown item is not playable and nothing is marked read`() {
         val items = TimelineItems()
 
-        assertEquals(PlayerResult.NotPlayable, service(items).player(9))
+        assertEquals(PlayerResult.NotPlayable, service(items).player(OWNER, 9))
         assertTrue(items.readCalls.isEmpty())
     }
 
@@ -41,8 +41,8 @@ class PlayerServiceTest {
     fun `an item without a link or with a non-playable link stays unread`() {
         val items = TimelineItems(links = mapOf(1L to null, 2L to "https://example.com/story"))
 
-        assertEquals(PlayerResult.NotPlayable, service(items).player(1))
-        assertEquals(PlayerResult.NotPlayable, service(items).player(2))
+        assertEquals(PlayerResult.NotPlayable, service(items).player(OWNER, 1))
+        assertEquals(PlayerResult.NotPlayable, service(items).player(OWNER, 2))
         assertTrue(items.readCalls.isEmpty())
     }
 
@@ -51,7 +51,7 @@ class PlayerServiceTest {
         val items = TimelineItems(links = mapOf(1L to youtube))
         val embeds = Embeds(true)
 
-        val result = service(items, embeds).player(1)
+        val result = service(items, embeds).player(OWNER, 1)
 
         assertEquals(PlayerResult.Embed(Playable.YouTube("dQw4w9WgXcQ"), ref(1, youtube)), result)
         assertEquals(listOf(1L to now), items.readCalls)
@@ -62,7 +62,7 @@ class PlayerServiceTest {
     fun `a video with embedding disabled falls back to the watch url but is still marked read`() {
         val items = TimelineItems(links = mapOf(1L to youtube))
 
-        val result = service(items, Embeds(false)).player(1)
+        val result = service(items, Embeds(false)).player(OWNER, 1)
 
         val expected = PlayerResult.EmbeddingDisabled("https://www.youtube.com/watch?v=dQw4w9WgXcQ", ref(1, youtube))
         assertEquals(expected, result)
@@ -75,8 +75,19 @@ class PlayerServiceTest {
         val items = TimelineItems(links = mapOf(1L to track))
         val embeds = Embeds(false)
 
-        assertEquals(PlayerResult.Embed(Playable.SoundCloud(track), ref(1, track)), service(items, embeds).player(1))
+        val result = service(items, embeds).player(OWNER, 1)
+
+        assertEquals(PlayerResult.Embed(Playable.SoundCloud(track), ref(1, track)), result)
         assertTrue(embeds.asked.isEmpty())
         assertEquals(listOf(1L to now), items.readCalls)
+    }
+
+    @Test
+    fun `the item is looked up and marked read for the user asked for`() {
+        val items = TimelineItems(links = mapOf(1L to youtube))
+
+        service(items).player(OTHER_OWNER, 1)
+
+        assertEquals(listOf(OTHER_OWNER, OTHER_OWNER), items.calledFor)
     }
 }

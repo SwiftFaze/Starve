@@ -20,30 +20,38 @@ class FavouriteController(
 ) {
     @PostMapping("/items/{id}/favourite")
     fun favourite(
+        @CurrentUserId owner: Long,
         @PathVariable id: String,
         @RequestParam(required = false) from: String?,
         @RequestHeader("HX-Request", required = false) htmx: String?,
-    ): ModelAndView = toggle(id, true, from, htmx)
+    ): ModelAndView = toggle(owner, id, true, Origin(from, htmx))
 
     @PostMapping("/items/{id}/unfavourite")
     fun unfavourite(
+        @CurrentUserId owner: Long,
         @PathVariable id: String,
         @RequestParam(required = false) from: String?,
         @RequestHeader("HX-Request", required = false) htmx: String?,
-    ): ModelAndView = toggle(id, false, from, htmx)
+    ): ModelAndView = toggle(owner, id, false, Origin(from, htmx))
+
+    /** Where a toggle came from: the pane it was clicked in, and whether htmx sent it. */
+    private data class Origin(
+        val from: String?,
+        val htmx: String?,
+    )
 
     private fun toggle(
+        owner: Long,
         raw: String,
         favourite: Boolean,
-        from: String?,
-        htmx: String?,
+        origin: Origin,
     ): ModelAndView {
         val id = raw.toLongOrNull() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        val found = if (favourite) favourites.favourite(id) else favourites.unfavourite(id)
+        val found = if (favourite) favourites.favourite(owner, id) else favourites.unfavourite(owner, id)
         if (!found) throw ResponseStatusException(HttpStatus.NOT_FOUND)
         return when {
-            htmx == null -> ModelAndView("redirect:/feed")
-            from == FROM_READER -> readerAnswer(id, favourite)
+            origin.htmx == null -> ModelAndView("redirect:/feed")
+            origin.from == FROM_READER -> readerAnswer(id, favourite)
             else -> ModelAndView("star :: star", mapOf("star" to StarView("star-$id", id, favourite)))
         }
     }

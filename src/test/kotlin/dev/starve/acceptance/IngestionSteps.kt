@@ -281,13 +281,13 @@ class IngestionSteps {
 
     private fun requireBlock(title: String) = requireNotNull(block(title)) { "no source titled '$title'" }
 
-    private fun sourceId(title: String) = count("SELECT id FROM sources WHERE title = ?", title)
+    private fun sourceId(title: String) = app.sourceId(title)
 
     private fun itemIds(title: String): List<Long> =
         app
             .jdbc()
-            .sql("SELECT i.id FROM items i JOIN sources s ON s.id = i.source_id WHERE s.title = ? ORDER BY i.id")
-            .param(title)
+            .sql("SELECT i.id FROM items i WHERE i.source_id = ? ORDER BY i.id")
+            .param(sourceId(title))
             .query(Long::class.java)
             .list()
 
@@ -299,8 +299,8 @@ class IngestionSteps {
         assertTrue(total > 0, "no items for '$title'")
         val matching =
             count(
-                "SELECT COUNT(*) FROM items i JOIN sources s ON s.id = i.source_id WHERE s.title = ? AND ($condition)",
-                title,
+                "SELECT COUNT(*) FROM items i WHERE i.source_id = ? AND ($condition)",
+                sourceId(title),
             )
         assertEquals(total.toLong(), matching)
     }
@@ -308,12 +308,12 @@ class IngestionSteps {
     private fun thumbnails(title: String): List<String?> =
         app
             .jdbc()
-            .sql("SELECT i.thumbnail_url FROM items i JOIN sources s ON s.id = i.source_id WHERE s.title = ?")
-            .param(title)
+            .sql("SELECT i.thumbnail_url FROM items i WHERE i.source_id = ?")
+            .param(sourceId(title))
             .query { rs, _ -> rs.getString(1) }
             .list()
 
-    private fun subscriptionCount() = count("SELECT COUNT(*) FROM sources")
+    private fun subscriptionCount() = count("SELECT COUNT(*) FROM sources WHERE owner_id = ?", app.currentUserId())
 
     private fun count(
         sql: String,

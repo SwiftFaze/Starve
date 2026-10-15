@@ -38,6 +38,20 @@ class JdbcUserRepository(
                     "SELECT ?, ?, 1, ? WHERE NOT EXISTS (SELECT 1 FROM users)",
             ).params(username, passwordHash, at.toEpochMilli())
             .update() == 1
+
+    override fun insert(
+        username: String,
+        passwordHash: String,
+        at: Instant,
+    ): User {
+        val id =
+            jdbc
+                .sql("INSERT INTO users (username, password_hash, admin, created_at) VALUES (?, ?, 0, ?) RETURNING id")
+                .params(username, passwordHash, at.toEpochMilli())
+                .query(Long::class.java)
+                .single()
+        return User(id, username, passwordHash, admin = false)
+    }
 }
 
 private fun ResultSet.toUser() =

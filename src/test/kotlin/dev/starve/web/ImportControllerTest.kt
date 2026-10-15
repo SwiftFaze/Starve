@@ -9,6 +9,7 @@ import dev.starve.application.ImportSummary
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
+import dev.starve.application.OWNER
 import dev.starve.application.PollService
 import dev.starve.application.quietFavicons
 import dev.starve.domain.ParsedImport
@@ -47,7 +48,8 @@ class ImportControllerTest {
 
     private fun upload(text: String): ConcurrentModel {
         val model = ConcurrentModel()
-        assertEquals("import", controller.upload(MockMultipartFile("file", "f.txt", null, text.toByteArray()), model))
+        val file = MockMultipartFile("file", "f.txt", null, text.toByteArray())
+        assertEquals("import", controller.upload(OWNER, file, model))
         return model
     }
 

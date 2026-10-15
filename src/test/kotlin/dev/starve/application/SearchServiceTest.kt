@@ -6,6 +6,7 @@ import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -29,7 +30,7 @@ class SearchServiceTest {
         val service = SearchService(items, MemorySources(mutableListOf(source)), clock)
         val after = Cursor(Instant.EPOCH, 9)
 
-        val page = service.search("rust async", after)
+        val page = service.search(OWNER, "rust async", after)
 
         assertEquals(Triple("\"rust\" \"async\"*", after, TimelineRules.PAGE_SIZE + 1), items.searched)
         assertEquals(TimelineRules.PAGE_SIZE, page.items.size)
@@ -43,10 +44,21 @@ class SearchServiceTest {
         val items = TimelineItems(rows(3))
         val service = SearchService(items, MemorySources(mutableListOf(source)), clock)
 
-        val page = service.search("*", null)
+        val page = service.search(OWNER, "*", null)
 
         assertNull(items.searched)
         assertEquals(emptyList<TimelineItem>(), page.items)
         assertNull(page.next)
+    }
+
+    @Test
+    fun `a search is made for the user asked for, and only their sources count`() {
+        val items = TimelineItems(rows(1))
+        val service = SearchService(items, MemorySources(mutableListOf(source)), clock)
+
+        val page = service.search(OTHER_OWNER, "rust", null)
+
+        assertEquals(listOf(OTHER_OWNER), items.calledFor)
+        assertFalse(page.hasSources)
     }
 }

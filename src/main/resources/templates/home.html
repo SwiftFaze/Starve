@@ -77,9 +77,9 @@
         </div>
       </div>
 
-      <p class="sheet-note" th:unless="${hasSources}">No sources yet. <a href="/sources">Add a source</a> to start your catalogue.</p>
+      <p class="sheet-note" th:unless="${hasSources or searching}">No sources yet. <a href="/sources">Add a source</a> to start your catalogue.</p>
 
-      <div id="timeline" th:if="${hasSources}">
+      <div id="timeline" th:if="${hasSources or searching}">
         <th:block th:fragment="more">
           <article th:each="item : ${items}" th:class="${item.read} ? 'item read' : 'item'"
                    th:attr="data-title=${item.title},data-item=${item.catalogueNumber}">

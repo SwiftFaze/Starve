@@ -67,6 +67,16 @@ class JdbcAccountRepositoriesTest {
     }
 
     @Test
+    fun `an inserted account is a non-admin that can be found again`() {
+        users.insertFirstAdmin("rob", "hash", now)
+
+        val inserted = users.insert("Amy", "h2", now)
+
+        assertEquals(User(2, "Amy", "h2", admin = false), inserted)
+        assertEquals(inserted, users.findByUsername("amy"))
+    }
+
+    @Test
     fun `an unknown username finds nobody`() {
         users.insertFirstAdmin("rob", "hash", now)
 

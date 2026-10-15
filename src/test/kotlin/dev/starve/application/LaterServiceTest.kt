@@ -33,8 +33,8 @@ class LaterServiceTest {
         val items = TimelineItems(links = mapOf(5L to null))
         val service = LaterService(items, MemorySources(), clock)
 
-        assertTrue(service.save(5))
-        assertFalse(service.save(6))
+        assertTrue(service.save(OWNER, 5))
+        assertFalse(service.save(OWNER, 6))
         assertEquals(listOf(5L to now, 6L to now), items.laterCalls)
     }
 
@@ -43,8 +43,8 @@ class LaterServiceTest {
         val items = TimelineItems(links = mapOf(5L to null))
         val service = LaterService(items, MemorySources(), clock)
 
-        assertTrue(service.clear(5))
-        assertFalse(service.clear(6))
+        assertTrue(service.clear(OWNER, 5))
+        assertFalse(service.clear(OWNER, 6))
         assertEquals(listOf<Pair<Long, Instant?>>(5L to null, 6L to null), items.laterCalls)
     }
 
@@ -54,7 +54,7 @@ class LaterServiceTest {
         val service = LaterService(items, MemorySources(mutableListOf(source)), clock)
         val after = LaterCursor(Instant.EPOCH, 9)
 
-        val page = service.page(after)
+        val page = service.page(OWNER, after)
 
         assertEquals(after to TimelineRules.PAGE_SIZE + 1, items.laterRequested)
         assertEquals(TimelineRules.PAGE_SIZE, page.items.size)
@@ -67,9 +67,22 @@ class LaterServiceTest {
     fun `a short later page has no next cursor and no sources is reported`() {
         val items = TimelineItems(savedRows = listOf(saved(1, 1)))
 
-        val page = LaterService(items, MemorySources(), clock).page(null)
+        val page = LaterService(items, MemorySources(), clock).page(OWNER, null)
 
         assertNull(page.next)
+        assertFalse(page.hasSources)
+    }
+
+    @Test
+    fun `saving, clearing and paging are made for the user asked for, and only their sources count`() {
+        val items = TimelineItems(links = mapOf(5L to null))
+        val service = LaterService(items, MemorySources(mutableListOf(source)), clock)
+
+        service.save(OTHER_OWNER, 5)
+        service.clear(OTHER_OWNER, 5)
+        val page = service.page(OTHER_OWNER, null)
+
+        assertEquals(List(3) { OTHER_OWNER }, items.calledFor)
         assertFalse(page.hasSources)
     }
 }

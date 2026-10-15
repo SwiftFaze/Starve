@@ -30,7 +30,7 @@ class TimelineServiceTest {
         val service = TimelineService(items, items, MemorySources(mutableListOf(source)), clock)
         val after = Cursor(Instant.EPOCH, 9)
 
-        val page = service.page(after, true, 3)
+        val page = service.page(OWNER, after, true, 3)
 
         assertEquals(Triple<Cursor?, Boolean, Int>(after, true, TimelineRules.PAGE_SIZE + 1), items.requested)
         assertEquals(3L, items.requestedGroup)
@@ -45,7 +45,7 @@ class TimelineServiceTest {
         val items = TimelineItems(rows(2))
         val service = TimelineService(items, items, MemorySources(), clock)
 
-        val page = service.page(null, false)
+        val page = service.page(OWNER, null, false)
 
         assertNull(page.next)
         assertFalse(page.hasSources)
@@ -56,8 +56,8 @@ class TimelineServiceTest {
         val items = TimelineItems(links = mapOf(5L to null))
         val service = TimelineService(items, items, MemorySources(), clock)
 
-        assertTrue(service.markRead(5))
-        assertFalse(service.markRead(6))
+        assertTrue(service.markRead(OWNER, 5))
+        assertFalse(service.markRead(OWNER, 6))
         assertEquals(listOf(5L to now, 6L to now), items.readCalls)
     }
 
@@ -66,8 +66,8 @@ class TimelineServiceTest {
         val items = TimelineItems(links = mapOf(5L to "http://x.test/a", 6L to null))
         val service = TimelineService(items, items, MemorySources(), clock)
 
-        assertEquals(OpenResult.Opened("http://x.test/a"), service.open(5))
-        assertEquals(OpenResult.Opened(null), service.open(6))
+        assertEquals(OpenResult.Opened("http://x.test/a"), service.open(OWNER, 5))
+        assertEquals(OpenResult.Opened(null), service.open(OWNER, 6))
         assertEquals(listOf(5L to now, 6L to now), items.readCalls)
     }
 
@@ -75,7 +75,7 @@ class TimelineServiceTest {
     fun `opening an unknown item marks nothing`() {
         val items = TimelineItems()
 
-        assertEquals(OpenResult.Missing, TimelineService(items, items, MemorySources(), clock).open(1))
+        assertEquals(OpenResult.Missing, TimelineService(items, items, MemorySources(), clock).open(OWNER, 1))
         assertTrue(items.readCalls.isEmpty())
     }
 
@@ -84,7 +84,7 @@ class TimelineServiceTest {
         val items = TimelineItems()
         val cutoff = now.minusSeconds(30)
 
-        TimelineService(items, items, MemorySources(), clock).markAllRead(cutoff, 7)
+        TimelineService(items, items, MemorySources(), clock).markAllRead(OWNER, cutoff, 7)
 
         assertEquals(cutoff to now, items.markAllCall)
         assertEquals(7L, items.markAllGroup)
@@ -96,7 +96,7 @@ class TimelineServiceTest {
         val service = TimelineService(items, items, MemorySources(mutableListOf(source)), clock)
         val after = Cursor(Instant.EPOCH, 9)
 
-        val page = service.favourites(after)
+        val page = service.favourites(OWNER, after)
 
         assertEquals(after to TimelineRules.PAGE_SIZE + 1, items.favouritesRequested)
         assertEquals(TimelineRules.PAGE_SIZE, page.items.size)
@@ -109,8 +109,23 @@ class TimelineServiceTest {
     fun `mark all read reports how many items the repository marked`() {
         val items = TimelineItems(markedAllCount = 4)
 
-        val marked = TimelineService(items, items, MemorySources(), clock).markAllRead(now)
+        val marked = TimelineService(items, items, MemorySources(), clock).markAllRead(OWNER, now)
 
         assertEquals(4, marked)
+    }
+
+    @Test
+    fun `every read and write is made for the user asked for, and only their sources count`() {
+        val items = TimelineItems(links = mapOf(5L to "http://x.test/a"))
+        val service = TimelineService(items, items, MemorySources(mutableListOf(source)), clock)
+
+        val page = service.page(OTHER_OWNER, null, false)
+        service.favourites(OTHER_OWNER, null)
+        service.markRead(OTHER_OWNER, 5)
+        service.open(OTHER_OWNER, 5)
+        service.markAllRead(OTHER_OWNER, now)
+
+        assertEquals(List(6) { OTHER_OWNER }, items.calledFor)
+        assertFalse(page.hasSources)
     }
 }

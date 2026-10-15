@@ -47,7 +47,7 @@ class TimelineSteps {
         days: Int,
     ) {
         seed(source, title, daysAgo(days))
-        app.bean(ItemRepository::class.java).markRead(itemId(title), Instant.now())
+        app.bean(ItemRepository::class.java).markRead(app.ownerOfItem(itemId(title)), itemId(title), Instant.now())
     }
 
     @Given(
@@ -88,9 +88,7 @@ class TimelineSteps {
     ) {
         val now = Instant.now()
         seededTitles = (1..count).map { title }
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == source } ?: sources.insert("http://$source.test/feed", source)
+        val owner = app.ownedSource(source)
         (1..count).forEach { n ->
             val published = now.minus(Duration.ofMinutes(n.toLong()))
             val item = FeedItem("$title-$n", title, "http://example.test/$title-$n", published, null, null)
@@ -219,10 +217,7 @@ class TimelineSteps {
         published: Instant,
         firstSeen: Instant = Instant.now(),
     ) {
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == source }
-                ?: sources.insert("http://$source.test/feed", source)
+        val owner = app.ownedSource(source)
         val item = FeedItem(title, title, "http://example.test/${title.replace(' ', '-')}", published, null, null)
         app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), firstSeen)
     }
@@ -238,19 +233,13 @@ class TimelineSteps {
             .query(String::class.java)
             .single()
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     private fun isRead(title: String): Boolean =
         app
             .jdbc()
-            .sql("SELECT COUNT(*) FROM items WHERE title = ? AND read_at IS NOT NULL")
-            .param(title)
+            .sql("SELECT COUNT(*) FROM items WHERE id = ? AND read_at IS NOT NULL")
+            .param(itemId(title))
             .query(Long::class.java)
             .single() == 1L
 

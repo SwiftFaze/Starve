@@ -23,10 +23,7 @@ class DockSteps {
         link: String,
         days: Int,
     ) {
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == source }
-                ?: sources.insert("http://$source.test/feed", source)
+        val owner = app.ownedSource(source)
         val published = Instant.now().minus(Duration.ofDays(days.toLong()))
         val item = FeedItem(title, title, link, published, null, thumbnailOf(title))
         app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), Instant.now())
@@ -124,13 +121,7 @@ class DockSteps {
 
     private fun thumbnailOf(title: String) = "http://example.test/$title.jpg"
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     private companion object {
         val PLAY = Regex("<button[^>]*class=\"play\"[^>]*>")

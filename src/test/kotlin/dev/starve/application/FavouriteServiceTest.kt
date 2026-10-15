@@ -17,8 +17,8 @@ class FavouriteServiceTest {
         val items = TimelineItems(links = mapOf(5L to null))
         val service = FavouriteService(items, clock)
 
-        assertTrue(service.favourite(5))
-        assertFalse(service.favourite(6))
+        assertTrue(service.favourite(OWNER, 5))
+        assertFalse(service.favourite(OWNER, 6))
         assertEquals(listOf(5L to now, 6L to now), items.favouriteCalls)
     }
 
@@ -27,8 +27,19 @@ class FavouriteServiceTest {
         val items = TimelineItems(links = mapOf(5L to null))
         val service = FavouriteService(items, clock)
 
-        assertTrue(service.unfavourite(5))
-        assertFalse(service.unfavourite(6))
+        assertTrue(service.unfavourite(OWNER, 5))
+        assertFalse(service.unfavourite(OWNER, 6))
         assertEquals(listOf(5L to null, 6L to null), items.favouriteCalls)
+    }
+
+    @Test
+    fun `favouriting and unfavouriting are made for the user asked for`() {
+        val items = TimelineItems(links = mapOf(5L to null))
+        val service = FavouriteService(items, clock)
+
+        service.favourite(OTHER_OWNER, 5)
+        service.unfavourite(OTHER_OWNER, 5)
+
+        assertEquals(listOf(OTHER_OWNER, OTHER_OWNER), items.calledFor)
     }
 }

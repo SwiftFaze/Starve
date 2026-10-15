@@ -185,8 +185,8 @@ Feature: Per-user sources, groups and items
     And the sources page does not list the group "Music"
     When I request the home page "/"
     Then the group navigation lists the entries
-      | All  |
-      | News |
+      | All (0)  |
+      | News (0) |
 
   Scenario: Two users can each have a group of the same name
     Given the group "Music" exists

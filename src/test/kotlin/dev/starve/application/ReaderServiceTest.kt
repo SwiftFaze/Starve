@@ -19,9 +19,13 @@ class ReaderServiceTest {
         val read = mutableListOf<Pair<Long, Instant>>()
         val articles = MemoryArticles()
 
-        override fun findPost(id: Long): PostRef? = posts[id]
+        override fun findPost(
+            owner: Long,
+            id: Long,
+        ): PostRef? = posts[id]
 
         override fun markRead(
+            owner: Long,
             id: Long,
             at: Instant,
         ): Boolean {
@@ -65,7 +69,7 @@ class ReaderServiceTest {
     fun `a blog post is returned and marked read`() {
         val (service, items, _) = service(null, post(1, "https://blog.example/a", body = article(800)))
 
-        assertEquals(post(1, "https://blog.example/a", body = article(800)), service.open(1))
+        assertEquals(post(1, "https://blog.example/a", body = article(800)), service.open(OWNER, 1))
         assertEquals(listOf(1L to now), items.read)
     }
 
@@ -73,7 +77,7 @@ class ReaderServiceTest {
     fun `a post without a body or a link is still opened and marked read`() {
         val (service, items, pages) = service(null, post(1, null, body = null))
 
-        assertEquals(post(1, null, body = null), service.open(1))
+        assertEquals(post(1, null, body = null), service.open(OWNER, 1))
         assertEquals(listOf(1L to now), items.read)
         assertTrue(pages.requested.isEmpty())
     }
@@ -82,7 +86,7 @@ class ReaderServiceTest {
     fun `an unknown item is not readable and nothing is marked read`() {
         val (service, items, _) = service()
 
-        assertNull(service.open(9))
+        assertNull(service.open(OWNER, 9))
         assertTrue(items.read.isEmpty())
     }
 
@@ -90,7 +94,7 @@ class ReaderServiceTest {
     fun `a youtube item is not readable and stays unread`() {
         val (service, items, pages) = service(null, post(1, "https://youtu.be/dQw4w9WgXcQ"))
 
-        assertNull(service.open(1))
+        assertNull(service.open(OWNER, 1))
         assertTrue(items.read.isEmpty())
         assertTrue(pages.requested.isEmpty())
     }
@@ -99,7 +103,7 @@ class ReaderServiceTest {
     fun `a soundcloud item is not readable and stays unread`() {
         val (service, items, _) = service(null, post(2, "https://soundcloud.com/a/b"))
 
-        assertNull(service.open(2))
+        assertNull(service.open(OWNER, 2))
         assertTrue(items.read.isEmpty())
     }
 
@@ -108,7 +112,7 @@ class ReaderServiceTest {
         val teaser = post(1, "https://blog.example/a", body = "<p>Teaser</p>")
         val (service, items, pages) = service(FetchedArticle(article(800), null), teaser)
 
-        val shown = service.open(1)
+        val shown = service.open(OWNER, 1)
 
         assertEquals(article(800), shown?.body)
         assertEquals(listOf("https://blog.example/a"), pages.requested)
@@ -120,7 +124,7 @@ class ReaderServiceTest {
         val teaser = post(1, "https://blog.example/a", body = article(300))
         val (service, items, _) = service(FetchedArticle(article(100), null), teaser)
 
-        assertEquals(article(300), service.open(1)?.body)
+        assertEquals(article(300), service.open(OWNER, 1)?.body)
         assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articles.articleChecks)
     }
 
@@ -129,7 +133,7 @@ class ReaderServiceTest {
         val teaser = post(1, "https://blog.example/a", body = article(300))
         val (service, items, _) = service(FetchedArticle(article(300).replace("x", "y"), null), teaser)
 
-        assertEquals(article(300), service.open(1)?.body)
+        assertEquals(article(300), service.open(OWNER, 1)?.body)
         assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articles.articleChecks)
     }
 
@@ -137,7 +141,7 @@ class ReaderServiceTest {
     fun `a failed fetch keeps the teaser, records the check and still marks the item read`() {
         val (service, items, _) = service(null, post(1, "https://blog.example/a", body = "<p>Teaser</p>"))
 
-        assertEquals("<p>Teaser</p>", service.open(1)?.body)
+        assertEquals("<p>Teaser</p>", service.open(OWNER, 1)?.body)
         assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articles.articleChecks)
         assertEquals(listOf(1L to now), items.read)
     }
@@ -147,7 +151,7 @@ class ReaderServiceTest {
         val full = post(1, "https://blog.example/a", body = article(800))
         val (service, _, pages) = service(FetchedArticle(article(900), null), full)
 
-        service.open(1)
+        service.open(OWNER, 1)
 
         assertTrue(pages.requested.isEmpty())
     }
@@ -159,7 +163,7 @@ class ReaderServiceTest {
                 .copy(articleCheckedAt = now.minus(Duration.ofHours(23)))
         val (service, _, pages) = service(FetchedArticle(article(800), null), checked)
 
-        assertNull(service.open(1)?.body)
+        assertNull(service.open(OWNER, 1)?.body)
         assertTrue(pages.requested.isEmpty())
     }
 
@@ -170,7 +174,7 @@ class ReaderServiceTest {
                 .copy(articleCheckedAt = now.minus(ArticleRules.RECHECK_AFTER).minusSeconds(1))
         val (service, _, pages) = service(FetchedArticle(article(800), null), stale)
 
-        assertEquals(article(800), service.open(1)?.body)
+        assertEquals(article(800), service.open(OWNER, 1)?.body)
         assertEquals(listOf("https://blog.example/a"), pages.requested)
     }
 
@@ -178,7 +182,7 @@ class ReaderServiceTest {
     fun `a non-http link is never fetched`() {
         val (service, _, pages) = service(FetchedArticle(article(800), null), post(1, "ftp://blog.example/a", null))
 
-        assertNull(service.open(1)?.body)
+        assertNull(service.open(OWNER, 1)?.body)
         assertTrue(pages.requested.isEmpty())
     }
 
@@ -187,7 +191,7 @@ class ReaderServiceTest {
         val (service, items, _) =
             service(FetchedArticle(article(800), "https://img.example/og.jpg"), post(1, "https://blog.example/a", null))
 
-        assertEquals("https://img.example/og.jpg", service.open(1)?.thumbnailUrl)
+        assertEquals("https://img.example/og.jpg", service.open(OWNER, 1)?.thumbnailUrl)
         val check = items.articles.articleChecks.single()
         assertEquals("https://img.example/og.jpg", check.thumbnailUrl)
     }
@@ -198,6 +202,6 @@ class ReaderServiceTest {
             post(1, "https://blog.example/a", null).copy(thumbnailUrl = "https://img.example/feed.jpg")
         val (service, _, _) = service(FetchedArticle(article(800), "https://img.example/og.jpg"), withThumbnail)
 
-        assertEquals("https://img.example/feed.jpg", service.open(1)?.thumbnailUrl)
+        assertEquals("https://img.example/feed.jpg", service.open(OWNER, 1)?.thumbnailUrl)
     }
 }

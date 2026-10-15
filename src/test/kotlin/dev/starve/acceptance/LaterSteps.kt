@@ -26,13 +26,13 @@ class LaterSteps {
         if (World.actionHasRun) {
             assertTrue(isSaved(title), "'$title' is not saved for later")
         } else {
-            later().save(itemId(title), Instant.now())
+            save(itemId(title), Instant.now())
         }
     }
 
     @Given("the item first seen {int} days ago is saved for later")
     fun itemFirstSeenAgoIsSaved(days: Int) {
-        later().save(idFirstSeenDaysAgo(days), Instant.now())
+        save(idFirstSeenDaysAgo(days), Instant.now())
     }
 
     @Given("the items {string}, {string} and {string} are saved for later at the same instant")
@@ -42,7 +42,7 @@ class LaterSteps {
         third: String,
     ) {
         val at = Instant.now()
-        listOf(first, second, third).forEach { later().save(itemId(it), at) }
+        listOf(first, second, third).forEach { save(itemId(it), at) }
     }
 
     /** Saves every item in timeline order (newest first), one millisecond apart, so the first saved is the newest. */
@@ -55,7 +55,7 @@ class LaterSteps {
                 .sql("SELECT id FROM items ORDER BY published_at DESC, id DESC")
                 .query(Long::class.java)
                 .list()
-        ids.forEachIndexed { index, id -> later().save(id, base.plusMillis(index.toLong())) }
+        ids.forEachIndexed { index, id -> save(id, base.plusMillis(index.toLong())) }
     }
 
     @Given("the source {string} has a YouTube item {string} published {int} days ago")
@@ -64,10 +64,7 @@ class LaterSteps {
         title: String,
         days: Int,
     ) {
-        val sources = app.bean(SourceRepository::class.java)
-        val owner =
-            sources.findAll().firstOrNull { it.title == source }
-                ?: sources.insert("http://$source.test/feed", source)
+        val owner = app.ownedSource(source)
         val published = Instant.now().minus(Duration.ofDays(days.toLong()))
         val item = FeedItem(title, title, YOUTUBE, published, null, null)
         app.bean(ItemRepository::class.java).insertNew(owner.id, listOf(item), Instant.now())
@@ -99,12 +96,7 @@ class LaterSteps {
     @When("I request the timeline of the group {string} with the Later filter")
     fun requestGroupWithLater(group: String) {
         val id =
-            app
-                .jdbc()
-                .sql("SELECT id FROM groups WHERE name = ?")
-                .param(group)
-                .query(Long::class.java)
-                .single()
+            app.groupId(group)
         World.response = app.get("/feed?group=$id&later=1")
         World.pages = listOf(World.response.body())
     }
@@ -207,6 +199,11 @@ class LaterSteps {
 
     private fun later(): LaterRepository = app.bean(LaterRepository::class.java)
 
+    private fun save(
+        id: Long,
+        at: Instant,
+    ) = later().save(app.ownerOfItem(id), id, at)
+
     private fun toggle(
         verb: String,
         id: Long,
@@ -272,20 +269,14 @@ class LaterSteps {
     private fun isSaved(title: String): Boolean =
         app
             .jdbc()
-            .sql("SELECT COUNT(*) FROM items WHERE title = ? AND later_at IS NOT NULL")
-            .param(title)
+            .sql("SELECT COUNT(*) FROM items WHERE id = ? AND later_at IS NOT NULL")
+            .param(itemId(title))
             .query(Long::class.java)
             .single() == 1L
 
     private fun titles(): List<String> = TITLE.findAll(World.pages.joinToString("")).map { it.groupValues[1] }.toList()
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     /** The item first seen [days] ago; the backdating steps spread items a few days apart, so an hour is plenty. */
     private fun idFirstSeenDaysAgo(days: Int): Long {

@@ -20,30 +20,38 @@ class LaterController(
 ) {
     @PostMapping("/items/{id}/later")
     fun save(
+        @CurrentUserId owner: Long,
         @PathVariable id: String,
         @RequestParam(required = false) from: String?,
         @RequestHeader("HX-Request", required = false) htmx: String?,
-    ): ModelAndView = toggle(id, true, from, htmx)
+    ): ModelAndView = toggle(owner, id, true, Origin(from, htmx))
 
     @PostMapping("/items/{id}/unlater")
     fun clear(
+        @CurrentUserId owner: Long,
         @PathVariable id: String,
         @RequestParam(required = false) from: String?,
         @RequestHeader("HX-Request", required = false) htmx: String?,
-    ): ModelAndView = toggle(id, false, from, htmx)
+    ): ModelAndView = toggle(owner, id, false, Origin(from, htmx))
+
+    /** Where a toggle came from: the pane it was clicked in, and whether htmx sent it. */
+    private data class Origin(
+        val from: String?,
+        val htmx: String?,
+    )
 
     private fun toggle(
+        owner: Long,
         raw: String,
         saved: Boolean,
-        from: String?,
-        htmx: String?,
+        origin: Origin,
     ): ModelAndView {
         val id = raw.toLongOrNull() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        val found = if (saved) later.save(id) else later.clear(id)
+        val found = if (saved) later.save(owner, id) else later.clear(owner, id)
         if (!found) throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        val pane = from?.takeIf { it in PANES }
+        val pane = origin.from?.takeIf { it in PANES }
         return when {
-            htmx == null -> ModelAndView("redirect:/feed")
+            origin.htmx == null -> ModelAndView("redirect:/feed")
             pane != null -> paneAnswer(id, saved, pane)
             else -> ModelAndView("later :: toggle", mapOf("laterToggle" to LaterView("later-$id", id, saved)))
         }

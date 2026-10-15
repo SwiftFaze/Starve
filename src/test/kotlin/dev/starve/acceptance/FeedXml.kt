@@ -32,7 +32,7 @@ object FeedXml {
         val guid = if (spec.noGuid) "" else "<guid isPermaLink=\"false\">guid-$path-$n</guid>"
         val date = if (spec.noDate) "" else "<pubDate>${pubDate(n)}</pubDate>"
         val art = if (spec.coverArt) "<itunes:image href=\"${spec.coverArtUrl ?: "$baseUrl/art-$n.jpg"}\"/>" else ""
-        val title = spec.itemTitle ?: "Entry $n"
+        val title = spec.itemTitle ?: "${spec.title ?: "Entry"} $n"
         return "<item><title>$title</title>$linkTag$guid$date<author>a$n@example.com</author>" +
             "$art${media(spec)}${enclosure(spec)}${bodies(spec)}</item>"
     }

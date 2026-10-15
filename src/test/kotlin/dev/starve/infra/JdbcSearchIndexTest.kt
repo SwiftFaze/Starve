@@ -39,6 +39,7 @@ class JdbcSearchIndexTest {
             .load()
             .migrate()
         jdbc = JdbcClient.create(dataSource)
+        jdbc.seedOwners()
         val index = SearchIndex(jdbc)
         sources = JdbcSourceRepository(jdbc, index)
         items = JdbcItemRepository(jdbc, index)
@@ -60,13 +61,13 @@ class JdbcSearchIndexTest {
 
     private fun search(text: String): List<String> =
         searching
-            .search(SearchRules.matchExpression(text)!!, null, 100)
+            .search(OWNER, SearchRules.matchExpression(text)!!, null, 100)
             .map { it.title }
 
     private fun indexRows(): Long = jdbc.sql("SELECT COUNT(*) FROM item_search").query(Long::class.java).single()
 
     private fun insertedTeaserId(): Long {
-        val source = sources.insert("http://a.test/f", "Retro Weekly")
+        val source = sources.insert(OWNER, "http://a.test/f", "Retro Weekly")
         items.insertNew(source.id, listOf(feedItem("k1", "Teaser post", "<p>Short teaser</p>")), now)
         return jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
     }
@@ -92,7 +93,7 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `an inserted item is searchable by title, source name and body text`() {
-        val source = sources.insert("http://a.test/f", "Retro Weekly")
+        val source = sources.insert(OWNER, "http://a.test/f", "Retro Weekly")
         items.insertNew(source.id, listOf(feedItem("k1", "Weekend post", "<p>All about <em>zeppelins</em></p>")), now)
 
         assertEquals(listOf("Weekend post"), search("weekend"))
@@ -103,7 +104,7 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `a body filled in by a later fetch is indexed once and then kept`() {
-        val source = sources.insert("http://a.test/f", "Blog")
+        val source = sources.insert(OWNER, "http://a.test/f", "Blog")
         items.insertNew(source.id, listOf(feedItem("k1", "Post")), now)
         items.insertNew(source.id, listOf(feedItem("k1", "Post", "<p>Second zeppelin</p>")), now)
         items.insertNew(source.id, listOf(feedItem("k1", "Post", "<p>Third dirigible</p>")), now)
@@ -115,7 +116,7 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `renaming a source moves its items to the new name`() {
-        val source = sources.insert("http://a.test/f", "Old Name")
+        val source = sources.insert(OWNER, "http://a.test/f", "Old Name")
         items.insertNew(source.id, listOf(feedItem("k1", "Episode")), now)
 
         sources.recordSuccess(source.id, "Brand New", Validators(), now)
@@ -126,7 +127,7 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `retention removes deleted items from the index`() {
-        val source = sources.insert("http://a.test/f", "Daily")
+        val source = sources.insert(OWNER, "http://a.test/f", "Daily")
         items.insertNew(source.id, listOf(feedItem("old", "Ancient")), now.minusSeconds(90L * 86400))
         items.insertNew(source.id, listOf(feedItem("new", "Fresh")), now)
 
@@ -138,11 +139,11 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `retention keeps a favourite searchable and drops an unstarred item of the same age`() {
-        val source = sources.insert("http://a.test/f", "Daily")
+        val source = sources.insert(OWNER, "http://a.test/f", "Daily")
         val old = now.minusSeconds(90L * 86400)
         items.insertNew(source.id, listOf(feedItem("kept", "Treasured"), feedItem("lost", "Forgotten")), old)
-        val keptId = searching.search(SearchRules.matchExpression("treasured")!!, null, 10).single().id
-        favourites.favourite(keptId, now)
+        val keptId = searching.search(OWNER, SearchRules.matchExpression("treasured")!!, null, 10).single().id
+        favourites.favourite(OWNER, keptId, now)
 
         items.deleteFirstSeenBefore(now.minusSeconds(30L * 86400))
 
@@ -152,11 +153,11 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `retention keeps an item saved for later searchable and drops an unsaved item of the same age`() {
-        val source = sources.insert("http://a.test/f", "Daily")
+        val source = sources.insert(OWNER, "http://a.test/f", "Daily")
         val old = now.minusSeconds(90L * 86400)
         items.insertNew(source.id, listOf(feedItem("kept", "Queued"), feedItem("lost", "Forgotten")), old)
-        val keptId = searching.search(SearchRules.matchExpression("queued")!!, null, 10).single().id
-        later.save(keptId, now)
+        val keptId = searching.search(OWNER, SearchRules.matchExpression("queued")!!, null, 10).single().id
+        later.save(OWNER, keptId, now)
 
         items.deleteFirstSeenBefore(now.minusSeconds(30L * 86400))
 
@@ -166,24 +167,24 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `a search result carries the later flag`() {
-        val source = sources.insert("http://a.test/f", "Daily")
+        val source = sources.insert(OWNER, "http://a.test/f", "Daily")
         items.insertNew(source.id, listOf(feedItem("a", "Queued"), feedItem("b", "Queued too")), now)
         val match = SearchRules.matchExpression("queued")!!
-        later.save(searching.search(match, null, 10).first { it.title == "Queued" }.id, now)
+        later.save(OWNER, searching.search(OWNER, match, null, 10).first { it.title == "Queued" }.id, now)
 
-        val flags = searching.search(match, null, 10).associate { it.title to it.later }
+        val flags = searching.search(OWNER, match, null, 10).associate { it.title to it.later }
 
         assertEquals(mapOf("Queued" to true, "Queued too" to false), flags)
     }
 
     @Test
     fun `removing a source removes its items from the index`() {
-        val gone = sources.insert("http://g.test/f", "Gone")
-        val kept = sources.insert("http://k.test/f", "Kept")
+        val gone = sources.insert(OWNER, "http://g.test/f", "Gone")
+        val kept = sources.insert(OWNER, "http://k.test/f", "Kept")
         items.insertNew(gone.id, listOf(feedItem("g", "Match here")), now)
         items.insertNew(kept.id, listOf(feedItem("k", "Match there")), now)
 
-        sources.delete(gone.id)
+        sources.delete(OWNER, gone.id)
 
         assertEquals(1L, indexRows())
         assertEquals(listOf("Match there"), search("match"))
@@ -191,15 +192,43 @@ class JdbcSearchIndexTest {
 
     @Test
     fun `search returns matches newest first with the page cursor applied`() {
-        val source = sources.insert("http://a.test/f", "Alpha")
+        val source = sources.insert(OWNER, "http://a.test/f", "Alpha")
         items.insertNew(source.id, listOf(feedItem("old", "Match old", publishedAt = now.minusSeconds(3600))), now)
         items.insertNew(source.id, listOf(feedItem("new", "Match new", publishedAt = now)), now)
         items.insertNew(source.id, listOf(feedItem("other", "Unrelated", publishedAt = now)), now)
 
-        val all = searching.search(SearchRules.matchExpression("match")!!, null, 10)
-        val afterNew = searching.search(SearchRules.matchExpression("match")!!, Cursor(now, all.first().id), 10)
+        val all = searching.search(OWNER, SearchRules.matchExpression("match")!!, null, 10)
+        val afterNew = searching.search(OWNER, SearchRules.matchExpression("match")!!, Cursor(now, all.first().id), 10)
 
         assertEquals(listOf("Match new", "Match old"), all.map { it.title })
         assertEquals(listOf("Match old"), afterNew.map { it.title })
+    }
+
+    @Test
+    fun `search only returns the owner's items, including matches on the source name`() {
+        val mine = sources.insert(OWNER, "http://a.test/f", "Zebra Weekly")
+        val theirs = sources.insert(OTHER, "http://b.test/f", "Zebra Daily")
+        items.insertNew(mine.id, listOf(feedItem("m", "Quantum mine")), now)
+        items.insertNew(theirs.id, listOf(feedItem("t", "Quantum theirs")), now)
+        val quantum = SearchRules.matchExpression("quantum")!!
+        val zebra = SearchRules.matchExpression("zebra")!!
+
+        assertEquals(listOf("Quantum mine"), searching.search(OWNER, quantum, null, 10).map { it.title })
+        assertEquals(listOf("Quantum theirs"), searching.search(OTHER, quantum, null, 10).map { it.title })
+        assertEquals(listOf("Quantum mine"), searching.search(OWNER, zebra, null, 10).map { it.title })
+        assertEquals(emptyList<String>(), searching.search(3, quantum, null, 10).map { it.title })
+    }
+
+    @Test
+    fun `deleting an owner removes their items from the index and nobody else's`() {
+        val mine = sources.insert(OWNER, "http://a.test/f", "Mine")
+        val theirs = sources.insert(OTHER, "http://b.test/f", "Theirs")
+        items.insertNew(mine.id, listOf(feedItem("m", "Match mine")), now)
+        items.insertNew(theirs.id, listOf(feedItem("t", "Match theirs")), now)
+
+        jdbc.sql("DELETE FROM users WHERE id = ?").param(OTHER).update()
+
+        assertEquals(1L, indexRows())
+        assertEquals(listOf("Match mine"), search("match"))
     }
 }

@@ -179,13 +179,7 @@ class MediaDetailSteps {
 
     private fun artwork(): String = group(ARTWORK)
 
-    private fun itemId(title: String): Long =
-        app
-            .jdbc()
-            .sql("SELECT id FROM items WHERE title = ?")
-            .param(title)
-            .query(Long::class.java)
-            .single()
+    private fun itemId(title: String): Long = app.itemId(title)
 
     private companion object {
         val TITLE = Regex("<h2 class=\"reader-title\"[^>]*>(.*?)</h2>", RegexOption.DOT_MATCHES_ALL)

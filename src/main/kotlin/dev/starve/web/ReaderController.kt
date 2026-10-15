@@ -34,10 +34,11 @@ class ReaderController(
     /** The reader fragment of a blog post; requesting it marks the item read. */
     @GetMapping("/items/{id}/reader")
     fun reader(
+        @CurrentUserId owner: Long,
         @PathVariable id: Long,
         model: Model,
     ): String {
-        val post = reader.open(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val post = reader.open(owner, id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         model.addAttribute("post", post.toView())
         model.addAttribute("star", StarView("reader-star", post.id, post.favourite, fromReader = true))
         model.addAttribute("laterToggle", LaterView("reader-later", post.id, post.later, from = "reader"))
