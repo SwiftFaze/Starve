@@ -3967,11 +3967,26 @@ body.dealing #series .series-meta {
   }
 }
 
-/* The obi's name and meta slide in from its left edge (the band clips them on the way in). */
+/* The obi's name and meta slide in along the band: up from its foot on a desktop, where the band
+   stands upright, and in from its left edge on a phone, where it lies across (it clips them on the way). */
 @keyframes series-in {
   from {
     opacity: 0;
+    translate: 0 110%;
+  }
+}
+
+@keyframes series-in-across {
+  from {
+    opacity: 0;
     translate: -110% 0;
+  }
+}
+
+@media (max-width: 60rem) {
+  body.dealing #series .series,
+  body.dealing #series .series-meta {
+    animation-name: series-in-across;
   }
 }
 
