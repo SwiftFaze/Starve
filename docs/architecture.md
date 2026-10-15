@@ -9,7 +9,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
 `src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, V12 is `item_later`, V13 is `users`, so the next migration number is V14. Actuator exposes only
-`/actuator/health`. Every other route needs a signed-in user; accounts live in the `users` table (migration V13), see `SecurityConfig` and `SetupService`.
+`/actuator/health`. The public routes are `/` (the landing page, `LandingController`; a signed-in visitor is redirected to `/feed` with the query string kept), `/login`, `/setup` and static assets. Every other route needs a signed-in user; the timeline lives at `/feed`, sign-in and setup land there, and logout (`POST /logout`, a form in the shared `signout` fragment of the top bar) lands on `/`; accounts live in the `users` table (migration V13), see `SecurityConfig` and `SetupService`.
 Until the first account exists, `/setup` is the only open page: a code logged at startup gates it, and wrong codes are throttled per client address (`FailureThrottle`, in memory). Sign-ins can be remembered; the remember-me signing key is generated once and stored as plaintext in `app_metadata` (an accepted trade-off: the database file already holds everything the key protects), so remembered sign-ins survive restarts. `server.forward-headers-strategy: native` makes the client address and scheme come from `X-Forwarded-*` headers behind a reverse proxy.
 
 ## Modules
@@ -64,7 +64,7 @@ only translates requests and formats views.
 Favourites: `items.favourited_at` (V9, nullable; the timestamp is the mark) flags a
 favourite. `FavouriteService` (wired by `FavouriteConfig`) stars and unstars through
 `FavouriteRepository.favourite`/`unfavourite`, both idempotent and independent of read state.
-`TimelineService.favourites` serves the `/?favourites=1` view through
+`TimelineService.favourites` serves the `/feed?favourites=1` view through
 `FavouriteRepository.favourites`, which ignores read state, show and group. The retention
 exemption lives in the SQL of `deleteFirstSeenBefore` (`favourited_at IS NULL`), and
 removing a source deletes its favourites through the items' `ON DELETE CASCADE`.
@@ -75,7 +75,7 @@ flags an item saved for later, independent of `favourited_at` and read state.
 `LaterService` (wired by `LaterConfig`, separate from `TimelineService`) saves and clears
 through `LaterRepository.save`/`clear`, both idempotent; `save` uses
 `COALESCE(later_at, ?)` so a re-save keeps the original time. `LaterService.page` serves
-`/?later=1` through `LaterRepository.later` (implemented by `JdbcLaterRepository`), a keyset
+`/feed?later=1` through `LaterRepository.later` (implemented by `JdbcLaterRepository`), a keyset
 page ordered `later_at ASC, id ASC` via `LaterCursor`, ignoring read state, show and group.
 The retention exemption sits in `deleteFirstSeenBefore` (`later_at IS NULL`, alongside
 favourites). `LaterController` answers htmx toggles with the re-rendered `LaterView`; a

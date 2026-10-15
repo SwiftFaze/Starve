@@ -14,7 +14,9 @@ Needs JDK 21+.
 ./mvnw spring-boot:run
 ```
 
-Open <http://localhost:8080>. The database is `./data/starve.db` (override with
+Open <http://localhost:8080>: a public landing page with a **Sign in** link. Once
+signed in you land on the timeline at `/feed`, and **Sign out** in the top bar
+returns you to the landing page. The database is `./data/starve.db` (override with
 `STARVE_DB_PATH` or `--starve.db.path`).
 
 ## First run: create the admin account
@@ -76,7 +78,7 @@ and keeps their items.
 
 ## Reading the timeline
 
-The home page (`/`) lists every unread item from all sources, newest first, 50 at
+The timeline (`/feed`) lists every unread item from all sources, newest first, 50 at
 a time with a **Load more** link. Opening an item marks it read and goes to its
 link (blog posts open in the reader pane instead, see below); the mark-read button
 marks it without opening. **Mark all read** marks
@@ -85,7 +87,7 @@ unread. **Show read** adds already-read items back to the list. Read items are
 kept until the retention age removes them.
 
 Above the list, a navigation shows **All** and each group (alphabetical) with its
-unread count, e.g. `Music (12)`. Choosing a group (`/?group=<id>`) shows only its
+unread count, e.g. `Music (12)`. Choosing a group (`/feed?group=<id>`) shows only its
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.
 
@@ -93,7 +95,7 @@ sources' items with the same order, paging and read state; **Mark all read** and
 
 Each timeline row and the reader pane has a star. Starring an item keeps it: the
 retention purge never deletes a favourite, and starring does not change whether
-the item is read. **Favourites** in the navigation (`/?favourites=1`) lists the
+the item is read. **Favourites** in the navigation (`/feed?favourites=1`) lists the
 starred items of every source, read or not, newest first, with the same paging.
 Clicking the star again removes the favourite. Removing a source deletes its
 favourites with the rest of its items.
@@ -101,7 +103,7 @@ favourites with the rest of its items.
 ## Later
 
 Each timeline row, the reader pane and the detail view have a clock (⏲) that saves the
-item for later. **Later** in the navigation (`/?later=1`, after Favourites) lists the
+item for later. **Later** in the navigation (`/feed?later=1`, after Favourites) lists the
 saved items of every source, read or not, earliest saved first, 50 at a time with
 **Load more**; it has no **Show read** or **Mark all read**. Saving does not change
 whether the item is read or a favourite, and opening, reading or playing it leaves it
@@ -118,7 +120,7 @@ source's name or their post body (the text only; markup is ignored). Every word
 you type must match, and the last word also matches as a prefix, so results
 appear while you type. Results are newest first and include read items; the group
 and **Show read** settings do not apply, and there is no **Mark all read**. The
-URL (`/?q=...`) can be bookmarked, and **Load more** keeps the search. Search
+URL (`/feed?q=...`) can be bookmarked, and **Load more** keeps the search. Search
 syntax such as `OR` or `-word` is not interpreted: those are ordinary words.
 Items stored before this feature are indexed automatically on upgrade.
 
