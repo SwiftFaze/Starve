@@ -41,6 +41,16 @@ and a password and is signed in with their own empty account (never an admin).
 Turn the switch off again when they are in. Failed signup attempts are throttled
 per client address.
 
+### Passwords and removing a user
+
+Everyone can change their own password on **Account** (top bar): enter the
+current one and a new one. If a friend forgets theirs, open **Settings** as the
+admin and press **Reset password** next to their name: Starve shows a temporary
+password once, which you hand over; they sign in with it and change it on
+**Account**. To remove a friend, press **Delete** in the same list and confirm:
+their sources, groups and items go with them, and any session they still have is
+signed out. You cannot reset or delete your own account.
+
 ## Subscribing to feeds
 
 Open **Sources** (<http://localhost:8080/sources>) and paste a feed URL, or just

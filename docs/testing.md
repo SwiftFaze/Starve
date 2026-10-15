@@ -50,6 +50,8 @@ otherwise reuse a context built before the mutant was applied, and
 mutants in the chain's configuration would survive. Put new sign-in, CSRF,
 throttle or gate behaviour here as well as in a scenario.
 
+Scenarios that need a second client (a deleted user's remember-me cookie, say) use `ApplicationHarness.rememberedBrowser(username)`, which logs in ticking Remember me and then drops the session; the result is kept in `World.secondBrowser`.
+
 ## Gates
 
 - Coverage: JaCoCo, minimum 85% line (`.claude/workflow.md`, Constraints).
