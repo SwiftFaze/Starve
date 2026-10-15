@@ -926,6 +926,8 @@ button.toggle[aria-pressed="true"]:hover {
   display: flex;
   align-items: center;
   gap: 1rem;
+  /* As tall as its buttons whether a view has them or not, so switching views never moves the title. */
+  min-height: calc(2.25rem + 1rem + 1px);
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--text);
   position: relative;
@@ -2140,7 +2142,14 @@ a.title:hover {
 @container sheet (max-width: 44rem) {
   .sheet-head {
     flex-wrap: wrap;
+    align-content: flex-start;
     row-gap: 0.75rem;
+  }
+
+  .sheet-head .sheet-title {
+    min-height: 2.25rem;
+    display: flex;
+    align-items: center;
   }
 
   .view-actions {
@@ -3371,12 +3380,44 @@ body[data-split][data-list="strip"] .load-more {
     border-right: 0;
   }
 
+  /* One fixed height whatever the view's name and meta, so switching views never moves the sheet. */
   .series-block {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    height: auto;
-    padding: 0.625rem var(--gutter);
+    height: 4.5rem;
+    padding: 0 var(--gutter);
+  }
+
+  .series-block .series {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+    font-size: clamp(1rem, 6vw, 1.75rem);
+  }
+
+  /* The name comes first; the meta takes what is left, a line per item, in the obi's small mono. */
+  .series-block {
+    gap: 0.75rem;
+  }
+
+  .series-block .series {
+    flex: 0 1 auto;
+    font-size: clamp(0.875rem, 5.2vw, 1.75rem);
+  }
+
+  .series-block .series-meta {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: 0.625rem;
+    line-height: 1.15;
+  }
+
+  .series-block .series-meta > * {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .series {
