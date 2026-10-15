@@ -1,7 +1,9 @@
 package dev.starve.infra
 
+import dev.starve.application.UserAdminRepository
 import dev.starve.application.UserRepository
 import dev.starve.domain.User
+import dev.starve.domain.UserAccount
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
@@ -10,7 +12,8 @@ import java.time.Instant
 @Repository
 class JdbcUserRepository(
     private val jdbc: JdbcClient,
-) : UserRepository {
+) : UserRepository,
+    UserAdminRepository {
     override fun exists(): Boolean =
         jdbc
             .sql("SELECT COUNT(*) FROM users")
@@ -68,6 +71,43 @@ class JdbcUserRepository(
             .optional()
             .map { User(it, username, passwordHash, admin = false) }
             .orElse(null)
+
+    override fun listAll(): List<UserAccount> =
+        jdbc
+            .sql("SELECT id, username, admin, created_at FROM users ORDER BY created_at, id")
+            .query { rs, _ ->
+                UserAccount(
+                    rs.getLong("id"),
+                    rs.getString("username"),
+                    rs.getInt("admin") == 1,
+                    Instant.ofEpochMilli(rs.getLong("created_at")),
+                )
+            }.list()
+
+    override fun findById(id: Long): User? =
+        jdbc
+            .sql("SELECT id, username, password_hash, admin FROM users WHERE id = ?")
+            .param(id)
+            .query { rs, _ -> rs.toUser() }
+            .optional()
+            .orElse(null)
+
+    override fun updatePasswordHash(
+        id: Long,
+        passwordHash: String,
+    ) {
+        jdbc
+            .sql("UPDATE users SET password_hash = ? WHERE id = ?")
+            .params(passwordHash, id)
+            .update()
+    }
+
+    /** The sources, groups and items of the user go with them through the foreign keys' ON DELETE CASCADE. */
+    override fun delete(id: Long): Boolean =
+        jdbc
+            .sql("DELETE FROM users WHERE id = ?")
+            .param(id)
+            .update() == 1
 }
 
 private fun ResultSet.toUser() =

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account - Starve</title>
+  <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/starve.css">
+  <script src="/htmx.min.js"></script>
+</head>
+<body>
+  <header class="bar" id="bar">
+    <p class="wordmark"><a href="/feed">Starve</a></p>
+    <nav class="pages" aria-label="Pages">
+      <a class="tab" href="/feed">Timeline</a>
+      <a class="tab" href="/sources">Sources</a>
+    </nav>
+    <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
+  </header>
+
+  <div class="label">
+    <aside class="sleeve" aria-label="Account">
+      <div class="series-block">
+        <h1 class="series roster-name">Account</h1>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
+      </div>
+
+      <p id="message" class="message" role="status" th:if="${changed}">Password changed</p>
+      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Current password is incorrect</p>
+
+      <form class="add" method="post" th:action="@{/account/password}">
+        <label class="field-label" for="current-password">Current password</label>
+        <div class="field-row">
+          <input class="field" id="current-password" type="password" name="currentPassword"
+                 autocomplete="current-password" required>
+        </div>
+
+        <label class="field-label" for="new-password">New password</label>
+        <div class="field-row">
+          <input class="field" id="new-password" type="password" name="newPassword" autocomplete="new-password"
+                 aria-describedby="password-hint" required>
+          <button type="submit">Change password</button>
+        </div>
+        <p class="hint" id="password-hint">At least 10 characters</p>
+      </form>
+    </aside>
+
+    <main class="sheet" id="sheet">
+      <p class="sheet-note">Signed in as <strong th:text="${username}">rob</strong>.</p>
+    </main>
+  </div>
+</body>
+</html>

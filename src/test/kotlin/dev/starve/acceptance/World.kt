@@ -18,6 +18,12 @@ object World {
         )
     var feeds: FeedServer? = null
 
+    /** The client holding only a remember-me cookie, when a scenario made one. */
+    var secondBrowser: ApplicationHarness.Browser? = null
+
+    /** The temporary passwords the admin was shown, oldest first. */
+    val temporaryPasswords = mutableListOf<String>()
+
     /** The latest HTTP response, whichever step class made the request. */
     lateinit var response: HttpResponse<String>
 

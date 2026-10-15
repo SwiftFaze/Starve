@@ -399,12 +399,15 @@ input[type="file"].field::file-selector-button {
   margin-left: 0;
 }
 
-/* The admin-only Settings link sits just left of Sign out, taking over its push to the right edge. */
-.settings-link {
+/* The Account link (every user) leads the account actions and takes the push to the right edge; the admin-only
+   Settings link and Sign out follow it. */
+.account-link {
   margin-left: auto;
 }
 
-.search + .settings-link,
+.search + .account-link,
+.account-link + .settings-link,
+.account-link + .signout,
 .settings-link + .signout {
   margin-left: 0;
 }
@@ -1776,6 +1779,40 @@ body.resizing .ratio-16x9 iframe {
   grid-template-columns: minmax(0, 1fr) 8rem auto;
 }
 
+/* Settings user list: the name and its marks, the created date, then the actions (none on the admin's own row). */
+.roster > .user {
+  grid-template-columns: minmax(0, 1fr) 9rem auto;
+}
+
+.user .name {
+  font: 500 1rem/1.35 var(--read);
+  overflow-wrap: anywhere;
+}
+
+.user .badge,
+.user .you {
+  margin-left: 0.5rem;
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.user .created {
+  font: 400 0.75rem/1.4 var(--mono);
+  color: var(--text-2);
+}
+
+.user .actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user .actions form {
+  margin: 0;
+}
+
 .roster > .group form {
   margin: 0;
 }
@@ -1948,7 +1985,8 @@ body.resizing .ratio-16x9 iframe {
   }
 
   .roster > .source,
-  .roster > .group {
+  .roster > .group,
+  .roster > .user {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: none;
   }

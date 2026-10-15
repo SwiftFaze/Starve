@@ -14,6 +14,14 @@ data class User(
     val admin: Boolean,
 )
 
+/** A user as the admin's list shows them: no password hash. */
+data class UserAccount(
+    val id: Long,
+    val username: String,
+    val admin: Boolean,
+    val createdAt: Instant,
+)
+
 /** Username and password rules, and the messages shown when a rule fails. */
 object AccountRules {
     const val USERNAME_ERROR = "Username must be 3-32 letters, digits, '.', '_' or '-'"
@@ -23,6 +31,7 @@ object AccountRules {
     const val TOO_MANY_ATTEMPTS = "Too many failed attempts. Try again later."
     const val USERNAME_TAKEN = "That username is already taken"
     const val INVALID_SETUP_CODE = "Invalid setup code"
+    const val CURRENT_PASSWORD_WRONG = "Current password is incorrect"
 
     private const val MIN_PASSWORD_CHARS = 10
     private const val MAX_PASSWORD_BYTES = 72
@@ -40,9 +49,22 @@ object AccountRules {
         }
 }
 
-/** The one-time setup code: `XXXX-XXXX` from an alphabet without the look-alikes 0, O, 1, I and L. */
+/** The characters of setup codes and temporary passwords: no look-alikes 0, O, 1, I or L. */
+private const val ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+
+/** The password an admin hands out on a reset: `XXXX-XXXX-XXXX-XXXX` from the setup-code alphabet. */
+object TemporaryPasswordRules {
+    private const val GROUPS = 4
+    private const val GROUP_SIZE = 4
+
+    fun generate(random: SecureRandom): String =
+        (1..GROUPS).joinToString("-") {
+            String(CharArray(GROUP_SIZE) { ALPHABET[random.nextInt(ALPHABET.length)] })
+        }
+}
+
+/** The one-time setup code: `XXXX-XXXX` from the [ALPHABET]. */
 object SetupCodeRules {
-    private const val ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
     private const val HALF = 4
 
     fun generate(random: SecureRandom): String {

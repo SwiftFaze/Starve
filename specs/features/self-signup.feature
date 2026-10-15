@@ -56,8 +56,8 @@ Feature: Self-service signup, switched on and off by an admin in Settings
       Out of scope "signup (#44)" may be reworded to "signup is
       self-signup.feature"; no scenario changes (seeding keeps using the
       user repository).
-  Out of scope: user list, admin password reset, user deletion, changing
-  one's own password (#45); email verification, invitations, per-signup
+  Out of scope: (delivered elsewhere: user list, admin password reset and deletion in user-management.feature, changing
+  one's own password in account-password.feature); email verification, invitations, per-signup
   approval; promoting a user to admin. Browser look and feel of the Settings
   switch and the 375px layout are settled at the human playtest; scenarios pin
   structure and key terms only.
@@ -410,7 +410,7 @@ Feature: Self-service signup, switched on and off by an admin in Settings
     Then the response redirects to "/feed"
 
   # Non-goals:
-  #   - User list, admin reset/delete, own password change (#45).
+  #   - User list, admin reset/delete (user-management.feature), own password change (account-password.feature).
   #   - Promotion to admin; invitations, approval queues, email checks.
   #   - Real browser behaviour of the Settings switch and the sign-up pages
   #     (look, 375px layout): human playtest.

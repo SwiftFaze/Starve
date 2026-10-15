@@ -35,7 +35,7 @@ class PerUserSteps {
     // ---- requests aimed at one row by its id ---------------------------------------------
 
     /** The `{id}` in [path] is replaced by the id of the [kind] named [name], whichever user owns it. */
-    @When("^I (GET|POST) \"([^\"]*)\" with the id of the (item|source|group) \"([^\"]*)\"$")
+    @When("^I (GET|POST) \"([^\"]*)\" with the id of the (item|source|group|user) \"([^\"]*)\"$")
     fun requestWithId(
         method: String,
         path: String,
@@ -114,6 +114,7 @@ class PerUserSteps {
     ): Long =
         when (kind) {
             "item" -> app.itemId(name)
+            "user" -> app.userId(name)
             "source" -> app.sourceId(name)
             else -> app.groupId(name)
         }

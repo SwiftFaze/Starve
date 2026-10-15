@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.domain.User
+import dev.starve.domain.UserAccount
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,6 +32,7 @@ class JdbcAccountRepositoriesTest {
         Flyway
             .configure()
             .dataSource(dataSource)
+            .javaMigrations(SearchIndexMigration())
             .load()
             .migrate()
         jdbc = JdbcClient.create(dataSource)
@@ -107,6 +109,56 @@ class JdbcAccountRepositoriesTest {
 
         assertFalse(users.insertFirstAdmin("eve", "other", now))
         assertNull(users.findByUsername("eve"))
+    }
+
+    @Test
+    fun `the list is every account, oldest first, ties by id, without hashes`() {
+        users.insertFirstAdmin("rob", "hash", now)
+        users.insert("late", "h", now.plusSeconds(60))
+        users.insert("tie-a", "h", now.plusSeconds(10))
+        users.insert("tie-b", "h", now.plusSeconds(10))
+
+        assertEquals(
+            listOf("rob", "tie-a", "tie-b", "late"),
+            users.listAll().map { it.username },
+        )
+        assertEquals(UserAccount(1, "rob", true, now), users.listAll().first())
+        assertEquals(UserAccount(2, "late", false, now.plusSeconds(60)), users.listAll().last { it.id == 2L })
+    }
+
+    @Test
+    fun `a user is found by id or not at all`() {
+        users.insertFirstAdmin("rob", "hash", now)
+
+        assertEquals(User(1, "rob", "hash", admin = true), users.findById(1))
+        assertNull(users.findById(2))
+    }
+
+    @Test
+    fun `updating a hash changes that user only`() {
+        users.insertFirstAdmin("rob", "hash", now)
+        users.insert("amy", "h2", now)
+
+        users.updatePasswordHash(2, "new")
+
+        assertEquals("new", users.findById(2)!!.passwordHash)
+        assertEquals("hash", users.findById(1)!!.passwordHash)
+    }
+
+    @Test
+    fun `deleting a user removes them and their data and reports whether anyone was there`() {
+        users.insertFirstAdmin("rob", "hash", now)
+        users.insert("amy", "h2", now)
+        jdbc.sql("INSERT INTO sources (owner_id, url, title) VALUES (2, 'http://a.test/f', 'A')").update()
+        jdbc.sql("INSERT INTO groups (owner_id, name) VALUES (2, 'G')").update()
+        jdbc.sql("INSERT INTO sources (owner_id, url, title) VALUES (1, 'http://r.test/f', 'R')").update()
+
+        assertTrue(users.delete(2))
+        assertFalse(users.delete(2))
+
+        assertNull(users.findById(2))
+        assertEquals(1L, jdbc.sql("SELECT COUNT(*) FROM sources").query(Long::class.java).single())
+        assertEquals(0L, jdbc.sql("SELECT COUNT(*) FROM groups").query(Long::class.java).single())
     }
 
     @Test

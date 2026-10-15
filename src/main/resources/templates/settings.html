@@ -38,7 +38,24 @@
     </aside>
 
     <main class="sheet" id="sheet">
-      <p class="sheet-note">Settings that apply to the whole instance. Only admins see this page.</p>
+      <p class="message" id="notice" role="status" th:if="${notice}" th:text="${notice}">Deleted user friend</p>
+      <h2 class="sheet-title">Users</h2>
+      <ul id="user-list" class="roster">
+        <li class="user" th:each="user : ${users}" th:attr="data-username=${user.username}">
+          <div class="body">
+            <strong class="name" th:text="${user.username}">rob</strong>
+            <span class="badge" th:if="${user.admin}">Admin</span>
+            <span class="you" th:if="${user.you}">(you)</span>
+          </div>
+          <span class="created">Created <time th:datetime="${user.created}" th:text="${user.created}">2026-10-12</time></span>
+          <div class="actions" th:unless="${user.you}">
+            <form method="post" th:action="@{/settings/users/{id}/reset(id=${user.id})}">
+              <button type="submit">Reset password</button>
+            </form>
+            <a class="read-toggle" th:href="@{/settings/users/{id}/delete(id=${user.id})}">Delete</a>
+          </div>
+        </li>
+      </ul>
     </main>
   </div>
 </body>

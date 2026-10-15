@@ -21,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.security.web.csrf.CsrfFilter
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler
@@ -87,6 +88,7 @@ class SecurityConfig {
     @Bean
     fun securityFilterChain(
         http: HttpSecurity,
+        users: UserRepository,
         setup: SetupService,
         login: LoginAuthentication,
     ): SecurityFilterChain {
@@ -97,6 +99,7 @@ class SecurityConfig {
                     .csrfTokenRequestHandler(CsrfTokenRequestAttributeHandler())
             }.addFilterAfter(CsrfCookieWriter(), CsrfFilter::class.java)
             .addFilterBefore(SetupGate(setup), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAfter(DeletedUserFilter(users), RememberMeAuthenticationFilter::class.java)
             .authorizeHttpRequests { authorise(it) }
             .authenticationManager(login.manager)
             .formLogin { configureFormLogin(it) }

@@ -149,6 +149,11 @@ class AccountSteps {
         assertEquals(1, admin)
     }
 
+    @Then("the stored password of {string} is a BCrypt hash, not the temporary password")
+    fun storedPasswordIsHashedNotTemporary(username: String) {
+        storedPasswordIsHashed(username, World.temporaryPasswords.last())
+    }
+
     @Then("the stored password of {string} is a BCrypt hash, not {string}")
     fun storedPasswordIsHashed(
         username: String,
@@ -239,6 +244,11 @@ class AccountSteps {
     ) {
         assertEquals("Remember me", label)
         logInWith(app.browser, username, password, rememberMe = true)
+    }
+
+    @When("I log in as {string} with the temporary password")
+    fun logInWithTemporaryPassword(username: String) {
+        logInWith(app.browser, username, World.temporaryPasswords.last(), rememberMe = false)
     }
 
     @When("I log in as {string} with password {string} {int} times")

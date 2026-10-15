@@ -23,7 +23,7 @@ Feature: Per-user sources, groups and items
   single user "owner" (see accounts-login.feature) and so see only their own
   data. The accounts-login.feature non-goal "every signed-in user still sees
   the one shared dataset" no longer holds.
-  Out of scope: signup (self-signup.feature); user deletion UI and account pages (#45);
+  Out of scope: signup (self-signup.feature); the user deletion UI (user-management.feature) and account pages (account-password.feature);
   sharing or de-duplicated fetching of a feed between users (a feed followed by
   two users is fetched twice); per-user retention; migrating a database that
   already holds sources or groups (fresh database, no backfill).
@@ -398,7 +398,7 @@ Feature: Per-user sources, groups and items
     Then the response status is 404
 
   # Non-goals:
-  #   - Signup (self-signup.feature), account pages and user deletion UI (#45); only the
+  #   - Signup (self-signup.feature), account pages (account-password.feature) and user deletion UI (user-management.feature); only the
   #     schema-level cascade on owner delete is specified here.
   #   - De-duplicating or sharing fetches of a feed followed by two users.
   #   - Per-user retention or per-user poll schedules.
