@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.1.0-beta.14](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.13...v1.1.0-beta.14) (2026-10-15)
+
+
+### Features
+
+* deal the list in and slide the obi name up when changing group ([065f803](https://github.com/SwiftFaze/Starve/commit/065f80300882c79d53db03442e444bdfa8188d8e))
+* drag-to-split workspace, uniform Sources rows, post centre mode and reader fixes ([9a2e47b](https://github.com/SwiftFaze/Starve/commit/9a2e47ba5f0fcc343c5ba74f5ae8d852a306aa1c))
+* open a post's images large in a lightbox on click ([a0148bd](https://github.com/SwiftFaze/Starve/commit/a0148bd5cf4256dda2c4e8dc60c514aa49730894))
+* restore the open post, the paused player and the list scroll after a reload; show Read on an open post ([b228152](https://github.com/SwiftFaze/Starve/commit/b228152ba5f3332c155160db70dcb384d9b21fd5))
+* run the shutter on full-page switches (bar links, landing, sign in, sign out) ([6690837](https://github.com/SwiftFaze/Starve/commit/6690837c94a3f11ec68c76c4cefa90473078e91f))
+* tiled player workspace, redesigned visitor pages and an install guide ([c2e9e4d](https://github.com/SwiftFaze/Starve/commit/c2e9e4d0752f4b0e02da9fbfed9ab7314614a62c)), closes [#38](https://github.com/SwiftFaze/Starve/issues/38)
+
+
+### Bug Fixes
+
+* a double-click reset no longer flashes the list unless it folds ([72b6437](https://github.com/SwiftFaze/Starve/commit/72b64370a51dc784ee39a45860e52c92b6e3ff59))
+* animate only the list rows on a group change, not the sheet head ([a697cc0](https://github.com/SwiftFaze/Starve/commit/a697cc0d453d3d7e609133d89ed8ba225832ac91))
+* arm the group animation before the swap so rows never blink; obi text slides in from the side ([9b7d304](https://github.com/SwiftFaze/Starve/commit/9b7d3049cc3c0e151479f6c2a8d1cd0fd0c578d8))
+* centre the phone bar's icon buttons and keep search clear of sign out ([7645298](https://github.com/SwiftFaze/Starve/commit/7645298881c17428285563efa389fb19fc79025f))
+* give search its own full-width line on phones ([e1314ad](https://github.com/SwiftFaze/Starve/commit/e1314ad64ddfbe4fcaeace4330ba152230e56104))
+* keep /docs to self-hosting, real PiP host page, phone bar search fold ([b8247c6](https://github.com/SwiftFaze/Starve/commit/b8247c6e9065eac8b3ddb7817ad409be4a07fecc))
+* keep sheet titles still across views (fixed head and phone obi heights) ([7a7329c](https://github.com/SwiftFaze/Starve/commit/7a7329c1f8ff5d0a3bcd365850716560d3b1bdee))
+* keep the shutter panel and its text on screen across full-page switches ([faadef5](https://github.com/SwiftFaze/Starve/commit/faadef56986824cf07570568aa8c01fea8e770f5))
+* let inline code in posts wrap instead of running off the panel ([ed4ccca](https://github.com/SwiftFaze/Starve/commit/ed4ccca27d51aeb05621b0895b67df6739cf7307))
+* obi text rises along the upright band on desktop, slides across on phones ([dfbb6fc](https://github.com/SwiftFaze/Starve/commit/dfbb6fc2ec26aa0aab33fa01bb9b80c8177abb00))
+* phone layouts for Sources rows and the top bar ([595fa39](https://github.com/SwiftFaze/Starve/commit/595fa39acc8044971c832d1164f1c5f3f3aff0cd))
+* restore the deck's play/pause click handler ([6a7008b](https://github.com/SwiftFaze/Starve/commit/6a7008ba45c75126d415018da04296f59e41c5c3))
+* reveal a page under the shutter only once its fonts load; short tab titles ([9176149](https://github.com/SwiftFaze/Starve/commit/917614930b69e5957701ca73a82af0f11b77e325))
+* show the delete confirmation as the form's filled control, not obi red ([21d6d9d](https://github.com/SwiftFaze/Starve/commit/21d6d9d19e8960977b34d2651fdcf08f03e22e5d))
+
 ## [1.1.0-beta.13](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.12...v1.1.0-beta.13) (2026-10-15)
 
 
