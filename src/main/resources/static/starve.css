@@ -3333,52 +3333,19 @@ body[data-split][data-list="strip"] .load-more {
     min-height: 2.75rem;
   }
 
-  /* Search folds to a square magnifier at the end of the second line. In use it takes the whole line,
-     the page tabs stepping aside until it is empty and left again. */
+  /* Search is its own full-width line under the page tabs. */
   .search {
     order: 4;
-    position: relative;
-    margin-left: auto;
+    flex-basis: 100%;
+    margin: 0 0 0.625rem;
   }
 
-  .search .icon {
-    left: calc(50% - 0.4375rem);
-  }
-
-  .search input {
-    width: 2.75rem;
-    min-height: 2.75rem;
-    padding: 0;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-
-  .search input::placeholder {
-    color: transparent;
-  }
-
-  .bar:has(.search input:focus, .search input:not(:placeholder-shown)) .pages {
-    display: none;
-  }
-
-  .search:has(input:focus, input:not(:placeholder-shown)) {
-    flex: 1;
-    margin-left: 0;
-  }
-
-  .search:has(input:focus, input:not(:placeholder-shown)) .icon {
-    left: 0.75rem;
-  }
-
+  .search input,
   .search input:focus,
   .search input:not(:placeholder-shown) {
     width: 100%;
-    padding: 0 0.75rem 0 2.25rem;
-    cursor: text;
-  }
-
-  .search input:focus::placeholder {
-    color: var(--text-3);
+    min-height: 2.75rem;
+    font-size: 1rem;
   }
 
   .groups {
