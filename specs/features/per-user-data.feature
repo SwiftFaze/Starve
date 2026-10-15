@@ -9,7 +9,7 @@ Feature: Per-user sources, groups and items
   and items), with uniqueness (owner_id, url) for sources and (owner_id, name)
   for groups (still case-insensitive); the same URL or group name existing
   under two owners with independent items and read, favourite and later state;
-  every user-facing read scoped to the signed-in user: timeline "/" (unread,
+  every user-facing read scoped to the signed-in user: timeline "/feed" (unread,
   "Show read", groups, Favourites and Later filters), group navigation, the
   sources page, full-text search (the global item_search index filtered by
   owner), site icons; every write scoped likewise: add source, remove source,
@@ -81,19 +81,19 @@ Feature: Per-user sources, groups and items
     Given the source "Owner Blog" has an unread item "Owner post" published 2 days ago
     When I sign in as "alice"
     And the source "Alice Blog" has an unread item "Alice post" published 1 days ago
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline lists the items in this order
       | Alice post |
     And the response does not contain "Owner post"
     When I sign in as "owner"
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline lists the items in this order
       | Owner post |
     And the response does not contain "Alice post"
 
   Scenario: A new user starts with an empty timeline and no sources
     When I sign in as "alice"
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the page contains "No sources yet"
     When I request "/sources"
     Then the response status is 200
@@ -102,7 +102,7 @@ Feature: Per-user sources, groups and items
     Given the source "Owner Blog" has a read item "Owner read" published 2 days ago
     When I sign in as "alice"
     And the source "Alice Blog" has a read item "Alice read" published 1 days ago
-    And I request the home page "/?show=all"
+    And I request the home page "/feed?show=all"
     Then the timeline lists the items in this order
       | Alice read |
 
@@ -143,7 +143,7 @@ Feature: Per-user sources, groups and items
     And I have added the feed URL "/shared.xml"
     And I mark all items read
     And I sign in as "owner"
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline lists the items in this order
       | Shared 2 |
       | Shared 1 |
@@ -154,10 +154,10 @@ Feature: Per-user sources, groups and items
     When I sign in as "alice"
     And I have added the feed URL "/shared.xml"
     And I remove the source "Shared"
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the page contains "No sources yet"
     When I sign in as "owner"
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline lists the items in this order
       | Shared 2 |
       | Shared 1 |
@@ -183,7 +183,7 @@ Feature: Per-user sources, groups and items
     And I request "/sources"
     Then the sources page lists the group "News"
     And the sources page does not list the group "Music"
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the group navigation lists the entries
       | All (0)  |
       | News (0) |
@@ -240,10 +240,10 @@ Feature: Per-user sources, groups and items
     And I favourite the item "Owner post"
     When I sign in as "alice"
     And the source "Alice Blog" has an unread item "Alice post" published 1 days ago
-    And I request the home page "/?favourites=1"
+    And I request the home page "/feed?favourites=1"
     Then the timeline does not list "Owner post"
     When I favourite the item "Alice post"
-    And I request the home page "/?favourites=1"
+    And I request the home page "/feed?favourites=1"
     Then the timeline lists the items in this order
       | Alice post |
 
@@ -261,7 +261,7 @@ Feature: Per-user sources, groups and items
     And I save the item "Owner post" for later
     When I sign in as "alice"
     And the source "Alice Blog" has an unread item "Alice post" published 1 days ago
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline does not list "Owner post"
     And the timeline does not list "Alice post"
 
@@ -333,7 +333,7 @@ Feature: Per-user sources, groups and items
     And the source "Shared" has the favicon "https://example.test/icon.png"
     When I sign in as "alice"
     And the source "Shared" has an unread item "Alice post" published 1 days ago
-    And I request the home page "/"
+    And I request the home page "/feed"
     Then the timeline entry "Alice post" shows no site icon
     And the source "Shared" has no stored favicon and was never checked
 
@@ -387,7 +387,7 @@ Feature: Per-user sources, groups and items
       | method | path                |
       | POST   | /groups/{id}/rename |
       | POST   | /groups/{id}/delete |
-      | GET    | /?group={id}        |
+      | GET    | /feed?group={id}    |
 
   Scenario: Another user's item id answers exactly like an unknown id
     Given the source "Owner Blog" has an unread item "Owner post" published 1 days ago
