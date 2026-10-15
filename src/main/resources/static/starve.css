@@ -3133,11 +3133,6 @@ body[data-split][data-list="strip"] .load-more {
     min-height: 2.5rem;
   }
 
-  /* With scripts, choosing a group files the source at once; Set group is for pages without them. */
-  .js .regroup button {
-    display: none;
-  }
-
   .sources-split .roster > .group {
     align-content: center;
   }
@@ -3279,12 +3274,13 @@ body[data-split][data-list="strip"] .load-more {
     --gutter: 1rem;
   }
 
-  /* The bar in three tidy lines: wordmark and account; pages and search; the group tabs. */
+  /* The bar in tidy lines: the wordmark with the account links on the right; the page tabs with search
+     on the right; then the group tabs (timeline only). */
   .bar {
-    position: static;
+    position: relative;
     flex-wrap: wrap;
-    gap: 0 1.25rem;
-    padding-top: 0.625rem;
+    gap: 0 1rem;
+    padding-top: 0.25rem;
   }
 
   .wordmark {
@@ -3294,31 +3290,58 @@ body[data-split][data-list="strip"] .load-more {
     align-items: center;
   }
 
-  .pages {
-    order: 0;
-    min-height: 2.75rem;
+  .bar-caption {
+    display: none;
   }
 
   .bar-actions {
-    order: 2;
-    gap: 1rem;
+    order: 1;
+    gap: 0.75rem;
+    margin-left: auto;
   }
 
-  /* Search folds to its magnifier and opens across the bar's second line while in use, so the
-     account links share that line with it. */
-  .search {
+  /* Sign out shrinks to a square exit icon, so the account links and the wordmark share one line. */
+  .bar-actions .signout button {
+    position: relative;
+    width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+
+  .bar-actions .signout button::before {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 2h7v2H4v8h5v2H2zM10 4.5l3.5 3.5-3.5 3.5V9H6V7h4z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 2h7v2H4v8h5v2H2zM10 4.5l3.5 3.5-3.5 3.5V9H6V7h4z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  /* A line break after the account links. */
+  .bar::after {
+    content: "";
     order: 2;
+    flex-basis: 100%;
+  }
+
+  .pages {
+    order: 3;
+    min-height: 2.75rem;
+  }
+
+  /* Search folds to its magnifier at the end of the second line, and opens across that line in use. */
+  .search {
+    order: 4;
     position: static;
-    margin-left: 0;
+    margin-left: auto;
   }
 
   .search .icon {
-    left: calc(var(--gutter) + 0.875rem);
+    left: auto;
+    right: calc(var(--gutter) + 0.875rem);
     z-index: 2;
-  }
-
-  .bar {
-    position: relative;
   }
 
   .search input {
@@ -3340,7 +3363,8 @@ body[data-split][data-list="strip"] .load-more {
     right: var(--gutter);
     z-index: 1;
     width: auto;
-    padding-left: 2.5rem;
+    padding-left: 0.75rem;
+    padding-right: 2.75rem;
     cursor: text;
   }
 
@@ -3348,19 +3372,8 @@ body[data-split][data-list="strip"] .load-more {
     color: var(--text-3);
   }
 
-  .bar-actions {
-    margin-left: auto;
-  }
-
-  /* A line break after the pages, so search and the account actions share the second line. */
-  .bar::after {
-    content: "";
-    order: 1;
-    flex-basis: 100%;
-  }
-
   .groups {
-    order: 3;
+    order: 5;
     flex-basis: 100%;
     min-height: 2.75rem;
     padding-left: 0;
@@ -3995,5 +4008,99 @@ body[data-reader-center] .reader-view .reader-head {
 
   .reader-head {
     transition: none;
+  }
+}
+
+/* With scripts, choosing a group files the source at once; Set group is for pages without them. */
+.js .regroup button {
+  display: none;
+}
+
+/* ---- Sources on a phone: stacked rows, one line of controls -------------------------------------- */
+
+@media (max-width: 60rem) {
+  .sources-split .subscriptions .roster > .source {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "cat"
+      "body"
+      "status"
+      "actions";
+    gap: 0.25rem;
+    margin: 0;
+    padding: 1rem 0;
+  }
+
+  .sources-split .subscriptions .source .cat {
+    padding-top: 0;
+  }
+
+  .sources-split .subscriptions .source .url,
+  .sources-split .subscriptions .source .error + .last-fetched {
+    display: none;
+  }
+
+  .sources-split .subscriptions .source .error {
+    margin: 0;
+  }
+
+  .sources-split .subscriptions .source .actions {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .sources-split .subscriptions .source .regroup {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sources-split .subscriptions .regroup .field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sources-split .subscriptions .source .feed-link {
+    width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .sources-split .subscriptions .source .actions button {
+    min-height: 2.75rem;
+  }
+
+  .sources-split .roster > .group {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "name name name"
+      "members rename delete";
+    gap: 0.5rem;
+    margin: 0;
+    padding: 1rem 0;
+  }
+
+  .sources-split .roster > .group > .members {
+    width: auto;
+    padding: 0;
+  }
+
+  .sources-split .roster > .group button {
+    min-height: 2.75rem;
+  }
+
+  .add-source .field-row {
+    flex-wrap: wrap;
+  }
+
+  .add-source .field-row .field {
+    flex-basis: 100%;
+  }
+
+  .add-source .field-row > button,
+  .add-source .field-row > .read-toggle {
+    flex: 1;
+    min-height: 2.75rem;
   }
 }

@@ -10,7 +10,7 @@
   <a class="tab settings-link" href="/settings" th:if="${admin}"
      th:attr="aria-current=${onSettings} ? 'page'">Settings</a>
   <form class="signout" method="post" th:action="@{/logout}">
-    <button type="submit">Sign out</button>
+    <button type="submit" aria-label="Sign out" title="Sign out">Sign out</button>
   </form>
 </div>
 </th:block>
