@@ -1650,7 +1650,7 @@ code {
   }
 }
 
-/* Confirming something that cannot be undone: the one destructive control, on the obi red. */
+/* Confirming something that cannot be undone: the form's one filled control. Red stays the obi's. */
 .confirm-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1660,14 +1660,13 @@ code {
 
 button.danger {
   min-height: 3rem;
-  border-color: var(--red);
-  background: var(--red);
-  color: var(--on-red);
+  background: var(--text);
+  color: var(--ground);
 }
 
 button.danger:hover {
   background: transparent;
-  color: var(--red-text);
+  color: var(--text);
 }
 
 /* A temporary password: large, reversed, easy to read out or copy. */
