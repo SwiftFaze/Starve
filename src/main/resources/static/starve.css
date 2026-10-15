@@ -3751,6 +3751,14 @@ body[data-reader-center] .reader-view .reader-head {
   max-width: 40rem;
 }
 
+/* Posts put whole sentences in inline code: there it wraps, each line keeping its reversed chip. */
+.reader-body :not(pre) > code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 .reader-body,
 .reader-empty {
   max-width: 40rem;

@@ -166,9 +166,11 @@ class JdbcRepositoriesTest {
         items.insertNew(source.id, listOf(post, item("bare", "bare")), Instant.EPOCH)
         val ids = jdbc.sql("SELECT id FROM items ORDER BY id").query(Long::class.java).list()
 
-        val expected = PostRef(ids[0], "http://a.test/p", "Post", "T", published, "<p>b</p>")
+        val expected =
+            PostRef(ids[0], "http://a.test/p", "Post", "T", published, "<p>b</p>", sourceUrl = "http://a.test/f")
         assertEquals(expected, items.findPost(OWNER, ids[0]))
-        assertEquals(PostRef(ids[1], null, "bare", "T", Instant.EPOCH, null), items.findPost(OWNER, ids[1]))
+        val bare = PostRef(ids[1], null, "bare", "T", Instant.EPOCH, null, sourceUrl = "http://a.test/f")
+        assertEquals(bare, items.findPost(OWNER, ids[1]))
         assertNull(items.findPost(OWNER, ids[1] + 1))
     }
 
@@ -504,7 +506,8 @@ class JdbcRepositoriesTest {
         val id = jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
 
         val thumbnail = "https://img.test/t.jpg"
-        val expected = DetailRef(id, link, "Track", "T", published, "Artist", thumbnail, "<p>b</p>", null)
+        val expected =
+            DetailRef(id, link, "Track", "T", published, "Artist", thumbnail, "<p>b</p>", null, sourceUrl = "http://a.test/f")
         assertEquals(expected, items.findDetail(OWNER, id))
         assertNull(items.findDetail(OWNER, id + 1))
     }

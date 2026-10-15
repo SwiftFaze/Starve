@@ -39,10 +39,10 @@ data class Seed(
     }
 }
 
-/** Steps for reader-pane.feature and media-detail-view.feature: seeding items and reading the reader fragment. */
 /** The reader's or detail view's link to the source's own feed. */
 private val FEED_LINK = Regex("<a[^>]*class=\"toggle feed-link\"[^>]*>")
 
+/** Steps for reader-pane.feature and media-detail-view.feature: seeding items and reading the reader fragment. */
 class ReaderSteps {
     private val app = World.app
 
