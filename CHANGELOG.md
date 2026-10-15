@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.11](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.10...v1.1.0-beta.11) (2026-10-15)
+
+
+### Features
+
+* self-service signup behind an admin switch ([#67](https://github.com/SwiftFaze/Starve/issues/67)) ([063e298](https://github.com/SwiftFaze/Starve/commit/063e298cb40d586244f3c24057856f1b397fac8b))
+
 ## [1.1.0-beta.10](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.9...v1.1.0-beta.10) (2026-10-15)
 
 
