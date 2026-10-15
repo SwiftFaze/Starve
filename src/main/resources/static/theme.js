@@ -280,13 +280,19 @@
     leave(label, form.getAttribute('action') || '/', function () { HTMLFormElement.prototype.submit.call(form); });
   });
 
+  // The page is shown, and the panel leaves, only once its fonts are in: otherwise the text would visibly
+  // jump as the web fonts swap in under a page that is already uncovered.
   document.addEventListener('DOMContentLoaded', function () {
     if (!arriving) return;
     var panel = shutter(arriving.label, '0%', 'Page', '→ ' + arriving.href);
-    delete root.dataset.shutter;
-    if (still()) { panel.remove(); return; }
-    busy = true;
-    sweepOut(panel).then(function () { busy = false; }, function () { busy = false; });
+    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    var timeout = new Promise(function (resolve) { setTimeout(resolve, 1500); });
+    Promise.race([fonts, timeout]).then(function () {
+      delete root.dataset.shutter;
+      if (still()) { panel.remove(); return; }
+      busy = true;
+      sweepOut(panel, 150).then(function () { busy = false; }, function () { busy = false; });
+    });
   });
 
   // The obi on the timeline is swapped by htmx, so its new switch is labelled again.
