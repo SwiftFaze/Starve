@@ -3294,7 +3294,8 @@ body[data-split][data-list="strip"] .load-more {
     display: none;
   }
 
-  .bar-actions {
+  .bar .bar-actions,
+  .bar .search + .bar-actions {
     order: 1;
     gap: 0.75rem;
     margin-left: auto;
@@ -3303,6 +3304,7 @@ body[data-split][data-list="strip"] .load-more {
   /* Sign out shrinks to a square exit icon, so the account links and the wordmark share one line. */
   .bar-actions .signout button {
     position: relative;
+    gap: 0;
     width: 2.75rem;
     min-height: 2.75rem;
     padding: 0;
@@ -3331,23 +3333,22 @@ body[data-split][data-list="strip"] .load-more {
     min-height: 2.75rem;
   }
 
-  /* Search folds to its magnifier at the end of the second line, and opens across that line in use. */
+  /* Search folds to a square magnifier at the end of the second line. In use it takes the whole line,
+     the page tabs stepping aside until it is empty and left again. */
   .search {
     order: 4;
-    position: static;
+    position: relative;
     margin-left: auto;
   }
 
   .search .icon {
-    left: auto;
-    right: calc(var(--gutter) + 0.875rem);
-    z-index: 2;
+    left: calc(50% - 0.4375rem);
   }
 
   .search input {
     width: 2.75rem;
     min-height: 2.75rem;
-    padding: 0 0 0 2.75rem;
+    padding: 0;
     font-size: 1rem;
     cursor: pointer;
   }
@@ -3356,15 +3357,23 @@ body[data-split][data-list="strip"] .load-more {
     color: transparent;
   }
 
+  .bar:has(.search input:focus, .search input:not(:placeholder-shown)) .pages {
+    display: none;
+  }
+
+  .search:has(input:focus, input:not(:placeholder-shown)) {
+    flex: 1;
+    margin-left: 0;
+  }
+
+  .search:has(input:focus, input:not(:placeholder-shown)) .icon {
+    left: 0.75rem;
+  }
+
   .search input:focus,
   .search input:not(:placeholder-shown) {
-    position: absolute;
-    left: var(--gutter);
-    right: var(--gutter);
-    z-index: 1;
-    width: auto;
-    padding-left: 0.75rem;
-    padding-right: 2.75rem;
+    width: 100%;
+    padding: 0 0.75rem 0 2.25rem;
     cursor: text;
   }
 
