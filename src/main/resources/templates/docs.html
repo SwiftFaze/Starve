@@ -99,6 +99,20 @@ java -jar target/starve-*.jar</code></pre>
               <code>./data/starve.db</code> from source. Point it elsewhere with <code>STARVE_DB_PATH</code>
               or <code>--starve.db.path</code>. To back up, stop Starve and copy that file.</p>
             <p>Items are kept 90 days. Favourites and items saved for Later are kept until you clear them.</p>
+
+            <h4>What Starve records</h4>
+            <ul>
+              <li>No analytics, no tracking and no ads. Every script and font is served by Starve itself.</li>
+              <li>No activity log. The server log holds the first-run setup code and nothing about what anyone
+                reads or watches.</li>
+              <li>What you read, star and save is stored in the database, because the feed needs it, and never
+                leaves your server.</li>
+              <li>The server only reaches out to fetch your sources: their feeds, article pages, icons and
+                SoundCloud track details.</li>
+              <li>In the browser, thumbnails and post images load straight from the sites that publish them, and
+                playing a video or track loads YouTube's privacy-enhanced player (<code>youtube-nocookie.com</code>)
+                or SoundCloud's widget, so that service sees the play.</li>
+            </ul>
           </section>
 
           <section id="config" aria-labelledby="config-title">

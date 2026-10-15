@@ -133,6 +133,13 @@ class MediaDetailSteps {
         assertTrue(tag.contains("hx-target=\"#reader\""), tag)
     }
 
+    @Then("the title of {string} requests its player into the deck via htmx")
+    fun titleRequestsPlayer(title: String) {
+        val tag = World.titleLink(title)
+        assertTrue(tag.contains("hx-get=\"/items/${itemId(title)}/player\""), tag)
+        assertTrue(tag.contains("hx-target=\"#dock\""), tag)
+    }
+
     @Then("the title of {string} does not request a detail view")
     fun titleDoesNotRequestDetail(title: String) = assertFalse(World.titleLink(title).contains("/detail\""), title)
 

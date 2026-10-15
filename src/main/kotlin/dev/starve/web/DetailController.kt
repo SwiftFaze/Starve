@@ -22,6 +22,7 @@ data class DetailView(
     val thumbnailUrl: String?,
     val description: String?,
     val link: String?,
+    val feedUrl: String? = null,
 )
 
 @Controller
@@ -53,5 +54,11 @@ class DetailController(
             thumbnailUrl,
             description,
             link,
+            sourceUrl?.takeIf { FEED_LINK.matches(it) },
         )
+
+    private companion object {
+        // The feed URL is stored as the user gave it, so it is only offered as an href when it is a plain web link.
+        val FEED_LINK = Regex("(?i)https?://.*")
+    }
 }

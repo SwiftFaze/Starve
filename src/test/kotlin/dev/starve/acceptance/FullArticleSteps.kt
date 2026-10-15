@@ -94,6 +94,16 @@ class FullArticleSteps {
     ) = serveHtml(path, page(article(length)))
 
     @Given(
+        "the feed server serves {string} as an HTML page whose article starts with the heading {string} " +
+            "and {int} characters of text",
+    )
+    fun articlePageWithTitle(
+        path: String,
+        heading: String,
+        length: Int,
+    ) = serveHtml(path, page("<article><h1>$heading</h1><p>${text(length)}</p></article>"))
+
+    @Given(
         "the feed server serves {string} as an HTML page with an article of {int} characters of text " +
             "and the og:image {string}",
     )

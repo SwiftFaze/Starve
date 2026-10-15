@@ -62,7 +62,7 @@
       <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>
     </aside>
 
-    <main class="sheet" id="sheet" tabindex="-1" th:fragment="sheet">
+    <main class="sheet" id="sheet" tabindex="-1" data-page="timeline" th:fragment="sheet">
       <div class="sheet-head">
         <h2 class="sheet-title" th:text="${searching} ? 'Search results' : (${favourites} ? 'Favourites' : (${later} ? 'Later' : (${showAll} ? 'All releases' : 'New releases')))">New releases</h2>
         <div class="view-actions" th:if="${hasSources and !favourites and !later}">
@@ -84,15 +84,15 @@
         <th:block th:fragment="more">
           <article th:each="item : ${items}" th:class="${item.read} ? 'item read' : 'item'"
                    th:attr="data-title=${item.title},data-item=${item.catalogueNumber}">
-            <span class="cat" th:text="${item.catalogueNumber}">STV 0132</span>
+            <span class="cat" th:text="${item.catalogueNumber}" th:title="${item.title}">STV 0132</span>
             <img class="thumb" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="" loading="lazy">
             <img class="site-icon" th:if="${item.thumbnailUrl == null and item.faviconUrl != null}"
                  th:src="${item.faviconUrl}" alt="" loading="lazy">
             <span class="blank" th:unless="${item.thumbnailUrl != null or item.faviconUrl != null}"></span>
             <div class="body">
               <a class="title" th:href="@{/items/{id}/open(id=${item.id})}" th:text="${item.title}"
-                 th:attr="hx-get=${item.playable} ? @{/items/{id}/detail(id=${item.id})} : @{/items/{id}/reader(id=${item.id})}"
-                 hx-target="#reader" hx-swap="innerHTML">Title</a>
+                 th:attr="hx-get=${item.playable} ? @{/items/{id}/player(id=${item.id})} : @{/items/{id}/reader(id=${item.id})},hx-target=${item.playable} ? '#dock' : '#reader'"
+                 hx-trigger="click[!target.closest('.playing')]" hx-swap="innerHTML">Title</a>
               <span class="source" th:text="${item.sourceTitle}">Source</span>
             </div>
             <time class="date" th:datetime="${item.publishedIso}" th:text="${item.published}">date</time>

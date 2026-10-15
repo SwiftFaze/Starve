@@ -8,6 +8,10 @@
     <span class="reader-cat" th:text="${detail.catalogueNumber}">STV 0132</span>
     <div class="reader-toggles">
       <th:block th:replace="~{later :: toggle}"></th:block>
+      <a class="toggle feed-link" th:if="${detail.feedUrl}" th:href="${detail.feedUrl}" target="_blank"
+         rel="noopener noreferrer" th:attr="aria-label=|Open the feed of ${detail.sourceTitle}|"
+         title="Open the source's feed"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
+          d="M2 2.5a11.5 11.5 0 0 1 11.5 11.5h-2A9.5 9.5 0 0 0 2 4.5zm0 4.25A7.25 7.25 0 0 1 9.25 14h-2A5.25 5.25 0 0 0 2 8.75zM2 11h3v3H2z"/></svg></a>
     </div>
     <h2 class="reader-title" th:text="${detail.title}">Title</h2>
     <p class="reader-meta">

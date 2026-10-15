@@ -210,7 +210,8 @@ a:hover {
 button,
 .read-toggle,
 .load-more,
-.reader-original {
+.reader-original,
+a.toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +234,8 @@ button,
 button:hover,
 .read-toggle:hover,
 .load-more:hover,
-.reader-original:hover {
+.reader-original:hover,
+a.toggle:hover {
   background: var(--text);
   color: var(--ground);
 }
@@ -509,9 +511,15 @@ input[type="file"].field::file-selector-button {
   margin: 0;
 }
 
-button.toggle {
+button.toggle,
+a.toggle {
   width: 2.25rem;
   padding: 0;
+}
+
+/* The reader's link to the source's own feed: a square icon control like the toggles beside it. */
+a.feed-link .icon {
+  fill: currentColor;
 }
 
 button.toggle .icon {
@@ -940,9 +948,10 @@ button.toggle[aria-pressed="true"]:hover {
   text-transform: uppercase;
 }
 
-/* A second sheet head further down a sheet keeps its rule but drops the registration crosses. */
-.group-sheet .sheet-head::before,
-.group-sheet .sheet-head::after {
+/* A second sheet head further down a sheet keeps its rule but drops the registration crosses; the
+   Groups column beside Subscriptions is a head of its own and keeps them. */
+.group-sheet:not(.sources-split .group-sheet) .sheet-head::before,
+.group-sheet:not(.sources-split .group-sheet) .sheet-head::after {
   display: none;
 }
 
@@ -1860,8 +1869,11 @@ button.switch {
 
 .docs-body pre .code-lang {
   position: absolute;
-  top: 0.875rem;
+  top: 0.5rem;
   right: 4.75rem;
+  display: flex;
+  align-items: center;
+  height: 1.75rem;
   font: 500 0.625rem/1 var(--mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1977,7 +1989,9 @@ button.switch {
 
 .item {
   display: grid;
-  grid-template-columns: 7rem 4rem minmax(0, 1fr) 12.5rem 13.5rem;
+  /* The actions column fits its widest set, Playing, star, clock and Mark read, so the date never sits
+     under a button. */
+  grid-template-columns: 7rem 4rem minmax(0, 1fr) 12.5rem 18.5rem;
   grid-template-areas: "cat art body date actions";
   align-items: center;
   gap: 0.25rem 1.25rem;
@@ -2378,30 +2392,6 @@ a.title:hover {
   outline-offset: 2px;
 }
 
-.placement {
-  display: flex;
-}
-
-.placement button {
-  min-height: 2.25rem;
-  border-color: var(--line-strong);
-}
-
-.placement button + button {
-  margin-left: -1px;
-}
-
-.placement button[aria-pressed="true"] {
-  border-color: var(--cyan);
-  color: var(--cyan);
-  position: relative;
-}
-
-.placement button[aria-pressed="true"]:hover {
-  background: var(--cyan);
-  color: var(--ground);
-}
-
 .player > .stop {
   grid-column: -2;
 }
@@ -2523,6 +2513,20 @@ body[data-split] #sheet .sheet-head::after {
   display: none;
 }
 
+/* Away from the timeline (Sources), an open post and a video stay alive but out of sight: off screen, not
+   display: none, so the embed is never unloaded and keeps playing. */
+:root body[data-away] #reader,
+:root body[data-away] .ratio-16x9 {
+  position: fixed;
+  left: -200vw;
+  top: 0;
+  visibility: hidden;
+}
+
+body[data-away].reading {
+  overflow: visible;
+}
+
 /* The chrome over the tiles: a frame per panel and a title bar along its top. */
 .panes {
   display: contents;
@@ -2552,11 +2556,28 @@ body[data-active="post"] .pane-frame[data-pane="post"] {
   border-color: var(--red);
 }
 
-/* A drop target while a title bar is dragged over it. */
-.pane-frame.target {
-  z-index: 27;
+/* Tiled, a post closes from its title bar's ×; its own Close is only for phones, which have no title bars. */
+body[data-split] .reader-close {
+  display: none;
+}
+
+/* Where a dragged title bar will land: half a panel to split it, all of it to swap, or a band along
+   an edge of the workspace. */
+.drop-hint {
+  position: fixed;
+  left: var(--px);
+  top: var(--py);
+  width: var(--pw);
+  height: var(--ph);
+  z-index: 39;
   border: 2px solid var(--cyan);
-  background: color-mix(in srgb, var(--cyan) 8%, transparent);
+  background: color-mix(in srgb, var(--cyan) 14%, transparent);
+  pointer-events: none;
+  transition: left var(--quick), top var(--quick), width var(--quick), height var(--quick);
+}
+
+.drop-hint[hidden] {
+  display: none;
 }
 
 .pane-bar {
@@ -2564,7 +2585,8 @@ body[data-active="post"] .pane-frame[data-pane="post"] {
   display: flex;
   align-items: center;
   gap: 0.125rem;
-  padding: 0 0.25rem 0 0.75rem;
+  /* The right inset clears the panel's own scrollbar, which runs straight under the bar's right end. */
+  padding: 0 1.125rem 0 0.75rem;
   border: 1px solid var(--line);
   border-bottom-color: var(--line);
   background: var(--raised);
@@ -2621,7 +2643,7 @@ body[data-active="post"] .pane-bar[data-pane="post"] .pane-name::before {
   opacity: 0.92;
 }
 
-.pane-move {
+.pane-close {
   width: 1.5rem;
   min-height: 1.5rem;
   height: 1.5rem;
@@ -2630,17 +2652,13 @@ body[data-active="post"] .pane-bar[data-pane="post"] .pane-name::before {
   color: var(--text-2);
 }
 
-.pane-move .icon {
+.pane-close .icon {
   width: 0.75rem;
   height: 0.75rem;
 }
 
-.pane-move:hover {
+.pane-close:hover {
   border-color: var(--text);
-}
-
-.pane-move:disabled {
-  visibility: hidden;
 }
 
 /* Swapping two panels: every tile slides to its new place. */
@@ -2667,30 +2685,26 @@ body.swapping .pane-bar {
   display: none;
 }
 
-.splitter,
-.splitter-2,
-.video-splitter[aria-orientation="vertical"] {
+/* Any of the three separators can be a column rule (vertical) or a row rule (horizontal); deck.js
+   gives each one its orientation from the arrangement. */
+:is(.splitter, .splitter-2, .video-splitter)[aria-orientation="vertical"] {
   width: 0.75rem;
   cursor: col-resize;
 }
 
-.video-splitter,
-.splitter[aria-orientation="horizontal"] {
+:is(.splitter, .splitter-2, .video-splitter)[aria-orientation="horizontal"] {
   height: 0.75rem;
   cursor: row-resize;
 }
 
-.splitter::after,
-.splitter-2::after,
-.video-splitter::after {
+:is(.splitter, .splitter-2, .video-splitter)::after {
   content: "";
   position: absolute;
   background: var(--line-strong);
   transition: background-color var(--quick), height var(--quick), width var(--quick), margin var(--quick);
 }
 
-.splitter::after,
-.splitter-2::after {
+:is(.splitter, .splitter-2, .video-splitter)[aria-orientation="vertical"]::after {
   top: 50%;
   left: 0.25rem;
   width: 0.25rem;
@@ -2698,7 +2712,7 @@ body.swapping .pane-bar {
   margin-top: -1.5rem;
 }
 
-.video-splitter::after {
+:is(.splitter, .splitter-2, .video-splitter)[aria-orientation="horizontal"]::after {
   top: 0.25rem;
   left: 50%;
   width: 3rem;
@@ -2706,20 +2720,15 @@ body.swapping .pane-bar {
   margin-left: -1.5rem;
 }
 
-.splitter:hover::after,
-.splitter:focus-visible::after,
-.splitter-2:hover::after,
-.splitter-2:focus-visible::after,
-body.resizing .splitter::after,
-body.resizing .splitter-2::after {
+:is(.splitter, .splitter-2, .video-splitter)[aria-orientation="vertical"]:is(:hover, :focus-visible)::after,
+body.resizing :is(.splitter, .splitter-2, .video-splitter)[aria-orientation="vertical"]::after {
   background: var(--cyan);
   height: 5rem;
   margin-top: -2.5rem;
 }
 
-.video-splitter:hover::after,
-.video-splitter:focus-visible::after,
-body.resizing .video-splitter::after {
+:is(.splitter, .splitter-2, .video-splitter)[aria-orientation="horizontal"]:is(:hover, :focus-visible)::after,
+body.resizing :is(.splitter, .splitter-2, .video-splitter)[aria-orientation="horizontal"]::after {
   background: var(--cyan);
   width: 5rem;
   margin-left: -2.5rem;
@@ -2780,6 +2789,17 @@ body[data-split][data-list="strip"] .item {
   display: block;
   margin: 0;
   padding: 0.625rem 0.25rem;
+  cursor: pointer;
+}
+
+/* In the strip the number stands for the whole row: read ones dim and strike through like a read title. */
+body[data-split][data-list="strip"] .item.read .cat {
+  text-decoration: line-through;
+  text-decoration-color: var(--line-strong);
+}
+
+body[data-split][data-list="strip"] .item.clearing .cat {
+  text-decoration: line-through;
 }
 
 body[data-split][data-list="strip"] .load-more {
@@ -2787,87 +2807,9 @@ body[data-split][data-list="strip"] .load-more {
   font-size: 0.625rem;
 }
 
-/* ---- Picture in picture: a floating window over everything but the deck --------------------- */
-
-body[data-video="pip"] .ratio-16x9 {
-  right: var(--pip-right, 1.25rem);
-  bottom: calc(var(--deck-h) + var(--pip-bottom, 1rem));
-  left: auto;
-  top: auto;
-  width: var(--pip-w, 22.5rem);
-  height: calc(var(--pip-w, 22.5rem) * 9 / 16);
-  border: 1px solid var(--red);
-  background: #000;
-}
-
-body[data-video="pip"] .shield {
-  cursor: grab;
-}
-
-body[data-video="pip"].resizing .shield {
-  cursor: grabbing;
-}
-
-/* The picture-in-picture window outside the browser: nothing but the video, edge to edge. */
-.pip-window {
-  min-height: 0;
-  padding: 0;
-  background: #000;
-}
-
-.pip-window::after {
-  display: none;
-}
-
-.pip-window .ratio-16x9 {
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  place-items: center;
-  border: 0;
-  background: #000;
-}
-
-.pip-window .grip {
-  display: none;
-}
-
-/* A floating video over a post or the list: they end above where it usually sits. */
-body[data-video="pip"] .reader-view,
-body[data-video="pip"] .sheet {
-  padding-bottom: calc(var(--pip-w, 22.5rem) * 9 / 16 + 2.5rem);
-}
-
-/* The resize grip: top-left corner of the floating window. */
-.grip {
-  display: none;
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  z-index: 1;
-  width: 1.75rem;
-  min-height: 1.75rem;
-  padding: 0;
-  border: 0;
-  background: var(--red);
-  color: var(--on-red);
-  cursor: nwse-resize;
-  touch-action: none;
-}
-
-.grip:hover {
-  background: var(--text);
-  color: var(--ground);
-}
-
-body[data-video="pip"] .grip {
-  display: inline-flex;
-}
-
-/* A video with no panel to sit in (only the list is open and the layout is a tiling one) waits
-   in 2 col: deck.js always tiles it, so this only covers the moment before the script runs. */
+/* A video before deck.js has tiled it: a small box above the deck's right end, for that moment only. */
 @media (min-width: 60.0625rem) {
-  body:not([data-split]):not([data-video="pip"]) .ratio-16x9 {
+  body:not([data-split]) .ratio-16x9 {
     right: var(--gutter);
     bottom: calc(var(--deck-h) + 1rem);
     width: 22.5rem;
@@ -3045,6 +2987,264 @@ body[data-video="pip"] .grip {
 
 .failure {
   color: var(--red-text);
+}
+
+/* ---- Sources: subscriptions and groups side by side, adding at the head of the list ----------- */
+
+.sources-sheet > .message {
+  max-width: 40rem;
+  margin: 0 0 1.75rem;
+}
+
+.sources-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0 clamp(2rem, 4vw, 4rem);
+}
+
+/* Desktop: the sheet fills the window between bar and deck, and each column scrolls on its own under its
+   pinned heading and form. */
+@media (min-width: 60.0625rem) {
+  .sources-sheet {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--bar-h) - var(--deck-h));
+    padding-bottom: 0;
+  }
+
+  .sources-sheet > .message {
+    flex: none;
+  }
+
+  .sources-split {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  /* Each column: its head stays put and only the list under it scrolls, so the head keeps its
+     registration crosses. A few pixels of inner room, pulled back out, keep focus rings unclipped. */
+  .subscriptions,
+  .sources-split .group-sheet {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .sources-split .column-body {
+    flex: 1;
+    min-height: 0;
+    margin-inline: -4px;
+    padding: 0 4px 2.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .sources-split .column-body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Every row in both columns is the same height: one line of name, one line of status or count,
+     the controls beside them. Long text ends in an ellipsis and shows in full on hover. */
+  .sources-split .roster > li {
+    height: 5.25rem;
+    padding-block: 0;
+    overflow: hidden;
+  }
+
+  .sources-split .subscriptions .roster > .source {
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    column-gap: 1rem;
+    grid-template-areas:
+      "cat body actions"
+      "cat status actions";
+    /* Two equal halves: the name sits on the middle line, the status under it, and the controls are
+       centred on the whole row, at the same height as every Groups row's. */
+    grid-template-rows: 1fr 1fr;
+    align-content: stretch;
+    align-items: center;
+    row-gap: 0.25rem;
+  }
+
+  .sources-split .subscriptions .source .body {
+    align-self: end;
+  }
+
+  .sources-split .subscriptions .source .status {
+    align-self: start;
+  }
+
+  .subscriptions .source .cat {
+    align-self: center;
+    padding-top: 0;
+  }
+
+  .subscriptions .source .body,
+  .subscriptions .source .status {
+    min-width: 0;
+  }
+
+  .subscriptions .source .title,
+  .subscriptions .source .error,
+  .subscriptions .source .last-fetched,
+  .subscriptions .source .not-fetched {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-wrap: normal;
+  }
+
+  /* The feed URL is in the row's tooltip; the line under the name is the source's health. */
+  .subscriptions .source .url,
+  .subscriptions .source .error + .last-fetched {
+    display: none;
+  }
+
+  .subscriptions .source .error {
+    margin: 0;
+  }
+
+  .sources-split .subscriptions .source .actions {
+    align-self: center;
+    margin: 0;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+
+  .subscriptions .regroup .field {
+    width: clamp(7rem, 22cqw, 9.5rem);
+  }
+
+  .subscriptions .source .feed-link {
+    width: 2.5rem;
+    min-height: 2.5rem;
+  }
+
+  /* With scripts, choosing a group files the source at once; Set group is for pages without them. */
+  .js .regroup button {
+    display: none;
+  }
+
+  .sources-split .roster > .group {
+    align-content: center;
+  }
+
+  /* The heading and its form stay put, as one block, while the list under them scrolls. */
+  .column-head {
+    flex: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sources-split .column-head .add-source,
+  .sources-split .column-head .new-group {
+    max-width: none;
+    margin: 0;
+    padding: 1.25rem 0;
+  }
+}
+
+/* Each column answers to its own width, so its rows fold for the column, not the window. */
+.subscriptions,
+.sources-split .group-sheet {
+  container: sheet / inline-size;
+  min-width: 0;
+}
+
+.sources-split .group-sheet {
+  margin-top: 0;
+}
+
+/* Adding a source opens the list: one field and a filled Add, the import link in the hint. */
+.add-source {
+  max-width: 44rem;
+  margin: 1.5rem 0 1.25rem;
+}
+
+.add-source button {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.add-source button:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.add-source .read-toggle {
+  min-height: 2.5rem;
+}
+
+/* A group on one line, like a subscription: the name field with Rename, then Delete, and the source
+   count small under the name. */
+/* The rename form's field and button become cells of the row, so the count can sit between them:
+   name, count, Rename, Delete. */
+.sources-split .roster > .group {
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-areas: "name members rename delete";
+  align-items: center;
+  gap: 0 0.5rem;
+}
+
+.sources-split .roster > .group > .rename {
+  display: contents;
+}
+
+.sources-split .roster > .group > .rename .field {
+  grid-area: name;
+}
+
+.sources-split .roster > .group > .rename button {
+  grid-area: rename;
+}
+
+/* A fixed column for the count, so every name field is the same length and every count starts at
+   the same place. */
+.sources-split .roster > .group > .members {
+  grid-area: members;
+  width: 6.5rem;
+  padding: 0 0.5rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sources-split .roster > .group > form:last-child {
+  grid-area: delete;
+}
+
+.sources-split .members {
+  text-align: left;
+}
+
+.sources-split .new-group {
+  margin: 1.5rem 0 1.25rem;
+}
+
+/* A subscription in a column too narrow for its controls beside it: they go under its details. */
+@container sheet (max-width: 56rem) {
+  .subscriptions .roster > .source {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    grid-template-areas:
+      "cat body"
+      "cat status"
+      "cat actions";
+  }
+
+  .subscriptions .source .actions {
+    justify-content: flex-start;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (max-width: 60rem) {
+  .sources-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sources-split .group-sheet {
+    margin-top: 3rem;
+  }
 }
 
 @container sheet (max-width: 68rem) {
@@ -3332,11 +3532,7 @@ body[data-video="pip"] .grip {
     display: none;
   }
 
-  /* Phones always show the video full width just above the deck: no layout choice. */
-  .placement {
-    display: none;
-  }
-
+  /* Phones always show the video full width just above the deck. */
   .player-off {
     grid-column: 1 / -1;
   }
@@ -3355,15 +3551,6 @@ body[data-video="pip"] .grip {
 
   body[data-video] {
     padding-bottom: calc(var(--deck-h) + min(56.25vw, 40dvh));
-  }
-
-  body[data-video] .grip {
-    display: none;
-  }
-
-  body[data-video="pip"] .reader-view,
-  body[data-video="pip"] .sheet {
-    padding-bottom: 2rem;
   }
 
   /* Reading on a phone: the post takes the whole screen above the deck; the bar, the obi, the list
@@ -3550,6 +3737,20 @@ body[data-video="pip"] .grip {
   justify-self: start;
 }
 
+/* Centre mode: the post's head, image and text share one centred column in the panel. */
+html:not(.js) .center-toggle {
+  display: none;
+}
+
+body[data-reader-center] .reader-view > * {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+body[data-reader-center] .reader-view .reader-head {
+  max-width: 40rem;
+}
+
 .reader-body,
 .reader-empty {
   max-width: 40rem;
@@ -3671,8 +3872,9 @@ body[data-video="pip"] .grip {
     min-height: 2.75rem;
   }
 
-  .reader-toggles button.toggle {
+  .reader-toggles .toggle {
     width: 2.75rem;
+    min-height: 2.75rem;
   }
 }
 

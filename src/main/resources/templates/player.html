@@ -38,16 +38,9 @@
     </label>
   </div>
 
-  <div class="placement" role="group" aria-label="Video layout" th:if="${kind == 'youtube'}">
-    <button type="button" data-place="split" aria-pressed="true" title="List beside, video over the post">2 col</button>
-    <button type="button" data-place="tri" aria-pressed="false" title="List, video and post side by side">3 col</button>
-    <button type="button" data-place="bottom" aria-pressed="false" title="Video along the bottom">Bottom</button>
-    <button type="button" data-place="pip" aria-pressed="false" title="Floating window">PiP</button>
-  </div>
 
   <div class="ratio-16x9" th:if="${kind == 'youtube'}"><iframe th:src="${embedUrl}" title="YouTube video player"
-            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="shield" aria-hidden="true"></div><button
-      type="button" class="grip" aria-label="Resize video (arrow keys)" title="Drag to resize"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h5v1.5H3.5V7H2zM9 2h5v5h-1.5V3.5H9z" /></svg></button></div>
+            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="shield" aria-hidden="true"></div></div>
   <iframe class="sc-frame" th:if="${kind == 'soundcloud'}" th:src="${embedUrl}" title="SoundCloud player"
           height="166" scrolling="no" allow="autoplay"></iframe>
   <div class="player-off" th:if="${kind == 'disabled'}">

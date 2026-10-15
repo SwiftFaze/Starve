@@ -40,8 +40,20 @@ data class Seed(
 }
 
 /** Steps for reader-pane.feature and media-detail-view.feature: seeding items and reading the reader fragment. */
+/** The reader's or detail view's link to the source's own feed. */
+private val FEED_LINK = Regex("<a[^>]*class=\"toggle feed-link\"[^>]*>")
+
 class ReaderSteps {
     private val app = World.app
+
+    @Then("the reader links to the feed of the source {string}, opening in a new tab")
+    fun linksToSourceFeed(title: String) {
+        val feed = Html.escape(app.ownedSource(title).url)
+        val link =
+            requireNotNull(FEED_LINK.find(World.response.body())) { "no feed link in ${World.response.body()}" }.value
+        assertTrue(link.contains("href=\"$feed\""), link)
+        assertTrue(link.contains("target=\"_blank\"") && link.contains("rel=\"noopener noreferrer\""), link)
+    }
 
     // ---- seeding -------------------------------------------------------------------------
 

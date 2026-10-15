@@ -182,7 +182,7 @@ On a desktop the list, an open post and a playing video are tiled like tmux pane
 each scrolling on its own under a small title bar (see **Video layouts** below). Drag
 the splitters between panels (or focus one and press the arrow keys; double-click
 resets) to resize them; sizes are remembered. Drag a panel's title bar onto another
-panel, or use its arrow buttons, to swap the two. The panel you last clicked is
+panel to swap the two; its × closes the post or ejects the video. The panel you last clicked is
 outlined in red. Empty paragraphs and long runs of line breaks are dropped from posts,
 so feed padding does not show as blank lines.
 
@@ -216,12 +216,12 @@ disabled embedding, a message and a link to watch it on YouTube replace the
 player. If YouTube cannot be asked, Starve assumes embedding is allowed. Other
 items keep the open-link behavior only.
 
-A YouTube video picks one of four **video layouts** in the player deck: **2 col** (the
-list, then the video above any open post), **3 col** (list, video and post side by
-side), **Bottom** (the video in a band along the bottom of the window) or **PiP** (a
-floating window: drag the video to move it, drag its red corner to resize it). The
-choice is remembered. Inside a panel the video keeps 16:9 at the largest size that
-fits, so there are no black bars. **Eject** stops playback and closes the deck. On a
+On a desktop a playing YouTube video gets a panel of its own beside the list and any open
+post. Drag a panel's title bar onto another panel to split it on that side (left, right,
+top or bottom), onto its middle to swap the two, or onto an edge of the window to give it
+that whole edge, for example a full-width band along the bottom. A cyan preview shows
+where it will land; the arrangement and every size are remembered. Inside a panel the
+video keeps 16:9 at the largest size that fits, so there are no black bars. **Eject** stops playback and closes the deck. On a
 phone the video always sits full width above the deck, and the waveform runs across
 the top of the deck where it is easy to reach.
 

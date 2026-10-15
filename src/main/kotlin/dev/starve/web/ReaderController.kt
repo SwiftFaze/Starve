@@ -25,6 +25,7 @@ data class ReaderView(
     val link: String?,
     val headerImage: String?,
     val siteIcon: String?,
+    val feedUrl: String? = null,
 )
 
 @Controller
@@ -56,6 +57,7 @@ class ReaderController(
             link?.takeIf { WEB_LINK.matches(it) },
             PostImages.headerImage(thumbnailUrl, body),
             faviconUrl,
+            sourceUrl?.takeIf { WEB_LINK.matches(it) },
         )
 
     private companion object {

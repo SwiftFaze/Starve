@@ -10,7 +10,9 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
   already that long, and never on a poll, the home page or the timeline;
   extracting the main text with jsoup (the <article> element, else <main>,
   else the block with the most paragraph text, without nav, header, footer,
-  aside, form, script and style) and storing it through the same sanitiser as
+  aside, form, script and style, and without a leading <h1> that comes before
+  any paragraph, which repeats the title the reader already shows) and
+  storing it through the same sanitiser as
   feed bodies (relative links and images resolved against the item's link);
   the extracted text replacing the body only when its plain text is longer
   than the teaser's, else the teaser is kept and the reader shows it with
@@ -107,6 +109,13 @@ Feature: Full article text and og:image fetched on open for teaser-only posts
     Then the reader body contains the article text
     And the reader body does not contain "Site navigation"
     And the reader body does not contain "Copyright footer"
+
+  Scenario: The article's own title heading is not repeated above the text
+    Given the source "Blog" has an item "Post" with the link "<feed server>/posts/one" and no stored body published 1 days ago
+    And the feed server serves "/posts/one" as an HTML page whose article starts with the heading "Repeated title" and 800 characters of text
+    When I request the reader of the item "Post" via htmx
+    Then the reader body contains the article text
+    And the reader body does not contain "Repeated title"
 
   Scenario: A page without an article element uses its main text block
     Given the source "Blog" has an item "Post" with the link "<feed server>/posts/one" and no stored body published 1 days ago

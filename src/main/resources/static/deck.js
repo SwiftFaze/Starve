@@ -1,7 +1,7 @@
 // The player deck and the workspace. What plays sits in #dock, which htmx never swaps, so the music
 // outlives every change of the sheet. On a desktop the list, a playing video and an open post are
-// tiled like tmux panels: each has a title bar, splitters between them resize them, dragging a title
-// bar onto another panel swaps the two, and the panel last clicked is outlined. Layout only changes
+// tiled like tmux panels: each has a title bar, rules between them resize them, dragging a title bar
+// onto another panel splits it (or swaps the two), and the panel last clicked is outlined. Layout only changes
 // classes, data attributes and custom properties; the embed iframe is never moved in the DOM, so
 // nothing restarts.
 (function () {
@@ -49,7 +49,6 @@
   // Eject removes the focused button, so focus goes back to the row it was playing.
   window.stopPlayer = function (button) {
     var target = document.querySelector('.item.playing .play') || document.getElementById('sheet');
-    if (pipWindow) { var leaving = pipWindow; pipWindow = null; leaving.close(); }
     button.closest('.player').remove();
     state = null;
     delete body.dataset.playing;
@@ -60,49 +59,23 @@
     if (target) target.focus();
   };
 
-  // ---- Video layout: 2 col, 3 col, bottom or picture in picture ----------------------------
-
-  var LAYOUTS = { split: true, tri: true, bottom: true, pip: true };
-
-  function savedLayout() {
-    var value = stored('starve.layout');
-    return LAYOUTS[value] ? value : 'split';
-  }
-
-  function place(where) {
-    if (!LAYOUTS[where]) where = 'split';
-    body.dataset.video = where;
-    store('starve.layout', where);
-    document.querySelectorAll('#dock .placement button').forEach(function (button) {
-      button.setAttribute('aria-pressed', String(button.dataset.place === where));
-    });
-    if (where === 'pip') { if (!popOut()) sizePip(pipBox(), false); }
-    else closePip();
-    layout();
-    requestAnimationFrame(tickTitle);
-  }
-
-  document.addEventListener('click', function (event) {
-    var placeButton = event.target.closest('#dock .placement button');
-    if (placeButton) { place(placeButton.dataset.place); return; }
-
-    var pause = event.target.closest('#dock .pause');
-    if (pause && state) { state.playing ? state.pause() : state.play(); }
-  });
-
-  // ---- The workspace: panels tiled beside the obi --------------------------------------------
+  // ---- The workspace: panels tiled beside the obi, arranged by dragging their title bars ----------
+  //
+  // The arrangement is a tree. A leaf is a panel name; a split is { dir: 'row' | 'col', parts, sizes }, its
+  // sizes fractions of its length. Dragging a title bar onto a panel splits that panel on the side it is
+  // dropped (or swaps the two, dropped in the middle); dropped on an edge of the workspace, it takes that
+  // whole edge. Every split has a rule to drag. Panels not on screen are left out when it is laid out.
 
   var NAMES = { list: 'List', video: 'Video', post: 'Post' };
   var BAR = 28;
-  var GAP = 0;
   var STRIP = 136;
   var LIST_FOLD = 610;
-  var COLUMN_MIN = 280;
-  var ROW_MIN = 120;
+  var MIN = 200;
+  var EDGE = 28;
+  var DEFAULT_TREE = { dir: 'row', parts: ['list', { dir: 'col', parts: ['video', 'post'], sizes: [0.5, 0.5] }], sizes: [0.5, 0.5] };
 
   function videoBox() { return document.querySelector('#dock .ratio-16x9'); }
   function postView() { return document.querySelector('#reader .reader-view'); }
-  function tiledVideo() { return !!videoBox() && !!body.dataset.video && body.dataset.video !== 'pip'; }
 
   function element(name) {
     if (name === 'list') return document.getElementById('sheet');
@@ -110,94 +83,101 @@
     return document.getElementById('reader');
   }
 
-  // The panels in their remembered order, keeping only those on screen now.
-  function order() {
-    var saved = (stored('starve.panels') || '').split(',');
-    var known = saved.filter(function (name) { return NAMES[name]; });
-    ['list', 'video', 'post'].forEach(function (name) { if (known.indexOf(name) < 0) known.push(name); });
-    return known.slice(0, 3);
+  function leaves(node) {
+    return typeof node === 'string' ? [node] : node.parts.reduce(function (all, part) { return all.concat(leaves(part)); }, []);
   }
 
+  function copy(node) { return JSON.parse(JSON.stringify(node)); }
+
+  function validTree(node) {
+    var names = leaves(node).sort().join(',');
+    return names === 'list,post,video';
+  }
+
+  var tree = (function () {
+    try {
+      var saved = JSON.parse(stored('starve.tree') || 'null');
+      if (saved && validTree(saved)) return saved;
+    } catch (e) { /* a broken value: start over */ }
+    return copy(DEFAULT_TREE);
+  })();
+
+  function saveTree() { store('starve.tree', JSON.stringify(tree)); }
+
+  // Only the timeline shows an open post or a video. Elsewhere (Sources) they stay alive but out of sight, so
+  // music keeps playing and both are back where they were on the way back to the timeline.
+  function onTimeline() { return !!document.querySelector('#sheet[data-page="timeline"]'); }
+
   function present() {
-    return order().filter(function (name) {
+    if (!onTimeline()) return ['list'];
+    return ['list', 'video', 'post'].filter(function (name) {
       if (name === 'list') return true;
-      if (name === 'video') return tiledVideo();
+      if (name === 'video') return !!videoBox();
       return !!postView();
     });
+  }
+
+  // The tree with only the panels on screen; a split left with one part gives way to it. Each kept split
+  // remembers the full tree's split it came from and which of its parts it kept, so a resize writes back.
+  function prune(node, keep) {
+    if (typeof node === 'string') return keep.indexOf(node) >= 0 ? node : null;
+    var parts = [];
+    var sizes = [];
+    var kept = [];
+    node.parts.forEach(function (part, index) {
+      var pruned = prune(part, keep);
+      if (!pruned) return;
+      parts.push(pruned);
+      sizes.push(node.sizes[index]);
+      kept.push(index);
+    });
+    if (!parts.length) return null;
+    if (parts.length === 1) return parts[0];
+    var total = sizes.reduce(function (a, b) { return a + b; }, 0) || 1;
+    return { dir: node.dir, parts: parts, sizes: sizes.map(function (s) { return s / total; }), origin: node, kept: kept };
   }
 
   function area() {
     var sleeve = document.querySelector('.series-block');
     var left = sleeve ? Math.round(sleeve.getBoundingClientRect().right) : 0;
     var bar = document.getElementById('bar');
-    var top = bar ? Math.round(bar.getBoundingClientRect().bottom) : 0;
+    var top = bar ? Math.max(0, Math.round(bar.getBoundingClientRect().bottom)) : 0;
     var deck = player() ? player().offsetHeight : 0;
-    return { x: left, y: Math.max(0, top), w: window.innerWidth - left, h: window.innerHeight - Math.max(0, top) - deck };
+    // The page's client width, not the window's: the scrollbar (its gutter is always kept) is not ours to tile.
+    var width = document.documentElement.clientWidth;
+    return { x: left, y: top, w: width - left, h: window.innerHeight - top - deck };
   }
 
-  function savedNumber(key) {
-    var value = Number(stored(key));
-    return value > 0 ? value : null;
-  }
-
-  // The first column: the list folds to its catalogue numbers below LIST_FOLD.
-  function firstWidth(name, room) {
-    var saved = stored('starve.col1');
-    if (name === 'list' && saved === 'strip') return STRIP;
-    var width = savedNumber('starve.col1') || (name === 'list' ? 720 : Math.round(room * 0.4));
-    if (name === 'list' && width < LIST_FOLD) return STRIP;
-    return clamp(width, COLUMN_MIN, Math.max(COLUMN_MIN, room - COLUMN_MIN));
-  }
-
-  // Columns of panels side by side; a column may hold a stack of two.
-  function columns(names, box, mode) {
-    var rects = {};
-    var cuts = [];
-    if (names.length === 1) {
-      rects[names[0]] = box;
-      return { rects: rects, cuts: cuts };
+  // Lays [node] out in [box]: panel rectangles into out.rects, one cut per rule between parts into out.cuts.
+  function lay(node, box, out) {
+    if (typeof node === 'string') { out.rects[node] = box; return; }
+    var across = node.dir === 'row';
+    var total = across ? box.w : box.h;
+    var lengths = node.sizes.map(function (size) { return Math.round(total * size); });
+    // A list squeezed below its fold shows its strip of catalogue numbers; a neighbour takes the room.
+    if (across) {
+      node.parts.forEach(function (part, index) {
+        if (part !== 'list' || lengths[index] >= LIST_FOLD) return;
+        var neighbour = index + 1 < lengths.length ? index + 1 : index - 1;
+        lengths[neighbour] += lengths[index] - STRIP;
+        lengths[index] = STRIP;
+      });
     }
-    var first = firstWidth(names[0], box.w);
-    rects[names[0]] = { x: box.x, y: box.y, w: first, h: box.h };
-    cuts.push({ kind: 'col1', x: box.x + first, y: box.y, h: box.h });
-    var restX = box.x + first + GAP;
-    var restW = box.w - first - GAP;
-    var rest = names.slice(1);
-    if (rest.length === 1) {
-      rects[rest[0]] = { x: restX, y: box.y, w: restW, h: box.h };
-    } else if (mode === 'tri') {
-      var second = clamp(savedNumber('starve.col2') || Math.round(restW / 2), COLUMN_MIN, Math.max(COLUMN_MIN, restW - COLUMN_MIN));
-      rects[rest[0]] = { x: restX, y: box.y, w: second, h: box.h };
-      rects[rest[1]] = { x: restX + second + GAP, y: box.y, w: restW - second - GAP, h: box.h };
-      cuts.push({ kind: 'col2', x: restX + second, y: box.y, h: box.h });
-    } else {
-      // A video on top of the stack defaults to its own 16:9 height, so it starts without bars.
-      var natural = rest[0] === 'video' ? Math.round(restW * 9 / 16) + BAR : Math.round(box.h / 2);
-      var top = clamp(savedNumber('starve.row') || natural, ROW_MIN, Math.max(ROW_MIN, box.h - ROW_MIN));
-      rects[rest[0]] = { x: restX, y: box.y, w: restW, h: top };
-      rects[rest[1]] = { x: restX, y: box.y + top + GAP, w: restW, h: box.h - top - GAP };
-      cuts.push({ kind: 'row', x: restX, y: box.y + top, w: restW });
-    }
-    return { rects: rects, cuts: cuts };
+    lengths[lengths.length - 1] = total - lengths.slice(0, -1).reduce(function (a, b) { return a + b; }, 0);
+    var at = across ? box.x : box.y;
+    node.parts.forEach(function (part, index) {
+      var length = lengths[index];
+      lay(part, across ? { x: at, y: box.y, w: length, h: box.h } : { x: box.x, y: at, w: box.w, h: length }, out);
+      at += length;
+      if (index < node.parts.length - 1) {
+        out.cuts.push({ node: node, index: index, across: across, at: at, start: across ? box.x : box.y, total: total,
+          x: across ? at : box.x, y: across ? box.y : at, length: across ? box.h : box.w });
+      }
+    });
   }
 
-  function tiles(names, box) {
-    var mode = tiledVideo() ? body.dataset.video : 'split';
-    if (mode === 'bottom' && names.indexOf('video') >= 0) {
-      var band = clamp(savedNumber('starve.band') || Math.round(Math.min(box.h * 0.45, box.w * 9 / 16 * 0.5)) + BAR,
-        ROW_MIN, Math.max(ROW_MIN, box.h - ROW_MIN));
-      var above = { x: box.x, y: box.y, w: box.w, h: box.h - band };
-      var others = names.filter(function (name) { return name !== 'video'; });
-      var placed = columns(others, above, 'split');
-      placed.rects.video = { x: box.x, y: box.y + above.h, w: box.w, h: band };
-      placed.cuts.push({ kind: 'band', x: box.x, y: box.y + above.h, w: box.w });
-      return placed;
-    }
-    return columns(names, box, mode);
-  }
-
-  // The chrome drawn over the tiles: a title bar and a frame per panel. It lives in the sleeve,
-  // which paints above the sheet and the reader, and below a floating video.
+  // The chrome over the tiles: a title bar and a frame per panel. It lives in the sleeve, which paints
+  // above the sheet and the reader.
   function chrome() {
     var holder = document.getElementById('panes');
     if (holder) return holder;
@@ -209,18 +189,16 @@
     return holder;
   }
 
-  var ARROW = { left: 'M10.5 3L5.5 8l5 5', right: 'M5.5 3l5 5-5 5' };
-
-  function arrowButton(direction, name) {
+  // Closing a panel: the post closes, the video is ejected as the deck's Eject does; the list stays.
+  function closeButton(name) {
     var button = document.createElement('button');
     button.type = 'button';
-    button.className = 'pane-move';
-    button.dataset.move = direction;
+    button.className = 'pane-close';
     button.dataset.pane = name;
-    button.setAttribute('aria-label', 'Move ' + NAMES[name].toLowerCase() + ' panel ' + direction);
-    button.title = 'Move ' + direction;
-    button.innerHTML = '<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="' + ARROW[direction] +
-      '" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+    button.setAttribute('aria-label', name === 'video' ? 'Close the video' : 'Close the post');
+    button.title = 'Close';
+    button.innerHTML = '<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" ' +
+      'fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
     return button;
   }
 
@@ -230,12 +208,12 @@
     bar = document.createElement('div');
     bar.className = 'pane-bar';
     bar.dataset.pane = name;
+    bar.title = 'Drag onto a panel to split it, or onto its middle to swap';
     var label = document.createElement('span');
     label.className = 'pane-name';
     label.textContent = NAMES[name];
     bar.appendChild(label);
-    bar.appendChild(arrowButton('left', name));
-    bar.appendChild(arrowButton('right', name));
+    if (name !== 'list') bar.appendChild(closeButton(name));
     var frame = document.createElement('div');
     frame.className = 'pane-frame';
     frame.dataset.pane = name;
@@ -256,41 +234,41 @@
     ['--px', '--py', '--pw', '--ph'].forEach(function (name) { node.style.removeProperty(name); });
   }
 
-  var SPLITTERS = { col1: '.splitter', col2: '.splitter-2', row: '.video-splitter', band: '.video-splitter' };
+  // Three panels need at most two rules; the page carries that many separators to place.
+  var SPLITTERS = ['.splitter', '.splitter-2', '.video-splitter'];
+  var cuts = [];
 
-  function placeSplitters(cuts) {
-    ['.splitter', '.splitter-2', '.video-splitter'].forEach(function (selector) {
+  function placeSplitters() {
+    SPLITTERS.forEach(function (selector, index) {
       var node = document.querySelector(selector);
-      if (node) node.hidden = true;
-    });
-    cuts.forEach(function (cut) {
-      var node = document.querySelector(SPLITTERS[cut.kind]);
       if (!node) return;
-      node.hidden = false;
-      node.dataset.cut = cut.kind;
-      var across = cut.kind === 'row' || cut.kind === 'band';
-      node.setAttribute('aria-orientation', across ? 'horizontal' : 'vertical');
-      node.style.left = (across ? cut.x : cut.x - 6) + 'px';
-      node.style.top = (across ? cut.y - 6 : cut.y) + 'px';
-      node.style.width = across ? cut.w + 'px' : '';
-      node.style.height = across ? '' : cut.h + 'px';
-      var value = cut.kind === 'col1' ? cut.x - area().x : cut.kind === 'col2' ? cut.x : cut.y;
-      node.setAttribute('aria-valuenow', String(Math.round(value)));
-      if (cut.kind === 'col1' && body.dataset.list === 'strip') node.setAttribute('aria-valuetext', 'List folded to catalogue numbers');
-      else node.removeAttribute('aria-valuetext');
+      var cut = cuts[index];
+      node.hidden = !cut;
+      if (!cut) return;
+      node.dataset.cut = String(index);
+      node.setAttribute('aria-orientation', cut.across ? 'vertical' : 'horizontal');
+      node.style.left = (cut.across ? cut.x - 6 : cut.x) + 'px';
+      node.style.top = (cut.across ? cut.y : cut.y - 6) + 'px';
+      node.style.width = cut.across ? '' : cut.length + 'px';
+      node.style.height = cut.across ? cut.length + 'px' : '';
+      node.setAttribute('aria-valuemin', '0');
+      node.setAttribute('aria-valuemax', '100');
+      node.setAttribute('aria-valuenow', String(Math.round((cut.at - cut.start) / cut.total * 100)));
     });
   }
 
-  var laidOut = [];
-
-  // A video alone in a tall column ends under the picture, so no empty band hangs below it.
+  // A video alone in a tall panel ends under the picture, so no empty band hangs below it.
   function videoFit(name, rect) {
     if (name !== 'video') return rect;
     var fitted = Math.round(rect.w * 9 / 16) + BAR;
     return fitted < rect.h ? { x: rect.x, y: rect.y, w: rect.w, h: fitted } : rect;
   }
 
+  var laidOut = [];
+
   function layout() {
+    if (onTimeline()) delete body.dataset.away;
+    else body.dataset.away = 'on';
     var names = present();
     var holder = document.getElementById('panes');
     if (phone() || names.length < 2) {
@@ -298,34 +276,33 @@
       delete body.dataset.list;
       ['list', 'video', 'post'].forEach(function (name) { clearRect(element(name)); });
       if (holder) holder.replaceChildren();
-      placeSplitters([]);
+      cuts = [];
+      placeSplitters();
       laidOut = [];
       return;
     }
     var wasStrip = body.dataset.list === 'strip';
     body.dataset.split = 'on';
-    var placed = tiles(names, area());
+    var out = { rects: {}, cuts: [] };
+    lay(prune(tree, names), area(), out);
+    cuts = out.cuts;
     holder = chrome();
     holder.querySelectorAll('.pane-bar, .pane-frame').forEach(function (node) {
       if (names.indexOf(node.dataset.pane) < 0) node.remove();
     });
-    names.forEach(function (name, index) {
-      var rect = videoFit(name, placed.rects[name]);
-      var bar = paneBar(holder, name);
-      setRect(bar, { x: rect.x, y: rect.y, w: rect.w, h: BAR });
+    names.forEach(function (name) {
+      var rect = videoFit(name, out.rects[name]);
+      setRect(paneBar(holder, name), { x: rect.x, y: rect.y, w: rect.w, h: BAR });
       setRect(holder.querySelector('.pane-frame[data-pane="' + name + '"]'), rect);
-      bar.querySelector('[data-move="left"]').disabled = index === 0;
-      bar.querySelector('[data-move="right"]').disabled = index === names.length - 1;
       setRect(element(name), { x: rect.x, y: rect.y + BAR, w: rect.w, h: rect.h - BAR });
     });
     if (names.indexOf('video') < 0) clearRect(videoBox());
     if (names.indexOf('post') < 0) clearRect(element('post'));
-    var listRect = placed.rects.list;
-    if (listRect && listRect.w <= STRIP) body.dataset.list = 'strip';
+    if (out.rects.list && out.rects.list.w <= STRIP) body.dataset.list = 'strip';
     else delete body.dataset.list;
     if (wasStrip !== (body.dataset.list === 'strip')) fold();
     if (body.dataset.active && names.indexOf(body.dataset.active) < 0) delete body.dataset.active;
-    placeSplitters(placed.cuts);
+    placeSplitters();
     laidOut = names;
   }
 
@@ -360,40 +337,140 @@
   document.addEventListener('pointerdown', function (event) { activate(paneAt(event.target)); }, true);
   document.addEventListener('focusin', function (event) { activate(paneAt(event.target)); });
 
-  // ---- Swapping panels: the arrow buttons, or dragging a title bar onto another panel ----------
-
-  function swap(a, b) {
-    var names = order();
-    var i = names.indexOf(a);
-    var j = names.indexOf(b);
-    if (i < 0 || j < 0 || i === j) return;
-    names[i] = b;
-    names[j] = a;
-    store('starve.panels', names.join(','));
-    body.classList.add('swapping');
-    layout();
-    setTimeout(function () { body.classList.remove('swapping'); }, 260);
-  }
-
   document.addEventListener('click', function (event) {
-    var move = event.target.closest('.pane-move');
-    if (!move) return;
-    var names = laidOut;
-    var index = names.indexOf(move.dataset.pane);
-    var other = names[index + (move.dataset.move === 'left' ? -1 : 1)];
-    if (other) swap(move.dataset.pane, other);
-    var again = document.querySelector('.pane-bar[data-pane="' + move.dataset.pane + '"] [data-move="' + move.dataset.move + '"]');
-    if (again && !again.disabled) again.focus();
-    else if (again) again.parentElement.querySelector('.pane-move:not([disabled])').focus();
+    var close = event.target.closest('.pane-close');
+    if (!close) return;
+    if (close.dataset.pane === 'post') window.closeReader();
+    else if (close.dataset.pane === 'video') {
+      var eject = document.querySelector('#dock .stop');
+      if (eject) window.stopPlayer(eject);
+    }
   });
 
-  function paneUnder(x, y) {
+  // ---- Rearranging: drop a title bar on a panel's side to split it, its middle to swap, an edge to span
+
+  // The split of the tree that holds [name] directly, with the part's index; null for the root itself.
+  function parentOf(node, name) {
+    if (typeof node === 'string') return null;
+    for (var index = 0; index < node.parts.length; index++) {
+      var part = node.parts[index];
+      if (part === name) return { node: node, index: index };
+      var found = parentOf(part, name);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  // Takes [name] out of the tree; a split left with one part is replaced by that part.
+  function detach(name) {
+    var at = parentOf(tree, name);
+    if (!at) return;
+    at.node.parts.splice(at.index, 1);
+    at.node.sizes.splice(at.index, 1);
+    var total = at.node.sizes.reduce(function (a, b) { return a + b; }, 0) || 1;
+    at.node.sizes = at.node.sizes.map(function (size) { return size / total; });
+    if (at.node.parts.length > 1) return;
+    var only = at.node.parts[0];
+    var outer = parentOfNode(tree, at.node);
+    if (outer) outer.node.parts[outer.index] = only;
+    else tree = typeof only === 'string' ? { dir: 'row', parts: [only], sizes: [1] } : only;
+  }
+
+  function parentOfNode(node, child) {
+    if (typeof node === 'string') return null;
+    for (var index = 0; index < node.parts.length; index++) {
+      if (node.parts[index] === child) return { node: node, index: index };
+      var found = parentOfNode(node.parts[index], child);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  var ZONES = {
+    left: { dir: 'row', first: true }, right: { dir: 'row', first: false },
+    top: { dir: 'col', first: true }, bottom: { dir: 'col', first: false }
+  };
+
+  function swapNames(a, b) {
+    function walk(node) {
+      if (typeof node === 'string') return node === a ? b : node === b ? a : node;
+      node.parts = node.parts.map(walk);
+      return node;
+    }
+    tree = walk(tree);
+  }
+
+  // Drops panel [from] onto [target] (a panel, or 'edge' for the whole workspace) in [zone].
+  function drop(from, target, zone) {
+    if (target !== 'edge' && zone === 'middle') { swapNames(from, target); return; }
+    var side = ZONES[zone];
+    detach(from);
+    if (target === 'edge') {
+      tree = { dir: side.dir, parts: side.first ? [from, tree] : [tree, from], sizes: side.first ? [0.35, 0.65] : [0.65, 0.35] };
+      return;
+    }
+    var at = parentOf(tree, target);
+    if (at && at.node.dir === side.dir) {
+      // The same direction as the split around the target: a new part beside it, sharing its room.
+      var share = at.node.sizes[at.index] / 2;
+      at.node.sizes[at.index] = share;
+      at.node.parts.splice(side.first ? at.index : at.index + 1, 0, from);
+      at.node.sizes.splice(side.first ? at.index : at.index + 1, 0, share);
+      return;
+    }
+    var split = { dir: side.dir, parts: side.first ? [from, target] : [target, from], sizes: [0.5, 0.5] };
+    if (at) at.node.parts[at.index] = split;
+    else tree = split;
+  }
+
+  function frameRect(name) {
+    var frame = document.querySelector('.pane-frame[data-pane="' + name + '"]');
+    return frame ? frame.getBoundingClientRect() : null;
+  }
+
+  // Where a drop at (x, y) lands: an outer edge of the workspace, or a side or the middle of a panel.
+  function dropAt(x, y, from) {
+    var box = area();
+    var edges = { left: x - box.x, right: box.x + box.w - x, top: y - box.y, bottom: box.y + box.h - y };
+    var nearest = Object.keys(edges).reduce(function (a, b) { return edges[a] <= edges[b] ? a : b; });
+    if (edges[nearest] >= 0 && edges[nearest] < EDGE) return { target: 'edge', zone: nearest, box: box };
     var hit = null;
-    document.querySelectorAll('.pane-frame').forEach(function (frame) {
-      var box = frame.getBoundingClientRect();
-      if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) hit = frame.dataset.pane;
+    laidOut.forEach(function (name) {
+      var rect = frameRect(name);
+      if (rect && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) hit = { name: name, rect: rect };
     });
-    return hit;
+    if (!hit || hit.name === from) return null;
+    var dx = (x - hit.rect.left) / hit.rect.width;
+    var dy = (y - hit.rect.top) / hit.rect.height;
+    if (dx > 0.3 && dx < 0.7 && dy > 0.3 && dy < 0.7) return { target: hit.name, zone: 'middle', box: hit.rect };
+    var sides = { left: dx, right: 1 - dx, top: dy, bottom: 1 - dy };
+    var zone = Object.keys(sides).reduce(function (a, b) { return sides[a] <= sides[b] ? a : b; });
+    return { target: hit.name, zone: zone, box: hit.rect };
+  }
+
+  // The cyan preview of where the panel will land.
+  function hint(spot) {
+    var shade = document.getElementById('drop-hint');
+    if (!spot) { if (shade) shade.hidden = true; return; }
+    if (!shade) {
+      shade = document.createElement('div');
+      shade.id = 'drop-hint';
+      shade.className = 'drop-hint';
+      chrome().appendChild(shade);
+    }
+    var b = spot.box;
+    var left = b.left !== undefined ? b.left : b.x;
+    var top = b.top !== undefined ? b.top : b.y;
+    var width = b.width !== undefined ? b.width : b.w;
+    var height = b.height !== undefined ? b.height : b.h;
+    var part = spot.target === 'edge' ? 0.35 : 0.5;
+    var rect = { x: left, y: top, w: width, h: height };
+    if (spot.zone === 'left') rect.w = width * part;
+    if (spot.zone === 'right') { rect.x = left + width * (1 - part); rect.w = width * part; }
+    if (spot.zone === 'top') rect.h = height * part;
+    if (spot.zone === 'bottom') { rect.y = top + height * (1 - part); rect.h = height * part; }
+    setRect(shade, { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h) });
+    shade.hidden = false;
   }
 
   document.addEventListener('pointerdown', function (event) {
@@ -409,10 +486,7 @@
       if (!dragging && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 6) return;
       if (!dragging) { dragging = true; body.classList.add('resizing', 'dragging-pane'); bar.classList.add('lifted'); }
       bar.style.transform = 'translate(' + (e.clientX - startX) + 'px,' + (e.clientY - startY) + 'px)';
-      var over = paneUnder(e.clientX, e.clientY);
-      document.querySelectorAll('.pane-frame').forEach(function (frame) {
-        frame.classList.toggle('target', dragging && over === frame.dataset.pane && over !== from);
-      });
+      hint(dropAt(e.clientX, e.clientY, from));
     }
     function up(e) {
       bar.releasePointerCapture(event.pointerId);
@@ -421,244 +495,125 @@
       bar.style.transform = '';
       bar.classList.remove('lifted');
       body.classList.remove('resizing', 'dragging-pane');
-      document.querySelectorAll('.pane-frame.target').forEach(function (frame) { frame.classList.remove('target'); });
+      hint(null);
       if (!dragging) return;
-      var over = paneUnder(e.clientX, e.clientY);
-      if (over && over !== from) swap(from, over);
+      var spot = dropAt(e.clientX, e.clientY, from);
+      if (!spot) return;
+      drop(from, spot.target, spot.zone);
+      saveTree();
+      body.classList.add('swapping');
+      layout();
+      setTimeout(function () { body.classList.remove('swapping'); }, 260);
     }
     bar.addEventListener('pointermove', move);
     bar.addEventListener('pointerup', up);
   });
 
-  // ---- Splitters: drag, or arrow keys; a double click resets ---------------------------------
+  // ---- Rules between panels: drag, arrow keys (32px), double click to even the split out ------------
 
-  function resize(kind, position, remember) {
-    var box = area();
-    if (kind === 'col1') {
-      var width = position - box.x;
-      var first = laidOut[0];
-      var value = first === 'list' && width < LIST_FOLD ? 'strip' : Math.round(Math.max(first === 'list' ? LIST_FOLD : COLUMN_MIN, width));
-      store('starve.col1', value);
-    } else if (kind === 'col2') {
-      var col1 = document.querySelector('.splitter');
-      var start = col1 ? col1.getBoundingClientRect().left + 6 : box.x;
-      store('starve.col2', Math.round(Math.max(COLUMN_MIN, position - start)));
-    } else if (kind === 'row') {
-      store('starve.row', Math.round(Math.max(ROW_MIN, position - box.y)));
-    } else if (kind === 'band') {
-      store('starve.band', Math.round(Math.max(ROW_MIN, box.y + box.h - position)));
-    }
-    layout();
-    void remember;
+  // Sets the rule after part [index] of a laid-out split at [position] px, keeping both parts usable, and
+  // writes the sizes back to the full tree.
+  function moveCut(cut, position) {
+    var node = cut.node;
+    var before = node.sizes.slice(0, cut.index).reduce(function (a, b) { return a + b; }, 0);
+    var pair = node.sizes[cut.index] + node.sizes[cut.index + 1];
+    var minA = (node.parts[cut.index] === 'list' ? STRIP : MIN) / cut.total;
+    var minB = (node.parts[cut.index + 1] === 'list' ? STRIP : MIN) / cut.total;
+    var size = clamp((position - cut.start) / cut.total - before, minA, pair - minB);
+    node.sizes[cut.index] = size;
+    node.sizes[cut.index + 1] = pair - size;
+    writeBack(node);
+  }
+
+  function writeBack(node) {
+    var origin = node.origin || node;
+    if (!node.kept) return;
+    var share = node.kept.reduce(function (sum, index) { return sum + origin.sizes[index]; }, 0);
+    node.kept.forEach(function (index, part) { origin.sizes[index] = node.sizes[part] * share; });
+  }
+
+  function evenOut(cut) {
+    var node = cut.node;
+    node.sizes = node.sizes.map(function () { return 1 / node.sizes.length; });
+    writeBack(node);
   }
 
   function splitterOf(target) {
     return target && target.closest && target.closest('.splitter, .splitter-2, .video-splitter');
   }
 
+  function cutOf(splitter) { return splitter && !splitter.hidden ? cuts[Number(splitter.dataset.cut)] : null; }
+
   document.addEventListener('pointerdown', function (event) {
     var splitter = splitterOf(event.target);
-    if (!splitter || splitter.hidden) return;
+    var cut = cutOf(splitter);
+    if (!cut) return;
     event.preventDefault();
-    var kind = splitter.dataset.cut;
-    var across = kind === 'row' || kind === 'band';
     body.classList.add('resizing');
     splitter.setPointerCapture(event.pointerId);
-    function move(e) { resize(kind, across ? e.clientY : e.clientX, false); }
-    function up(e) {
+    function move(e) {
+      moveCut(cut, cut.across ? e.clientX : e.clientY);
+      layout();
+      cut = cuts[Number(splitter.dataset.cut)] || cut;
+    }
+    function up() {
       splitter.releasePointerCapture(event.pointerId);
       splitter.removeEventListener('pointermove', move);
       splitter.removeEventListener('pointerup', up);
       body.classList.remove('resizing');
-      resize(kind, across ? e.clientY : e.clientX, true);
+      saveTree();
     }
     splitter.addEventListener('pointermove', move);
     splitter.addEventListener('pointerup', up);
   });
 
-  var DEFAULT_KEYS = { col1: 'starve.col1', col2: 'starve.col2', row: 'starve.row', band: 'starve.band' };
-
   document.addEventListener('dblclick', function (event) {
-    var splitter = splitterOf(event.target);
-    if (!splitter || splitter.hidden) return;
-    try { localStorage.removeItem(DEFAULT_KEYS[splitter.dataset.cut]); } catch (e) { /* storage blocked */ }
+    var cut = cutOf(splitterOf(event.target));
+    if (!cut) return;
+    evenOut(cut);
+    saveTree();
     fold();
     layout();
   });
 
   document.addEventListener('keydown', function (event) {
     var splitter = splitterOf(event.target);
-    if (!splitter || splitter.hidden) return;
-    var kind = splitter.dataset.cut;
-    var across = kind === 'row' || kind === 'band';
-    var step = across ? { ArrowUp: -32, ArrowDown: 32 }[event.key] : { ArrowLeft: -32, ArrowRight: 32 }[event.key];
+    var cut = cutOf(splitter);
+    if (!cut) return;
+    var step = cut.across ? { ArrowLeft: -32, ArrowRight: 32 }[event.key] : { ArrowUp: -32, ArrowDown: 32 }[event.key];
+    if (!step && (event.key === 'Home' || event.key === 'End')) {
+      event.preventDefault();
+      evenOut(cut);
+      saveTree();
+      layout();
+      return;
+    }
     if (!step) return;
     event.preventDefault();
-    var box = splitter.getBoundingClientRect();
-    var at = across ? box.top + 6 : box.left + 6;
-    if (kind === 'col1' && body.dataset.list === 'strip' && step > 0) at = area().x + LIST_FOLD;
-    resize(kind, at + step, true);
+    moveCut(cut, cut.at + step);
+    saveTree();
+    layout();
     splitter.focus();
   });
 
-  // Escape unfolds a list folded to its strip.
+  // In the strip a row is only its number: clicking it does what the hidden title would (play or read).
+  document.addEventListener('click', function (event) {
+    if (body.dataset.list !== 'strip') return;
+    var row = event.target.closest && event.target.closest('#sheet .item');
+    if (!row || event.target.closest('a, button, form')) return;
+    var title = row.querySelector('.title');
+    if (title) title.click();
+  });
+
+  // Escape unfolds a list folded to its strip: the split around it is evened out.
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && body.dataset.list === 'strip' && laidOut[0] === 'list') {
-      store('starve.col1', LIST_FOLD + 180);
-      fold();
-      layout();
-    }
-  });
-
-  // ---- Picture in picture: a floating window, dragged by the video, resized by the grip ---------
-
-  var PIP = { min: 240, max: 720, start: 360 };
-
-  function pipBox() {
-    var saved = {};
-    try { saved = JSON.parse(stored('starve.pip') || '{}') || {}; } catch (e) { saved = {}; }
-    return { right: saved.right === undefined ? 20 : saved.right, bottom: saved.bottom === undefined ? 16 : saved.bottom, w: saved.w || PIP.start };
-  }
-
-  function sizePip(box, remember) {
-    var w = Math.round(clamp(box.w, PIP.min, Math.min(PIP.max, window.innerWidth - 40)));
-    var h = Math.round(w * 9 / 16);
-    var deck = player() ? player().offsetHeight : 0;
-    var right = Math.round(clamp(box.right, 0, window.innerWidth - w));
-    var bottom = Math.round(clamp(box.bottom, 0, window.innerHeight - deck - h - 8));
-    body.style.setProperty('--pip-w', w + 'px');
-    body.style.setProperty('--pip-right', right + 'px');
-    body.style.setProperty('--pip-bottom', bottom + 'px');
-    if (remember) store('starve.pip', JSON.stringify({ right: right, bottom: bottom, w: w }));
-    return { right: right, bottom: bottom, w: w };
-  }
-
-  // The grip at the top-left corner resizes, keeping the bottom-right corner where it is.
-  document.addEventListener('pointerdown', function (event) {
-    var grip = event.target.closest('#dock .grip');
-    if (!grip || body.dataset.video !== 'pip') return;
-    event.preventDefault();
-    var start = pipBox();
-    var startX = event.clientX;
-    body.classList.add('resizing');
-    grip.setPointerCapture(event.pointerId);
-    function move(e) { sizePip({ right: start.right, bottom: start.bottom, w: start.w + (startX - e.clientX) }, false); }
-    function up(e) {
-      grip.releasePointerCapture(event.pointerId);
-      grip.removeEventListener('pointermove', move);
-      grip.removeEventListener('pointerup', up);
-      body.classList.remove('resizing');
-      sizePip({ right: start.right, bottom: start.bottom, w: start.w + (startX - e.clientX) }, true);
-    }
-    grip.addEventListener('pointermove', move);
-    grip.addEventListener('pointerup', up);
-  });
-
-  document.addEventListener('keydown', function (event) {
-    var grip = event.target.closest && event.target.closest('#dock .grip');
-    if (!grip || body.dataset.video !== 'pip') return;
-    var step = { ArrowLeft: 32, ArrowUp: 32, ArrowRight: -32, ArrowDown: -32 }[event.key];
-    if (!step) return;
-    event.preventDefault();
-    var box = pipBox();
-    sizePip({ right: box.right, bottom: box.bottom, w: box.w + step }, true);
-  });
-
-  // ---- Picture in picture outside the browser (Document Picture-in-Picture, Chrome and Edge) ------
-
-  // The video's box moves into an always-on-top window of its own. Moving an iframe into another
-  // document reloads it, so the position and play state are carried over and restored once the
-  // embed is ready again. Closing that window brings the video back into the page, in 2 col.
-  // Without the API (Firefox, Safari) PiP stays the floating window inside the page.
-  var pipWindow = null;
-  var pipHome = null;
-
-  function carryOver() {
-    if (!state) return;
-    state.resumeAt = state.position;
-    state.resumePlaying = state.playing;
-  }
-
-  function popOut() {
-    if (!window.documentPictureInPicture || phone() || !videoBox() || !state) return false;
-    if (pipWindow) return true;
-    var width = pipBox().w;
-    window.documentPictureInPicture.requestWindow({ width: width, height: Math.round(width * 9 / 16) })
-      .then(function (win) {
-        pipWindow = win;
-        win.document.title = 'Starve';
-        win.document.body.className = 'pip-window';
-        var style = win.document.createElement('style');
-        style.textContent = 'html,body{margin:0;height:100%;background:#000}iframe{display:block;width:100%;height:100%;border:0}';
-        win.document.head.appendChild(style);
-        win.addEventListener('pagehide', popBack);
-        // The video goes into a same-origin page inside the window, never into the window's own
-        // about:blank document: there the embed would load with no Referer, and YouTube refuses it.
-        var host = win.document.createElement('iframe');
-        host.src = window.location.origin + '/pip.html';
-        host.title = 'Picture in picture';
-        host.addEventListener('load', function () {
-          var box = videoBox();
-          if (!box || pipWindow !== win) { win.close(); return; }
-          var page = host.contentWindow;
-          pipHome = { parent: box.parentNode, next: box.nextSibling, box: box };
-          carryOver();
-          page.document.body.appendChild(page.document.adoptNode(box));
-          page.addEventListener('message', receiveMessage);
-          page.document.addEventListener('click', function (event) {
-            if (event.target.closest('.shield') && state) state.playing ? state.pause() : state.play();
-          });
-          layout();
-        }, { once: true });
-        win.document.body.appendChild(host);
-      }, function () { sizePip(pipBox(), false); });
-    return true;
-  }
-
-  function popBack() {
-    var win = pipWindow;
-    pipWindow = null;
-    if (!win || !pipHome) return;
-    // The box itself is held on to: by the time the window reports it is closing, the page that hosted
-    // the video may already be gone, so it cannot be looked up there.
-    var box = pipHome ? pipHome.box : null;
-    if (box && pipHome.parent.isConnected) {
-      carryOver();
-      pipHome.parent.insertBefore(document.adoptNode(box), pipHome.next && pipHome.next.parentNode === pipHome.parent ? pipHome.next : null);
-    }
-    pipHome = null;
-    if (body.dataset.video === 'pip' && videoBox()) place('split');
-  }
-
-  function closePip() {
-    if (pipWindow) pipWindow.close();
-  }
-
-  // Dragging the floating video moves it; a click without a drag still plays or pauses.
-  var draggedPip = false;
-
-  document.addEventListener('pointerdown', function (event) {
-    var shield = event.target.closest('#dock .shield');
-    if (!shield || body.dataset.video !== 'pip' || phone() || event.button !== 0) return;
-    var start = pipBox();
-    var startX = event.clientX;
-    var startY = event.clientY;
-    draggedPip = false;
-    shield.setPointerCapture(event.pointerId);
-    function move(e) {
-      if (!draggedPip && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 6) return;
-      if (!draggedPip) { draggedPip = true; body.classList.add('resizing'); }
-      sizePip({ right: start.right - (e.clientX - startX), bottom: start.bottom - (e.clientY - startY), w: start.w }, false);
-    }
-    function up(e) {
-      shield.releasePointerCapture(event.pointerId);
-      shield.removeEventListener('pointermove', move);
-      shield.removeEventListener('pointerup', up);
-      body.classList.remove('resizing');
-      if (draggedPip) sizePip({ right: start.right - (e.clientX - startX), bottom: start.bottom - (e.clientY - startY), w: start.w }, true);
-    }
-    shield.addEventListener('pointermove', move);
-    shield.addEventListener('pointerup', up);
+    if (event.key !== 'Escape' || body.dataset.list !== 'strip') return;
+    var at = parentOf(tree, 'list');
+    if (!at) return;
+    at.node.sizes = at.node.sizes.map(function () { return 1 / at.node.sizes.length; });
+    saveTree();
+    fold();
+    layout();
   });
 
   // ---- Transport ------------------------------------------------------------------------
@@ -743,7 +698,6 @@
   // a click plays or pauses, a double click goes fullscreen.
   document.addEventListener('click', function (event) {
     if (!event.target.closest('#dock .shield') || !state) return;
-    if (draggedPip) { draggedPip = false; return; }
     state.playing ? state.pause() : state.play();
   });
 
@@ -772,15 +726,7 @@
       },
       receive: function (data) {
         var info = data.info;
-        if (data.event === 'onReady') {
-          player.volume(savedVolume());
-          // A moved iframe reloads: pick up where it was, playing or paused as it was.
-          if (player.resumeAt !== undefined) {
-            command('seekTo', [player.resumeAt, true]);
-            command(player.resumePlaying ? 'playVideo' : 'pauseVideo');
-            delete player.resumeAt;
-          }
-        }
+        if (data.event === 'onReady') player.volume(savedVolume());
         if (!info || typeof info !== 'object') return;
         if (typeof info.currentTime === 'number' && !seeking) player.position = info.currentTime;
         if (typeof info.duration === 'number') player.duration = info.duration;
@@ -867,8 +813,7 @@
       .catch(function () { /* the seeded waveform stays */ });
   }
 
-  // The embeds answer their parent window: this page, or the picture-in-picture window while the
-  // video has popped out, which forwards to the same handler.
+  // The embeds answer their parent window, this page.
   function receiveMessage(event) {
     if (!state || event.origin !== state.origin || event.source !== state.frame.contentWindow) return;
     var data = event.data;
@@ -939,6 +884,24 @@
     var close = view.querySelector('.reader-close');
     if (close && phone()) close.focus({ preventScroll: true });
   }
+
+  // Centre mode for posts: remembered in this browser, applied to every post.
+  function syncCenter() {
+    var on = stored('starve.center') === 'on';
+    if (on) body.dataset.readerCenter = 'on';
+    else delete body.dataset.readerCenter;
+    document.querySelectorAll('.center-toggle').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(on));
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('.center-toggle')) return;
+    store('starve.center', stored('starve.center') === 'on' ? 'off' : 'on');
+    syncCenter();
+  });
+
+  document.addEventListener('htmx:afterSettle', syncCenter);
 
   function markRowRead(itemId) {
     var row = document.querySelector('.item[data-item="' + itemId + '"]');
@@ -1053,6 +1016,23 @@
     return !!view && view.dataset.item === id;
   }
 
+  // Sources swaps its whole sheet after every change; each column keeps its scroll position across it.
+  var columnScroll = null;
+
+  document.addEventListener('htmx:beforeSwap', function () {
+    var columns = document.querySelectorAll('.sources-split .column-body');
+    columnScroll = columns.length ? Array.prototype.map.call(columns, function (column) { return column.scrollTop; }) : null;
+  });
+
+  document.addEventListener('htmx:afterSettle', function () {
+    if (!columnScroll) return;
+    var saved = columnScroll;
+    columnScroll = null;
+    document.querySelectorAll('.sources-split .column-body').forEach(function (column, index) {
+      if (saved[index] !== undefined) column.scrollTop = saved[index];
+    });
+  });
+
   // A failed request leaves the rows as they were.
   document.addEventListener('htmx:afterRequest', function (event) {
     if (event.detail.successful) return;
@@ -1070,7 +1050,8 @@
     var audio = current.querySelector('.sc-frame');
     trackDeck();
     if (video) {
-      place(savedLayout());
+      body.dataset.video = 'on';
+      layout();
       activate('video');
       state = youtube(video);
       video.addEventListener('load', function () { post(video, YOUTUBE, { event: 'listening', id: 'starve', channel: 'widget' }); });
@@ -1114,7 +1095,6 @@
       trackBar();
       trackDeck();
       layout();
-      if (body.dataset.video === 'pip') sizePip(pipBox(), false);
       syncTop();
     });
   }
@@ -1142,6 +1122,7 @@
   });
 
   window.addEventListener('resize', relayout);
+  syncCenter();
   trackBar();
   trackHeights();
   markPlaying();

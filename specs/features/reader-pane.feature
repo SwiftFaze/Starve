@@ -12,9 +12,10 @@ Feature: Reader pane for blog posts
   date escaped as text); an "Open original" link to the item's link opening in
   a new tab with rel="noopener noreferrer"; opening in the reader marking the
   item read; the no-body state (title, source, date and "Open original"
-  only, plus an explanatory line); a Close control; the reader not asking a
+  only, plus an explanatory line); a link to the source's own RSS/Atom feed,
+  opening in a new tab; a Close control; the reader not asking a
   video in the pane to step down when a post opens (it keeps its placement and
-  is not moved to PiP); 404 for an unknown item id and for a playable item.
+  is not moved elsewhere); 404 for an unknown item id and for a playable item.
   Supersedes: in part chronological-feed.feature, where a title click always
   goes to /items/{id}/open and redirects. That now holds only without
   JavaScript and for playable items; the endpoint itself is unchanged.
@@ -73,6 +74,11 @@ Feature: Reader pane for blog posts
     When I request the reader of the item "Post" via htmx
     Then the reader has an "Open original" link to "https://blog.example/post"
     And the "Open original" link opens in a new tab with rel "noopener noreferrer"
+
+  Scenario: The reader links to the source's own feed
+    Given the source "Blog" has an item "Post" with the link "https://blog.example/post" and the stored body "<p>Hi</p>" published 1 days ago
+    When I request the reader of the item "Post" via htmx
+    Then the reader links to the feed of the source "Blog", opening in a new tab
 
   Scenario: The reader has a Close control
     Given the source "Blog" has an item "Post" with the link "https://blog.example/post" and the stored body "<p>Hi</p>" published 1 days ago
@@ -149,7 +155,7 @@ Feature: Reader pane for blog posts
 # Risks:
 #   - "Anything already playing keeps playing" depends on the reader not
 #     replacing the dock and on deck.js keeping a pane video in the pane;
-#     that is browser behaviour the human playtest must cover (YouTube in 2 col
+#     that is browser behaviour the human playtest must cover (YouTube in the default arrangement
 #     then open a post; YouTube in Deck then open a post; a SoundCloud track
 #     then open a post; close the reader).
 #   - The reader request marks the item read, but the list row only greys on

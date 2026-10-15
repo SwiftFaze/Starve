@@ -33,6 +33,7 @@ class DetailService(
             thumbnailUrl = oembed?.thumbnailUrl ?: item.thumbnailUrl,
             description = oembed?.description ?: item.body,
             later = item.later,
+            sourceUrl = item.sourceUrl,
         )
     }
 

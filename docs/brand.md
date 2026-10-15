@@ -8,7 +8,8 @@ overlap, the tile's red shows through, so you see the overlap without a third co
 Files:
 
 - `docs/brand/starve-mark-dark.svg`, `docs/brand/starve-mark-light.svg`: 512px masters.
-- `src/main/resources/static/favicon-dark.svg`, `favicon-light.svg`: the 32px favicon cut.
+- `docs/brand/starve-favicon-dark.svg`, `docs/brand/starve-favicon-light.svg`: 512px masters of the favicon.
+- `src/main/resources/static/favicon-dark.svg`, `favicon-light.svg`: the favicon's 16px pixel-fitted cut.
 
 All of them are hand-written SVG with four shapes and no fonts. Edit the numbers directly.
 
@@ -32,12 +33,6 @@ Paint in this order:
 | Cut | Tile | `u` | Ink square | Outline square, stroke | Overlap |
 |---|---|---|---|---|---|
 | Master | 512 | 108 | L from 94 to 310 | 202 to 418, 17.28 (0.16u) | 202, 108 wide |
-| Favicon | 32 | 8 | L from 4 to 20 | 12 to 28, 2px (0.25u) | 12, 8 wide |
-
-The favicon sits on whole pixels and uses a heavier outline (0.25u instead of 0.16u), so
-that it still reads at 16px. Make any new small size (an app icon, a touch icon) on whole
-pixels the same way. Don't scale the master down for it.
-
 ## Colour
 
 It uses the obi pair from `DESIGN.md`, and nothing else:
@@ -47,13 +42,32 @@ It uses the obi pair from `DESIGN.md`, and nothing else:
 | Dark | `obi-red` `#ff3b2f` | `ink` `#0c0c12` |
 | Light | `paper-red` `#ef3326` | `obi-ink-light` `#ffffff` |
 
+The favicon is a separate icon, not a cut of the mark (see below), because the overlap mark
+blurs into a speck at 16px.
+
 ## Rules
 
 - Square corners only. Don't round the tile or the squares.
 - No letters, wordmark or stripes inside the tile. The mark stands on its own. The STARVE
   wordmark, when it appears, goes beside it.
-- Keep the tile. The mark on bare ground loses the red that makes the overlap.
-- Smallest size is 16px, using the favicon cut.
+- Keep the tile. On bare ground the overlap has nothing to show through it.
+- The mark's smallest size is 32px. Below that, use the favicon.
+
+## The favicon
+
+The tab icon is the feed in frame, running out: three rows that shorten, inside four corner
+brackets, with a small red live square in the top-right corner, on the ground colour (ink in
+dark, paper in light; the rows and brackets in the text colour). The 512px master also carries
+small tick marks at the middle of each edge.
+
+The 16px cut is drawn on whole pixels:
+
+- the brackets are 1px lines, 3px long;
+- the rows are 2px tall, 7, 6 and 4px long, from x=4, at y=4, 7 and 10;
+- the red square is 2x2 at (12, 3);
+- the tick marks are left out.
+
+It doubles cleanly to 32px for high-density tabs. Don't scale the master down for it.
 
 ## In the app
 

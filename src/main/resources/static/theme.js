@@ -8,6 +8,9 @@
   var root = document.documentElement;
   var KEY = 'starve.theme';
 
+  // Scripts run: controls that only exist for pages without them (a Set group button) can step aside.
+  root.classList.add('js');
+
   try {
     var saved = localStorage.getItem(KEY);
     if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;

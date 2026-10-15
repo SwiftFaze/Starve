@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 
-/** Steps for player-deck.feature and theme-switch.feature: deck controls, waveform, video layouts, splitter, theme. */
+/** Steps for player-deck.feature and theme-switch.feature: deck controls, waveform, splitter, theme. */
 class DeckSteps {
     private val app = World.app
 
@@ -32,39 +32,11 @@ class DeckSteps {
         assertEquals(first, waveform(again))
     }
 
-    @Then("the response offers the video layouts {string}, {string}, {string} and {string}")
-    fun offersLayouts(
-        first: String,
-        second: String,
-        third: String,
-        fourth: String,
-    ) {
-        val labels = PLACEMENT.findAll(body()).map { it.groupValues[2] }.toList()
-        assertEquals(listOf(first, second, third, fourth), labels, body())
-    }
-
-    @Then("the layout {string} is selected")
-    fun placementSelected(label: String) {
-        val pressed =
-            PLACEMENT
-                .findAll(body())
-                .filter { it.groupValues[1] == "true" }
-                .map { it.groupValues[2] }
-                .toList()
-        assertEquals(listOf(label), pressed, body())
-    }
-
     @Then("the response offers no video layout")
-    fun offersNoPlacement() = assertFalse(body().contains("class=\"placement\""), body())
+    fun offersNoPlacement() = assertFalse(body().contains("data-place="), body())
 
     @Then("the timeline has a list splitter")
     fun hasSplitter() = assertTrue(SPLITTER.containsMatchIn(body()), body())
-
-    @Then("the response header {string} is {string}")
-    fun responseHeaderIs(
-        name: String,
-        value: String,
-    ) = assertEquals(value, World.response.headers().firstValue(name).orElse(null))
 
     @Then("the page loads the deck script")
     fun loadsDeckScript() = assertTrue(body().contains("<script src=\"/deck.js\""), body())
@@ -93,8 +65,6 @@ class DeckSteps {
         val VOLUME = Regex("<input[^>]*class=\"level\"[^>]*type=\"range\"")
         val BARS = Regex("<svg class=\"bars\".*?</svg>", RegexOption.DOT_MATCHES_ALL)
         val BAR_HEIGHT = Regex("<rect[^>]*height=\"(\\d+)\"")
-        val PLACEMENT =
-            Regex("<button[^>]*data-place=\"[a-z]+\"[^>]*aria-pressed=\"(true|false)\"[^>]*>([^<]+)</button>")
         val SPLITTER = Regex("<div class=\"splitter\"[^>]*role=\"separator\"")
         val THEME_SWITCH = Regex("<button type=\"button\" class=\"theme-switch\"")
     }

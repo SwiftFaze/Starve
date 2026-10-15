@@ -241,7 +241,7 @@ components:
 
 **Creative North Star: "The Obi Deck"**
 
-Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Akira caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. On a desktop the list, a playing video and an open post are tiled beside the obi like terminal panels, each with a mono title bar, split by draggable rules; or the video floats in a picture-in-picture window.
+Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Akira caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. On a desktop the list, a playing video and an open post are tiled beside the obi like terminal panels, each with a mono title bar, split by draggable rules, and dragging one title bar onto another splits or swaps them.
 
 The same drawing exists twice. Dark is the cover on ink and light is the cover on bone paper, chosen by `prefers-color-scheme` unless the obi's switch has chosen. Both keep square corners, outlined mono controls, and a fine film grain over everything. Display type is loud and expanded, but reading text stays in mixed-case Archivo at reading sizes. The poster attitude belongs to the frame. The list itself is for reading. Signed out, the same world plays at full volume: the landing is the cassette's J-card, with a wider obi and a cover title at poster size.
 
@@ -261,7 +261,7 @@ The world rejects the reader/music-app default of a grey sidebar, rounded cards 
 Ink, bone and two signals: an obi red that says "this is the series / this is playing / this is the panel you're in" and a scanline cyan that says "this is where focus is or where the video goes". Every color has a dark value and a light value; the light palette is the same drawing on paper.
 
 ### Primary
-- **Obi Red** (dark `obi-red`, light `paper-red`): the obi band, the deck's top rule and waveform fill, the playing row's number cell and Play button, the PiP window's border and grip, the phone video's top rule, the active panel's frame and title-bar marker, text selection, the field caret, and the "no art" block in the deck. Text on it is always ink (`ink`), in both themes.
+- **Obi Red** (dark `obi-red`, light `paper-red`): the obi band, the deck's top rule and waveform fill, the playing row's number cell and Play button, the phone video's top rule, the active panel's frame and title-bar marker, text selection, the field caret, and the "no art" block in the deck. Text on it is always ink (`ink`), in both themes.
 - **Obi Red Text** (dark `obi-red-text`, light `paper-red-text`): red used *as text*. It covers the deck's STV number, the "Watch on YouTube" fallback link, failure lines, and the brackets and border of an error message. It is lighter than Obi Red on ink and darker on paper so it reads at body sizes.
 
 ### Secondary
@@ -319,7 +319,7 @@ Ink, bone and two signals: an obi red that says "this is the series / this is pl
 
 **Desktop grid.** A sticky top bar (3.5rem) holds the wordmark, the page tabs, the scrolling group tabs (separated by a hairline), the search field and the account actions. Below it is a two-column label grid. The first column is the sleeve: the obi band (5.5rem) pinned full height between bar and deck. On Sources and Import a 22rem tool panel sits beside the obi. The second column is the sheet, padded 1.75rem top, 2rem gutter, 4rem bottom. The deck is fixed to the viewport bottom, and the page reserves its height through `--deck-h`, which the script measures.
 
-**Release rows.** The wide row is five columns: number 7rem, art 4rem, title flexible, date 12.5rem, actions 13.5rem fixed. The fixed date and action columns keep every date aligned no matter which buttons a row has. A row with no art keeps an empty art cell so every row stays aligned. Rows are 0.875rem by 0.75rem, bleed into the gutter with a negative margin, and sit on a hairline.
+**Release rows.** The wide row is five columns: number 7rem, art 4rem, title flexible, date 12.5rem, actions 18.5rem fixed (wide enough for Playing, star, clock and Mark read). The fixed date and action columns keep every date aligned no matter which buttons a row has. A row with no art keeps an empty art cell so every row stays aligned. Rows are 0.875rem by 0.75rem, bleed into the gutter with a negative margin, and sit on a hairline.
 
 **The sheet is a container** (`container: sheet / inline-size`), so rows respond to the sheet's width rather than the viewport. That matters when a panel beside it narrows the list.
 - Below 68rem, source rows move status under the title.
@@ -327,13 +327,10 @@ Ink, bone and two signals: an obi red that says "this is the series / this is pl
 - Below 44rem, the sheet head wraps and its actions take a full line.
 - Below 34rem, the buttons drop under the title, left-aligned.
 
-**The workspace (desktop).** When two or more of list, video and post are open, they tile the area right of the obi, between bar and deck. Each panel is fixed to a rectangle the script computes, scrolls on its own, and wears a 1.75rem title bar and a hairline frame. Only the video's box moves; the iframe is never re-parented, so playback never restarts. The layout is chosen in the deck and remembered:
-- **2 col:** the first panel is a column; the other two stack in the second column. A video on top of the stack starts at its own 16:9 height.
-- **3 col:** three columns side by side.
-- **Bottom:** the video takes a full-width band along the bottom; the others tile above it.
-- **PiP:** the video floats (see Components); the list and post tile on their own.
-- **Splitters:** the first column's right edge, the second column's right edge in 3 col, and the stack's row or the bottom band's top edge. Each is a 0.75rem drag zone with a 0.25rem × 3rem handle (3rem × 0.25rem across) that grows to 5rem in cyan when active. Columns and rows never go below 280px and 120px. Arrow keys step 32px, and a double-click resets to the default. The list defaults to 720px; below 610px it folds to an STV strip (8.5rem) of catalogue numbers, and Escape unfolds it.
-- **Swapping:** dragging a title bar onto another panel, or its left/right arrow buttons, swaps the two; every tile slides to its new place.
+**The workspace (desktop).** When two or more of list, video and post are open, they tile the area right of the obi, between bar and deck. Each panel is fixed to a rectangle the script computes, scrolls on its own, and wears a 1.75rem title bar and a hairline frame. Only the video's box moves; the iframe is never re-parented, so playback never restarts. The arrangement is a tree of splits, made by dragging title bars and remembered (`starve.tree`); it defaults to the list beside a column of video over post:
+- **Dragging a title bar** onto a panel splits it on the side it is dropped (left, right, top, bottom) or swaps the two in its middle (30-70% of it); onto the outer 28px of the workspace, the panel takes that whole edge. A cyan-bordered, cyan-tinted preview shows the landing area. Every tile slides to its new place.
+- **Rules:** one per split, a 0.75rem drag zone with a 0.25rem × 3rem handle (3rem × 0.25rem across) that grows to 5rem in cyan when active. Panels never go below 200px. Arrow keys step 32px; a double-click, Home or End evens the split out. A list narrower than 610px, in any column, folds to an STV strip (8.5rem) of catalogue numbers whose rows click through to the item and strike through when read; Escape unfolds it.
+- **A video alone in a tall panel** ends under its 16:9 picture.
 
 **The landing (signed out).** The obi widens to `clamp(6rem, 9vw, 9.5rem)`. The first viewport is two columns (1.15fr and 1fr): the cover title, pitch and actions on the left, the demo release list on the right. Below 72rem they stack. Further down: an A/B-side tracklist in two columns, a specifications list (10rem terms), and a barcode colophon.
 
@@ -352,7 +349,7 @@ The system is flat, with no shadows anywhere. Depth comes from three things. The
 
 ## Shapes
 
-Every corner is square (`border-radius: 0`), including buttons, fields, checkboxes, the volume thumb, thumbnails, the video frame, the PiP window and the grip. The recurring cover geometry has six parts. Caution chevrons are 45deg stripes of ink on red that close the obi. Registration crosses are 0.75rem hairline crosses outside the sheet head's top corners (and the landing demo's). Small solid squares are the 0.5rem current-tab marker, the 0.375rem panel-name marker and the square volume thumb. Number cells are solid blocks behind the playing STV number. Barcodes are bands of 1–3px bars in the text color. Square brackets frame counts and messages: "Music [12]" in the group tabs, "[ Subscribed ]" in a message. Adjacent segmented buttons overlap by 1px so they share one rule.
+Every corner is square (`border-radius: 0`), including buttons, fields, checkboxes, the volume thumb, thumbnails and the video frame. The recurring cover geometry has six parts. Caution chevrons are 45deg stripes of ink on red that close the obi. Registration crosses are 0.75rem hairline crosses outside the sheet head's top corners (and the landing demo's). Small solid squares are the 0.5rem current-tab marker, the 0.375rem panel-name marker and the square volume thumb. Number cells are solid blocks behind the playing STV number. Barcodes are bands of 1–3px bars in the text color. Square brackets frame counts and messages: "Music [12]" in the group tabs, "[ Subscribed ]" in a message. Adjacent segmented buttons overlap by 1px so they share one rule.
 
 ## Components
 
@@ -392,7 +389,7 @@ The red spine. It holds the series name, set vertically in Akira and reading bot
 - **Theme switch:** the caution chevrons at its foot are a button that flips dark and light. The choice is stored in localStorage (`starve.theme`) and applied from `<head>` before the first paint; with nothing stored, the OS decides. The stripes sit on a 1rem square tile (`--stripe`: ink in dark, bone in light) and march sideways on hover. On phones the chevrons end the horizontal band.
 
 ### The Mark (signature)
-The logo and favicon: the obi tile carrying two overlapping squares in obi ink, one solid and one outlined, with the overlap showing the tile red. It follows the theme like the obi does. Its construction, colours and rules live in `docs/brand.md`.
+The logo: the obi tile carrying two overlapping squares in obi ink, one solid and one outlined, with the overlap showing the tile red. The favicon is its own icon: the feed in frame, three shortening rows inside corner brackets with a small red live square, on the ground colour, pixel-fitted at 16px. Both follow the theme like the obi does. Its construction, colours and rules live in `docs/brand.md`.
 
 ### The Shutter (signature)
 Every theme change and every Timeline/Sources switch runs behind one red panel that sweeps across the whole viewport: 1.25s in, a 0.4s hold while covered, 1.25s out, all `cubic-bezier(0.65, 0, 0.35, 1)`. Chevron bands lead and trail it. It is dressed as an obi spec sheet: an inset hairline frame with registration crosses, mono corner captions (STARVE, NO ALGORITHM, `[ THEME ]` or `[ PAGE ]`), a barcode with a code derived from the label, a chevron strip, the destination in Akira over a thin rule and a mono caption, and a faint scanline. On a theme change it wears the destination theme's obi ink from the start, so it never flips colour mid-cover.
@@ -408,21 +405,19 @@ Its parts are the STV number, the art cell (empty if no art), the title over sou
 - **Marking read:** before the server answers, the cleared rows strike through (2px, drawn in over 320ms) and dim to 45%, staggered 22ms per row; the read rows then settle in from 45% over 260ms rather than blinking. Under reduced motion the strike is simply there.
 
 ### Workspace Panel (signature)
-The tmux-like tile. A 1.75rem title bar on the raised surface carries a 0.375rem square marker and the panel name (List, Video, Post) in mono uppercase, dim, then two small borderless arrow buttons that swap it left or right (hidden at the ends). The bar is the drag handle (grab cursor); lifted, it follows the pointer with a cyan border at 92% opacity, and the panel under it shows the cyan drop frame. A hairline frame outlines each panel. The active panel, the last one clicked or focused, gets a red frame and red bar border, its name in the text color and its marker red.
+The tmux-like tile. A 1.75rem title bar on the raised surface carries a 0.375rem square marker and the panel name (List, Video, Post) in mono uppercase, dim, then a small borderless × that closes the post or ejects the video (the list has none). The bar is the drag handle (grab cursor); lifted, it follows the pointer with a cyan border at 92% opacity, and the panel under it shows the cyan drop frame. A hairline frame outlines each panel. The active panel, the last one clicked or focused, gets a red frame and red bar border, its name in the text color and its marker red.
 
 ### Player Deck (signature)
 A fixed bottom bar with a minimum height of 5.5rem, on the raised surface with a 1px red top rule. From left to right it holds the art (5.5rem square, or a red block with the STV number in mono when there is no art), the text stack (red Akira STV number, Archivo title and mono source), the transport, the layout switch for YouTube only, and Eject.
 - **Transport:** a 2.5rem square play/pause, the elapsed time, the waveform and the total time.
 - **Waveform:** 3rem tall, with bars in the strong hairline color. A second red copy is revealed by a clip-path as playback progresses. A transparent range input over it seeks on release. Its focus shows as a cyan outline offset 4px.
 - **Volume:** a 2px level line with a square 0.75rem thumb, 6rem wide. The level is remembered in localStorage. Hidden on phones.
-- **Layout switch:** 2 col / 3 col / Bottom / PiP as one segmented control of outlined buttons on strong hairlines; the pressed one is cyan and fills cyan on hover. Desktop only.
 - **Eject:** an outlined button with a drawn eject glyph (triangle over a bar); it stops playback and closes the deck.
 - **Ticker:** a title too long for the deck holds at the start, slides to show the end, holds and returns. The cycle is at least 6s, ease-in-out, and pauses on hover. Under reduced motion it falls back to an ellipsis with no animation.
 - **SoundCloud fallback:** if the widget's handshake never arrives, the transport hides and SoundCloud's own player shows above the deck in a red frame.
 
 ### Video Box
 The box takes whatever rectangle its panel gives it, on the ground color; the picture inside keeps 16:9 at the largest size that fits (`min(100cqw, 100cqh * 16 / 9)` via a size container), anchored to the top and centred across, so a panel of any shape never shows black bars. The YouTube embed runs with `controls=0`. A transparent shield over the video blocks YouTube's hover overlay. A click on the shield plays or pauses, and a double-click goes fullscreen on black. While resizing or dragging, the iframe ignores the pointer and nothing animates. YouTube's title bar reappearing after a seek is an accepted platform limitation, not something to design around.
-- **PiP:** where the browser has Document Picture-in-Picture (Chrome, Edge), the video pops out of the browser into an always-on-top window of its own, black edge to edge, sized 16:9 from the remembered PiP width. The box moves into Starve's own `/pip.html` inside that window (an `about:blank` window would send YouTube no Referer, and it refuses to play), so the page allows framing by its own origin (`X-Frame-Options: SAMEORIGIN`). Moving reloads the embed, so the position and play state are carried over and restored once it is ready. Closing the window brings the video back in 2 col; Eject closes it. Elsewhere PiP is a floating 16:9 window above the deck's right end with a 1px red border, starting at 360px wide, resizable from 240 to 720px, dragged by the video itself and resized from a 1.75rem red grip at its top-left (inverts on hover; arrow keys step 32px). Its size and position are remembered. The list and post pad their ends so nothing sits under it.
 
 ### Landing J-Card
 The signed-out cover. A cover title in Akira, an Archivo pitch (up to 34rem, dim) and the actions (filled Sign in, outline Sign up when signups are open, both 3rem tall). Beside it, a demo release list on the raised surface inside a strong hairline with registration crosses: an Akira head with a mono "Demo" tag, six rows built from the app's own row parts with abstract hairline art blocks, which strike themselves read one by one (520ms each, 0.55s apart) and end on "You're all caught up". Below: an A/B-side tracklist (mono track numbers A1–B3, Archivo 600 names over dim descriptions), a specifications list (mono terms, Archivo values, hairline rows), and a colophon of mono captions with a barcode. Under reduced motion the demo shows its finished state.
@@ -442,7 +437,7 @@ On the docs page a code block is a sunk well with a strong hairline, mono 0.8125
 - **Do** set the wordmark, obi series name, cover title, sheet and docs headings, the deck STV number and "caught up" in Akira Expanded 800, uppercase, at `font-stretch: 125%`.
 - **Do** set every title and all body text in Archivo, mixed case. Set STV/SRC numbers, dates, sources, control labels and code in Martian Mono.
 - **Do** ship every color in both themes, following `prefers-color-scheme` unless the obi switch has set `data-theme` on the root.
-- **Do** keep row dates aligned with the fixed 13.5rem actions column, and keep an empty art cell when a row has no art.
+- **Do** keep row dates aligned with the fixed 18.5rem actions column, and keep an empty art cell when a row has no art.
 - **Do** let rows respond to the sheet's container width (64rem fold, 34rem buttons-under-title), not the viewport.
 - **Do** make a button beside a field, or in a row that contains one, 2.5rem tall.
 - **Do** draw icons as inline SVG in `currentColor`; show a pressed toggle by inverting it, not by colouring it.
