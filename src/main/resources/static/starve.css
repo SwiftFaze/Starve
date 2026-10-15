@@ -2577,7 +2577,19 @@ body[data-active="post"] .pane-frame[data-pane="post"] {
 }
 
 /* Tiled, a post closes from its title bar's ×; its own Close is only for phones, which have no title bars. */
-body[data-split] .reader-close {
+body[data-split] /* Beside the post's number: opening it has marked it read. */
+.read-tag {
+  margin-left: 0.75rem;
+  padding: 0.2rem 0.375rem;
+  border: 1px solid var(--line-strong);
+  font: 500 0.625rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  vertical-align: 0.1em;
+}
+
+.reader-close {
   display: none;
 }
 

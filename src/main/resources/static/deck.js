@@ -27,6 +27,13 @@
 
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 
+  function forget(key) {
+    try { localStorage.removeItem(key); } catch (e) { /* storage blocked */ }
+  }
+
+  // "STV 0030" is item 30.
+  function itemNumber(catalogue) { return String(parseInt(String(catalogue).replace(/\D/g, ''), 10)); }
+
   // ---- The playing row ------------------------------------------------------------------
 
   function markPlaying() {
@@ -48,6 +55,8 @@
 
   // Eject removes the focused button, so focus goes back to the row it was playing.
   window.stopPlayer = function (button) {
+    forget('starve.open.play');
+    forget('starve.open.at');
     var target = document.querySelector('.item.playing .play') || document.getElementById('sheet');
     button.closest('.player').remove();
     state = null;
@@ -626,10 +635,62 @@
     return (h ? h + ':' : '') + mm + ':' + String(s).padStart(2, '0');
   }
 
+  var lastSaved = 0;
+
+  // ---- After a reload: the post, the player (paused where it was) and the list's scroll come back ------
+
+  var resumeAt = null;
+
+  function resume(current) {
+    if (resumeAt === null || current !== state) return;
+    var at = resumeAt;
+    resumeAt = null;
+    if (at > 0) current.seek(at);
+    setTimeout(function () { current.pause(); }, 300);
+  }
+
+  var pendingTop = 0;
+
+  function restoreView() {
+    if (!window.htmx || !onTimeline() || phone()) return;
+    var post = stored('starve.open.post');
+    var play = stored('starve.open.play');
+    pendingTop = Number(stored('starve.list.top')) || 0;
+    // Each request comes from its own target, so neither cancels the other.
+    if (post && !postView()) {
+      window.htmx.ajax('GET', '/items/' + post + '/reader', { source: reader(), target: '#reader', swap: 'innerHTML' });
+    }
+    if (play && !player()) {
+      resumeAt = Number(stored('starve.open.at')) || 0;
+      window.htmx.ajax('GET', '/items/' + play + '/player', { source: dock(), target: '#dock', swap: 'innerHTML' });
+    }
+    if (pendingTop) setTimeout(applyTop, 0);
+  }
+
+  // The list's scroll goes back once the panels are tiled (it only scrolls on its own when they are).
+  function applyTop() {
+    var sheet = document.getElementById('sheet');
+    if (!pendingTop || !sheet || body.dataset.split !== 'on') return;
+    sheet.scrollTop = pendingTop;
+    if (sheet.scrollTop > 0) pendingTop = 0;
+  }
+
+  document.addEventListener('htmx:afterSettle', function () { requestAnimationFrame(applyTop); });
+
+  document.addEventListener('scroll', function (event) {
+    if (event.target && event.target.id === 'sheet' && body.dataset.split === 'on') {
+      store('starve.list.top', Math.round(event.target.scrollTop));
+    }
+  }, true);
+
   function render() {
     var current = player();
     if (!current || !state) return;
     var fraction = state.duration > 0 ? Math.min(1, state.position / state.duration) : 0;
+    if (state.position > 0 && Math.abs(state.position - lastSaved) >= 2) {
+      lastSaved = state.position;
+      store('starve.open.at', Math.floor(state.position));
+    }
     current.querySelector('.wave').style.setProperty('--progress', String(fraction));
     current.querySelector('.elapsed').textContent = clock(state.position);
     current.querySelector('.total').textContent = clock(state.duration);
@@ -725,7 +786,10 @@
       },
       receive: function (data) {
         var info = data.info;
-        if (data.event === 'onReady') player.volume(savedVolume());
+        if (data.event === 'onReady') {
+          player.volume(savedVolume());
+          resume(player);
+        }
         if (!info || typeof info !== 'object') return;
         if (typeof info.currentTime === 'number' && !seeking) player.position = info.currentTime;
         if (typeof info.duration === 'number') player.duration = info.duration;
@@ -763,6 +827,7 @@
             call('getCurrentSound');
             player.volume(savedVolume());
             enable();
+            resume(player);
             break;
           case 'getDuration':
             player.duration = (data.value || 0) / 1000;
@@ -861,6 +926,7 @@
   // exactly where it was left.
   window.closeReader = function () {
     var item = postView() ? postView().dataset.item : null;
+    forget('starve.open.post');
     emptyReader();
     var row = item ? document.querySelector('.item[data-item="' + item + '"] .title') : null;
     if (row && phone()) row.focus({ preventScroll: true });
@@ -874,6 +940,7 @@
   function readerOpened() {
     var view = postView();
     if (!view) return;
+    store('starve.open.post', itemNumber(view.dataset.item));
     var pane = reader();
     if (pane) pane.scrollTop = 0;
     body.classList.toggle('reading', phone());
@@ -1087,6 +1154,7 @@
     var current = player();
     state = null;
     if (!current) return;
+    store('starve.open.play', itemNumber(current.dataset.item));
     body.dataset.playing = current.dataset.kind;
     var video = current.querySelector('.ratio-16x9 iframe');
     var audio = current.querySelector('.sc-frame');
@@ -1164,6 +1232,8 @@
   });
 
   window.addEventListener('resize', relayout);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restoreView);
+  else restoreView();
   syncCenter();
   trackBar();
   trackHeights();
