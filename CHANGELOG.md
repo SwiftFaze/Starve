@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.9](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.8...v1.1.0-beta.9) (2026-10-15)
+
+
+### Features
+
+* public home page and the timeline at /feed ([#63](https://github.com/SwiftFaze/Starve/issues/63)) ([c7c0d48](https://github.com/SwiftFaze/Starve/commit/c7c0d4896c3855bdd939cdcea23acf8770f9292c))
+
 ## [1.1.0-beta.8](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.7...v1.1.0-beta.8) (2026-10-14)
 
 
