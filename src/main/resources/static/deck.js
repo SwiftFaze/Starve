@@ -572,7 +572,7 @@
     if (!cut) return;
     evenOut(cut);
     saveTree();
-    fold();
+    // layout() plays the fold itself, and only when the list crosses into or out of its strip.
     layout();
   });
 
@@ -612,7 +612,6 @@
     if (!at) return;
     at.node.sizes = at.node.sizes.map(function () { return 1 / at.node.sizes.length; });
     saveTree();
-    fold();
     layout();
   });
 
