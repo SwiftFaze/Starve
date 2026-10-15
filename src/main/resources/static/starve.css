@@ -3934,8 +3934,7 @@ body[data-reader-center] .reader-view .reader-head {
 
 /* ---- Changing group: the list deals in row by row, the obi's name slides up ------------------------ */
 
-body.dealing .sheet .item,
-body.dealing .sheet .sheet-head {
+body.dealing .sheet .item {
   animation: deal-in 300ms cubic-bezier(0.16, 1, 0.3, 1) var(--deal, 0ms) both;
 }
 
@@ -3992,7 +3991,6 @@ body.dealing #series .series-meta {
 
 @media (prefers-reduced-motion: reduce) {
   body.dealing .sheet .item,
-  body.dealing .sheet .sheet-head,
   body.dealing #series .series,
   body.dealing #series .series-meta {
     animation: none;
