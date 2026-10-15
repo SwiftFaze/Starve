@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.10](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.9...v1.1.0-beta.10) (2026-10-15)
+
+
+### Features
+
+* give each user their own sources, groups and items ([#65](https://github.com/SwiftFaze/Starve/issues/65)) ([72a8f47](https://github.com/SwiftFaze/Starve/commit/72a8f47c2b175feb6afa7dafa7c11b853a5dfda3))
+
 ## [1.1.0-beta.9](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.8...v1.1.0-beta.9) (2026-10-15)
 
 
