@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Starve: a feed reader with no algorithm</title>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/starve.css">
+</head>
+<body>
+  <header class="bar" id="bar">
+    <p class="wordmark"><a href="/">Starve</a></p>
+  </header>
+
+  <div class="label">
+    <aside class="sleeve" aria-label="Starve">
+      <div class="series-block">
+        <h1 class="series roster-name">Starve</h1>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
+      </div>
+    </aside>
+
+    <main class="sheet" id="sheet">
+      <div class="sheet-head">
+        <h2 class="sheet-title">Your feeds, in order</h2>
+      </div>
+
+      <p class="sheet-note">Starve is a self-hosted feed reader. One chronological timeline of everything you follow, newest first, with no ranking and no algorithm deciding what you see.</p>
+
+      <ul class="highlights">
+        <li><strong>Feeds</strong>Follow RSS and Atom feeds, YouTube channels and SoundCloud profiles from one list, and group them as you like.</li>
+        <li><strong>Playback</strong>Play YouTube and SoundCloud right in the page, and keep listening while you browse your sources.</li>
+        <li><strong>Import</strong>Bring your subscriptions with you from a YouTube Takeout file or an OPML export.</li>
+      </ul>
+
+      <a class="read-toggle" href="/login">Sign in</a>
+    </main>
+  </div>
+</body>
+</html>

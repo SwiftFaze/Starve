@@ -18,7 +18,7 @@ class SecurityAccessTest : SecurityTestBase() {
     @ParameterizedTest
     @ValueSource(
         strings = [
-            "/", "/sources", "/whoami", "/nested/page.css", "/nested/app.js", "/other/fonts/x.woff2",
+            "/sources", "/whoami", "/nested/page.css", "/nested/app.js", "/other/fonts/x.woff2",
             "/actuator/info",
         ],
     )
@@ -34,7 +34,7 @@ class SecurityAccessTest : SecurityTestBase() {
     @ParameterizedTest
     @ValueSource(
         strings = [
-            "/login", "/actuator/health", "/starve.css", "/htmx.min.js", "/fonts/mono.woff2",
+            "/", "/login", "/actuator/health", "/starve.css", "/htmx.min.js", "/fonts/mono.woff2",
             "/fonts/a/b.woff2", "/favicon.ico",
         ],
     )
@@ -89,7 +89,7 @@ class SecurityAccessTest : SecurityTestBase() {
 
         val result = login(ADMIN, session = session)
 
-        assertEquals("/", result.response.redirectedUrl)
+        assertEquals("/feed", result.response.redirectedUrl)
     }
 
     @Test
@@ -98,7 +98,7 @@ class SecurityAccessTest : SecurityTestBase() {
 
         val result = login(ADMIN)
 
-        assertEquals("/", result.response.redirectedUrl)
+        assertEquals("/feed", result.response.redirectedUrl)
     }
 
     @Test

@@ -46,7 +46,7 @@ class SetupController(
         when (val outcome = setup.complete(form.code, form.username, form.password, request.remoteAddr)) {
             is SetupOutcome.Created -> {
                 signIn(outcome.username, request, response)
-                "redirect:/"
+                "redirect:/feed"
             }
 
             SetupOutcome.AlreadySetUp -> {

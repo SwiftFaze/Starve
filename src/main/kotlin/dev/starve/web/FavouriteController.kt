@@ -42,7 +42,7 @@ class FavouriteController(
         val found = if (favourite) favourites.favourite(id) else favourites.unfavourite(id)
         if (!found) throw ResponseStatusException(HttpStatus.NOT_FOUND)
         return when {
-            htmx == null -> ModelAndView("redirect:/")
+            htmx == null -> ModelAndView("redirect:/feed")
             from == FROM_READER -> readerAnswer(id, favourite)
             else -> ModelAndView("star :: star", mapOf("star" to StarView("star-$id", id, favourite)))
         }

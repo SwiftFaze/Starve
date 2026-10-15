@@ -18,7 +18,9 @@ fun assertRedirectTo(
 ) {
     assertTrue(response.statusCode() in 300..399, "expected a redirect, got ${response.statusCode()}")
     val location = response.headers().firstValue("Location").orElseThrow()
-    assertEquals(path, URI.create(location).path)
+    val target = URI.create(location)
+    val actual = if (path.contains('?')) target.rawPath + "?" + target.rawQuery else target.path
+    assertEquals(path, actual)
 }
 
 /** Steps for specs/features/accounts-login.feature: setup, login, throttling, remember-me and logout. */

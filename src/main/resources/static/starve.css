@@ -388,6 +388,21 @@ input[type="file"].field::file-selector-button {
   border-radius: 0;
 }
 
+/* The sign-out button ends the top bar; the search form, where there is one, pushes it right already. */
+.signout {
+  display: flex;
+  align-items: center;
+  margin: 0 0 0 auto;
+}
+
+.search + .signout {
+  margin-left: 0;
+}
+
+.signout button {
+  min-height: 2rem;
+}
+
 .tab,
 .group-link,
 .favourites-link,
@@ -906,6 +921,30 @@ input[type="file"].field::file-selector-button {
   margin: 1.5rem 0;
   font-size: 1rem;
   color: var(--text-2);
+}
+
+/* ---- The landing page ------------------------------------------------------------------- */
+
+.highlights {
+  max-width: 40rem;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.highlights li {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+}
+
+.highlights strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font: 500 0.75rem/1.2 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
 }
 
 /* ---- Release rows ----------------------------------------------------------------------- */

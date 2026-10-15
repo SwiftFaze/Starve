@@ -36,7 +36,7 @@ class LoginFlowTest : SecurityTestBase() {
 
         val result = login(ADMIN, session = session)
 
-        assertEquals("/", result.redirect())
+        assertEquals("/feed", result.redirect())
         mvc.perform(get("/whoami").session(session)).andExpect(status().isOk)
     }
 
@@ -44,7 +44,7 @@ class LoginFlowTest : SecurityTestBase() {
     fun `the username is matched ignoring case`() {
         withAccounts()
 
-        assertEquals("/", login("ROB").redirect())
+        assertEquals("/feed", login("ROB").redirect())
     }
 
     @Test
@@ -94,7 +94,7 @@ class LoginFlowTest : SecurityTestBase() {
         val session = MockHttpSession()
         login(ADMIN, session = session)
 
-        mvc.perform(get("/login").session(session)).andExpect(redirectedUrl("/"))
+        mvc.perform(get("/login").session(session)).andExpect(redirectedUrl("/feed"))
     }
 
     @Test
@@ -128,7 +128,7 @@ class LoginFlowTest : SecurityTestBase() {
         withAccounts()
         failLogin(ADMIN, BLOCKING_FAILURES - 1)
 
-        assertEquals("/", login(ADMIN).redirect())
+        assertEquals("/feed", login(ADMIN).redirect())
     }
 
     @Test
@@ -147,7 +147,7 @@ class LoginFlowTest : SecurityTestBase() {
         withAccounts()
         failLogin(ADMIN, BLOCKING_FAILURES)
 
-        assertEquals("/", login(MEMBER).redirect())
+        assertEquals("/feed", login(MEMBER).redirect())
     }
 
     @Test
@@ -155,7 +155,7 @@ class LoginFlowTest : SecurityTestBase() {
         withAccounts()
         failLogin(ADMIN, BLOCKING_FAILURES, from = "203.0.113.7")
 
-        assertEquals("/", login(ADMIN, from = "198.51.100.9").redirect())
+        assertEquals("/feed", login(ADMIN, from = "198.51.100.9").redirect())
     }
 
     @Test
@@ -182,7 +182,7 @@ class LoginFlowTest : SecurityTestBase() {
 
         failLogin(ADMIN, BLOCKING_FAILURES - 1)
 
-        assertEquals("/", login(ADMIN).redirect())
+        assertEquals("/feed", login(ADMIN).redirect())
     }
 
     @Test
@@ -233,7 +233,7 @@ class LoginFlowTest : SecurityTestBase() {
 
         val result = mvc.perform(post("/logout").session(session)).andReturn()
 
-        assertEquals("/login", result.redirect())
+        assertEquals("/", result.redirect())
         assertTrue(session.isInvalid)
         assertEquals(0, result.response.getCookie("JSESSIONID")?.maxAge)
         assertEquals(0, result.response.getCookie("remember-me")?.maxAge)

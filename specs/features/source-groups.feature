@@ -4,9 +4,9 @@ Feature: Source groups
 
   Covers: creating, renaming and deleting groups on "/sources" (names trimmed,
   1-50 characters, unique case-insensitively); assigning a source to a group
-  or back to "Ungrouped"; the group navigation on "/" listing "All" plus each
+  or back to "Ungrouped"; the group navigation on "/feed" listing "All" plus each
   group alphabetically (case-insensitive) with its unread count; the filtered
-  timeline "/?group=<id>" with the same ordering, paging and read state as the
+  timeline "/feed?group=<id>" with the same ordering, paging and read state as the
   main timeline; "Mark all read" limited to the current group; "Load more"
   keeping the group filter; deleting a group ungrouping (not deleting) its
   sources; 404 for an unknown group id; a groups table and a nullable
@@ -88,7 +88,7 @@ Feature: Source groups
     When I assign the source "Alpha" to "Ungrouped"
     And I request the timeline of the group "Music"
     Then the timeline lists no items
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists "A-1"
 
   Scenario: The All view still shows every source including ungrouped ones
@@ -97,7 +97,7 @@ Feature: Source groups
     And the source "Beta" has an unread item "B-1" published 2 days ago
     And the source "Gamma" has an unread item "G-1" published 1 days ago
     And the source "Alpha" is in the group "Music"
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists the items in this order
       | G-1 |
       | B-1 |
@@ -125,7 +125,7 @@ Feature: Source groups
     And the source "Gamma" has an unread item "G-1" published 1 days ago
     And the source "Alpha" is in the group "Music"
     And the source "Beta" is in the group "News"
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the group navigation lists the entries
       | All (4)   |
       | Music (2) |
@@ -137,14 +137,14 @@ Feature: Source groups
     And the source "Alpha" is in the group "Music"
     When I request the timeline of the group "Music"
     Then the group navigation marks "Music (1)" as current
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the group navigation marks "All (1)" as current
 
   Scenario: Groups are listed alphabetically regardless of case
     Given the group "zebra" exists
     And the group "Apple" exists
     And the group "mango" exists
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the group navigation lists the groups in this order
       | Apple |
       | mango |
@@ -170,7 +170,7 @@ Feature: Source groups
     And the item "A-1" is read
     And the item "B-1" is unread
     And the item "G-1" is unread
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists "B-1"
     And the timeline lists "G-1"
     And the timeline does not list "A-1"
@@ -194,7 +194,7 @@ Feature: Source groups
     Then the sources page does not list the group "Music"
     And the sources page lists a source titled "Alpha"
     And the source "Alpha" is ungrouped
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline lists "A-1"
     And the group navigation lists the entries
       | All (1) |
@@ -221,9 +221,9 @@ Feature: Source groups
     Then the response status is 404
 
     Examples:
-      | path          |
-      | /?group=99999 |
-      | /?group=abc   |
+      | path              |
+      | /feed?group=99999 |
+      | /feed?group=abc   |
 
 # Non-goals:
 #   - Tags / multiple groups per source, smart or keyword groups.

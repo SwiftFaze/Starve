@@ -10,13 +10,13 @@ Feature: Save items for later
   nullable later_at holding when the item was saved; items already stored are
   not saved); POST /items/{id}/later and POST /items/{id}/unlater, both
   idempotent, answering an htmx request with the re-rendered ⏲ (saved or
-  unsaved) and a plain request with a redirect to "/"; saving an item that is
+  unsaved) and a plain request with a redirect to "/feed"; saving an item that is
   already saved keeping its original saved time; the ⏲ on every timeline row,
   in the reader and in the detail view; a toggle made in the reader or the
   detail view also updating that item's row (out-of-band swap); saving
   leaving read state and the favourite flag alone, and opening, reading or
   playing an item leaving it saved; a "Later" entry in the left navigation
-  after "Favourites", linking to "/?later=1"; the Later view listing saved
+  after "Favourites", linking to "/feed?later=1"; the Later view listing saved
   items earliest-saved first (saved time, then id ascending) whether read or
   not, paged 50 at a time with "Load more" keeping the filter, with no "Show
   read" or "Mark all read" control and an empty state; Favourites winning when
@@ -50,7 +50,7 @@ Feature: Save items for later
 
   Scenario: Every timeline row has an unsaved ⏲ that saves via htmx
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Long talk" has an unsaved later toggle
     And the later toggle of "Long talk" saves it via htmx without a page reload
 
@@ -73,7 +73,7 @@ Feature: Save items for later
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
     And the source "Alpha" has an unread item "Short" published 2 days ago
     And the item "Long talk" is saved for later
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline entry "Long talk" has a saved later toggle
     And the timeline entry "Short" has an unsaved later toggle
 
@@ -89,7 +89,7 @@ Feature: Save items for later
     When I save the item "First" for later via htmx
     And I save the item "Second" for later via htmx
     And I save the item "First" for later via htmx
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists the items in this order
       | First  |
       | Second |
@@ -103,7 +103,7 @@ Feature: Save items for later
   Scenario: Saving without JavaScript redirects back to the timeline
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
     When I save the item "Long talk" for later
-    Then the response redirects to "/"
+    Then the response redirects to "/feed"
     And the item "Long talk" is saved for later
 
   Scenario: Saving does not change read state
@@ -130,9 +130,9 @@ Feature: Save items for later
   Scenario: A saved read item stays out of the default timeline but keeps its ⏲ with Show read
     Given the source "Alpha" has a read item "Old" published 2 days ago
     And the item "Old" is saved for later
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline does not list "Old"
-    When I request the home page "/?show=all"
+    When I request the home page "/feed?show=all"
     Then the timeline entry "Old" has a saved later toggle
 
   Scenario Outline: Saving or clearing an unknown item returns 404
@@ -223,22 +223,22 @@ Feature: Save items for later
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
     And the item "Long talk" is saved for later
     When I mark the item "Long talk" as read
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists "Long talk"
 
   Scenario: Mark all read leaves saved items saved
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
     And the item "Long talk" is saved for later
     When I mark all items read
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists "Long talk"
 
   # ---- the Later filter ---------------------------------------------------------------
 
   Scenario: The left navigation offers Later after Favourites
     Given the group "Music" exists
-    When I request the home page "/"
-    Then the navigation ends with the "Later" entry linking to "/?later=1"
+    When I request the home page "/feed"
+    Then the navigation ends with the "Later" entry linking to "/feed?later=1"
     And the "Later" entry follows the "Favourites" entry
 
   Scenario: The Later view lists items earliest-saved first, read or not
@@ -249,7 +249,7 @@ Feature: Save items for later
     When I save the item "First saved" for later via htmx
     And I save the item "Second saved" for later via htmx
     And I save the item "Third saved" for later via htmx
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists the items in this order
       | First saved  |
       | Second saved |
@@ -259,7 +259,7 @@ Feature: Save items for later
   Scenario: Items saved at the same instant are ordered by id ascending
     Given the source "Alpha" has unread items "First", "Second" and "Third" stored in that order with the same published date
     And the items "Third", "First" and "Second" are saved for later at the same instant
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the timeline lists the items in this order
       | First  |
       | Second |
@@ -272,7 +272,7 @@ Feature: Save items for later
     And I save the item "Second" for later via htmx
     And I clear the item "First" from later via htmx
     And I save the item "First" for later via htmx
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists the items in this order
       | Second |
       | First  |
@@ -280,7 +280,7 @@ Feature: Save items for later
   Scenario: The Later entry is marked as current in the Later view
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
     And the item "Long talk" is saved for later
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the "Later" entry is marked as current
     And the "Favourites" entry is not marked as current
     And no group entry is marked as current
@@ -292,7 +292,7 @@ Feature: Save items for later
     And the source "Beta" has an unread item "Talk" published 1 days ago
     When I save the item "Talk" for later via htmx
     And I save the item "Song" for later via htmx
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists the items in this order
       | Talk |
       | Song |
@@ -310,23 +310,23 @@ Feature: Save items for later
 
   Scenario: Saving an item makes it appear in the Later view
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the timeline does not list "Long talk"
     When I save the item "Long talk" for later via htmx
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists "Long talk"
 
   Scenario: Clearing an item removes it from the Later view
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
     And the item "Long talk" is saved for later
     When I clear the item "Long talk" from later via htmx
-    And I request the home page "/?later=1"
+    And I request the home page "/feed?later=1"
     Then the timeline lists no items
 
   Scenario: The Later view has a ⏲ on every row and no read controls
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
     And the item "Long talk" is saved for later
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the timeline entry "Long talk" has a saved later toggle
     And the page has no "Mark all read" control
     And the page has no "Show read" control
@@ -334,13 +334,13 @@ Feature: Save items for later
   Scenario: The Later view ignores the show parameter
     Given the source "Alpha" has a read item "Old" published 2 days ago
     And the item "Old" is saved for later
-    When I request the home page "/?later=1&show=all"
+    When I request the home page "/feed?later=1&show=all"
     Then the timeline lists "Old"
 
   Scenario: A favourite that is not saved is not in the Later view
     Given the source "Alpha" has an unread item "Song" published 1 days ago
     And the item "Song" is a favourite
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the timeline lists no items
 
   Scenario: Favourites wins when both filters are given
@@ -348,13 +348,13 @@ Feature: Save items for later
     And the source "Alpha" has an unread item "Queued" published 1 days ago
     And the item "Starred" is a favourite
     And the item "Queued" is saved for later
-    When I request the home page "/?favourites=1&later=1"
+    When I request the home page "/feed?favourites=1&later=1"
     Then the timeline lists "Starred"
     And the timeline does not list "Queued"
 
   Scenario: Later with nothing saved shows an empty state
     Given the source "Alpha" has an unread item "Long talk" published 1 days ago
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the timeline lists no items
     And the page contains "Nothing saved for later"
     And the page does not contain "You're all caught up"
@@ -363,7 +363,7 @@ Feature: Save items for later
     Given the source "Alpha" has 120 unread items published at one-minute intervals
     And every item is saved for later in timeline order, oldest saved first
     And the source "Alpha" has an unread item "Plain" published 60 days ago
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the timeline lists 50 items
     When I load more
     And I load more
@@ -422,7 +422,7 @@ Feature: Save items for later
     Given the database is migrated only up to before read-later
     And it holds a source "Blog" with a stored item titled "Old post"
     And the application is running
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the timeline lists no items
     When I save the item "Old post" for later via htmx
     Then the item "Old post" is saved for later
@@ -431,7 +431,7 @@ Feature: Save items for later
     Given the source "Alpha" has an unread item "Post saved" published 2 days ago
     And the source "Alpha" has an unread item "Post plain" published 1 days ago
     And the item "Post saved" is saved for later
-    When I request the home page "/?later=1"
+    When I request the home page "/feed?later=1"
     Then the search form carries "later" as "1"
     When I search for "post" while viewing the Later
     Then the timeline lists the items in this order

@@ -4,7 +4,7 @@ Feature: Full-text search across titles, sources and post bodies
   layout, newest first, and ignore the group and Show read filters. The search
   is kept in a SQLite FTS5 index that stays in step with the items table.
 
-  Covers: GET /?q=<text> as the search URL (bookmarkable and reloadable; the
+  Covers: GET /feed?q=<text> as the search URL (bookmarkable and reloadable; the
   page renders the box filled in and the results); a search box in the top bar
   requesting that URL via htmx on typing with a debounce, updating the list in
   place and pushing the URL, and clearing the box returning to the timeline, or to the Favourites view or
@@ -143,13 +143,13 @@ Feature: Full-text search across titles, sources and post bodies
 
   Scenario: The search page keeps the box filled in so it can be bookmarked and reloaded
     Given the source "Alpha" has an unread item "Match here" published 1 days ago
-    When I request the home page "/?q=match"
+    When I request the home page "/feed?q=match"
     Then the response status is 200
     And the search box contains "match"
     And the timeline lists "Match here"
 
   Scenario: Typing requests the results via htmx and pushes the search URL
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the page has a search box in the top bar
     And the search box requests the timeline via htmx as you type with a debounce
     And the search box pushes the search URL into the browser history
@@ -211,7 +211,7 @@ Feature: Full-text search across titles, sources and post bodies
   Scenario: The search form carries the view it was opened from
     Given the group "Music" exists
     And the source "Alpha" has an unread item "Post one" published 1 days ago
-    When I request the home page "/?favourites=1"
+    When I request the home page "/feed?favourites=1"
     Then the search form carries "favourites" as "1"
     When I search for "post" while viewing the group "Music"
     Then the search form carries the group "Music"
@@ -220,7 +220,7 @@ Feature: Full-text search across titles, sources and post bodies
     Given the source "Alpha" has an unread item "Post starred" published 2 days ago
     And the source "Alpha" has an unread item "Post plain" published 1 days ago
     And the item "Post starred" is a favourite
-    When I request the home page "/?q=plain&favourites=1"
+    When I request the home page "/feed?q=plain&favourites=1"
     Then the timeline lists "Post plain"
     And the page does not contain "No favourites yet"
 

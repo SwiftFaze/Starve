@@ -34,7 +34,7 @@ private const val CSRF_HEADER = "X-CSRF-TOKEN"
 private typealias Registry = AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
 
 private val PUBLIC_PATHS =
-    listOf("/setup", "/login", "/error", "/actuator/health", "/*.css", "/*.js", "/fonts/**", "/favicon.ico")
+    listOf("/", "/setup", "/login", "/error", "/actuator/health", "/*.css", "/*.js", "/fonts/**", "/favicon.ico")
 
 /**
  * What the login chain needs: the throttled password check, the account lookup, and the remember-me key.
@@ -106,7 +106,7 @@ class SecurityConfig {
             .loginPage("/login")
             .loginProcessingUrl("/login")
             .failureHandler(LoginFailureHandler())
-            .defaultSuccessUrl("/", false)
+            .defaultSuccessUrl("/feed", false)
             .permitAll()
     }
 
@@ -124,7 +124,7 @@ class SecurityConfig {
     private fun configureLogout(config: LogoutConfigurer<HttpSecurity>) {
         config
             .logoutUrl("/logout")
-            .logoutSuccessUrl("/login")
+            .logoutSuccessUrl("/")
             .deleteCookies("JSESSIONID", "remember-me")
             .invalidateHttpSession(true)
     }

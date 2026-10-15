@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- The top bar's sign-out button: a plain POST form, so it works without JavaScript and inside every swapped bar. -->
+<th:block th:fragment="signout">
+  <form class="signout" method="post" th:action="@{/logout}">
+    <button type="submit">Sign out</button>
+  </form>
+</th:block>
+</body>
+</html>

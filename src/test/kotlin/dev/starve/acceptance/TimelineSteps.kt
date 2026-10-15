@@ -74,6 +74,12 @@ class TimelineSteps {
         seededTitles.forEachIndexed { index, title -> seed(source, title, now.minus(Duration.ofMinutes(index + 1L))) }
     }
 
+    @Given("the source {string} has {int} unread items")
+    fun unreadItems(
+        source: String,
+        count: Int,
+    ) = manyItems(source, count)
+
     @Given("the source {string} has {int} unread items published at one-minute intervals all titled with {string}")
     fun manyTitledItems(
         source: String,

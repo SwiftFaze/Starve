@@ -58,7 +58,7 @@ class SetupFlowTest : SecurityTestBase() {
 
         val result = mvc.perform(setupForm(code).session(session)).andReturn()
 
-        assertEquals("/", result.response.redirectedUrl)
+        assertEquals("/feed", result.response.redirectedUrl)
         val body =
             mvc
                 .perform(get("/whoami").session(session))
@@ -74,7 +74,7 @@ class SetupFlowTest : SecurityTestBase() {
 
         val result = login("alice", NEW_PASSWORD)
 
-        assertEquals("/", result.response.redirectedUrl)
+        assertEquals("/feed", result.response.redirectedUrl)
     }
 
     @Test
@@ -94,7 +94,7 @@ class SetupFlowTest : SecurityTestBase() {
 
         val result = submit(code.lowercase().replace("-", ""))
 
-        assertEquals("/", result.response.redirectedUrl)
+        assertEquals("/feed", result.response.redirectedUrl)
     }
 
     @Test
@@ -156,7 +156,7 @@ class SetupFlowTest : SecurityTestBase() {
 
         val result = submit(code, from = "198.51.100.9")
 
-        assertEquals("/", result.response.redirectedUrl)
+        assertEquals("/feed", result.response.redirectedUrl)
     }
 
     @Test

@@ -55,7 +55,7 @@ Feature: Player deck along the bottom of the timeline
 
   Scenario: The timeline has a list splitter and serves the deck script
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
-    When I request the home page "/"
+    When I request the home page "/feed"
     Then the timeline has a list splitter
     And the page loads the deck script
     When I request "/deck.js"
