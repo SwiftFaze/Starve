@@ -553,6 +553,14 @@ class JdbcRepositoriesTest {
     }
 
     @Test
+    fun `a url is only known to the owner who holds it`() {
+        sources.insert(OTHER, "http://a.test/theirs", "Theirs")
+
+        assertEquals(false, sources.existsByUrl(OWNER, "http://a.test/theirs"))
+        assertEquals(false, sources.existsByUrl(OTHER, "http://a.test/unknown"))
+    }
+
+    @Test
     fun `a source cannot be put in another owner's group nor moved by another owner`() {
         val mine = sources.insert(OWNER, "http://a.test/f", "Mine")
         val theirs = groups.insert(OTHER, "Theirs")

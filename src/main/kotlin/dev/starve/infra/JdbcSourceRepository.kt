@@ -59,23 +59,15 @@ class JdbcSourceRepository(
         return Source(id, url, title, Validators(), null, null)
     }
 
-    @Transactional
+    /** The search rows of the source's items go with them, through the `items_search_cleanup` trigger. */
     override fun delete(
         owner: Long,
         id: Long,
-    ): Boolean {
-        val owned =
-            jdbc
-                .sql("SELECT COUNT(*) FROM sources WHERE id = ? AND owner_id = ?")
-                .params(id, owner)
-                .query(Long::class.java)
-                .single() > 0
-        if (owned) {
-            search.removeOfSource(id)
-            jdbc.sql("DELETE FROM sources WHERE id = ?").param(id).update()
-        }
-        return owned
-    }
+    ): Boolean =
+        jdbc
+            .sql("DELETE FROM sources WHERE id = ? AND owner_id = ?")
+            .params(id, owner)
+            .update() > 0
 
     /** A group the owner does not own cannot be assigned: the update then matches no row. */
     override fun assignGroup(

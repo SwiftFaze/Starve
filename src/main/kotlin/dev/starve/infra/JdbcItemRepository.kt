@@ -30,14 +30,11 @@ class JdbcItemRepository(
         items.forEach { upsert(sourceId, it, firstSeenAt) }
     }
 
-    @Transactional
-    override fun deleteFirstSeenBefore(cutoff: Instant): Int {
-        search.removeFirstSeenBefore(cutoff)
-        return jdbc
+    override fun deleteFirstSeenBefore(cutoff: Instant): Int =
+        jdbc
             .sql("DELETE FROM items WHERE first_seen_at < ? AND favourited_at IS NULL AND later_at IS NULL")
             .param(cutoff.toEpochMilli())
             .update()
-    }
 
     override fun timeline(
         owner: Long,

@@ -8,7 +8,7 @@ container. `dev.starve.StarveApplication` is the entry point. Controllers in
 `src/main/resources/static/htmx.min.js`, no CDN); data lives in one SQLite file
 (`starve.db.path`, default `./data/starve.db`, `/data/starve.db` in Docker)
 accessed with Spring `JdbcClient` (no JPA). Flyway applies
-`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, V12 is `item_later`, V13 is `users`, so the next migration number is V14. Actuator exposes only
+`src/main/resources/db/migration/V*.sql` on startup. V5 and V10 are the exceptions: Java migration beans (`DecodeItemTitlesMigration`, `SearchIndexMigration`). V11 is `article_fetch`, V12 is `item_later`, V13 is `users`, V14 is `per_user_data`, so the next migration number is V15. Actuator exposes only
 `/actuator/health`. The public routes are `/` (the landing page, `LandingController`; a signed-in visitor is redirected to `/feed` with the query string kept), `/login`, `/setup` and static assets. Every other route needs a signed-in user; the timeline lives at `/feed`, sign-in and setup land there, and logout (`POST /logout`, a form in the shared `signout` fragment of the top bar) lands on `/`; accounts live in the `users` table (migration V13), see `SecurityConfig` and `SetupService`.
 Until the first account exists, `/setup` is the only open page: a code logged at startup gates it, and wrong codes are throttled per client address (`FailureThrottle`, in memory). Sign-ins can be remembered; the remember-me signing key is generated once and stored as plaintext in `app_metadata` (an accepted trade-off: the database file already holds everything the key protects), so remembered sign-ins survive restarts. `server.forward-headers-strategy: native` makes the client address and scheme come from `X-Forwarded-*` headers behind a reverse proxy.
 
@@ -81,15 +81,34 @@ The retention exemption sits in `deleteFirstSeenBefore` (`later_at IS NULL`, alo
 favourites). `LaterController` answers htmx toggles with the re-rendered `LaterView`; a
 toggle from the reader or detail pane also refreshes the row's toggle out of band.
 
+## Per-user data
+
+Sources and groups belong to an account: `sources.owner_id` and `groups.owner_id`
+reference `users` (`ON DELETE CASCADE`, so deleting an account removes its sources,
+groups and, through the sources, items, favourites and saved items). Items have no
+owner column; they belong to their source's owner. A url is unique per owner, a group
+name is unique per owner ignoring case. Migration V14 rebuilds the three tables and
+gives every pre-existing row to the oldest account (`MIN(users.id)`).
+
+Every port method that reads or writes owned data takes the owner id first, and the
+JDBC repositories filter on it (items through `sources.owner_id`; writes on items use
+the shared `OWNED` predicate). An id that exists but belongs to someone else behaves
+as unknown: lookups return nothing, writes touch no row, and source and group
+delete/rename answer 404. Controllers receive the owner as a `@CurrentUserId` parameter, resolved
+by `web/CurrentUserIdResolver` from the signed-in username; the application layer only
+sees the id. A session whose account no longer exists is answered 401. Background
+work (ingestion, favicon and article fetches) is owner-agnostic and keeps using
+`findAll()` and ids.
+
 ## Source groups
 
 `domain/Group.kt` holds `Group` and `GroupRules.checkName` (trim, 1 to 50 chars).
 Groups live in the `groups` table with a nullable `sources.group_id`
 (`ON DELETE SET NULL`, migration V4), so a source has at most one group and
-deleting a group ungroups it. `GroupService` owns the name rules, case-insensitive
+deleting a group ungroups it. Group names are unique per owner. `GroupService` owns the name rules, case-insensitive
 uniqueness and the navigation counts. The group filter is an optional group id
 passed through `TimelineService` to `ItemRepository.timeline` and `markAllRead`,
-which restrict by `sources.group_id`; the render-timestamp cutoff still applies.
+which restrict by `sources.group_id` within the owner's sources; the render-timestamp cutoff still applies.
 
 ## Bulk import
 
@@ -168,7 +187,9 @@ cannot see the source name or strip body markup, so `infra/SearchIndex` maintain
 from application code, inside the same transaction as the write, on every path:
 `JdbcItemRepository` (insert, a body filled in later, retention deletes),
 `JdbcArticleRepository` (a fetched article replacing the body) and
-`JdbcSourceRepository` (rename on `recordSuccess`, `delete`). Bodies are indexed as text
+`JdbcSourceRepository` (rename on `recordSuccess`). Deletes need no call: the
+`items_search_cleanup` trigger (V14) removes the index row of every deleted item,
+including those a source or account deletion cascades away. Bodies are indexed as text
 via `infra/SearchText` (jsoup). `SearchIndexMigration` (V10) back-fills existing items
 with the same code. `domain/SearchRules.matchExpression` turns user input into the FTS5
 expression (each word quoted and ANDed, the last one a prefix, no operators), so
@@ -177,9 +198,8 @@ user text can never be parsed as query syntax. `SearchService.search` goes throu
 favourites); the layer contracts are unchanged.
 Search results ignore the view they were started from, but the search form carries it
 (Favourites, Later, group, show) as hidden origin inputs, so clearing a search returns
-there. The retention purge in `SearchIndex.removeFirstSeenBefore` mirrors the item purge:
-it skips favourites and items saved for later (`later_at IS NOT NULL`), so they stay
-searchable. Result rows use the shared `TIMELINE_COLUMNS`, so they carry the favourite
+there. The retention purge is a plain `DELETE` on `items` that skips favourites and items saved for later (`later_at IS NOT NULL`), so they stay
+searchable (the trigger drops the rows of the items it does delete). Result rows use the shared `TIMELINE_COLUMNS`, so they carry the favourite
 and later flags.
 
 ## Dependency rule

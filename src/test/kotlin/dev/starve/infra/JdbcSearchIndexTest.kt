@@ -126,6 +126,19 @@ class JdbcSearchIndexTest {
     }
 
     @Test
+    fun `deleting a source removes only its items from the index`() {
+        val gone = sources.insert(OWNER, "http://a.test/gone", "Gone")
+        val kept = sources.insert(OWNER, "http://a.test/kept", "Kept")
+        items.insertNew(gone.id, listOf(feedItem("g1", "Vanishing")), now)
+        items.insertNew(kept.id, listOf(feedItem("k1", "Staying")), now)
+
+        sources.delete(OWNER, gone.id)
+
+        assertEquals(1L, indexRows())
+        assertEquals(listOf("Staying"), search("staying"))
+    }
+
+    @Test
     fun `retention removes deleted items from the index`() {
         val source = sources.insert(OWNER, "http://a.test/f", "Daily")
         items.insertNew(source.id, listOf(feedItem("old", "Ancient")), now.minusSeconds(90L * 86400))

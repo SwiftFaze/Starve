@@ -72,8 +72,9 @@ class SourcesControllerTest {
     fun `subscribing reports the new title`() {
         val model = ConcurrentModel()
 
-        controller.add(OWNER, "http://c.test/feed", model)
+        val view = controller.add(OWNER, "http://c.test/feed", model)
 
+        assertEquals("sources", view)
         assertEquals("Subscribed to New", model.getAttribute("message"))
     }
 
@@ -84,6 +85,15 @@ class SourcesControllerTest {
         controller.add(OWNER, "ftp://c.test/feed", model)
 
         assertEquals("The feed URL must be an http or https URL", model.getAttribute("message"))
+    }
+
+    @Test
+    fun `a url already followed is reported rather than subscribed twice`() {
+        val model = ConcurrentModel()
+
+        controller.add(OWNER, "http://a.test/feed", model)
+
+        assertEquals("You are already subscribed to that feed", model.getAttribute("message"))
     }
 
     @Test
