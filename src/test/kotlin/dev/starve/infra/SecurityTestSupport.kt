@@ -3,12 +3,16 @@ package dev.starve.infra
 import dev.starve.application.AppMetadata
 import dev.starve.application.SetupService
 import dev.starve.application.SignupSettings
+import dev.starve.application.UserAdminRepository
 import dev.starve.application.UserRepository
 import dev.starve.domain.User
+import dev.starve.domain.UserAccount
+import dev.starve.web.AccountController
 import dev.starve.web.LoginController
 import dev.starve.web.SettingsController
 import dev.starve.web.SetupController
 import dev.starve.web.SignupController
+import dev.starve.web.UserAdminController
 import jakarta.servlet.http.Cookie
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -42,15 +46,38 @@ const val CSRF_HEADER = "X-CSRF-TOKEN"
 const val CSRF_TOKEN = "a-known-csrf-token"
 
 /** Accounts held in memory, looked up ignoring case as the real repository does. */
-class FakeUsers : UserRepository {
+class FakeUsers :
+    UserRepository,
+    UserAdminRepository {
     private val accounts = mutableListOf<User>()
+    private var lastId = 0L
 
     fun add(
         username: String,
         admin: Boolean,
     ) {
-        accounts += User(accounts.size + 1L, username, HASHER.encode(PASSWORD), admin)
+        accounts += User(++lastId, username, HASHER.encode(PASSWORD), admin)
     }
+
+    /** Removes the account behind the application's back, as another admin's deletion does. */
+    fun remove(username: String) {
+        accounts.removeIf { it.username == username }
+    }
+
+    fun hashOf(username: String) = findByUsername(username)!!.passwordHash
+
+    override fun listAll() = accounts.map { UserAccount(it.id, it.username, it.admin, Instant.EPOCH) }
+
+    override fun findById(id: Long) = accounts.firstOrNull { it.id == id }
+
+    override fun updatePasswordHash(
+        id: Long,
+        passwordHash: String,
+    ) {
+        accounts.replaceAll { if (it.id == id) it.copy(passwordHash = passwordHash) else it }
+    }
+
+    override fun delete(id: Long) = accounts.removeIf { it.id == id }
 
     override fun exists() = accounts.isNotEmpty()
 
@@ -62,7 +89,7 @@ class FakeUsers : UserRepository {
         at: Instant,
     ): Boolean {
         if (exists()) return false
-        accounts += User(1, username, passwordHash, true)
+        accounts += User(++lastId, username, passwordHash, true)
         return true
     }
 
@@ -70,7 +97,7 @@ class FakeUsers : UserRepository {
         username: String,
         passwordHash: String,
         at: Instant,
-    ): User = User(accounts.size + 1L, username, passwordHash, false).also { accounts += it }
+    ): User = User(++lastId, username, passwordHash, false).also { accounts += it }
 
     override fun insertIfFree(
         username: String,
@@ -139,7 +166,14 @@ class SecurityTestBeans {
  * context, because mutation testing would otherwise reuse a context built before the mutant was applied.
  */
 @WebMvcTest(
-    controllers = [LoginController::class, SetupController::class, SignupController::class, SettingsController::class],
+    controllers = [
+        LoginController::class,
+        SetupController::class,
+        SignupController::class,
+        SettingsController::class,
+        AccountController::class,
+        UserAdminController::class,
+    ],
 )
 @Import(SecurityConfig::class, AccountConfig::class, SecurityTestBeans::class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)

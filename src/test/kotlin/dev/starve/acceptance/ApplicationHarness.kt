@@ -142,6 +142,19 @@ class ApplicationHarness(
         signedInAs = username to passwords.getValue(username)
     }
 
+    /**
+     * A fresh client that logged in as [username] ticking Remember me and was then closed: it holds that account's
+     * remember-me cookie and no session, like a browser reopened later.
+     */
+    fun rememberedBrowser(username: String): Browser {
+        val client = Browser(null)
+        val fields = listOf("username" to username, "password" to passwords.getValue(username), "remember-me" to "on")
+        val response = client.postForm("/login", emptyMap(), fields)
+        check(response.statusCode() == 302) { "could not log in as $username" }
+        client.endSession()
+        return client
+    }
+
     fun userId(username: String): Long =
         jdbc()
             .sql("SELECT id FROM users WHERE username = ?")

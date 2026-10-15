@@ -250,6 +250,7 @@ Feature: The admin manages users on Settings: list, reset a password, delete
   Scenario: The deletion notice is shown once
     When I delete the user "friend" in Settings
     And I request "/settings"
+    And I request "/settings"
     Then the page does not contain "Deleted user friend"
 
   Scenario: A deleted user can no longer log in

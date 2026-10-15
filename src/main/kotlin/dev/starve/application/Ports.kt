@@ -12,6 +12,7 @@ import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.User
+import dev.starve.domain.UserAccount
 import dev.starve.domain.Validators
 import java.time.Instant
 
@@ -439,9 +440,33 @@ interface UserRepository {
     ): User?
 }
 
+/** What an admin and a signed-in user can do to stored accounts beyond signing up. */
+interface UserAdminRepository {
+    /** Every account, oldest first. */
+    fun listAll(): List<UserAccount>
+
+    fun findById(id: Long): User?
+
+    fun updatePasswordHash(
+        id: Long,
+        passwordHash: String,
+    )
+
+    /** Deletes the account (its sources, groups and items go with it); false when there is none. */
+    fun delete(id: Long): Boolean
+}
+
 /** Hashes a raw password for storage. */
 fun interface PasswordHasher {
     fun hash(password: String): String
+}
+
+/** Checks a raw password against a stored hash. */
+fun interface PasswordMatcher {
+    fun matches(
+        password: String,
+        hash: String,
+    ): Boolean
 }
 
 /** Small installation values kept in the database (the `app_metadata` table). */

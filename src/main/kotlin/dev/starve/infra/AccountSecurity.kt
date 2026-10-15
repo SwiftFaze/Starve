@@ -7,10 +7,12 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AccountStatusException
+import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -87,6 +89,32 @@ class SetupGate(
     private companion object {
         val OPEN_WHILE_SETUP = Regex("/setup|/error|/actuator/health|/favicon\\.ico|/fonts/.+|/[^/]+\\.(css|js)")
     }
+}
+
+/**
+ * Treats a signed-in session whose account has been deleted as signed out, on every page rather than only those that
+ * look the user up: the context and session are dropped, so the request goes on as anonymous (and is sent to /login
+ * where the page needs a user). A remember-me cookie of a deleted account already fails when it is read.
+ */
+class DeletedUserFilter(
+    private val users: UserRepository,
+) : OncePerRequestFilter() {
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        chain: FilterChain,
+    ) {
+        val authentication = SecurityContextHolder.getContext().authentication
+        if (authentication != null && authentication !is AnonymousAuthenticationToken &&
+            !accountExists(authentication)
+        ) {
+            SecurityContextHolder.clearContext()
+            request.getSession(false)?.invalidate()
+        }
+        chain.doFilter(request, response)
+    }
+
+    private fun accountExists(authentication: Authentication) = users.findByUsername(authentication.name) != null
 }
 
 /** Loads an account for the password check, the remember-me cookie and the setup sign-in. */
