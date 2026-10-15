@@ -543,7 +543,7 @@
     "effects": [
       {
         "name": "film-grain",
-        "value": "fractalNoise SVG (baseFrequency .9, 2 octaves) through an feColorMatrix that copies one channel into R, G and B, so it renders grey luminance noise; 160px tile, mix-blend-mode overlay, opacity 0.06 dark / 0.08 light, fixed, z-index 50, pointer-events none",
+        "value": "a full-screen layer in var(--text), masked by a fractalNoise SVG (baseFrequency .9, 2 octaves; feColorMatrix alpha = 3.2R - 1.25) on a 160px tile, so only text-coloured specks show; opacity 0.035 dark / 0.04 light, normal blend, fixed, z-index 50, pointer-events none",
         "purpose": "Fine print grain over the whole page."
       },
       {

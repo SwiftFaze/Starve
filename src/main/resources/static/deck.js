@@ -601,7 +601,7 @@
           var box = videoBox();
           if (!box || pipWindow !== win) { win.close(); return; }
           var page = host.contentWindow;
-          pipHome = { parent: box.parentNode, next: box.nextSibling };
+          pipHome = { parent: box.parentNode, next: box.nextSibling, box: box };
           carryOver();
           page.document.body.appendChild(page.document.adoptNode(box));
           page.addEventListener('message', receiveMessage);
@@ -619,11 +619,12 @@
     var win = pipWindow;
     pipWindow = null;
     if (!win || !pipHome) return;
-    var host = win.document.querySelector('iframe');
-    var box = host && host.contentDocument ? host.contentDocument.querySelector('.ratio-16x9') : null;
+    // The box itself is held on to: by the time the window reports it is closing, the page that hosted
+    // the video may already be gone, so it cannot be looked up there.
+    var box = pipHome ? pipHome.box : null;
     if (box && pipHome.parent.isConnected) {
       carryOver();
-      pipHome.parent.insertBefore(box, pipHome.next && pipHome.next.parentNode === pipHome.parent ? pipHome.next : null);
+      pipHome.parent.insertBefore(document.adoptNode(box), pipHome.next && pipHome.next.parentNode === pipHome.parent ? pipHome.next : null);
     }
     pipHome = null;
     if (body.dataset.video === 'pip' && videoBox()) place('split');

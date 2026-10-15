@@ -1,14 +1,15 @@
-Feature: Public install and setup guide at /docs
-  "/docs" is a public page that explains how to install and set up Starve:
-  running it with one Docker command that builds the master branch straight
-  from the GitHub repository, with Docker Compose, or from source; where the database lives,
-  the first-run setup code and the admin account, adding sources and
-  importing subscriptions, letting someone else sign up, and running behind
-  a reverse proxy. It is a read-only page: open to anonymous visitors and
-  signed-in users alike, and still reachable while no user exists (it does
-  not redirect to "/setup", because it explains setup). It carries the theme
-  switch, works at phone width and shows no images. The landing page "/" and
-  the setup page "/setup" link to it.
+Feature: Public self-hosting guide at /docs
+  "/docs" is a public page for people hosting their own Starve, and only
+  that: how to run it (one Docker command that builds the master branch
+  straight from the GitHub repository, Docker Compose, or from source), the
+  first-run setup code and admin account, where the database lives and how to
+  back it up, the configuration variables, and how to update. How to use
+  Starve once it runs (sources, import, groups, signups) is not on it. It is a
+  read-only page: open to anonymous visitors and signed-in users alike, and
+  still reachable while no user exists (it does not redirect to "/setup",
+  because it explains setup). It carries the theme switch, works at phone
+  width and shows no images. The landing page "/" and the setup page "/setup"
+  link to it.
 
   Covers: GET "/docs" for anonymous visitors, signed-in users and a fresh
   instance with no users; the key terms it must explain; the links to it from
@@ -31,8 +32,7 @@ Feature: Public install and setup guide at /docs
     And the page contains "./mvnw spring-boot:run"
     And the page contains "Starve setup code"
     And the page contains "STARVE_DB_PATH"
-    And the page contains "OPML"
-    And the page contains "X-Forwarded-For"
+    And the page contains "STARVE_POLL_INTERVAL"
     And the page contains no images
     And the page has a theme switch
 

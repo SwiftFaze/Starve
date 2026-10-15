@@ -35,19 +35,15 @@
           <ol>
             <li><a href="#install">Install</a></li>
             <li><a href="#first-run">First run</a></li>
-            <li><a href="#sources">Add sources</a></li>
-            <li><a href="#import">Import subscriptions</a></li>
-            <li><a href="#people">Let someone in</a></li>
             <li><a href="#data">Your data</a></li>
             <li><a href="#config">Configuration</a></li>
-            <li><a href="#proxy">Behind a reverse proxy</a></li>
             <li><a href="#update">Update</a></li>
           </ol>
         </nav>
 
         <article class="docs-body">
-          <p class="docs-lede">Starve runs as one Docker container or one jar, keeps everything in one SQLite file,
-            and is reached in a browser. Setting it up takes about five minutes.</p>
+          <p class="docs-lede">How to host your own Starve: it runs as one Docker container or one jar, keeps
+            everything in one SQLite file, and is reached in a browser. Setting it up takes about five minutes.</p>
 
           <section id="install" aria-labelledby="install-title">
             <h3 id="install-title">Install</h3>
@@ -94,43 +90,7 @@ java -jar target/starve-*.jar</code></pre>
               <li>Choose a password of at least 10 characters. There is no email reset, so keep it safe.</li>
             </ol>
             <p>You are signed in and land on the timeline. From then on <code>/setup</code> is closed and the
-              code stops working.</p>
-          </section>
-
-          <section id="sources" aria-labelledby="sources-title">
-            <h3 id="sources-title">Add sources</h3>
-            <p>Open <strong>Sources</strong> and paste an address into <strong>Add a source</strong>. Starve
-              accepts:</p>
-            <ul>
-              <li>an RSS or Atom feed URL;</li>
-              <li>a YouTube channel page;</li>
-              <li>a SoundCloud profile;</li>
-              <li>any website that advertises its feed.</li>
-            </ul>
-            <p>It finds the feed, checks that it is valid and subscribes. Each source shows when it was last
-              fetched and its last error, so a broken feed never fails silently. Every source is polled every
-              30 minutes; unchanged feeds cost almost nothing. Put sources in groups (Music, Tech news) to
-              narrow the timeline to one.</p>
-          </section>
-
-          <section id="import" aria-labelledby="import-title">
-            <h3 id="import-title">Import subscriptions</h3>
-            <p>Already subscribed somewhere else? <strong>Sources</strong> &rarr; <strong>Import
-              subscriptions</strong> takes, up to 1 MB:</p>
-            <ul>
-              <li>a YouTube <code>subscriptions.csv</code> from Google Takeout;</li>
-              <li>an OPML export from another feed reader. Its folders become groups.</li>
-            </ul>
-            <p>Starve lists what it added, what you already had and anything that failed, then fetches the new
-              feeds in the background.</p>
-          </section>
-
-          <section id="people" aria-labelledby="people-title">
-            <h3 id="people-title">Let someone in</h3>
-            <p>Signups are off by default. As the admin, open <strong>Settings</strong> in the top bar and turn on
-              <strong>Allow new signups</strong>. The other person visits <code>/signup</code> and picks a
-              username and password; they get their own empty timeline, never admin rights. Turn the switch
-              off again once they are in.</p>
+              code stops working. Everything after that happens inside Starve itself.</p>
           </section>
 
           <section id="data" aria-labelledby="data-title">
@@ -156,13 +116,6 @@ java -jar target/starve-*.jar</code></pre>
             </table>
             <p>Durations use the ISO 8601 form: <code>PT15M</code> is 15 minutes, <code>P30D</code> is 30
               days.</p>
-          </section>
-
-          <section id="proxy" aria-labelledby="proxy-title">
-            <h3 id="proxy-title">Behind a reverse proxy</h3>
-            <p>Forward <code>X-Forwarded-For</code> and <code>X-Forwarded-Proto</code> to Starve. It trusts
-              them, so failed sign-ins are throttled per real visitor rather than per proxy, and links and
-              cookies use your public scheme.</p>
           </section>
 
           <section id="update" aria-labelledby="update-title">
