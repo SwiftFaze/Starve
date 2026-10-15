@@ -754,6 +754,12 @@
     render();
   });
 
+  // The deck's play/pause button.
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('#dock .pause') || !state) return;
+    if (state.playing) state.pause(); else state.play();
+  });
+
   // The shield over the video keeps the pointer away from YouTube's own hover overlay:
   // a click plays or pauses, a double click goes fullscreen.
   document.addEventListener('click', function (event) {
