@@ -107,7 +107,8 @@
     part(frame, 'shutter-chevrons');
     part(frame, 'shutter-scan');
     panel.appendChild(frame);
-    document.body.appendChild(panel);
+    // Before the body exists (a page arriving under the shutter), the panel hangs off the root element.
+    (document.body || document.documentElement).appendChild(panel);
     return panel;
   }
 
@@ -280,14 +281,17 @@
     leave(label, form.getAttribute('action') || '/', function () { HTMLFormElement.prototype.submit.call(form); });
   });
 
-  // The page is shown, and the panel leaves, only once its fonts are in: otherwise the text would visibly
-  // jump as the web fonts swap in under a page that is already uncovered.
+  // The arriving page's panel is drawn now, from its first frame, so the switch reads as one sheet. The
+  // page is shown, and the panel leaves, only once its fonts are in: otherwise the text would visibly jump
+  // as the web fonts swap in under a page that is already uncovered.
+  var arrivingPanel = arriving ? shutter(arriving.label, '0%', 'Page', '→ ' + arriving.href) : null;
+
   document.addEventListener('DOMContentLoaded', function () {
-    if (!arriving) return;
-    var panel = shutter(arriving.label, '0%', 'Page', '→ ' + arriving.href);
+    if (!arrivingPanel) return;
     var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
     var timeout = new Promise(function (resolve) { setTimeout(resolve, 1500); });
     Promise.race([fonts, timeout]).then(function () {
+      var panel = arrivingPanel;
       delete root.dataset.shutter;
       if (still()) { panel.remove(); return; }
       busy = true;
