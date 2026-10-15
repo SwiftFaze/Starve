@@ -7,7 +7,7 @@ Feature: Docked player that keeps playing while I browse the timeline
   player into the dock, replacing whatever it held (one player at a time,
   without emptying the dock first); the player fragment naming what is playing (title,
   source, catalogue number "STV" plus the item id zero-padded to four digits,
-  thumbnail when the item has one); a Stop control in the dock; group links,
+  thumbnail when the item has one); an Eject control in the dock (labelled Stop before #38); group links,
   the show/hide read toggle and "Mark all read" requesting the timeline via
   htmx and replacing only the release sheet, the group navigation and the
   series heading, never the dock; group links and the read toggle pushing
@@ -42,7 +42,7 @@ Feature: Docked player that keeps playing while I browse the timeline
     When I request the player of the item "Clip" via htmx
     Then the response status is 200
     And the response names the item "Clip" from "Tube" with its catalogue number
-    And the response has a Stop control
+    And the response has an Eject control
 
   Scenario: The docked player shows the item's thumbnail when it has one
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" and a thumbnail published 1 days ago

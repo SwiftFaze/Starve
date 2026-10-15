@@ -9,7 +9,7 @@ Feature: The admin manages users on Settings: list, reset a password, delete
 
   User list: one row per account, oldest first: the username, an "Admin"
   badge on admins (only the first-run user is one), and the "Created" date as
-  YYYY-MM-DD (UTC). The signed-in admin's own row is marked "(you)" and has no
+  YYYY-MM-DD (UTC). The signed-in admin's own row is marked "[you]" (square brackets, #38) and has no
   action controls. Every other row has a "Reset password" form posting
   "/settings/users/{id}/reset" and a "Delete" link to
   "/settings/users/{id}/delete".
@@ -346,7 +346,7 @@ Feature: The admin manages users on Settings: list, reset a password, delete
   #   - Ending a reset or deleted user's other live sessions beyond the
   #     deleted-session sign-out above; ending the live sessions of a reset
   #     user (auto-decided: only remember-me).
-  #   - Exact copy beyond "Users", "Admin", "(you)", "Created", "Reset
+  #   - Exact copy beyond "Users", "Admin", "[you]", "Created", "Reset
   #     password", "Delete", "Delete permanently", "Cancel", "Deleted user
   #     <name>" and "permanently deleted"; browser look and the 375px layout:
   #     human playtest.

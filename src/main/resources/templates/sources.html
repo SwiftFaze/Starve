@@ -54,7 +54,9 @@
     </aside>
 
     <main class="sheet" id="sheet" tabindex="-1">
-      <h2 class="sheet-title">Subscriptions</h2>
+      <div class="sheet-head">
+        <h2 class="sheet-title">Subscriptions</h2>
+      </div>
       <p class="sheet-note" th:if="${#lists.isEmpty(sources)}">No subscriptions yet. Paste a URL under Add a source to start the roster.</p>
 
       <ul id="source-list" class="roster" th:unless="${#lists.isEmpty(sources)}">
@@ -89,7 +91,9 @@
       </ul>
 
       <section class="group-sheet" aria-labelledby="groups-title">
-        <h2 class="sheet-title" id="groups-title">Groups</h2>
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="groups-title">Groups</h2>
+        </div>
         <form class="new-group" method="post" th:action="@{/groups}" hx-post="/groups"
               hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
           <label class="field-label" for="new-group">New group</label>

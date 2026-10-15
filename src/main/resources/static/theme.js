@@ -132,8 +132,10 @@
   // The page you are already on: glide back to the top instead of reloading, or, already at
   // the top, blink the tab's marker to say "you are here".
   function here(link) {
-    if (window.scrollY > 0) {
-      window.scrollTo({ top: 0, behavior: still() ? 'auto' : 'smooth' });
+    var sheet = document.body.dataset.split === 'on' ? document.getElementById('sheet') : null;
+    var scroller = sheet || document.scrollingElement || document.documentElement;
+    if (scroller.scrollTop > 0) {
+      scroller.scrollTo({ top: 0, behavior: still() ? 'auto' : 'smooth' });
       return;
     }
     link.classList.remove('here');

@@ -225,7 +225,7 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
 #     or another item starts) is deck.js behaviour; the human playtest must
 #     cover: play from the row then open the view; play from the view; pause
 #     from the deck; start another item while a view is open.
-#   - "Video stays in the pane" is browser behaviour: playtest YouTube in Pane
+#   - "Video stays in the pane" is browser behaviour: playtest YouTube in 2 col
 #     then open a detail view, a post, and another detail view.
 #   - SoundCloud may change its oEmbed shape; the fallback to feed data bounds
 #     the damage.

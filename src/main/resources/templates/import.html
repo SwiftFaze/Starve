@@ -40,7 +40,9 @@
 
     <main class="sheet" id="sheet">
       <section id="summary" th:if="${summary}">
-        <h2 class="sheet-title">Import summary</h2>
+        <div class="sheet-head">
+          <h2 class="sheet-title">Import summary</h2>
+        </div>
         <ul class="roster">
           <li>Added: <span id="added" th:text="${summary.added}">0</span></li>
           <li>Already subscribed: <span id="already-subscribed" th:text="${summary.alreadySubscribed}">0</span></li>

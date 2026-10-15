@@ -40,10 +40,12 @@ private val PUBLIC_PATHS =
         "/setup",
         "/login",
         "/signup",
+        "/docs",
         "/error",
         "/actuator/health",
         "/*.css",
         "/*.js",
+        "/*.svg",
         "/fonts/**",
         "/favicon.ico",
     )
@@ -98,6 +100,8 @@ class SecurityConfig {
                     .csrfTokenRepository(csrfTokens())
                     .csrfTokenRequestHandler(CsrfTokenRequestAttributeHandler())
             }.addFilterAfter(CsrfCookieWriter(), CsrfFilter::class.java)
+            // Same origin, not DENY: the picture-in-picture window frames Starve's own /pip.html.
+            .headers { headers -> headers.frameOptions { it.sameOrigin() } }
             .addFilterBefore(SetupGate(setup), UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(DeletedUserFilter(users), RememberMeAuthenticationFilter::class.java)
             .authorizeHttpRequests { authorise(it) }

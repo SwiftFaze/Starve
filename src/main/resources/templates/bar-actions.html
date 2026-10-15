@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
-<!-- The top bar's account actions: the Account link, the Settings link (admins only) and the sign-out button. Sign-out is a plain POST form, so it works without JavaScript and inside every swapped bar. -->
+<!-- The top bar's account actions: the Account link, the Settings link (admins only) and the sign-out button, the
+     current page marked ("onAccount" / "onSettings"). Sign-out is a plain POST form, so it works without JavaScript and
+     inside every swapped bar. -->
 <th:block th:fragment="bar-actions">
-  <a class="tab account-link" href="/account">Account</a>
-  <a class="tab settings-link" href="/settings" th:if="${admin}">Settings</a>
+<div class="bar-actions">
+  <a class="tab account-link" href="/account" th:attr="aria-current=${onAccount} ? 'page'">Account</a>
+  <a class="tab settings-link" href="/settings" th:if="${admin}"
+     th:attr="aria-current=${onSettings} ? 'page'">Settings</a>
   <form class="signout" method="post" th:action="@{/logout}">
     <button type="submit">Sign out</button>
   </form>
+</div>
 </th:block>
 </body>
 </html>

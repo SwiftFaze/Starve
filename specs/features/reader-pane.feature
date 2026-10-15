@@ -14,7 +14,7 @@ Feature: Reader pane for blog posts
   item read; the no-body state (title, source, date and "Open original"
   only, plus an explanatory line); a Close control; the reader not asking a
   video in the pane to step down when a post opens (it keeps its placement and
-  is not moved to Mini); 404 for an unknown item id and for a playable item.
+  is not moved to PiP); 404 for an unknown item id and for a playable item.
   Supersedes: in part chronological-feed.feature, where a title click always
   goes to /items/{id}/open and redirects. That now holds only without
   JavaScript and for playable items; the endpoint itself is unchanged.
@@ -149,7 +149,7 @@ Feature: Reader pane for blog posts
 # Risks:
 #   - "Anything already playing keeps playing" depends on the reader not
 #     replacing the dock and on deck.js keeping a pane video in the pane;
-#     that is browser behaviour the human playtest must cover (YouTube in Pane
+#     that is browser behaviour the human playtest must cover (YouTube in 2 col
 #     then open a post; YouTube in Deck then open a post; a SoundCloud track
 #     then open a post; close the reader).
 #   - The reader request marks the item read, but the list row only greys on

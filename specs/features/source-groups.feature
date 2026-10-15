@@ -5,7 +5,7 @@ Feature: Source groups
   Covers: creating, renaming and deleting groups on "/sources" (names trimmed,
   1-50 characters, unique case-insensitively); assigning a source to a group
   or back to "Ungrouped"; the group navigation on "/feed" listing "All" plus each
-  group alphabetically (case-insensitive) with its unread count; the filtered
+  group alphabetically (case-insensitive) with its unread count in square brackets ("Music [12]"); the filtered
   timeline "/feed?group=<id>" with the same ordering, paging and read state as the
   main timeline; "Mark all read" limited to the current group; "Load more"
   keeping the group filter; deleting a group ungrouping (not deleting) its
@@ -127,18 +127,18 @@ Feature: Source groups
     And the source "Beta" is in the group "News"
     When I request the home page "/feed"
     Then the group navigation lists the entries
-      | All (4)   |
-      | Music (2) |
-      | News (1)  |
+      | All [4]   |
+      | Music [2] |
+      | News [1]  |
 
   Scenario: The current group is marked in the navigation
     Given the group "Music" exists
     And the source "Alpha" has an unread item "A-1" published 1 days ago
     And the source "Alpha" is in the group "Music"
     When I request the timeline of the group "Music"
-    Then the group navigation marks "Music (1)" as current
+    Then the group navigation marks "Music [1]" as current
     When I request the home page "/feed"
-    Then the group navigation marks "All (1)" as current
+    Then the group navigation marks "All [1]" as current
 
   Scenario: Groups are listed alphabetically regardless of case
     Given the group "zebra" exists
@@ -197,7 +197,7 @@ Feature: Source groups
     When I request the home page "/feed"
     Then the timeline lists "A-1"
     And the group navigation lists the entries
-      | All (1) |
+      | All [1] |
 
   Scenario: A long group timeline is paged and keeps the group filter
     Given the group "Music" exists

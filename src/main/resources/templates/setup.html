@@ -4,51 +4,53 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Set up - Starve</title>
+  <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
-  <script src="/htmx.min.js"></script>
 </head>
-<body>
-  <header class="bar" id="bar">
-    <p class="wordmark"><a href="/">Starve</a></p>
-  </header>
+<body class="access-page">
+  <header th:replace="~{public-bar :: public-bar('setup')}"></header>
 
   <div class="label">
     <aside class="sleeve" aria-label="Set up Starve">
       <div class="series-block">
-        <h1 class="series roster-name">Set up Starve</h1>
+        <h1 class="series roster-name">Set up</h1>
         <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
+    </aside>
 
-      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Invalid setup code</p>
-
-      <form class="add" method="post" th:action="@{/setup}">
-        <label class="field-label" for="code">Setup code</label>
-        <div class="field-row">
-          <input class="field" id="code" type="text" name="code" autocomplete="off" autocapitalize="characters"
-                 spellcheck="false" aria-describedby="code-hint" required>
+    <main class="sheet access" id="sheet">
+      <form class="access-form" method="post" th:action="@{/setup}">
+        <div class="sheet-head">
+          <h2 class="sheet-title">Set up Starve</h2>
         </div>
-        <p class="hint" id="code-hint">Printed in the server log at startup: docker compose logs</p>
+
+        <p id="message" class="message" role="alert" th:if="${message}" th:text="${message}">Invalid setup code</p>
+
+        <label class="field-label" for="code">Setup code</label>
+        <input class="field field-code" id="code" type="text" name="code" autocomplete="off" autocapitalize="characters"
+               spellcheck="false" aria-describedby="code-hint" required autofocus>
+        <p class="hint" id="code-hint">Printed in the server log at startup: <code>docker logs starve</code> or <code>docker compose logs</code></p>
 
         <label class="field-label" for="username">Admin username</label>
-        <div class="field-row">
-          <input class="field" id="username" type="text" name="username" autocomplete="username"
-                 autocapitalize="none" spellcheck="false" aria-describedby="username-hint" required>
-        </div>
+        <input class="field" id="username" type="text" name="username" autocomplete="username"
+               autocapitalize="none" spellcheck="false" aria-describedby="username-hint" required>
         <p class="hint" id="username-hint">3-32 letters, digits, dots, underscores or hyphens</p>
 
         <label class="field-label" for="password">Password</label>
-        <div class="field-row">
-          <input class="field" id="password" type="password" name="password" autocomplete="new-password"
-                 aria-describedby="password-hint" required>
-          <button type="submit">Create admin</button>
-        </div>
+        <input class="field" id="password" type="password" name="password" autocomplete="new-password"
+               aria-describedby="password-hint" required>
         <p class="hint" id="password-hint">At least 10 characters</p>
-      </form>
-    </aside>
 
-    <main class="sheet" id="sheet">
-      <p class="sheet-note">This creates the only account on this instance, with admin rights. The setup code is shown once per start and is only valid until an account exists.</p>
+        <button type="submit" class="primary">Create admin</button>
+      </form>
+
+      <dl class="access-notes">
+        <div><dt>First run</dt><dd>This creates the first account on this instance, with admin rights.</dd></div>
+        <div><dt>Setup code</dt><dd>A new code is printed at every start, and stops working once an account exists.</dd></div>
+        <div><dt>Afterwards</dt><dd>Admins can open signups for others from Settings.</dd></div>
+        <div><dt>Help</dt><dd>The <a href="/docs">install and setup guide</a> walks through every step.</dd></div>
+      </dl>
     </main>
   </div>
 </body>

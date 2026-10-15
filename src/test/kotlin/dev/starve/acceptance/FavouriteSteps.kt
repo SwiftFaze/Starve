@@ -192,7 +192,7 @@ class FavouriteSteps {
         val index = anchors.indexOfFirst { it.second == label }
         assertTrue(index > 0, "no '$label' entry")
         val previous = anchors[index - 1]
-        val isGroup = previous.first.contains("class=\"group-link\"") && previous.second.startsWith("$group (")
+        val isGroup = previous.first.contains("class=\"group-link\"") && previous.second.startsWith("$group [")
         assertTrue(isGroup, previous.second)
     }
 

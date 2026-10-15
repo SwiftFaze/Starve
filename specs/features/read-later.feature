@@ -1,5 +1,5 @@
 Feature: Save items for later
-  An item can be saved to read or watch later with a ⏲ toggle on each timeline
+  An item can be saved to read or watch later with a ⏲ toggle (drawn as a clock icon, not the glyph) on each timeline
   row, in the reader pane and in the detail view. Saved items are listed by a
   Later entry in the left navigation, earliest-saved first, whether read or
   not. Nothing clears them automatically, and retention never removes them,

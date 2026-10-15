@@ -114,7 +114,7 @@ class GroupSteps {
 
     @Then("the group navigation lists the groups in this order")
     fun navigationGroupOrder(table: DataTable) =
-        assertEquals(table.asList(), navigation().drop(1).map { it.second.substringBeforeLast(" (") })
+        assertEquals(table.asList(), navigation().drop(1).map { it.second.substringBeforeLast(" [") })
 
     @Then("the group navigation marks {string} as current")
     fun navigationMarksCurrent(label: String) =

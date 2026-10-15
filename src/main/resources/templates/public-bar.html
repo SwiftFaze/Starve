@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- The top bar of every page a visitor can see signed out (landing, docs, sign in, sign up, setup): the
+     same links in the same places on all of them, the current one marked. "here" names the current page;
+     "setup" leaves out Sign in, which cannot be reached before the first account exists. -->
+<header class="bar" id="bar" th:fragment="public-bar(here)">
+  <p class="wordmark"><a href="/">Starve</a></p>
+  <p class="bar-caption" aria-hidden="true">No algorithm &middot; Self-hosted</p>
+  <nav class="bar-actions" aria-label="Pages">
+    <a class="tab" href="/docs" th:attr="aria-current=${here == 'docs'} ? 'page'">Docs</a>
+    <a class="tab" href="/login" th:unless="${here == 'setup'}"
+       th:attr="aria-current=${here == 'login'} ? 'page'">Sign in</a>
+  </nav>
+</header>
+</body>
+</html>

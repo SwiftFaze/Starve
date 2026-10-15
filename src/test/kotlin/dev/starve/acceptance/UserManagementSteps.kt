@@ -38,7 +38,7 @@ class UserManagementSteps {
     @Then("the Settings user list is")
     fun userListIs(table: DataTable) {
         val expected = table.asMaps().map { Triple(it.getValue("username"), it.getValue("admin"), it.getValue("you")) }
-        val actual = rows().map { Triple(nameOf(it), yesNo("Admin" in textOf(it)), yesNo("(you)" in it)) }
+        val actual = rows().map { Triple(nameOf(it), yesNo("Admin" in textOf(it)), yesNo("[you]" in it)) }
         assertEquals(expected, actual)
     }
 

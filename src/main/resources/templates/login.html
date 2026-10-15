@@ -4,14 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sign in - Starve</title>
+  <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
-  <script src="/htmx.min.js"></script>
 </head>
-<body>
-  <header class="bar" id="bar">
-    <p class="wordmark"><a href="/">Starve</a></p>
-  </header>
+<body class="access-page">
+  <header th:replace="~{public-bar :: public-bar('login')}"></header>
 
   <div class="label">
     <aside class="sleeve" aria-label="Sign in">
@@ -19,27 +17,35 @@
         <h1 class="series roster-name">Sign in</h1>
         <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
-
-      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Invalid username or password</p>
-
-      <form class="add" method="post" th:action="@{/login}">
-        <label class="field-label" for="username">Username</label>
-        <div class="field-row">
-          <input class="field" id="username" type="text" name="username" autocomplete="username"
-                 autocapitalize="none" spellcheck="false" required>
-        </div>
-        <label class="field-label" for="password">Password</label>
-        <div class="field-row">
-          <input class="field" id="password" type="password" name="password" autocomplete="current-password" required>
-          <button type="submit">Sign in</button>
-        </div>
-        <p class="hint"><label><input type="checkbox" name="remember-me"> Remember me for 30 days</label></p>
-      </form>
     </aside>
 
-    <main class="sheet" id="sheet">
-      <p class="sheet-note">Sign in with the account set up on this instance.</p>
-      <a class="read-toggle" href="/signup" th:if="${signupsOpen}">Sign up</a>
+    <main class="sheet access" id="sheet">
+      <form class="access-form" method="post" th:action="@{/login}">
+        <div class="sheet-head">
+          <h2 class="sheet-title">Sign in</h2>
+        </div>
+
+        <p id="message" class="message" role="alert" th:if="${message}" th:text="${message}">Invalid username or password</p>
+
+        <label class="field-label" for="username">Username</label>
+        <input class="field" id="username" type="text" name="username" autocomplete="username"
+               autocapitalize="none" spellcheck="false" required autofocus>
+
+        <label class="field-label" for="password">Password</label>
+        <input class="field" id="password" type="password" name="password" autocomplete="current-password" required>
+
+        <label class="check"><input type="checkbox" name="remember-me"> Remember me for 30 days</label>
+
+        <button type="submit" class="primary">Sign in</button>
+      </form>
+
+      <dl class="access-notes">
+        <div><dt>Session</dt><dd>Tick Remember me to stay signed in on this browser for 30 days.</dd></div>
+        <div><dt>Accounts</dt>
+          <dd th:unless="${signupsOpen}">Made by the owner. Ask them if you need one.</dd>
+          <dd th:if="${signupsOpen}">Signups are open. <a href="/signup">Sign up</a> for a new account.</dd></div>
+        <div><dt>Feeds</dt><dd>Each account has its own sources, groups and timeline.</dd></div>
+      </dl>
     </main>
   </div>
 </body>

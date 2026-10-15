@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 
-/** Steps for player-deck.feature and theme-switch.feature: deck controls, waveform, placements, splitter, theme. */
+/** Steps for player-deck.feature and theme-switch.feature: deck controls, waveform, video layouts, splitter, theme. */
 class DeckSteps {
     private val app = World.app
 
@@ -32,17 +32,18 @@ class DeckSteps {
         assertEquals(first, waveform(again))
     }
 
-    @Then("the response offers the video placements {string}, {string} and {string}")
-    fun offersPlacements(
+    @Then("the response offers the video layouts {string}, {string}, {string} and {string}")
+    fun offersLayouts(
         first: String,
         second: String,
         third: String,
+        fourth: String,
     ) {
         val labels = PLACEMENT.findAll(body()).map { it.groupValues[2] }.toList()
-        assertEquals(listOf(first, second, third), labels, body())
+        assertEquals(listOf(first, second, third, fourth), labels, body())
     }
 
-    @Then("the placement {string} is selected")
+    @Then("the layout {string} is selected")
     fun placementSelected(label: String) {
         val pressed =
             PLACEMENT
@@ -53,11 +54,17 @@ class DeckSteps {
         assertEquals(listOf(label), pressed, body())
     }
 
-    @Then("the response offers no video placement")
+    @Then("the response offers no video layout")
     fun offersNoPlacement() = assertFalse(body().contains("class=\"placement\""), body())
 
     @Then("the timeline has a list splitter")
     fun hasSplitter() = assertTrue(SPLITTER.containsMatchIn(body()), body())
+
+    @Then("the response header {string} is {string}")
+    fun responseHeaderIs(
+        name: String,
+        value: String,
+    ) = assertEquals(value, World.response.headers().firstValue(name).orElse(null))
 
     @Then("the page loads the deck script")
     fun loadsDeckScript() = assertTrue(body().contains("<script src=\"/deck.js\""), body())

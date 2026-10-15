@@ -64,7 +64,10 @@
   --stripe: #0c0c12;
   --on-obi: #0c0c12;
   --obi-tag-text: #ff3b2f;
-  --grain-opacity: 0.06;
+  --grain-opacity: 0.035;
+  /* Code only: the docs highlighter's two hues, kept off every other surface. */
+  --code-amber: #e8b04a;
+  --code-violet: #b3a6ff;
 
   --display: "Akira Expanded", "Archivo", system-ui, sans-serif;
   --display-stretch: 125%;
@@ -75,8 +78,6 @@
   --deck-h: 0px;
   --obi-w: 5.5rem;
   --panel-w: 22rem;
-  --list-w: 30rem;
-  --strip-w: 8.5rem;
   --gutter: 2rem;
 
   --quick: 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -104,13 +105,17 @@
     --stripe: #ebe8e0;
     --on-obi: #ffffff;
     --obi-tag-text: #b31f16;
-    --grain-opacity: 0.08;
+    --grain-opacity: 0.04;
+    --code-amber: #8a5a00;
+    --code-violet: #5b49c9;
 
     color-scheme: light;
   }
 }
 
 :root[data-theme="light"] {
+  --code-amber: #8a5a00;
+  --code-violet: #5b49c9;
   /* Light: the same drawing on bone paper. */
   --ground: #ebe8e0;
   --raised: #f5f3ee;
@@ -127,7 +132,7 @@
   --stripe: #ebe8e0;
   --on-obi: #ffffff;
   --obi-tag-text: #b31f16;
-  --grain-opacity: 0.08;
+  --grain-opacity: 0.04;
 
   color-scheme: light;
 }
@@ -159,7 +164,8 @@ body {
   padding-bottom: var(--deck-h);
 }
 
-/* Fine film grain over everything, never catching a pointer. */
+/* Fine film grain over everything, never catching a pointer: specks of the text colour, cut out
+   of the ground by a fractal-noise mask, so they read on ink and on paper alike. */
 body::after {
   content: "";
   position: fixed;
@@ -167,8 +173,9 @@ body::after {
   z-index: 50;
   pointer-events: none;
   opacity: var(--grain-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
+  background: var(--text);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3.2 0 0 0 -1.25'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3.2 0 0 0 -1.25'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::selection {
@@ -202,7 +209,8 @@ a:hover {
 
 button,
 .read-toggle,
-.load-more {
+.load-more,
+.reader-original {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -224,7 +232,8 @@ button,
 
 button:hover,
 .read-toggle:hover,
-.load-more:hover {
+.load-more:hover,
+.reader-original:hover {
   background: var(--text);
   color: var(--ground);
 }
@@ -319,6 +328,16 @@ input[type="file"].field::file-selector-button {
   min-width: 0;
 }
 
+/* A control beside a field, or in a row of controls that has one, matches the field's height, so
+   every button in a row lines up top and bottom. */
+.field-row > button,
+.regroup button,
+.rename button,
+.roster .actions button,
+.roster > .group > form > button {
+  min-height: 2.5rem;
+}
+
 .hint {
   margin: 0.5rem 0 0;
   font-size: 0.8125rem;
@@ -334,7 +353,7 @@ input[type="file"].field::file-selector-button {
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.75rem;
   min-height: 3.5rem;
   padding: 0 var(--gutter);
   border-bottom: 1px solid var(--line);
@@ -372,48 +391,74 @@ input[type="file"].field::file-selector-button {
   display: none;
 }
 
+/* Search is a field like every other: a sunk well, a mono hint, the magnifier drawn inside it. */
 .search {
+  position: relative;
   display: flex;
   align-items: center;
   margin-left: auto;
+}
+
+.search .icon {
+  position: absolute;
+  left: 0.625rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--text-2);
+  pointer-events: none;
 }
 
 .search input {
-  width: 12rem;
-  padding: 0.35rem 0.5rem;
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 1px solid var(--line);
+  width: 9.5rem;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.625rem 0.375rem 2rem;
+  border: 1px solid var(--line-strong);
   border-radius: 0;
+  background: var(--sunk);
+  color: var(--text);
+  caret-color: var(--red);
+  font: 400 0.875rem/1.3 var(--read);
+  transition: border-color var(--quick), width var(--move);
 }
 
-/* The sign-out button ends the top bar; the search form, where there is one, pushes it right already. */
-.signout {
+.search input::placeholder {
+  color: var(--text-3);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.search input:focus-visible {
+  border-color: var(--cyan);
+}
+
+.search input:focus,
+.search input:not(:placeholder-shown) {
+  width: 14rem;
+}
+
+.search input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* The account actions end the top bar: Account, Settings (admins) and Sign out. The search form,
+   where there is one, pushes them right already. */
+.bar-actions {
   display: flex;
   align-items: center;
-  margin: 0 0 0 auto;
-}
-
-.search + .signout {
-  margin-left: 0;
-}
-
-/* The Account link (every user) leads the account actions and takes the push to the right edge; the admin-only
-   Settings link and Sign out follow it. */
-.account-link {
+  align-self: stretch;
+  gap: 1.5rem;
   margin-left: auto;
 }
 
-.search + .account-link,
-.account-link + .settings-link,
-.account-link + .signout,
-.settings-link + .signout {
+.search + .bar-actions {
   margin-left: 0;
 }
 
-.signout button {
-  min-height: 2rem;
+.signout {
+  display: flex;
+  align-items: center;
+  margin: 0;
 }
 
 .tab,
@@ -457,36 +502,42 @@ input[type="file"].field::file-selector-button {
   background: var(--red);
 }
 
-/* The favourite star: a plain toggle button, red once the item is a favourite. */
-.star {
-  margin: 0;
-}
-
-.star button {
-  min-height: 0;
-  padding: 0.125rem 0.5rem;
-  font-size: 1.125rem;
-  line-height: 1;
-}
-
-.star[data-favourite="true"] button {
-  color: var(--red);
-}
-
-/* The ⏲ save-for-later toggle: a plain button like the star, red once the item is saved for later. */
+/* The favourite star and the save-for-later clock: square icon toggles the height of every other
+   control, filled (inverted) while on. */
+.star,
 .later {
   margin: 0;
 }
 
-.later button {
-  min-height: 0;
-  padding: 0.125rem 0.5rem;
-  font-size: 1.125rem;
-  line-height: 1;
+button.toggle {
+  width: 2.25rem;
+  padding: 0;
 }
 
-.later button.saved {
-  color: var(--red);
+button.toggle .icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+
+.later button.toggle .icon {
+  fill: currentColor;
+  stroke: none;
+}
+
+button.toggle[aria-pressed="true"] {
+  background: var(--text);
+  color: var(--ground);
+}
+
+button.toggle[aria-pressed="true"] .icon {
+  fill: currentColor;
+}
+
+button.toggle[aria-pressed="true"]:hover {
+  background: transparent;
+  color: var(--text);
 }
 
 /* Clicking the page you are on, already at the top: the marker blinks twice. */
@@ -817,21 +868,9 @@ input[type="file"].field::file-selector-button {
 
 :is(.sleeve, .panel) > .message {
   margin-top: 1.5rem;
-  padding: 0.875rem 1rem;
+  margin-bottom: 0;
   width: calc(var(--panel-w) - 3rem);
   margin-left: 1.5rem;
-  border: 1px solid var(--cyan);
-  font-weight: 500;
-}
-
-:is(.sleeve, .panel) > .message::before {
-  content: "[ ";
-  color: var(--cyan);
-}
-
-:is(.sleeve, .panel) > .message::after {
-  content: " ]";
-  color: var(--cyan);
 }
 
 .sleeve:has(.add) {
@@ -901,10 +940,10 @@ input[type="file"].field::file-selector-button {
   text-transform: uppercase;
 }
 
-.group-sheet .sheet-title,
-#summary .sheet-title {
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--text);
+/* A second sheet head further down a sheet keeps its rule but drops the registration crosses. */
+.group-sheet .sheet-head::before,
+.group-sheet .sheet-head::after {
+  display: none;
 }
 
 .view-actions {
@@ -936,28 +975,1003 @@ input[type="file"].field::file-selector-button {
   color: var(--text-2);
 }
 
-/* ---- The landing page ------------------------------------------------------------------- */
+/* ---- The landing page: the cassette's J-card ------------------------------------------------ */
 
-.highlights {
-  max-width: 40rem;
-  margin: 0 0 2rem;
+/* The one filled control on a surface that has no form of its own. */
+.read-toggle.filled {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.read-toggle.filled:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.bar-caption {
+  margin: 0;
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* The landing's obi is wider and louder: the cover's own spine. */
+body.landing {
+  --obi-w: clamp(6rem, 9vw, 9.5rem);
+}
+
+body.landing .series {
+  font-size: clamp(3rem, 6.2vw, 6rem);
+  max-block-size: 78%;
+}
+
+.cover {
+  padding-top: clamp(2rem, 5vh, 3.5rem);
+}
+
+/* First viewport: the cover copy and the demo release list side by side. */
+.cover-front {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 5rem);
+  min-height: calc(100dvh - var(--bar-h) - 7rem);
+}
+
+.cover-title {
+  margin: 0;
+  font: 800 clamp(2.75rem, 5.1vw, 6rem)/0.92 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.cover-pitch {
+  max-width: 34rem;
+  margin: 1.75rem 0 0;
+  font: 400 clamp(1.0625rem, 1.4vw, 1.25rem)/1.5 var(--read);
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+.cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2.25rem;
+}
+
+.cover-actions .read-toggle {
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+}
+
+.cover-small {
+  margin: 1rem 0 0;
+  font: 400 0.875rem/1.45 var(--read);
+  color: var(--text-2);
+}
+
+/* The demo: a release list drawn in the app's own rows, which marks itself read and runs out. */
+.demo {
+  position: relative;
+  margin: 0;
+  padding: 1.25rem 1.5rem 1.5rem;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+}
+
+.demo::before,
+.demo::after {
+  content: "";
+  position: absolute;
+  top: -0.875rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: linear-gradient(var(--text-3), var(--text-3)) center / 1px 100% no-repeat,
+    linear-gradient(var(--text-3), var(--text-3)) center / 100% 1px no-repeat;
+}
+
+.demo::before {
+  left: -0.875rem;
+}
+
+.demo::after {
+  right: -0.875rem;
+}
+
+.demo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--text);
+  font: 800 1.125rem/1 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+}
+
+.demo-tag {
+  font: 500 0.625rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+}
+
+.demo-list {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.highlights li {
-  padding: 0.875rem 0;
+.demo-row {
+  --n: 0;
+  display: grid;
+  grid-template-columns: 4.75rem 2.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+  animation: demo-read 520ms cubic-bezier(0.65, 0, 0.35, 1) calc(1.2s + var(--n) * 0.55s) both;
+}
+
+/* The app's row parts carry grid areas of their own; here they simply flow into the demo's columns. */
+.demo .demo-row > * {
+  grid-area: auto;
+}
+
+.demo-row:nth-child(2) { --n: 1; }
+.demo-row:nth-child(3) { --n: 2; }
+.demo-row:nth-child(4) { --n: 3; }
+.demo-row:nth-child(5) { --n: 4; }
+.demo-row:nth-child(6) { --n: 5; }
+
+/* Abstract cover-art blocks: the sources' own art would sit here. */
+.demo-art {
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--sunk);
+}
+
+.art-a {
+  background: repeating-linear-gradient(90deg, var(--line-strong) 0 2px, transparent 2px 6px), var(--sunk);
+}
+
+.art-b {
+  background: radial-gradient(circle, var(--text-3) 0 18%, transparent 19% 32%, var(--line-strong) 33% 36%, transparent 37%), var(--sunk);
+}
+
+.art-c {
+  background: linear-gradient(var(--line-strong), var(--line-strong)) 25% 30% / 50% 2px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) 25% 50% / 60% 2px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) 25% 70% / 40% 2px no-repeat, var(--sunk);
+}
+
+.art-d {
+  background: repeating-linear-gradient(-45deg, var(--line-strong) 0 3px, transparent 3px 9px), var(--sunk);
+}
+
+.art-e {
+  background: linear-gradient(var(--text-3), var(--text-3)) 50% 50% / 40% 40% no-repeat, var(--sunk);
+}
+
+.demo-body {
+  min-width: 0;
+}
+
+.demo-title {
+  display: block;
+  font: 500 0.9375rem/1.3 var(--read);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 2px;
+  animation: demo-strike 520ms cubic-bezier(0.65, 0, 0.35, 1) calc(1.2s + var(--n) * 0.55s) both;
+}
+
+.demo .source {
+  display: block;
+  margin-top: 0.2rem;
+  font: 400 0.6875rem/1.3 var(--mono);
+  color: var(--text-2);
+}
+
+.demo .cat,
+.demo .date {
+  font-size: 0.6875rem;
+}
+
+.demo-end {
+  margin-top: 1.5rem;
+  animation: demo-end 600ms cubic-bezier(0.16, 1, 0.3, 1) 4.7s both;
+}
+
+@keyframes demo-read {
+  to {
+    opacity: 0.5;
+  }
+}
+
+@keyframes demo-strike {
+  from {
+    text-decoration-color: transparent;
+  }
+
+  to {
+    text-decoration-color: var(--text);
+  }
+}
+
+@keyframes demo-end {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+/* Side A and side B: what it does, set as a tracklist. */
+.tracklist,
+.specs {
+  margin-top: clamp(3.5rem, 9vh, 6rem);
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(2rem, 5vw, 5rem);
+}
+
+.side {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.side li {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  column-gap: 1rem;
+  max-width: 38rem;
+  padding: 1.125rem 0;
   border-bottom: 1px solid var(--line);
   color: var(--text-2);
 }
 
-.highlights strong {
+.side .track {
+  grid-row: span 2;
+  font: 500 0.75rem/1.6 var(--mono);
+  color: var(--text-3);
+}
+
+.side strong {
   display: block;
   margin-bottom: 0.25rem;
-  font: 500 0.75rem/1.2 var(--mono);
+  font: 600 1.0625rem/1.3 var(--read);
+  color: var(--text);
+}
+
+.spec-table {
+  max-width: 52rem;
+  margin: 0;
+}
+
+.spec-table > div {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.spec-table dt {
+  font: 500 0.6875rem/1.6 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.spec-table dd {
+  margin: 0;
+}
+
+.colophon {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-top: 3rem;
+  font: 600 0.6875rem/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.barcode {
+  width: 7rem;
+  height: 2.5rem;
+  background: repeating-linear-gradient(90deg, var(--text) 0 2px, transparent 2px 4px, var(--text) 4px 7px,
+    transparent 7px 9px, var(--text) 9px 10px, transparent 10px 13px);
+}
+
+@media (max-width: 72rem) {
+  .cover-front {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .demo {
+    max-width: 36rem;
+  }
+}
+
+@media (max-width: 60rem) {
+  .bar-caption {
+    display: none;
+  }
+
+  body.landing .series {
+    font-size: clamp(2rem, 11vw, 3rem);
+  }
+
+  body.landing .series-meta {
+    display: none;
+  }
+
+  .cover-title {
+    font-size: clamp(2rem, 9.6vw, 3.75rem);
+  }
+
+  .sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .demo {
+    padding: 1rem;
+  }
+
+  .demo::before,
+  .demo::after {
+    display: none;
+  }
+
+  .demo-row {
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  }
+
+  .demo .cat {
+    display: none;
+  }
+
+  .demo-art {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .spec-table > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-row,
+  .demo-title,
+  .demo-end {
+    animation: none;
+  }
+
+  .demo-row {
+    opacity: 0.5;
+  }
+
+  .demo-title {
+    text-decoration-color: var(--text);
+  }
+}
+
+/* ---- Sign in, sign up, set up: one form column and its notes ------------------------------- */
+
+.access {
+  display: grid;
+  grid-template-columns: minmax(0, 26rem) minmax(0, 22rem);
+  align-items: start;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-top: clamp(2rem, 6vh, 4rem);
+}
+
+.access-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.access-form .sheet-head {
+  margin-bottom: 1.75rem;
+}
+
+.access-form .field-label {
+  margin-top: 1.25rem;
+}
+
+.access-form .sheet-head + .field-label,
+.access-form .message + .field-label {
+  margin-top: 0;
+}
+
+.access-form .read-toggle {
+  align-self: flex-start;
+}
+
+/* The form's one action: full width, filled, a step taller than the fields. */
+button.primary {
+  min-height: 3rem;
+  margin-top: 1.75rem;
+  background: var(--text);
+  color: var(--ground);
+  font-size: 0.75rem;
+}
+
+button.primary:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.access-alt {
+  margin: 1.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+/* The notes beside the form: a small spec block, hairline-ruled. */
+.access-notes {
+  margin: 4.5rem 0 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.access-notes > div {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.access-notes dt {
+  margin-bottom: 0.25rem;
+  font: 500 0.6875rem/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.access-notes dd {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* A status or error line: a hairline box with the text in mono brackets. */
+.message {
+  margin: 0 0 1.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--cyan);
+  font-weight: 500;
+}
+
+.message::before {
+  content: "[ ";
+  color: var(--cyan);
+}
+
+.message::after {
+  content: " ]";
+  color: var(--cyan);
+}
+
+.access-form .message[role="alert"] {
+  border-color: var(--red-text);
+}
+
+.access-form .message[role="alert"]::before,
+.access-form .message[role="alert"]::after {
+  color: var(--red-text);
+}
+
+/* Checkboxes: a square well like a field, a drawn tick when checked. */
+input[type="checkbox"] {
+  appearance: none;
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: var(--sunk);
+  cursor: pointer;
+  transition: background-color var(--quick), border-color var(--quick);
+}
+
+input[type="checkbox"]:checked {
+  border-color: var(--text);
+  background: var(--text) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3 3 7-7' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") center / 0.75rem no-repeat;
+}
+
+:root[data-theme="light"] input[type="checkbox"]:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3 3 7-7' fill='none' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3 3 7-7' fill='none' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E");
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+code {
+  font: 400 0.875em/1 var(--mono);
+}
+
+/* Inline code reads as a printed label: reversed out, ground on text, like a filled control. */
+:not(pre) > code {
+  padding: 0.15em 0.35em;
+  background: var(--text);
+  color: var(--ground);
+  font-weight: 500;
+  font-size: 0.8125em;
+  white-space: nowrap;
+}
+
+.field-code {
+  font: 500 1.125rem/1.3 var(--mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 60rem) {
+  .access {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding-top: 1.5rem;
+  }
+
+  .access-notes {
+    margin-top: 3rem;
+  }
+}
+
+/* ---- Settings: a ruled sheet of settings, grouped under small headings ---------------------- */
+
+.settings .sheet-note {
+  margin-top: 1.25rem;
+}
+
+.setting-group {
+  max-width: 52rem;
+  margin-top: 2.5rem;
+}
+
+.setting-group-title {
+  margin: 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line-strong);
+  font: 500 0.75rem/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem 2rem;
+  margin: 0;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.setting-name {
+  font: 500 1rem/1.35 var(--read);
+}
+
+.setting .hint {
+  max-width: 34rem;
+  margin-top: 0.25rem;
+}
+
+/* Users: one ruled row per account, its actions on the right. */
+.user-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.user-list .user {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem 2rem;
+  min-height: 4.25rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.user-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+}
+
+.user-name .name {
+  font: 500 1rem/1.35 var(--read);
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--text);
+  font: 500 0.625rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.you,
+.created {
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
+}
+
+.user-list .actions {
+  grid-area: auto;
+}
+
+.user-list .actions form {
+  margin: 0;
+}
+
+@media (max-width: 60rem) {
+  .user-list .user {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .user-list .actions {
+    justify-content: flex-start;
+  }
+}
+
+/* Confirming something that cannot be undone: the one destructive control, on the obi red. */
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+button.danger {
+  min-height: 3rem;
+  border-color: var(--red);
+  background: var(--red);
+  color: var(--on-red);
+}
+
+button.danger:hover {
+  background: transparent;
+  color: var(--red-text);
+}
+
+/* A temporary password: large, reversed, easy to read out or copy. */
+.temporary {
+  margin: 0.5rem 0 1.25rem;
+}
+
+.temporary code {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.375rem;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+
+.access-form > .read-toggle {
+  margin-top: 1.5rem;
+}
+
+/* The switch: Off and On as two cells of one control; the current one is filled. */
+button.switch {
+  gap: 0;
+  padding: 0;
+  min-height: 2.5rem;
+}
+
+.switch > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5rem;
+  min-height: calc(2.5rem - 2px);
+  padding: 0 0.875rem;
+  transition: background-color var(--quick), color var(--quick);
+}
+
+.switch[aria-checked="false"] .switch-off,
+.switch[aria-checked="true"] .switch-on {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.switch:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+.switch[aria-checked="false"]:hover .switch-on,
+.switch[aria-checked="true"]:hover .switch-off {
+  background: var(--raised);
+}
+
+/* ---- Docs: a table of contents beside one reading column ------------------------------------- */
+
+.docs-layout {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 44rem);
+  align-items: start;
+  gap: clamp(2rem, 5vw, 5rem);
+  margin-top: 2rem;
+}
+
+.docs-toc {
+  position: sticky;
+  top: calc(var(--bar-h) + 1.5rem);
+}
+
+.docs-toc ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+  border-top: 1px solid var(--line-strong);
+}
+
+.docs-toc li {
+  counter-increment: toc;
+  border-bottom: 1px solid var(--line);
+}
+
+.docs-toc a {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  font: 500 0.6875rem/1.4 var(--mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text-2);
+  transition: color var(--quick);
+}
+
+.docs-toc a:hover {
   color: var(--text);
+}
+
+.docs-body {
+  min-width: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.docs-lede {
+  margin: 0 0 1rem;
+  font-size: 1.1875rem;
+  line-height: 1.5;
+  color: var(--text-2);
+  text-wrap: pretty;
+}
+
+.docs-body section {
+  padding-top: 2.5rem;
+  scroll-margin-top: calc(var(--bar-h) + 1rem);
+}
+
+.docs-body h3 {
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--text);
+  font: 800 1.25rem/1.1 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+}
+
+.docs-body h4 {
+  margin: 1.75rem 0 0.5rem;
+  font: 600 1.0625rem/1.3 var(--read);
+}
+
+.docs-body p,
+.docs-body ul,
+.docs-body ol {
+  margin: 0 0 1rem;
+}
+
+.docs-body ul,
+.docs-body ol {
+  padding-left: 1.25rem;
+}
+
+.docs-body li + li {
+  margin-top: 0.375rem;
+}
+
+.docs-body li::marker {
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+.docs-body pre {
+  margin: 0 0 1.25rem;
+  padding: 0.875rem 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--line-strong);
+  background: var(--sunk);
+  font: 400 0.8125rem/1.6 var(--mono);
+}
+
+.docs-body pre code {
+  font: inherit;
+}
+
+/* A code block with its Copy button in the top-right corner; the text keeps clear of it. */
+.docs-body pre.has-copy {
+  position: relative;
+  padding-right: 5.5rem;
+}
+
+/* Long commands wrap rather than scroll, so the Copy button never slides out of reach. */
+.docs-body pre {
+  white-space: pre-wrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  overflow-x: auto;
+}
+
+.docs-body pre .copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.625rem;
+  background: var(--ground);
+  font-size: 0.625rem;
+}
+
+.docs-body pre .copy:hover {
+  background: var(--text);
+}
+
+.docs-body pre .code-lang {
+  position: absolute;
+  top: 0.875rem;
+  right: 4.75rem;
+  font: 500 0.625rem/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.docs-body pre.has-copy:has(.code-lang) {
+  padding-right: 9rem;
+}
+
+/* The highlighter's tokens: commands bold in the text colour, flags amber, strings and values
+   violet, URLs underlined, operators and comments receding. */
+/* Every token keeps its letters together: lines break between words, and inside a URL only
+   after a slash. */
+.tok-command,
+.tok-word,
+.tok-flag,
+.tok-string,
+.tok-url {
+  white-space: nowrap;
+}
+
+.tok-url {
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.tok-command {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tok-flag {
+  color: var(--code-amber);
+}
+
+.tok-string {
+  color: var(--code-violet);
+}
+
+.tok-url {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.2em;
+}
+
+.tok-operator {
+  color: var(--code-amber);
+  font-weight: 700;
+}
+
+.tok-comment {
+  color: var(--text-3);
+}
+
+
+
+
+.docs-table {
+  width: 100%;
+  margin: 0 0 1rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.docs-table th,
+.docs-table td {
+  padding: 0.625rem 0.75rem 0.625rem 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-table th {
+  font: 500 0.6875rem/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  border-bottom-color: var(--line-strong);
+}
+
+.docs-end {
+  margin-top: 3rem;
+}
+
+@media (max-width: 60rem) {
+  .docs-body pre .code-lang {
+    display: none;
+  }
+
+  .docs-body pre.has-copy:has(.code-lang) {
+    padding-right: 5.5rem;
+  }
+
+  .docs-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .docs-toc {
+    position: static;
+  }
+
+  .docs-table {
+    display: block;
+    overflow-x: auto;
+  }
 }
 
 /* ---- Release rows ----------------------------------------------------------------------- */
@@ -1042,6 +2056,7 @@ a.title:hover {
 .actions {
   grid-area: actions;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
 }
@@ -1434,82 +2449,286 @@ a.title:hover {
   color: var(--red-text);
 }
 
-/* ---- The video: pane, mini or deck. Only its box moves; the iframe never does. ---------- */
+/* ---- The video. Only its box moves; the iframe never does. --------------------------------- */
 
+/* The box takes whatever room its panel or window gives it; the picture inside keeps 16:9 at the
+   largest size that fits, centred on the ground, so a panel of any shape never shows black bars. */
 .ratio-16x9 {
   position: fixed;
   z-index: 25;
-  background: #000;
-  border: 1px solid var(--red);
-  transition: top var(--move), left var(--move), right var(--move), bottom var(--move),
-    width var(--move), height var(--move);
+  display: grid;
+  place-items: start center;
+  container-type: size;
+  background: var(--ground);
+}
+
+.ratio-16x9 iframe,
+.shield {
+  grid-area: 1 / 1;
+  width: min(100cqw, 100cqh * 16 / 9);
+  height: auto;
+  aspect-ratio: 16 / 9;
 }
 
 .ratio-16x9 iframe {
   display: block;
-  width: 100%;
-  height: 100%;
   border: 0;
+  background: #000;
 }
 
-/* Pane: theatre size beside the list. */
-body[data-video="pane"] .ratio-16x9 {
-  top: calc(var(--bar-h) + 1.75rem);
-  left: calc(var(--list-x, var(--obi-w)) + var(--list-w) + 1.5rem);
-  right: var(--gutter);
-  bottom: calc(var(--deck-h) + 1.75rem);
-  width: auto;
-  height: auto;
+.shield {
+  position: relative;
+  cursor: pointer;
 }
 
+.ratio-16x9:fullscreen {
+  background: #000;
+}
+
+/* ---- The workspace: list, video and post tiled like tmux panels (desktop) ------------------- */
+
+/* Tiled, every panel is fixed to the rectangle deck.js gives it and scrolls on its own. */
 body[data-split] .label {
-  grid-template-columns: auto var(--list-w) minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
 }
 
-body[data-split] .sheet {
-  padding-right: 1.75rem;
-  border-right: 1px solid var(--line);
-  min-height: calc(100dvh - var(--bar-h) - var(--deck-h));
+body[data-split] #sheet,
+body[data-split] #reader,
+body[data-split] .ratio-16x9 {
+  position: fixed;
+  left: var(--px);
+  top: var(--py);
+  width: var(--pw);
+  height: var(--ph);
 }
 
-/* The splitter on the list's right edge: drag to resize; narrow enough, the list folds. */
-.splitter {
+body[data-split] #sheet,
+body[data-split] #reader {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+body[data-split] #sheet {
+  padding-top: 1.25rem;
+  padding-bottom: 2.5rem;
+}
+
+body[data-split] .reader-view {
+  min-height: 100%;
+  border-left: 0;
+}
+
+body[data-split] #sheet .sheet-head::before,
+body[data-split] #sheet .sheet-head::after {
   display: none;
 }
 
-body[data-split] .splitter {
-  display: block;
+/* The chrome over the tiles: a frame per panel and a title bar along its top. */
+.panes {
+  display: contents;
+}
+
+.pane-frame,
+.pane-bar {
   position: fixed;
+  left: var(--px);
+  top: var(--py);
+  width: var(--pw);
+  height: var(--ph);
+}
+
+.pane-frame {
+  z-index: 24;
+  border: 1px solid var(--line);
+  pointer-events: none;
+  transition: border-color var(--quick), background-color var(--quick);
+}
+
+/* The active panel: the one last clicked or focused, outlined in the obi's red. */
+body[data-active="list"] .pane-frame[data-pane="list"],
+body[data-active="video"] .pane-frame[data-pane="video"],
+body[data-active="post"] .pane-frame[data-pane="post"] {
   z-index: 26;
-  top: var(--bar-h);
-  bottom: var(--deck-h);
-  left: calc(var(--list-x, var(--obi-w)) + var(--list-w) - 0.375rem);
+  border-color: var(--red);
+}
+
+/* A drop target while a title bar is dragged over it. */
+.pane-frame.target {
+  z-index: 27;
+  border: 2px solid var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 8%, transparent);
+}
+
+.pane-bar {
+  z-index: 26;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0 0.25rem 0 0.75rem;
+  border: 1px solid var(--line);
+  border-bottom-color: var(--line);
+  background: var(--raised);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.pane-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-2);
+  transition: color var(--quick);
+}
+
+.pane-name::before {
+  content: "";
+  display: inline-block;
+  width: 0.375rem;
+  height: 0.375rem;
+  margin-right: 0.5rem;
+  vertical-align: 0.1em;
+  background: var(--line-strong);
+  transition: background-color var(--quick);
+}
+
+body[data-active="list"] .pane-bar[data-pane="list"],
+body[data-active="video"] .pane-bar[data-pane="video"],
+body[data-active="post"] .pane-bar[data-pane="post"] {
+  border-color: var(--red);
+}
+
+body[data-active="list"] .pane-bar[data-pane="list"] .pane-name,
+body[data-active="video"] .pane-bar[data-pane="video"] .pane-name,
+body[data-active="post"] .pane-bar[data-pane="post"] .pane-name {
+  color: var(--text);
+}
+
+body[data-active="list"] .pane-bar[data-pane="list"] .pane-name::before,
+body[data-active="video"] .pane-bar[data-pane="video"] .pane-name::before,
+body[data-active="post"] .pane-bar[data-pane="post"] .pane-name::before {
+  background: var(--red);
+}
+
+.pane-bar.lifted {
+  z-index: 40;
+  cursor: grabbing;
+  border-color: var(--cyan);
+  opacity: 0.92;
+}
+
+.pane-move {
+  width: 1.5rem;
+  min-height: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border-color: transparent;
+  color: var(--text-2);
+}
+
+.pane-move .icon {
   width: 0.75rem;
-  cursor: col-resize;
+  height: 0.75rem;
+}
+
+.pane-move:hover {
+  border-color: var(--text);
+}
+
+.pane-move:disabled {
+  visibility: hidden;
+}
+
+/* Swapping two panels: every tile slides to its new place. */
+body.swapping #sheet,
+body.swapping #reader,
+body.swapping .ratio-16x9,
+body.swapping .pane-frame,
+body.swapping .pane-bar {
+  transition: left var(--move), top var(--move), width var(--move), height var(--move);
+}
+
+/* The splitters between panels: drag, arrow keys, double click to reset. */
+.splitter,
+.splitter-2,
+.video-splitter {
+  position: fixed;
+  z-index: 28;
   touch-action: none;
 }
 
-body[data-split] .splitter::after {
+.splitter[hidden],
+.splitter-2[hidden],
+.video-splitter[hidden] {
+  display: none;
+}
+
+.splitter,
+.splitter-2,
+.video-splitter[aria-orientation="vertical"] {
+  width: 0.75rem;
+  cursor: col-resize;
+}
+
+.video-splitter,
+.splitter[aria-orientation="horizontal"] {
+  height: 0.75rem;
+  cursor: row-resize;
+}
+
+.splitter::after,
+.splitter-2::after,
+.video-splitter::after {
   content: "";
   position: absolute;
+  background: var(--line-strong);
+  transition: background-color var(--quick), height var(--quick), width var(--quick), margin var(--quick);
+}
+
+.splitter::after,
+.splitter-2::after {
   top: 50%;
   left: 0.25rem;
   width: 0.25rem;
   height: 3rem;
   margin-top: -1.5rem;
-  background: var(--line-strong);
-  transition: background-color var(--quick), height var(--quick);
 }
 
-body[data-split] .splitter:hover::after,
-body[data-split] .splitter:focus-visible::after,
-body.resizing .splitter::after {
+.video-splitter::after {
+  top: 0.25rem;
+  left: 50%;
+  width: 3rem;
+  height: 0.25rem;
+  margin-left: -1.5rem;
+}
+
+.splitter:hover::after,
+.splitter:focus-visible::after,
+.splitter-2:hover::after,
+.splitter-2:focus-visible::after,
+body.resizing .splitter::after,
+body.resizing .splitter-2::after {
   background: var(--cyan);
   height: 5rem;
   margin-top: -2.5rem;
 }
 
-.splitter:focus-visible {
+.video-splitter:hover::after,
+.video-splitter:focus-visible::after,
+body.resizing .video-splitter::after {
+  background: var(--cyan);
+  width: 5rem;
+  margin-left: -2.5rem;
+}
+
+.splitter:focus-visible,
+.splitter-2:focus-visible,
+.video-splitter:focus-visible {
   outline: none;
 }
 
@@ -1518,27 +2737,11 @@ body.resizing * {
   user-select: none;
 }
 
-body.resizing .label,
-body.resizing .ratio-16x9 {
-  transition: none;
+body.resizing .ratio-16x9 iframe {
+  pointer-events: none;
 }
 
-/* The fold: list width, the video's left edge and the splitter slide together, and the
-   rows fade into their new form. Plays even while dragging, so the snap reads as a move. */
-body.folding .label,
-body.resizing.folding .label {
-  transition: grid-template-columns 280ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-body.folding .ratio-16x9,
-body.resizing.folding .ratio-16x9 {
-  transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-body.folding .splitter {
-  transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
+/* The fold: the list's rows fade into their strip form, or back. */
 body.folding #timeline,
 body.folding .sheet-head {
   animation: fold-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -1551,11 +2754,7 @@ body.folding .sheet-head {
   }
 }
 
-/* Strip: the list folds to its catalogue numbers and the video takes the room. */
-body[data-split][data-list="strip"] {
-  --list-w: var(--strip-w);
-}
-
+/* Strip: the list folds to its catalogue numbers and the other panels take the room. */
 body[data-split][data-list="strip"] .sheet {
   padding-left: 1rem;
   padding-right: 1rem;
@@ -1565,8 +2764,6 @@ body[data-split][data-list="strip"] .sheet-head {
   border-bottom-color: var(--line);
 }
 
-body[data-split][data-list="strip"] .sheet-head::before,
-body[data-split][data-list="strip"] .sheet-head::after,
 body[data-split][data-list="strip"] .sheet-title,
 body[data-split][data-list="strip"] .view-actions,
 body[data-split][data-list="strip"] .sheet-note,
@@ -1591,62 +2788,64 @@ body[data-split][data-list="strip"] .load-more {
   font-size: 0.625rem;
 }
 
-/* Mini: a small window above the deck's right end. */
-body[data-video="mini"] .ratio-16x9 {
-  top: auto;
+/* ---- Picture in picture: a floating window over everything but the deck --------------------- */
+
+body[data-video="pip"] .ratio-16x9 {
+  right: var(--pip-right, 1.25rem);
+  bottom: calc(var(--deck-h) + var(--pip-bottom, 1rem));
   left: auto;
-  right: 1.25rem;
-  bottom: calc(var(--deck-h) + 1rem);
-  width: var(--mini-w, 20rem);
-  height: calc(var(--mini-w, 20rem) * 9 / 16);
-}
-
-/* Deck: a 16:9 slot standing up out of the deck's right end. */
-body[data-video="deck"] .ratio-16x9 {
   top: auto;
-  left: auto;
-  right: 0;
-  bottom: 0;
-  width: var(--deck-w, 24rem);
-  height: calc(var(--deck-w, 24rem) * 9 / 16);
-  border-width: 1px 0 0 1px;
+  width: var(--pip-w, 22.5rem);
+  height: calc(var(--pip-w, 22.5rem) * 9 / 16);
+  border: 1px solid var(--red);
+  background: #000;
 }
 
-body[data-video="deck"] .player {
-  grid-template-columns: auto minmax(9rem, 14rem) minmax(0, 1fr) auto auto;
-  padding-right: calc(var(--deck-w, 24rem) + 1.25rem);
+body[data-video="pip"] .shield {
+  cursor: grab;
 }
 
-body[data-video="deck"] .elapsed,
-body[data-video="deck"] .total {
-  min-width: 0;
+body[data-video="pip"].resizing .shield {
+  cursor: grabbing;
 }
 
-body[data-video="deck"] .level {
-  width: 4rem;
+/* The picture-in-picture window outside the browser: nothing but the video, edge to edge. */
+.pip-window {
+  min-height: 0;
+  padding: 0;
+  background: #000;
 }
 
-/* The slot stands over the sheet's lower right, so the sheet ends above it. */
-body[data-video="deck"] .sheet {
-  padding-bottom: calc(var(--deck-w, 24rem) * 9 / 16 + 1rem);
+.pip-window::after {
+  display: none;
 }
 
-.shield {
-  position: absolute;
+.pip-window .ratio-16x9 {
   inset: 0;
-  cursor: pointer;
-}
-
-.ratio-16x9:fullscreen {
+  width: 100%;
+  height: 100%;
+  place-items: center;
   border: 0;
+  background: #000;
 }
 
-/* The resize grip: top-left corner of the mini and deck video, never over the pane. */
+.pip-window .grip {
+  display: none;
+}
+
+/* A floating video over a post or the list: they end above where it usually sits. */
+body[data-video="pip"] .reader-view,
+body[data-video="pip"] .sheet {
+  padding-bottom: calc(var(--pip-w, 22.5rem) * 9 / 16 + 2.5rem);
+}
+
+/* The resize grip: top-left corner of the floating window. */
 .grip {
   display: none;
   position: absolute;
   top: -1px;
   left: -1px;
+  z-index: 1;
   width: 1.75rem;
   min-height: 1.75rem;
   padding: 0;
@@ -1662,18 +2861,19 @@ body[data-video="deck"] .sheet {
   color: var(--ground);
 }
 
-body[data-video="mini"] .grip,
-body[data-video="deck"] .grip {
+body[data-video="pip"] .grip {
   display: inline-flex;
 }
 
-/* While dragging, the iframe must not swallow the pointer, and nothing animates. */
-body.resizing .ratio-16x9 {
-  transition: none;
-}
-
-body.resizing .ratio-16x9 iframe {
-  pointer-events: none;
+/* A video with no panel to sit in (only the list is open and the layout is a tiling one) waits
+   in 2 col: deck.js always tiles it, so this only covers the moment before the script runs. */
+@media (min-width: 60.0625rem) {
+  body:not([data-split]):not([data-video="pip"]) .ratio-16x9 {
+    right: var(--gutter);
+    bottom: calc(var(--deck-h) + 1rem);
+    width: 22.5rem;
+    height: 12.65625rem;
+  }
 }
 
 /* ---- Sources and Import ----------------------------------------------------------------- */
@@ -1869,15 +3069,55 @@ body.resizing .ratio-16x9 iframe {
     --gutter: 1rem;
   }
 
+  /* The bar in three tidy lines: wordmark and account; pages and search; the group tabs. */
   .bar {
     position: static;
     flex-wrap: wrap;
-    gap: 0 1.5rem;
-    padding-top: 0.75rem;
+    gap: 0 1.25rem;
+    padding-top: 0.625rem;
+  }
+
+  .wordmark {
+    order: 0;
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
   }
 
   .pages {
+    order: 0;
+    min-height: 2.75rem;
+  }
+
+  .bar-actions {
+    order: 2;
+    gap: 1rem;
+  }
+
+  .search {
+    order: 2;
+    flex: 1;
+    min-width: 8rem;
+    margin-left: 0;
+  }
+
+  .search input,
+  .search input:focus,
+  .search input:not(:placeholder-shown) {
+    width: 100%;
     min-height: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .bar-actions {
+    margin-left: auto;
+  }
+
+  /* A line break after the pages, so search and the account actions share the second line. */
+  .bar::after {
+    content: "";
+    order: 1;
+    flex-basis: 100%;
   }
 
   .groups {
@@ -1908,7 +3148,7 @@ body.resizing .ratio-16x9 iframe {
     align-items: center;
     justify-content: space-between;
     height: auto;
-    padding: 1rem var(--gutter);
+    padding: 0.625rem var(--gutter);
   }
 
   .series {
@@ -2005,15 +3245,15 @@ body.resizing .ratio-16x9 iframe {
     text-align: left;
   }
 
-  /* The deck: art, title and transport on two lines. */
+  /* The deck: the waveform across the top, where a thumb reaches it, then art, title and Eject. */
   .player {
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "art text stop"
-      "transport transport transport";
+      "transport transport transport"
+      "art text stop";
     gap: 0.5rem 0.75rem;
-    padding: 0.625rem 0.75rem 0.5rem;
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    padding: 0.5rem 0.75rem 0.625rem;
+    padding-bottom: calc(0.625rem + env(safe-area-inset-bottom));
   }
 
   .now-title {
@@ -2022,8 +3262,8 @@ body.resizing .ratio-16x9 iframe {
 
   .now-art {
     grid-area: art;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 3rem;
+    height: 3rem;
   }
 
   .now-text {
@@ -2036,6 +3276,7 @@ body.resizing .ratio-16x9 iframe {
 
   .player > .stop {
     grid-area: stop;
+    min-height: 2.75rem;
   }
 
   .transport {
@@ -2043,8 +3284,13 @@ body.resizing .ratio-16x9 iframe {
     gap: 0.5rem;
   }
 
+  .pause {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
   .wave {
-    height: 2.25rem;
+    height: 2.75rem;
     min-width: 0;
   }
 
@@ -2055,10 +3301,10 @@ body.resizing .ratio-16x9 iframe {
   }
 
   .volume {
-    gap: 0.25rem;
+    display: none;
   }
 
-  /* Phones always show the video in the pane above the deck: no placement choice. */
+  /* Phones always show the video full width just above the deck: no layout choice. */
   .placement {
     display: none;
   }
@@ -2067,46 +3313,73 @@ body.resizing .ratio-16x9 iframe {
     grid-column: 1 / -1;
   }
 
-  /* Pane on a phone: the full width just above the deck. */
-  body[data-split] .label,
-  body[data-video="deck"] .label {
-    display: block;
-  }
-
   body[data-video] .ratio-16x9 {
     top: auto;
     left: 0;
     right: 0;
     bottom: var(--deck-h);
     width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    max-height: 40dvh;
-    border-width: 1px 0 0;
+    height: min(56.25vw, 40dvh);
+    border: 0;
+    border-top: 1px solid var(--red);
+    background: #000;
   }
 
   body[data-video] {
     padding-bottom: calc(var(--deck-h) + min(56.25vw, 40dvh));
   }
 
-  body[data-split] .sheet {
-    border-right: 0;
-    padding-right: var(--gutter);
-  }
-
-  body[data-split] .splitter {
+  body[data-video] .grip {
     display: none;
   }
 
-  body[data-video="deck"] .player {
-    padding-right: 0.75rem;
+  body[data-video="pip"] .reader-view,
+  body[data-video="pip"] .sheet {
+    padding-bottom: 2rem;
   }
 
-  .level {
-    width: 3.5rem;
+  /* Reading on a phone: the post takes the whole screen above the deck; the bar, the obi, the list
+     and the video step away until Close. The list keeps its place underneath. */
+  #reader:has(.reader-view) {
+    position: fixed;
+    inset: 0 0 var(--deck-h);
+    z-index: 35;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--ground);
   }
 
-  body[data-video] .grip {
+  body.reading {
+    overflow: hidden;
+  }
+
+  body.reading .ratio-16x9 {
+    visibility: hidden;
+  }
+
+  /* Back to the top: a square control above the deck once the list or post is scrolled far. */
+  .to-top {
+    position: fixed;
+    right: 1rem;
+    bottom: calc(var(--deck-h) + 1rem);
+    z-index: 36;
+    width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+    background: var(--ground);
+  }
+
+  body[data-video]:not(.reading) .to-top {
+    bottom: calc(var(--deck-h) + min(56.25vw, 40dvh) + 1rem);
+  }
+}
+
+.to-top[hidden] {
+  display: none;
+}
+
+@media (min-width: 60.0625rem) {
+  .to-top {
     display: none;
   }
 }
@@ -2144,62 +3417,6 @@ body.resizing .ratio-16x9 iframe {
   display: none;
 }
 
-/* The post is a fixed column beside the list, as the video is: it stays put while the list scrolls
-   and scrolls on its own. A video in the pane sits above it as a 16:9 strip (or the height the user
-   dragged the video splitter to). Desktop only; on a phone the post follows the list. */
-@media (min-width: 60.0625rem) {
-  body[data-split] .reader-view {
-    position: fixed;
-    top: var(--reader-top, var(--bar-h));
-    bottom: var(--deck-h);
-    left: calc(var(--list-x, var(--obi-w)) + var(--list-w));
-    right: 0;
-    overscroll-behavior: contain;
-  }
-
-  body[data-video="pane"]:has(.reader-view) {
-    --pane-video-h: var(--video-h, calc((100vw - var(--gutter) - var(--list-x, var(--obi-w)) - var(--list-w) - 1.5rem) * 9 / 16));
-    --reader-top: calc(var(--bar-h) + 1.75rem + var(--pane-video-h) + 1.25rem);
-  }
-
-  body[data-video="pane"]:has(.reader-view) .ratio-16x9 {
-    bottom: auto;
-    height: var(--pane-video-h);
-  }
-
-  body[data-video="pane"]:has(.reader-view) .video-splitter {
-    display: block;
-    position: fixed;
-    z-index: 26;
-    top: calc(var(--bar-h) + 1.75rem + var(--pane-video-h));
-    left: calc(var(--list-x, var(--obi-w)) + var(--list-w));
-    right: 0;
-    height: 1.25rem;
-    cursor: row-resize;
-    touch-action: none;
-  }
-
-  body[data-video="pane"]:has(.reader-view) .video-splitter::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 3rem;
-    height: 0.25rem;
-    margin: -0.125rem 0 0 -1.5rem;
-    background: var(--line-strong);
-    transition: background-color var(--quick), width var(--quick);
-  }
-
-  body[data-video="pane"]:has(.reader-view) .video-splitter:hover::after,
-  body[data-video="pane"]:has(.reader-view) .video-splitter:focus-visible::after,
-  body.resizing .video-splitter::after {
-    background: var(--cyan);
-    width: 5rem;
-    margin-left: -2.5rem;
-  }
-}
-
 /* The detail view of a SoundCloud track or YouTube video is a reader view too: its artwork sits large under
    the header, and its control fills red while that item is in the deck (the playing row's rule). */
 .detail-art {
@@ -2223,31 +3440,22 @@ body.resizing .ratio-16x9 iframe {
   color: var(--on-red);
 }
 
-/* A floating mini video sits over the post's lower corner, so the post ends above it. */
-body[data-video="mini"] .reader-view {
+.reader-view {
   padding-bottom: calc(var(--mini-w, 320px) * 9 / 16 + 2rem);
 }
 
+/* The reader panel (#reader) is what scrolls; the view inside it never does, so its head can stick. */
 .reader-view {
-  overflow-y: auto;
   min-width: 0;
   padding: 1.75rem var(--gutter) 4rem 1.75rem;
   border-left: 1px solid var(--line);
 }
 
-.video-splitter {
-  display: none;
-}
-
-.video-splitter:focus-visible {
-  outline: none;
-}
-
 .reader-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.5rem 1rem;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem 0.5rem;
+  align-items: center;
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--text);
 }
@@ -2255,27 +3463,30 @@ body[data-video="mini"] .reader-view {
 .reader-cat {
   grid-column: 1;
   grid-row: 1;
+  align-self: center;
   font: 500 0.75rem/1.2 var(--mono);
   letter-spacing: 0.04em;
   color: var(--text-2);
 }
 
 .reader-close {
-  grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-column: 3;
+  grid-row: 1;
 }
 
-/* Under the catalogue number, left of the close button's column, above the title: the star and the ⏲ share the row. */
+/* Beside the close button, on the catalogue number's row: the star and the clock share it. */
 .reader-toggles {
-  grid-column: 1;
-  justify-self: start;
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 .reader-title {
-  grid-column: 1;
+  grid-column: 1 / -1;
+  max-width: 40rem;
+  text-wrap: balance;
   margin: 0;
   font: 500 1.375rem/1.3 var(--read);
   overflow-wrap: anywhere;
@@ -2309,21 +3520,6 @@ body[data-video="mini"] .reader-view {
 .reader-original {
   grid-column: 1 / -1;
   justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.25rem;
-  padding: 0.5rem 0.875rem;
-  border: 1px solid var(--text);
-  font: 500 0.6875rem/1 var(--mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: background-color var(--quick), color var(--quick);
-}
-
-.reader-original:hover {
-  background: var(--text);
-  color: var(--ground);
 }
 
 .reader-body,
@@ -2340,6 +3536,17 @@ body[data-video="mini"] .reader-view {
 
 .reader-body > :first-child {
   margin-top: 0;
+}
+
+/* Feeds that pad posts with runs of line breaks or empty paragraphs: one blank line at most. */
+.reader-body br + br + br,
+.reader-body p:empty,
+.reader-body div:empty {
+  display: none;
+}
+
+.reader-body p {
+  margin: 0 0 1em;
 }
 
 .reader-body img,
@@ -2408,10 +3615,90 @@ body[data-video="mini"] .reader-view {
 
 @media (max-width: 60rem) {
   .reader-view {
-    position: static;
-    max-height: none;
-    padding: 1.75rem var(--gutter) 2rem;
+    padding: 0 var(--gutter) 6rem;
     border-left: 0;
-    border-top: 1px solid var(--text);
+  }
+
+  /* The head rides along: it tucks away while reading down and slides back on the way up. */
+  .reader-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0.75rem var(--gutter) 1rem;
+    background: var(--ground);
+    transition: transform var(--move);
+  }
+
+  .reader-head.tucked {
+    transform: translateY(-100%);
+  }
+
+  .reader-title {
+    font-size: 1.25rem;
+  }
+
+  .reader-close,
+  .reader-toggles button {
+    min-height: 2.75rem;
+  }
+
+  .reader-toggles button.toggle {
+    width: 2.75rem;
+  }
+}
+
+/* ---- Marking read: the title strikes through and the row dims, then the server's row lands ---- */
+
+.item.clearing {
+  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1) var(--stagger, 0ms);
+  opacity: 0.45;
+}
+
+.item.clearing .title {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 2px;
+  animation: strike 320ms cubic-bezier(0.65, 0, 0.35, 1) var(--stagger, 0ms) both;
+}
+
+.item.clearing .cat {
+  color: var(--text-3);
+}
+
+@keyframes strike {
+  from {
+    text-decoration-color: transparent;
+  }
+
+  to {
+    text-decoration-color: var(--text);
+  }
+}
+
+/* A row that has just become read settles in rather than blinking. */
+.item.read.htmx-added,
+.sheet.htmx-added .item {
+  animation: settle 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes settle {
+  from {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item.clearing .title,
+  .item.read.htmx-added,
+  .sheet.htmx-added .item {
+    animation: none;
+  }
+
+  .item.clearing .title {
+    text-decoration-color: var(--line-strong);
+  }
+
+  .reader-head {
+    transition: none;
   }
 }

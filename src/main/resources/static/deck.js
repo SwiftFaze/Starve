@@ -1,16 +1,31 @@
-// The player deck: what plays sits in #dock, which htmx never swaps, so the music outlives every
-// change of the sheet. Placement, the list strip and the transport only change classes and data
-// attributes; the embed iframe is never moved in the DOM, so nothing restarts.
+// The player deck and the workspace. What plays sits in #dock, which htmx never swaps, so the music
+// outlives every change of the sheet. On a desktop the list, a playing video and an open post are
+// tiled like tmux panels: each has a title bar, splitters between them resize them, dragging a title
+// bar onto another panel swaps the two, and the panel last clicked is outlined. Layout only changes
+// classes, data attributes and custom properties; the embed iframe is never moved in the DOM, so
+// nothing restarts.
 (function () {
   'use strict';
 
   var body = document.body;
   var YOUTUBE = 'https://www.youtube-nocookie.com';
   var SOUNDCLOUD = 'https://w.soundcloud.com';
+  var PHONE = '(max-width: 60rem)';
   var state = null;
 
   function dock() { return document.getElementById('dock'); }
   function player() { return document.querySelector('#dock .player'); }
+  function phone() { return window.matchMedia(PHONE).matches; }
+
+  function stored(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+
+  function store(key, value) {
+    try { localStorage.setItem(key, String(value)); } catch (e) { /* storage blocked */ }
+  }
+
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 
   // ---- The playing row ------------------------------------------------------------------
 
@@ -21,7 +36,7 @@
       var play = row.querySelector('.play');
       if (play) { play.textContent = 'Play'; play.setAttribute('aria-pressed', 'false'); }
     });
-    syncSplitter();
+    layout();
     markDetail();
     if (!current) return;
     var row = document.querySelector('.item[data-item="' + current.dataset.item + '"]');
@@ -31,66 +46,287 @@
     if (play) { play.textContent = 'Playing'; play.setAttribute('aria-pressed', 'true'); }
   }
 
-  // Stop removes the focused button, so focus goes back to the row it was playing.
+  // Eject removes the focused button, so focus goes back to the row it was playing.
   window.stopPlayer = function (button) {
     var target = document.querySelector('.item.playing .play') || document.getElementById('sheet');
+    if (pipWindow) { var leaving = pipWindow; pipWindow = null; leaving.close(); }
     button.closest('.player').remove();
     state = null;
     delete body.dataset.playing;
     delete body.dataset.video;
-    delete body.dataset.list;
-    markPlaying();
+    if (body.dataset.active === 'video') delete body.dataset.active;
     trackDeck();
+    markPlaying();
     if (target) target.focus();
   };
 
-  // ---- Placement: pane, mini or deck ----------------------------------------------------
+  // ---- Video layout: 2 col, 3 col, bottom or picture in picture ----------------------------
+
+  var LAYOUTS = { split: true, tri: true, bottom: true, pip: true };
+
+  function savedLayout() {
+    var value = stored('starve.layout');
+    return LAYOUTS[value] ? value : 'split';
+  }
 
   function place(where) {
+    if (!LAYOUTS[where]) where = 'split';
     body.dataset.video = where;
-    syncSplitter();
-    if (SIZES[where]) sizeVideo(where, videoWidth(where), false);
-    requestAnimationFrame(tickTitle);
+    store('starve.layout', where);
     document.querySelectorAll('#dock .placement button').forEach(function (button) {
       button.setAttribute('aria-pressed', String(button.dataset.place === where));
     });
-    if (where === 'pane' && !window.matchMedia('(max-width: 60rem)').matches) sizeList(savedList(), false);
-    else delete body.dataset.list;
-    syncSplitter();
-    if (where === 'pane') applyVideoHeight();
+    if (where === 'pip') { if (!popOut()) sizePip(pipBox(), false); }
+    else closePip();
+    layout();
+    requestAnimationFrame(tickTitle);
   }
 
   document.addEventListener('click', function (event) {
     var placeButton = event.target.closest('#dock .placement button');
     if (placeButton) { place(placeButton.dataset.place); return; }
 
-
     var pause = event.target.closest('#dock .pause');
     if (pause && state) { state.playing ? state.pause() : state.play(); }
   });
 
-  // ---- The list beside the pane: drag its edge to resize; narrow enough, it folds to a strip
+  // ---- The workspace: panels tiled beside the obi --------------------------------------------
 
-  // Below this width the rows would restack (the sheet's 34rem container query plus its
-  // padding), so beside the video the list folds straight to its catalogue numbers instead.
-  var STRIP_BELOW = 610;
-  var LIST_MIN = 610;
-  var LIST_DEFAULT = 720;
+  var NAMES = { list: 'List', video: 'Video', post: 'Post' };
+  var BAR = 28;
+  var GAP = 0;
+  var STRIP = 136;
+  var LIST_FOLD = 610;
+  var COLUMN_MIN = 280;
+  var ROW_MIN = 120;
 
-  function listLeft() {
-    var sheet = document.getElementById('sheet');
-    return sheet ? sheet.getBoundingClientRect().left : 0;
+  function videoBox() { return document.querySelector('#dock .ratio-16x9'); }
+  function postView() { return document.querySelector('#reader .reader-view'); }
+  function tiledVideo() { return !!videoBox() && !!body.dataset.video && body.dataset.video !== 'pip'; }
+
+  function element(name) {
+    if (name === 'list') return document.getElementById('sheet');
+    if (name === 'video') return videoBox();
+    return document.getElementById('reader');
   }
 
-  function maxList() { return Math.max(LIST_MIN, window.innerWidth - listLeft() - 480); }
+  // The panels in their remembered order, keeping only those on screen now.
+  function order() {
+    var saved = (stored('starve.panels') || '').split(',');
+    var known = saved.filter(function (name) { return NAMES[name]; });
+    ['list', 'video', 'post'].forEach(function (name) { if (known.indexOf(name) < 0) known.push(name); });
+    return known.slice(0, 3);
+  }
 
-  function savedList() {
-    try {
-      var stored = localStorage.getItem('starve.list');
-      if (stored === 'strip') return 'strip';
-      if (stored && !isNaN(Number(stored))) return Number(stored);
-    } catch (e) { /* storage blocked */ }
-    return LIST_DEFAULT;
+  function present() {
+    return order().filter(function (name) {
+      if (name === 'list') return true;
+      if (name === 'video') return tiledVideo();
+      return !!postView();
+    });
+  }
+
+  function area() {
+    var sleeve = document.querySelector('.series-block');
+    var left = sleeve ? Math.round(sleeve.getBoundingClientRect().right) : 0;
+    var bar = document.getElementById('bar');
+    var top = bar ? Math.round(bar.getBoundingClientRect().bottom) : 0;
+    var deck = player() ? player().offsetHeight : 0;
+    return { x: left, y: Math.max(0, top), w: window.innerWidth - left, h: window.innerHeight - Math.max(0, top) - deck };
+  }
+
+  function savedNumber(key) {
+    var value = Number(stored(key));
+    return value > 0 ? value : null;
+  }
+
+  // The first column: the list folds to its catalogue numbers below LIST_FOLD.
+  function firstWidth(name, room) {
+    var saved = stored('starve.col1');
+    if (name === 'list' && saved === 'strip') return STRIP;
+    var width = savedNumber('starve.col1') || (name === 'list' ? 720 : Math.round(room * 0.4));
+    if (name === 'list' && width < LIST_FOLD) return STRIP;
+    return clamp(width, COLUMN_MIN, Math.max(COLUMN_MIN, room - COLUMN_MIN));
+  }
+
+  // Columns of panels side by side; a column may hold a stack of two.
+  function columns(names, box, mode) {
+    var rects = {};
+    var cuts = [];
+    if (names.length === 1) {
+      rects[names[0]] = box;
+      return { rects: rects, cuts: cuts };
+    }
+    var first = firstWidth(names[0], box.w);
+    rects[names[0]] = { x: box.x, y: box.y, w: first, h: box.h };
+    cuts.push({ kind: 'col1', x: box.x + first, y: box.y, h: box.h });
+    var restX = box.x + first + GAP;
+    var restW = box.w - first - GAP;
+    var rest = names.slice(1);
+    if (rest.length === 1) {
+      rects[rest[0]] = { x: restX, y: box.y, w: restW, h: box.h };
+    } else if (mode === 'tri') {
+      var second = clamp(savedNumber('starve.col2') || Math.round(restW / 2), COLUMN_MIN, Math.max(COLUMN_MIN, restW - COLUMN_MIN));
+      rects[rest[0]] = { x: restX, y: box.y, w: second, h: box.h };
+      rects[rest[1]] = { x: restX + second + GAP, y: box.y, w: restW - second - GAP, h: box.h };
+      cuts.push({ kind: 'col2', x: restX + second, y: box.y, h: box.h });
+    } else {
+      // A video on top of the stack defaults to its own 16:9 height, so it starts without bars.
+      var natural = rest[0] === 'video' ? Math.round(restW * 9 / 16) + BAR : Math.round(box.h / 2);
+      var top = clamp(savedNumber('starve.row') || natural, ROW_MIN, Math.max(ROW_MIN, box.h - ROW_MIN));
+      rects[rest[0]] = { x: restX, y: box.y, w: restW, h: top };
+      rects[rest[1]] = { x: restX, y: box.y + top + GAP, w: restW, h: box.h - top - GAP };
+      cuts.push({ kind: 'row', x: restX, y: box.y + top, w: restW });
+    }
+    return { rects: rects, cuts: cuts };
+  }
+
+  function tiles(names, box) {
+    var mode = tiledVideo() ? body.dataset.video : 'split';
+    if (mode === 'bottom' && names.indexOf('video') >= 0) {
+      var band = clamp(savedNumber('starve.band') || Math.round(Math.min(box.h * 0.45, box.w * 9 / 16 * 0.5)) + BAR,
+        ROW_MIN, Math.max(ROW_MIN, box.h - ROW_MIN));
+      var above = { x: box.x, y: box.y, w: box.w, h: box.h - band };
+      var others = names.filter(function (name) { return name !== 'video'; });
+      var placed = columns(others, above, 'split');
+      placed.rects.video = { x: box.x, y: box.y + above.h, w: box.w, h: band };
+      placed.cuts.push({ kind: 'band', x: box.x, y: box.y + above.h, w: box.w });
+      return placed;
+    }
+    return columns(names, box, mode);
+  }
+
+  // The chrome drawn over the tiles: a title bar and a frame per panel. It lives in the sleeve,
+  // which paints above the sheet and the reader, and below a floating video.
+  function chrome() {
+    var holder = document.getElementById('panes');
+    if (holder) return holder;
+    holder = document.createElement('div');
+    holder.id = 'panes';
+    holder.className = 'panes';
+    var sleeve = document.querySelector('.sleeve');
+    (sleeve || body).appendChild(holder);
+    return holder;
+  }
+
+  var ARROW = { left: 'M10.5 3L5.5 8l5 5', right: 'M5.5 3l5 5-5 5' };
+
+  function arrowButton(direction, name) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'pane-move';
+    button.dataset.move = direction;
+    button.dataset.pane = name;
+    button.setAttribute('aria-label', 'Move ' + NAMES[name].toLowerCase() + ' panel ' + direction);
+    button.title = 'Move ' + direction;
+    button.innerHTML = '<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="' + ARROW[direction] +
+      '" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+    return button;
+  }
+
+  function paneBar(holder, name) {
+    var bar = holder.querySelector('.pane-bar[data-pane="' + name + '"]');
+    if (bar) return bar;
+    bar = document.createElement('div');
+    bar.className = 'pane-bar';
+    bar.dataset.pane = name;
+    var label = document.createElement('span');
+    label.className = 'pane-name';
+    label.textContent = NAMES[name];
+    bar.appendChild(label);
+    bar.appendChild(arrowButton('left', name));
+    bar.appendChild(arrowButton('right', name));
+    var frame = document.createElement('div');
+    frame.className = 'pane-frame';
+    frame.dataset.pane = name;
+    holder.appendChild(frame);
+    holder.appendChild(bar);
+    return bar;
+  }
+
+  function setRect(node, rect) {
+    node.style.setProperty('--px', rect.x + 'px');
+    node.style.setProperty('--py', rect.y + 'px');
+    node.style.setProperty('--pw', rect.w + 'px');
+    node.style.setProperty('--ph', rect.h + 'px');
+  }
+
+  function clearRect(node) {
+    if (!node) return;
+    ['--px', '--py', '--pw', '--ph'].forEach(function (name) { node.style.removeProperty(name); });
+  }
+
+  var SPLITTERS = { col1: '.splitter', col2: '.splitter-2', row: '.video-splitter', band: '.video-splitter' };
+
+  function placeSplitters(cuts) {
+    ['.splitter', '.splitter-2', '.video-splitter'].forEach(function (selector) {
+      var node = document.querySelector(selector);
+      if (node) node.hidden = true;
+    });
+    cuts.forEach(function (cut) {
+      var node = document.querySelector(SPLITTERS[cut.kind]);
+      if (!node) return;
+      node.hidden = false;
+      node.dataset.cut = cut.kind;
+      var across = cut.kind === 'row' || cut.kind === 'band';
+      node.setAttribute('aria-orientation', across ? 'horizontal' : 'vertical');
+      node.style.left = (across ? cut.x : cut.x - 6) + 'px';
+      node.style.top = (across ? cut.y - 6 : cut.y) + 'px';
+      node.style.width = across ? cut.w + 'px' : '';
+      node.style.height = across ? '' : cut.h + 'px';
+      var value = cut.kind === 'col1' ? cut.x - area().x : cut.kind === 'col2' ? cut.x : cut.y;
+      node.setAttribute('aria-valuenow', String(Math.round(value)));
+      if (cut.kind === 'col1' && body.dataset.list === 'strip') node.setAttribute('aria-valuetext', 'List folded to catalogue numbers');
+      else node.removeAttribute('aria-valuetext');
+    });
+  }
+
+  var laidOut = [];
+
+  // A video alone in a tall column ends under the picture, so no empty band hangs below it.
+  function videoFit(name, rect) {
+    if (name !== 'video') return rect;
+    var fitted = Math.round(rect.w * 9 / 16) + BAR;
+    return fitted < rect.h ? { x: rect.x, y: rect.y, w: rect.w, h: fitted } : rect;
+  }
+
+  function layout() {
+    var names = present();
+    var holder = document.getElementById('panes');
+    if (phone() || names.length < 2) {
+      delete body.dataset.split;
+      delete body.dataset.list;
+      ['list', 'video', 'post'].forEach(function (name) { clearRect(element(name)); });
+      if (holder) holder.replaceChildren();
+      placeSplitters([]);
+      laidOut = [];
+      return;
+    }
+    var wasStrip = body.dataset.list === 'strip';
+    body.dataset.split = 'on';
+    var placed = tiles(names, area());
+    holder = chrome();
+    holder.querySelectorAll('.pane-bar, .pane-frame').forEach(function (node) {
+      if (names.indexOf(node.dataset.pane) < 0) node.remove();
+    });
+    names.forEach(function (name, index) {
+      var rect = videoFit(name, placed.rects[name]);
+      var bar = paneBar(holder, name);
+      setRect(bar, { x: rect.x, y: rect.y, w: rect.w, h: BAR });
+      setRect(holder.querySelector('.pane-frame[data-pane="' + name + '"]'), rect);
+      bar.querySelector('[data-move="left"]').disabled = index === 0;
+      bar.querySelector('[data-move="right"]').disabled = index === names.length - 1;
+      setRect(element(name), { x: rect.x, y: rect.y + BAR, w: rect.w, h: rect.h - BAR });
+    });
+    if (names.indexOf('video') < 0) clearRect(videoBox());
+    if (names.indexOf('post') < 0) clearRect(element('post'));
+    var listRect = placed.rects.list;
+    if (listRect && listRect.w <= STRIP) body.dataset.list = 'strip';
+    else delete body.dataset.list;
+    if (wasStrip !== (body.dataset.list === 'strip')) fold();
+    if (body.dataset.active && names.indexOf(body.dataset.active) < 0) delete body.dataset.active;
+    placeSplitters(placed.cuts);
+    laidOut = names;
   }
 
   // Crossing into or out of the strip plays the fold, even mid-drag.
@@ -104,120 +340,215 @@
     foldTimer = setTimeout(function () { body.classList.remove('folding'); }, 320);
   }
 
-  function sizeList(width, remember) {
-    var wasStrip = body.dataset.list === 'strip';
-    var value;
-    if (width === 'strip' || width < STRIP_BELOW) {
-      body.dataset.list = 'strip';
-      body.style.removeProperty('--list-w');
-      value = 'strip';
-    } else {
-      delete body.dataset.list;
-      value = Math.round(Math.max(LIST_MIN, Math.min(maxList(), width)));
-      body.style.setProperty('--list-w', value + 'px');
-    }
-    if (remember) {
-      try { localStorage.setItem('starve.list', String(value)); } catch (e) { /* storage blocked */ }
-    }
-    if (wasStrip !== (body.dataset.list === 'strip')) fold();
-    syncSplitter();
+  // ---- Which panel is active: the one last clicked or focused gets the red outline --------------
+
+  function paneAt(target) {
+    if (!target || !target.closest) return null;
+    var bar = target.closest('.pane-bar');
+    if (bar) return bar.dataset.pane;
+    if (target.closest('#sheet')) return 'list';
+    if (target.closest('#reader')) return 'post';
+    if (target.closest('#dock .ratio-16x9')) return 'video';
+    return null;
   }
 
-  // The list and a pane share the window when a video sits in the pane or a post is open.
-  function syncSplit() {
-    if (body.dataset.video === 'pane' || document.querySelector('#reader .reader-view')) body.dataset.split = 'on';
-    else delete body.dataset.split;
+  function activate(name) {
+    if (!name || body.dataset.split !== 'on' || laidOut.indexOf(name) < 0) return;
+    body.dataset.active = name;
   }
 
-  function syncSplitter() {
-    syncSplit();
-    var splitter = document.querySelector('.splitter');
-    if (!splitter) return;
-    var strip = body.dataset.list === 'strip';
-    var sheet = document.getElementById('sheet');
-    var width = sheet ? Math.round(sheet.getBoundingClientRect().width) : 0;
-    splitter.setAttribute('aria-valuenow', String(strip ? 0 : width));
-    splitter.setAttribute('aria-valuetext', strip ? 'List folded to catalogue numbers' : width + ' pixels');
+  document.addEventListener('pointerdown', function (event) { activate(paneAt(event.target)); }, true);
+  document.addEventListener('focusin', function (event) { activate(paneAt(event.target)); });
+
+  // ---- Swapping panels: the arrow buttons, or dragging a title bar onto another panel ----------
+
+  function swap(a, b) {
+    var names = order();
+    var i = names.indexOf(a);
+    var j = names.indexOf(b);
+    if (i < 0 || j < 0 || i === j) return;
+    names[i] = b;
+    names[j] = a;
+    store('starve.panels', names.join(','));
+    body.classList.add('swapping');
+    layout();
+    setTimeout(function () { body.classList.remove('swapping'); }, 260);
+  }
+
+  document.addEventListener('click', function (event) {
+    var move = event.target.closest('.pane-move');
+    if (!move) return;
+    var names = laidOut;
+    var index = names.indexOf(move.dataset.pane);
+    var other = names[index + (move.dataset.move === 'left' ? -1 : 1)];
+    if (other) swap(move.dataset.pane, other);
+    var again = document.querySelector('.pane-bar[data-pane="' + move.dataset.pane + '"] [data-move="' + move.dataset.move + '"]');
+    if (again && !again.disabled) again.focus();
+    else if (again) again.parentElement.querySelector('.pane-move:not([disabled])').focus();
+  });
+
+  function paneUnder(x, y) {
+    var hit = null;
+    document.querySelectorAll('.pane-frame').forEach(function (frame) {
+      var box = frame.getBoundingClientRect();
+      if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) hit = frame.dataset.pane;
+    });
+    return hit;
   }
 
   document.addEventListener('pointerdown', function (event) {
-    var splitter = event.target.closest('.splitter');
-    if (!splitter || body.dataset.split !== 'on') return;
+    var bar = event.target.closest('.pane-bar');
+    if (!bar || event.target.closest('button') || event.button !== 0) return;
     event.preventDefault();
-    var left = listLeft();
+    var from = bar.dataset.pane;
+    var startX = event.clientX;
+    var startY = event.clientY;
+    var dragging = false;
+    bar.setPointerCapture(event.pointerId);
+    function move(e) {
+      if (!dragging && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 6) return;
+      if (!dragging) { dragging = true; body.classList.add('resizing', 'dragging-pane'); bar.classList.add('lifted'); }
+      bar.style.transform = 'translate(' + (e.clientX - startX) + 'px,' + (e.clientY - startY) + 'px)';
+      var over = paneUnder(e.clientX, e.clientY);
+      document.querySelectorAll('.pane-frame').forEach(function (frame) {
+        frame.classList.toggle('target', dragging && over === frame.dataset.pane && over !== from);
+      });
+    }
+    function up(e) {
+      bar.releasePointerCapture(event.pointerId);
+      bar.removeEventListener('pointermove', move);
+      bar.removeEventListener('pointerup', up);
+      bar.style.transform = '';
+      bar.classList.remove('lifted');
+      body.classList.remove('resizing', 'dragging-pane');
+      document.querySelectorAll('.pane-frame.target').forEach(function (frame) { frame.classList.remove('target'); });
+      if (!dragging) return;
+      var over = paneUnder(e.clientX, e.clientY);
+      if (over && over !== from) swap(from, over);
+    }
+    bar.addEventListener('pointermove', move);
+    bar.addEventListener('pointerup', up);
+  });
+
+  // ---- Splitters: drag, or arrow keys; a double click resets ---------------------------------
+
+  function resize(kind, position, remember) {
+    var box = area();
+    if (kind === 'col1') {
+      var width = position - box.x;
+      var first = laidOut[0];
+      var value = first === 'list' && width < LIST_FOLD ? 'strip' : Math.round(Math.max(first === 'list' ? LIST_FOLD : COLUMN_MIN, width));
+      store('starve.col1', value);
+    } else if (kind === 'col2') {
+      var col1 = document.querySelector('.splitter');
+      var start = col1 ? col1.getBoundingClientRect().left + 6 : box.x;
+      store('starve.col2', Math.round(Math.max(COLUMN_MIN, position - start)));
+    } else if (kind === 'row') {
+      store('starve.row', Math.round(Math.max(ROW_MIN, position - box.y)));
+    } else if (kind === 'band') {
+      store('starve.band', Math.round(Math.max(ROW_MIN, box.y + box.h - position)));
+    }
+    layout();
+    void remember;
+  }
+
+  function splitterOf(target) {
+    return target && target.closest && target.closest('.splitter, .splitter-2, .video-splitter');
+  }
+
+  document.addEventListener('pointerdown', function (event) {
+    var splitter = splitterOf(event.target);
+    if (!splitter || splitter.hidden) return;
+    event.preventDefault();
+    var kind = splitter.dataset.cut;
+    var across = kind === 'row' || kind === 'band';
     body.classList.add('resizing');
     splitter.setPointerCapture(event.pointerId);
-    function move(e) { sizeList(e.clientX - left, false); }
+    function move(e) { resize(kind, across ? e.clientY : e.clientX, false); }
     function up(e) {
       splitter.releasePointerCapture(event.pointerId);
       splitter.removeEventListener('pointermove', move);
       splitter.removeEventListener('pointerup', up);
       body.classList.remove('resizing');
-      sizeList(e.clientX - left, true);
+      resize(kind, across ? e.clientY : e.clientX, true);
     }
     splitter.addEventListener('pointermove', move);
     splitter.addEventListener('pointerup', up);
   });
 
+  var DEFAULT_KEYS = { col1: 'starve.col1', col2: 'starve.col2', row: 'starve.row', band: 'starve.band' };
+
   document.addEventListener('dblclick', function (event) {
-    if (!event.target.closest('.splitter') || body.dataset.split !== 'on') return;
+    var splitter = splitterOf(event.target);
+    if (!splitter || splitter.hidden) return;
+    try { localStorage.removeItem(DEFAULT_KEYS[splitter.dataset.cut]); } catch (e) { /* storage blocked */ }
     fold();
-    sizeList(LIST_DEFAULT, true);
+    layout();
   });
 
   document.addEventListener('keydown', function (event) {
-    if (!event.target.matches || !event.target.matches('.splitter')) return;
-    var step = { ArrowLeft: -32, ArrowRight: 32 }[event.key];
+    var splitter = splitterOf(event.target);
+    if (!splitter || splitter.hidden) return;
+    var kind = splitter.dataset.cut;
+    var across = kind === 'row' || kind === 'band';
+    var step = across ? { ArrowUp: -32, ArrowDown: 32 }[event.key] : { ArrowLeft: -32, ArrowRight: 32 }[event.key];
     if (!step) return;
     event.preventDefault();
-    var current = body.dataset.list === 'strip' ? STRIP_BELOW - 1 : document.getElementById('sheet').getBoundingClientRect().width;
-    sizeList(current < STRIP_BELOW && step > 0 ? LIST_MIN : current + step, true);
+    var box = splitter.getBoundingClientRect();
+    var at = across ? box.top + 6 : box.left + 6;
+    if (kind === 'col1' && body.dataset.list === 'strip' && step > 0) at = area().x + LIST_FOLD;
+    resize(kind, at + step, true);
+    splitter.focus();
   });
 
-  // ---- Video size in mini and deck ----------------------------------------------------
-
-  // Each placement keeps its own width (16:9 sets the height); dragging the grip at the box's
-  // top-left corner, or the arrow keys on it, changes it, and the browser remembers it.
-  var SIZES = { mini: { min: 240, max: 720, start: 320 }, deck: { min: 288, max: 640, start: 384 } };
-
-  function videoWidth(where) {
-    var limits = SIZES[where];
-    var width = limits.start;
-    try {
-      var stored = Number(localStorage.getItem('starve.video.' + where));
-      if (stored) width = stored;
-    } catch (e) { /* storage blocked */ }
-    return Math.max(limits.min, Math.min(limits.max, Math.min(width, window.innerWidth - 160)));
-  }
-
-  function sizeVideo(where, width, remember) {
-    if (!SIZES[where]) return;
-    var limits = SIZES[where];
-    var clamped = Math.round(Math.max(limits.min, Math.min(limits.max, Math.min(width, window.innerWidth - 160))));
-    body.style.setProperty('--' + where + '-w', clamped + 'px');
-    if (remember) {
-      try { localStorage.setItem('starve.video.' + where, String(clamped)); } catch (e) { /* storage blocked */ }
+  // Escape unfolds a list folded to its strip.
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && body.dataset.list === 'strip' && laidOut[0] === 'list') {
+      store('starve.col1', LIST_FOLD + 180);
+      fold();
+      layout();
     }
-    trackDeck();
+  });
+
+  // ---- Picture in picture: a floating window, dragged by the video, resized by the grip ---------
+
+  var PIP = { min: 240, max: 720, start: 360 };
+
+  function pipBox() {
+    var saved = {};
+    try { saved = JSON.parse(stored('starve.pip') || '{}') || {}; } catch (e) { saved = {}; }
+    return { right: saved.right === undefined ? 20 : saved.right, bottom: saved.bottom === undefined ? 16 : saved.bottom, w: saved.w || PIP.start };
   }
 
+  function sizePip(box, remember) {
+    var w = Math.round(clamp(box.w, PIP.min, Math.min(PIP.max, window.innerWidth - 40)));
+    var h = Math.round(w * 9 / 16);
+    var deck = player() ? player().offsetHeight : 0;
+    var right = Math.round(clamp(box.right, 0, window.innerWidth - w));
+    var bottom = Math.round(clamp(box.bottom, 0, window.innerHeight - deck - h - 8));
+    body.style.setProperty('--pip-w', w + 'px');
+    body.style.setProperty('--pip-right', right + 'px');
+    body.style.setProperty('--pip-bottom', bottom + 'px');
+    if (remember) store('starve.pip', JSON.stringify({ right: right, bottom: bottom, w: w }));
+    return { right: right, bottom: bottom, w: w };
+  }
+
+  // The grip at the top-left corner resizes, keeping the bottom-right corner where it is.
   document.addEventListener('pointerdown', function (event) {
     var grip = event.target.closest('#dock .grip');
-    var where = body.dataset.video;
-    if (!grip || !SIZES[where]) return;
+    if (!grip || body.dataset.video !== 'pip') return;
     event.preventDefault();
-    var box = grip.parentElement;
+    var start = pipBox();
     var startX = event.clientX;
-    var startWidth = box.getBoundingClientRect().width;
     body.classList.add('resizing');
     grip.setPointerCapture(event.pointerId);
-    function move(e) { sizeVideo(where, startWidth + (startX - e.clientX), false); }
+    function move(e) { sizePip({ right: start.right, bottom: start.bottom, w: start.w + (startX - e.clientX) }, false); }
     function up(e) {
       grip.releasePointerCapture(event.pointerId);
       grip.removeEventListener('pointermove', move);
       grip.removeEventListener('pointerup', up);
       body.classList.remove('resizing');
-      sizeVideo(where, startWidth + (startX - e.clientX), true);
+      sizePip({ right: start.right, bottom: start.bottom, w: start.w + (startX - e.clientX) }, true);
     }
     grip.addEventListener('pointermove', move);
     grip.addEventListener('pointerup', up);
@@ -225,12 +556,108 @@
 
   document.addEventListener('keydown', function (event) {
     var grip = event.target.closest && event.target.closest('#dock .grip');
-    var where = body.dataset.video;
-    if (!grip || !SIZES[where]) return;
+    if (!grip || body.dataset.video !== 'pip') return;
     var step = { ArrowLeft: 32, ArrowUp: 32, ArrowRight: -32, ArrowDown: -32 }[event.key];
     if (!step) return;
     event.preventDefault();
-    sizeVideo(where, grip.parentElement.getBoundingClientRect().width + step, true);
+    var box = pipBox();
+    sizePip({ right: box.right, bottom: box.bottom, w: box.w + step }, true);
+  });
+
+  // ---- Picture in picture outside the browser (Document Picture-in-Picture, Chrome and Edge) ------
+
+  // The video's box moves into an always-on-top window of its own. Moving an iframe into another
+  // document reloads it, so the position and play state are carried over and restored once the
+  // embed is ready again. Closing that window brings the video back into the page, in 2 col.
+  // Without the API (Firefox, Safari) PiP stays the floating window inside the page.
+  var pipWindow = null;
+  var pipHome = null;
+
+  function carryOver() {
+    if (!state) return;
+    state.resumeAt = state.position;
+    state.resumePlaying = state.playing;
+  }
+
+  function popOut() {
+    if (!window.documentPictureInPicture || phone() || !videoBox() || !state) return false;
+    if (pipWindow) return true;
+    var width = pipBox().w;
+    window.documentPictureInPicture.requestWindow({ width: width, height: Math.round(width * 9 / 16) })
+      .then(function (win) {
+        pipWindow = win;
+        win.document.title = 'Starve';
+        win.document.body.className = 'pip-window';
+        var style = win.document.createElement('style');
+        style.textContent = 'html,body{margin:0;height:100%;background:#000}iframe{display:block;width:100%;height:100%;border:0}';
+        win.document.head.appendChild(style);
+        win.addEventListener('pagehide', popBack);
+        // The video goes into a same-origin page inside the window, never into the window's own
+        // about:blank document: there the embed would load with no Referer, and YouTube refuses it.
+        var host = win.document.createElement('iframe');
+        host.src = window.location.origin + '/pip.html';
+        host.title = 'Picture in picture';
+        host.addEventListener('load', function () {
+          var box = videoBox();
+          if (!box || pipWindow !== win) { win.close(); return; }
+          var page = host.contentWindow;
+          pipHome = { parent: box.parentNode, next: box.nextSibling };
+          carryOver();
+          page.document.body.appendChild(page.document.adoptNode(box));
+          page.addEventListener('message', receiveMessage);
+          page.document.addEventListener('click', function (event) {
+            if (event.target.closest('.shield') && state) state.playing ? state.pause() : state.play();
+          });
+          layout();
+        }, { once: true });
+        win.document.body.appendChild(host);
+      }, function () { sizePip(pipBox(), false); });
+    return true;
+  }
+
+  function popBack() {
+    var win = pipWindow;
+    pipWindow = null;
+    if (!win || !pipHome) return;
+    var host = win.document.querySelector('iframe');
+    var box = host && host.contentDocument ? host.contentDocument.querySelector('.ratio-16x9') : null;
+    if (box && pipHome.parent.isConnected) {
+      carryOver();
+      pipHome.parent.insertBefore(box, pipHome.next && pipHome.next.parentNode === pipHome.parent ? pipHome.next : null);
+    }
+    pipHome = null;
+    if (body.dataset.video === 'pip' && videoBox()) place('split');
+  }
+
+  function closePip() {
+    if (pipWindow) pipWindow.close();
+  }
+
+  // Dragging the floating video moves it; a click without a drag still plays or pauses.
+  var draggedPip = false;
+
+  document.addEventListener('pointerdown', function (event) {
+    var shield = event.target.closest('#dock .shield');
+    if (!shield || body.dataset.video !== 'pip' || phone() || event.button !== 0) return;
+    var start = pipBox();
+    var startX = event.clientX;
+    var startY = event.clientY;
+    draggedPip = false;
+    shield.setPointerCapture(event.pointerId);
+    function move(e) {
+      if (!draggedPip && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) < 6) return;
+      if (!draggedPip) { draggedPip = true; body.classList.add('resizing'); }
+      sizePip({ right: start.right - (e.clientX - startX), bottom: start.bottom - (e.clientY - startY), w: start.w }, false);
+    }
+    function up(e) {
+      shield.releasePointerCapture(event.pointerId);
+      shield.removeEventListener('pointermove', move);
+      shield.removeEventListener('pointerup', up);
+      body.classList.remove('resizing');
+      if (draggedPip) sizePip({ right: start.right - (e.clientX - startX), bottom: start.bottom - (e.clientY - startY), w: start.w }, true);
+    }
+    shield.addEventListener('pointermove', move);
+    shield.addEventListener('pointerup', up);
   });
 
   // ---- Transport ------------------------------------------------------------------------
@@ -314,7 +741,9 @@
   // The shield over the video keeps the pointer away from YouTube's own hover overlay:
   // a click plays or pauses, a double click goes fullscreen.
   document.addEventListener('click', function (event) {
-    if (event.target.closest('#dock .shield') && state) state.playing ? state.pause() : state.play();
+    if (!event.target.closest('#dock .shield') || !state) return;
+    if (draggedPip) { draggedPip = false; return; }
+    state.playing ? state.pause() : state.play();
   });
 
   document.addEventListener('dblclick', function (event) {
@@ -342,7 +771,15 @@
       },
       receive: function (data) {
         var info = data.info;
-        if (data.event === 'onReady') player.volume(savedVolume());
+        if (data.event === 'onReady') {
+          player.volume(savedVolume());
+          // A moved iframe reloads: pick up where it was, playing or paused as it was.
+          if (player.resumeAt !== undefined) {
+            command('seekTo', [player.resumeAt, true]);
+            command(player.resumePlaying ? 'playVideo' : 'pauseVideo');
+            delete player.resumeAt;
+          }
+        }
         if (!info || typeof info !== 'object') return;
         if (typeof info.currentTime === 'number' && !seeking) player.position = info.currentTime;
         if (typeof info.duration === 'number') player.duration = info.duration;
@@ -429,14 +866,18 @@
       .catch(function () { /* the seeded waveform stays */ });
   }
 
-  window.addEventListener('message', function (event) {
+  // The embeds answer their parent window: this page, or the picture-in-picture window while the
+  // video has popped out, which forwards to the same handler.
+  function receiveMessage(event) {
     if (!state || event.origin !== state.origin || event.source !== state.frame.contentWindow) return;
     var data = event.data;
     if (typeof data === 'string') {
       try { data = JSON.parse(data); } catch (e) { return; }
     }
     if (data && typeof data === 'object') state.receive(data);
-  });
+  }
+
+  window.addEventListener('message', receiveMessage);
 
   // ---- A title too long for the deck scrolls as a ticker ------------------------------
 
@@ -460,38 +901,42 @@
 
   window.addEventListener('resize', tickTitle);
 
-  // ---- The reader: a blog post beside the list --------------------------------------------
+  // ---- The reader: a post or a detail view in its own panel -------------------------------------
 
   function reader() { return document.getElementById('reader'); }
 
   function emptyReader() {
     var pane = reader();
     if (pane) pane.replaceChildren();
-    syncSplitter();
+    body.classList.remove('reading');
+    layout();
   }
 
-  // Close empties the pane only; a video stays where it is.
+  // Close empties the reader only; a video stays where it is. On a phone the list comes back
+  // exactly where it was left.
   window.closeReader = function () {
+    var item = postView() ? postView().dataset.item : null;
     emptyReader();
-    var sheet = document.getElementById('sheet');
-    if (sheet) sheet.focus();
+    var row = item ? document.querySelector('.item[data-item="' + item + '"] .title') : null;
+    if (row && phone()) row.focus({ preventScroll: true });
+    else {
+      var sheet = document.getElementById('sheet');
+      if (sheet) sheet.focus({ preventScroll: true });
+    }
   };
 
-  // Opening a post marks its row read (the server already did). A video keeps its placement.
+  // Opening a post marks its row read (the server already did) and makes the reader the active panel.
   function readerOpened() {
-    var view = document.querySelector('#reader .reader-view');
+    var view = postView();
     if (!view) return;
-    layoutForReader();
+    var pane = reader();
+    if (pane) pane.scrollTop = 0;
+    body.classList.toggle('reading', phone());
+    layout();
+    activate('post');
     markRowRead(view.dataset.item);
-    if (window.matchMedia('(max-width: 60rem)').matches) view.scrollIntoView({ block: 'start' });
-  }
-
-  function layoutForReader() {
-    // The split layout must apply before the list is measured, or the sheet is still at its old left edge.
-    syncSplitter();
-    // Without a pane video the reader opens the list at its saved width, as a pane video would.
-    if (body.dataset.video !== 'pane' && !window.matchMedia('(max-width: 60rem)').matches) sizeList(savedList(), false);
-    applyVideoHeight();
+    var close = view.querySelector('.reader-close');
+    if (close && phone()) close.focus({ preventScroll: true });
   }
 
   function markRowRead(itemId) {
@@ -502,83 +947,78 @@
     if (markRead) markRead.remove();
   }
 
-  // ---- The video above the post: drag its lower edge to resize (a pane video with a post open) --
+  // ---- Phones: the reader's head returns when scrolling up; a button goes back to the top --------
 
-  var VIDEO_MIN = 120;
-  var READER_MIN = 200;
+  var lastReaderTop = 0;
 
-  function videoOverPost() {
-    return body.dataset.video === 'pane' && !!document.querySelector('#reader .reader-view') &&
-      !window.matchMedia('(max-width: 60rem)').matches;
+  document.addEventListener('scroll', function (event) {
+    var pane = reader();
+    if (event.target !== pane || !postView()) return;
+    var top = pane.scrollTop;
+    var head = postView().querySelector('.reader-head');
+    if (head) head.classList.toggle('tucked', phone() && top > lastReaderTop && top > 120);
+    lastReaderTop = top;
+    syncTop();
+  }, true);
+
+  window.addEventListener('scroll', syncTop, { passive: true });
+
+  function scroller() {
+    if (body.classList.contains('reading') && postView()) return reader();
+    if (body.dataset.split === 'on') return document.getElementById('sheet');
+    return null;
   }
 
-  function pinnedVideo() { return document.querySelector('.ratio-16x9'); }
-
-  // The most the video may grow: the post keeps READER_MIN pixels between the video and the deck.
-  function videoMax() {
-    var bar = document.getElementById('bar');
-    var deck = parseFloat(getComputedStyle(body).getPropertyValue('--deck-h')) || 0;
-    return Math.max(VIDEO_MIN, window.innerHeight - (bar ? bar.offsetHeight : 0) - deck - 96 - READER_MIN);
+  function topButton() {
+    var button = document.getElementById('to-top');
+    if (button) return button;
+    button = document.createElement('button');
+    button.type = 'button';
+    button.id = 'to-top';
+    button.className = 'to-top';
+    button.setAttribute('aria-label', 'Back to the top');
+    button.title = 'Back to the top';
+    button.innerHTML = '<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5l5.5 6H9.5v5h-3v-5h-4z"/></svg>';
+    body.appendChild(button);
+    return button;
   }
 
-  // The height is passed in when known: the video animates its height, so a measured value lags.
-  function syncVideoSplitter(known) {
-    var splitter = document.querySelector('.video-splitter');
-    var video = pinnedVideo();
-    if (!splitter || !video) return;
-    var height = known === undefined ? Math.round(video.getBoundingClientRect().height) : known;
-    splitter.setAttribute('aria-valuenow', String(height));
-    splitter.setAttribute('aria-valuetext', height + ' pixels');
+  function syncTop() {
+    if (!phone()) { var old = document.getElementById('to-top'); if (old) old.hidden = true; return; }
+    var pane = scroller();
+    var top = pane ? pane.scrollTop : window.scrollY;
+    topButton().hidden = top < window.innerHeight * 0.8;
   }
 
-  // The dragged height, or the 16:9 height the video is drawn at while no height has been set.
-  function currentVideoHeight() {
-    return parseFloat(body.style.getPropertyValue('--video-h')) || pinnedVideo().getBoundingClientRect().height;
-  }
-
-  function sizeVideoHeight(height, remember) {
-    var value = Math.round(Math.max(VIDEO_MIN, Math.min(videoMax(), height)));
-    body.style.setProperty('--video-h', value + 'px');
-    if (remember) {
-      try { localStorage.setItem('starve.videoh', String(value)); } catch (e) { /* storage blocked */ }
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('#to-top')) return;
+    var pane = scroller();
+    var smooth = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (pane) pane.scrollTo({ top: 0, behavior: smooth });
+    else window.scrollTo({ top: 0, behavior: smooth });
+    if (postView()) {
+      var head = postView().querySelector('.reader-head');
+      if (head) head.classList.remove('tucked');
     }
-    syncVideoSplitter(value);
-  }
-
-  // Restores the saved height while a pane video and a post are shown; otherwise the 16:9 default.
-  function applyVideoHeight() {
-    var stored = NaN;
-    try { stored = Number(localStorage.getItem('starve.videoh')); } catch (e) { /* storage blocked */ }
-    if (videoOverPost() && stored) sizeVideoHeight(stored, false);
-    else body.style.removeProperty('--video-h');
-    syncVideoSplitter();
-  }
-
-  document.addEventListener('pointerdown', function (event) {
-    var splitter = event.target.closest && event.target.closest('.video-splitter');
-    if (!splitter || !videoOverPost()) return;
-    event.preventDefault();
-    var top = pinnedVideo().getBoundingClientRect().top;
-    body.classList.add('resizing');
-    splitter.setPointerCapture(event.pointerId);
-    function move(e) { sizeVideoHeight(e.clientY - top, false); }
-    function up(e) {
-      splitter.releasePointerCapture(event.pointerId);
-      splitter.removeEventListener('pointermove', move);
-      splitter.removeEventListener('pointerup', up);
-      body.classList.remove('resizing');
-      sizeVideoHeight(e.clientY - top, true);
-    }
-    splitter.addEventListener('pointermove', move);
-    splitter.addEventListener('pointerup', up);
   });
 
-  document.addEventListener('keydown', function (event) {
-    if (!event.target.matches || !event.target.matches('.video-splitter') || !videoOverPost()) return;
-    var step = { ArrowUp: -32, ArrowDown: 32 }[event.key];
-    if (!step) return;
-    event.preventDefault();
-    sizeVideoHeight(currentVideoHeight() + step, true);
+  // ---- Marking read: the rows strike through before the server's answer replaces them -----------
+
+  document.addEventListener('htmx:beforeRequest', function (event) {
+    var form = event.detail.elt;
+    if (!form || !form.matches) return;
+    if (form.matches('form.read-all')) {
+      var sheet = document.getElementById('sheet');
+      if (sheet) {
+        sheet.querySelectorAll('.item:not(.read)').forEach(function (row, index) {
+          row.style.setProperty('--stagger', Math.min(index, 12) * 22 + 'ms');
+          row.classList.add('clearing');
+        });
+      }
+    } else if (form.matches('form[action$="/read"]')) {
+      var row = form.closest('.item');
+      if (row) row.classList.add('clearing');
+    }
   });
 
   // ---- The detail view: its control reads Pause while its item plays in the deck ----------
@@ -612,6 +1052,12 @@
     return !!view && view.dataset.item === id;
   }
 
+  // A failed request leaves the rows as they were.
+  document.addEventListener('htmx:afterRequest', function (event) {
+    if (event.detail.successful) return;
+    document.querySelectorAll('.item.clearing').forEach(function (row) { row.classList.remove('clearing'); });
+  });
+
   // ---- A new player arrives -------------------------------------------------------------
 
   function start() {
@@ -621,21 +1067,18 @@
     body.dataset.playing = current.dataset.kind;
     var video = current.querySelector('.ratio-16x9 iframe');
     var audio = current.querySelector('.sc-frame');
+    trackDeck();
     if (video) {
-      // A video starting in the pane closes the reader, unless the reader is the detail view of this item:
-      // then the view stays, so its control can read Pause.
-      if (!readerShows(current.dataset.item)) emptyReader();
-      place('pane');
+      place(savedLayout());
+      activate('video');
       state = youtube(video);
       video.addEventListener('load', function () { post(video, YOUTUBE, { event: 'listening', id: 'starve', channel: 'widget' }); });
     } else {
       delete body.dataset.video;
-      delete body.dataset.list;
+      layout();
       if (audio) state = soundcloud(audio);
     }
-    syncSplitter();
     applyVolume(savedVolume());
-    trackDeck();
     tickTitle();
   }
 
@@ -661,31 +1104,34 @@
     if (bar) body.style.setProperty('--bar-h', bar.offsetHeight + 'px');
   }
 
-  // The list starts where the sheet does: after the obi, and on Sources after the tool panel too.
-  function trackList() {
-    body.style.setProperty('--list-x', Math.round(listLeft()) + 'px');
+  var pending = 0;
+
+  function relayout() {
+    if (pending) return;
+    pending = requestAnimationFrame(function () {
+      pending = 0;
+      trackBar();
+      trackDeck();
+      layout();
+      if (body.dataset.video === 'pip') sizePip(pipBox(), false);
+      syncTop();
+    });
   }
 
   function trackHeights() {
     if (!window.ResizeObserver) return;
     if (observer) observer.disconnect();
-    observer = new ResizeObserver(function () {
-      trackBar();
-      trackDeck();
-      trackList();
-    });
-    observer.observe(body);
+    observer = new ResizeObserver(relayout);
     var target = dock();
     if (target) observer.observe(target);
-    var sleeve = document.querySelector('.sleeve');
-    if (sleeve) observer.observe(sleeve);
+    var bar = document.getElementById('bar');
+    if (bar) observer.observe(bar);
   }
 
   // A page tab swaps the bar in place (the dock and the deck stay), and the bar may change height.
-  document.addEventListener('htmx:afterSettle', trackBar);
-
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && body.dataset.list === 'strip') sizeList(LIST_MIN + 180, true);
+  document.addEventListener('htmx:afterSettle', function () {
+    trackHeights();
+    relayout();
   });
 
   // Every htmx request carries the CSRF token from the XSRF-TOKEN cookie, as the X-CSRF-TOKEN header.
@@ -694,6 +1140,9 @@
     if (token) event.detail.headers['X-CSRF-TOKEN'] = token[1];
   });
 
+  window.addEventListener('resize', relayout);
+  trackBar();
   trackHeights();
   markPlaying();
+  syncTop();
 })();

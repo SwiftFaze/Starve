@@ -7,7 +7,6 @@
   <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
-  <script src="/htmx.min.js"></script>
 </head>
 <body>
   <header class="bar" id="bar">
@@ -16,7 +15,7 @@
       <a class="tab" href="/feed">Timeline</a>
       <a class="tab" href="/sources">Sources</a>
     </nav>
-    <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
+    <th:block th:with="onAccount=true"><th:block th:replace="~{bar-actions :: bar-actions}"></th:block></th:block>
   </header>
 
   <div class="label">
@@ -25,29 +24,34 @@
         <h1 class="series roster-name">Account</h1>
         <button type="button" class="theme-switch" aria-label="Switch theme"></button>
       </div>
-
-      <p id="message" class="message" role="status" th:if="${changed}">Password changed</p>
-      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Current password is incorrect</p>
-
-      <form class="add" method="post" th:action="@{/account/password}">
-        <label class="field-label" for="current-password">Current password</label>
-        <div class="field-row">
-          <input class="field" id="current-password" type="password" name="currentPassword"
-                 autocomplete="current-password" required>
-        </div>
-
-        <label class="field-label" for="new-password">New password</label>
-        <div class="field-row">
-          <input class="field" id="new-password" type="password" name="newPassword" autocomplete="new-password"
-                 aria-describedby="password-hint" required>
-          <button type="submit">Change password</button>
-        </div>
-        <p class="hint" id="password-hint">At least 10 characters</p>
-      </form>
     </aside>
 
-    <main class="sheet" id="sheet">
-      <p class="sheet-note">Signed in as <strong th:text="${username}">rob</strong>.</p>
+    <main class="sheet access" id="sheet">
+      <form class="access-form" method="post" th:action="@{/account/password}">
+        <div class="sheet-head">
+          <h2 class="sheet-title">Change password</h2>
+        </div>
+
+        <p id="message" class="message" role="status" th:if="${changed}">Password changed</p>
+        <p id="message" class="message" role="alert" th:if="${message}" th:text="${message}">Current password is incorrect</p>
+
+        <label class="field-label" for="current-password">Current password</label>
+        <input class="field" id="current-password" type="password" name="currentPassword"
+               autocomplete="current-password" required>
+
+        <label class="field-label" for="new-password">New password</label>
+        <input class="field" id="new-password" type="password" name="newPassword" autocomplete="new-password"
+               aria-describedby="password-hint" required>
+        <p class="hint" id="password-hint">At least 10 characters</p>
+
+        <button type="submit" class="primary">Change password</button>
+      </form>
+
+      <dl class="access-notes">
+        <div><dt>Signed in as</dt><dd th:text="${username}">rob</dd></div>
+        <div><dt>Other devices</dt><dd>Changing the password signs out every browser that was remembered.</dd></div>
+        <div><dt>Forgotten it?</dt><dd>An admin can set a temporary password for you from Settings.</dd></div>
+      </dl>
     </main>
   </div>
 </body>

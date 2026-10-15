@@ -55,7 +55,7 @@ class DockSteps {
         }
     }
 
-    @Then("the response has a Stop control")
+    @Then("the response has an Eject control")
     fun hasStop() = assertTrue(STOP.containsMatchIn(body()), body())
 
     @Then("the response contains the thumbnail of {string}")

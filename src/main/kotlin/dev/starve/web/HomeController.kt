@@ -62,7 +62,7 @@ data class TimelineItemView(
     val laterToggle: LaterView get() = LaterView("later-$id", id, later)
 }
 
-/** One link of the group navigation, e.g. label "Music (12)". */
+/** One link of the group navigation, e.g. label "Music [12]". */
 data class NavEntryView(
     val label: String,
     val href: String,
@@ -280,11 +280,11 @@ private fun navigation(
 ): List<NavEntryView> {
     val show = if (scope.showAll) "all" else null
     val current = scope.groupId == null && scope.filter == null
-    val all = NavEntryView("All (${nav.totalUnread})", href(null, show, null), current)
+    val all = NavEntryView("All [${nav.totalUnread}]", href(null, show, null), current)
     return listOf(all) +
         nav.groups.map {
             NavEntryView(
-                "${it.group.name} (${it.unread})",
+                "${it.group.name} [${it.unread}]",
                 href(it.group.id, show, null),
                 it.group.id == scope.groupId,
             )
