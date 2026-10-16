@@ -7,6 +7,7 @@
     <button type="button" class="reader-close" hx-on:click="closeReader(this)">Close</button>
     <span class="reader-cat" th:text="${detail.catalogueNumber}">STV 0132</span>
     <div class="reader-toggles">
+      <th:block th:replace="~{star :: star}"></th:block>
       <th:block th:replace="~{later :: toggle}"></th:block>
       <a class="toggle feed-link" th:if="${detail.feedUrl}" th:href="${detail.feedUrl}" target="_blank"
          rel="noopener noreferrer" th:attr="aria-label=|Open the feed of ${detail.sourceTitle}|"

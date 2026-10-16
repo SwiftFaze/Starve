@@ -361,7 +361,7 @@ Outlined mono controls that read as printed spec labels.
 - **Primary (forms):** the access form's one action: full width, filled, 3rem tall, label at 0.75rem.
 - **Beside a field:** a button beside a field, or in any row of controls that contains one, is 2.5rem tall so the row lines up top and bottom.
 - **Playing:** the playing row's Play button fills with Obi Red, label in ink.
-- **Icon toggles:** the favourite star and the save-for-later clock are 2.25rem square buttons carrying a drawn SVG (the star outlined, the clock solid). Pressed, they invert to a text-color fill with the icon filled in ground color, never red. 2.75rem on the phone reader.
+- **Icon toggles:** the favourite star and the save-for-later clock are 2.25rem square buttons carrying a drawn SVG (the star outlined, the clock solid). Pressed, they invert to a text-color fill with the icon filled in ground color, never red. 2.75rem on the phone reader. The deck's star is the same toggle, sized to the play/pause beside it.
 - **Disabled / busy:** 45% opacity when disabled, with no hover. During an htmx request the opacity is 55% with a progress cursor.
 - **Load more:** a full-width outline bar 3.25rem tall.
 
@@ -408,13 +408,14 @@ Its parts are the STV number, the art cell (empty if no art), the title over sou
 The tmux-like tile. A 1.75rem title bar on the raised surface carries a 0.375rem square marker and the panel name (List, Video, Post) in mono uppercase, dim, then a small borderless × that closes the post or ejects the video (the list has none). The bar is the drag handle (grab cursor); lifted, it follows the pointer with a cyan border at 92% opacity, and the panel under it shows the cyan drop frame. A hairline frame outlines each panel. The active panel, the last one clicked or focused, gets a red frame and red bar border, its name in the text color and its marker red.
 
 ### Player Deck (signature)
-A fixed bottom bar with a minimum height of 5.5rem, on the raised surface with a 1px red top rule. From left to right it holds the art (5.5rem square, or a red block with the STV number in mono when there is no art), the text stack (red Akira STV number, Archivo title and mono source), the transport, the layout switch for YouTube only, and Eject.
+A fixed bottom bar with a minimum height of 5.5rem, on the raised surface with a 1px red top rule. From left to right it holds the art (5.5rem square, or a red block with the STV number in mono when there is no art), the text stack (red Akira STV number, Archivo title and mono source), the favourite star, the transport, the layout switch for YouTube only, and Eject.
+- **Star:** the item's favourite star (an icon toggle) sits in its own grid cell right after the text stack, centred on the deck, at the same size as the play/pause (2.5rem; 2.75rem on phones, where it takes the cell between the text and Eject). It follows the item's other stars.
 - **Transport:** a 2.5rem square play/pause, the elapsed time, the waveform and the total time.
 - **Waveform:** 3rem tall, with bars in the strong hairline color. A second red copy is revealed by a clip-path as playback progresses. A transparent range input over it seeks on release. Its focus shows as a cyan outline offset 4px.
 - **Volume:** a 2px level line with a square 0.75rem thumb, 6rem wide. The level is remembered in localStorage. Hidden on phones.
 - **Eject:** an outlined button with a drawn eject glyph (triangle over a bar); it stops playback and closes the deck.
 - **Ticker:** a title too long for the deck holds at the start, slides to show the end, holds and returns. The cycle is at least 6s, ease-in-out, and pauses on hover. Under reduced motion it falls back to an ellipsis with no animation.
-- **SoundCloud fallback:** if the widget's handshake never arrives, the transport hides and SoundCloud's own player shows above the deck in a red frame.
+- **SoundCloud fallback:** if the widget's handshake never arrives, the transport hides and SoundCloud's own player shows above the deck in a red frame. The same happens when a play gets no answer from the widget within 5 seconds (iOS Safari may refuse it).
 
 ### Video Box
 The box takes whatever rectangle its panel gives it, on the ground color; the picture inside keeps 16:9 at the largest size that fits (`min(100cqw, 100cqh * 16 / 9)` via a size container), anchored to the top and centred across, so a panel of any shape never shows black bars. The YouTube embed runs with `controls=0`. A transparent shield over the video blocks YouTube's hover overlay. A click on the shield plays or pauses, and a double-click goes fullscreen on black. While resizing or dragging, the iframe ignores the pointer and nothing animates. YouTube's title bar reappearing after a seek is an accepted platform limitation, not something to design around.

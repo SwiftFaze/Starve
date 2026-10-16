@@ -20,13 +20,15 @@ Feature: Favourite items
   ("deletes items first seen more than 90 days ago") now holds only for items
   that are not favourites.
   Supersedes: in part reader-pane.feature, where the reader showed no actions
-  besides Open original and Close.
+  besides Open original and Close. The star in the player deck and in the
+  detail view of a YouTube or SoundCloud item is specified in
+  deck-player-fixes.feature (#77), which supersedes the earlier exclusion of
+  those stars (#30); their stars follow this file's toggle rules.
   Out of scope: read-later (#32), a separate flag reusing this plumbing;
   keeping favourites when their source is removed (removal still deletes every
   item of the source, favourites included); a combined group-plus-favourites
   filter (the Favourites view ignores a group parameter); a favourites count
-  in the navigation; the star in the player dock or in the detail view for
-  YouTube/SoundCloud items (#30); what the browser does with the swaps (no
+  in the navigation; what the browser does with the swaps (no
   reload, focus, animation): browser behaviour covered by the human playtest;
   search; bulk favouriting; export.
 

@@ -94,4 +94,14 @@ class DetailControllerTest {
 
         assertEquals(LaterView("detail-later", 7, true, from = "detail"), model.getAttribute("laterToggle"))
     }
+
+    @Test
+    fun `the detail view carries the star of the item, filled when it is a favourite`() {
+        val model = ConcurrentModel()
+        val item = DetailRef(7, youtube, "Title", "Channel", published, null, null, null, null, favourite = true)
+
+        controller(item).detail(OWNER, 7, model)
+
+        assertEquals(StarView("detail-star-7", 7, true, from = "detail"), model.getAttribute("star"))
+    }
 }

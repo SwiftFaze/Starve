@@ -317,6 +317,7 @@ data class ItemRef(
     val title: String,
     val sourceTitle: String,
     val thumbnailUrl: String?,
+    val favourite: Boolean = false,
 )
 
 /**
@@ -364,6 +365,7 @@ data class DetailRef(
     val later: Boolean = false,
     /** The source's own feed URL. */
     val sourceUrl: String? = null,
+    val favourite: Boolean = false,
 )
 
 /** What the detail view shows: the feed data with SoundCloud's oEmbed details laid over it. */
@@ -379,6 +381,7 @@ data class ItemDetail(
     val later: Boolean = false,
     /** The source's own feed URL. */
     val sourceUrl: String? = null,
+    val favourite: Boolean = false,
 )
 
 fun interface SoundCloudOembed {
