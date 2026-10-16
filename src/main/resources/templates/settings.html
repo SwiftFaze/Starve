@@ -9,18 +9,13 @@
   <link rel="stylesheet" href="/starve.css">
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/htmx.min.js"></script>
+  <script src="/deck.js" defer></script>
 </head>
 <body>
-  <header class="bar" id="bar">
-    <p class="wordmark"><a href="/feed">Starve</a></p>
-    <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/feed">Timeline</a>
-      <a class="tab" href="/sources">Sources</a>
-    </nav>
-    <th:block th:with="onSettings=true"><th:block th:replace="~{bar-actions :: bar-actions}"></th:block></th:block>
-  </header>
+  <header th:replace="~{app-bar :: app-bar('settings')}"></header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Settings">
       <div class="series-block">
         <h1 class="series roster-name">Settings</h1>
@@ -77,5 +72,6 @@
       </section>
     </main>
   </div>
+  <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>
 </body>
 </html>

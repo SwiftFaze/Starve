@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- The top bar of the signed-in pages that carry no tools of their own (Account, Settings, Import, delete user, the
+     temporary-password page): wordmark, the Timeline and Sources links and the account actions. Every link is a page
+     switch that swaps the shell (see theme.js). "here" names the current page ("account" or "settings") so its
+     account action is marked; Import passes nothing. -->
+<header class="bar" id="bar" th:fragment="app-bar(here)">
+  <p class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Starve</a></p>
+  <nav class="pages" aria-label="Pages">
+    <a class="tab" href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
+    <a class="tab" href="/sources" hx-get="/sources" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sources</a>
+  </nav>
+  <th:block th:with="onAccount=${here == 'account'},onSettings=${here == 'settings'}"><th:block th:replace="~{bar-actions :: bar-actions}"></th:block></th:block>
+</header>
+</body>
+</html>
