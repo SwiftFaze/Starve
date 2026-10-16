@@ -394,18 +394,100 @@ input[type="file"].field::file-selector-button {
 }
 
 /* Search is a field like every other: a sunk well, a mono hint, the magnifier drawn inside it. */
-/* Search heads the timeline's list, full width above its head. */
-.search {
+/* Search waits as an icon at the right end of the list's title row. A click (it is a label, so this
+   works without scripts too) opens the field across the row; it stays open while it has focus or holds a
+   search, and folds back to the icon once cleared and left. The form sits outside the sheet body that
+   its results replace, so typing never loses the field. */
+.sheet {
   position: relative;
-  display: flex;
-  align-items: center;
-  margin: 0 0 2rem;
 }
 
-.search input,
-.search input:focus,
-.search input:not(:placeholder-shown) {
+.sheet > .search {
+  position: absolute;
+  top: 1.75rem;
+  right: var(--gutter);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: var(--search-h, 2.25rem);
+  margin: 0;
+}
+
+/* The tiled list has a shallower top. */
+body[data-split] .sheet > .search {
+  top: 1.25rem;
+}
+
+.sheet:has(> .search) .sheet-head {
+  padding-right: calc(var(--search-h, 2.25rem) + 0.5rem);
+}
+
+.search-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--search-h, 2.25rem);
+  height: var(--search-h, 2.25rem);
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background-color var(--quick), color var(--quick);
+}
+
+.search-open:hover {
+  background: var(--text);
+  color: var(--ground);
+}
+
+.sheet > .search .icon {
+  position: static;
+  width: 1rem;
+  height: 1rem;
+  color: inherit;
+}
+
+.sheet > .search:not(:focus-within):has(input[type="search"]:placeholder-shown) input[type="search"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sheet > .search:is(:focus-within, :has(input[type="search"]:not(:placeholder-shown))) {
+  left: var(--gutter);
+  background: var(--ground);
+}
+
+.sheet > .search:is(:focus-within, :has(input[type="search"]:not(:placeholder-shown))) .search-open {
+  position: absolute;
+  left: 0;
+  border-color: transparent;
+  background: none;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.sheet > .search:is(:focus-within, :has(input[type="search"]:not(:placeholder-shown))) input {
+  flex: 1;
   width: 100%;
+  height: var(--search-h, 2.25rem);
+  min-height: 0;
+  padding-left: var(--search-h, 2.25rem);
+  animation: search-open 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes search-open {
+  from {
+    clip-path: inset(0 0 0 calc(100% - var(--search-h, 2.25rem)));
+  }
+
+  to {
+    clip-path: inset(0);
+  }
 }
 
 /* The search's results replace this, below the field. It adds no box of its own. */
@@ -4319,26 +4401,16 @@ body.dealing #series .series-meta {
     letter-spacing: 0.04em;
   }
 
-  /* Search heads the list under the obi, where it scrolls away with the rows. */
+  /* Search: the same icon in the title row, at the phone's control size. */
+  .sheet {
+    --search-h: 2.75rem;
+  }
+
   .sheet > .search {
-    margin: 0 0 0.75rem;
+    top: 0.75rem;
   }
 
-  .sheet > .search .icon {
-    top: 0;
-    bottom: 0;
-    margin: auto 0;
-    left: 0.875rem;
-    width: 1rem;
-    height: 1rem;
-  }
-
-  .sheet > .search input,
-  .sheet > .search input:focus,
-  .sheet > .search input:not(:placeholder-shown) {
-    width: 100%;
-    min-height: 2.75rem;
-    padding-left: 2.5rem;
+  .sheet > .search input {
     font-size: 1rem;
   }
 
@@ -4782,6 +4854,7 @@ body.dealing #series .series-meta {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sheet > .search input,
   .js .bar .bar-actions.open,
   .js .bar .bar-actions.folding,
   .js [data-groups] .bar .groups,
