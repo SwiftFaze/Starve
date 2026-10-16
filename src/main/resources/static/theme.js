@@ -190,13 +190,22 @@
       else window.location.href = event.detail.requestConfig.path;
       return;
     }
+    // The dock sits outside the shell. A page with a dock to a page with one keeps the live dock, and so keeps
+    // what is playing (its playing and video state carries over); a page without one removes it, which stops
+    // playback; a page that brings one adds it, empty, after the shell.
     var body = document.body;
+    var dock = document.getElementById('dock');
+    var nextDock = page.getElementById('dock');
+    var carried = dock && nextDock ? ['playing', 'video'].map(function (name) { return [name, body.dataset[name]]; }) : [];
     Array.prototype.slice.call(body.attributes).forEach(function (attr) {
       if (attr.name === 'class' || attr.name.indexOf('data-') === 0) body.removeAttribute(attr.name);
     });
     Array.prototype.slice.call(page.body.attributes).forEach(function (attr) {
       if (attr.name === 'class' || attr.name.indexOf('data-') === 0) body.setAttribute(attr.name, attr.value);
     });
+    carried.forEach(function (pair) { if (pair[1] !== undefined) body.dataset[pair[0]] = pair[1]; });
+    if (dock && !nextDock) dock.remove();
+    else if (!dock && nextDock) document.getElementById('shell').insertAdjacentElement('afterend', document.importNode(nextDock, true));
     var description = page.querySelector('meta[name="description"]');
     var mine = document.querySelector('meta[name="description"]');
     if (description && !mine) {
@@ -256,8 +265,9 @@
       window.htmx.process(restorer);
     }
     // Timeline and Sources share the dock, so only they swap the sheet and keep it; any other page swaps the shell.
-    // The dock is still the page being left's (popstate has moved only the URL), so this asks: a deck page to a deck page.
-    var sheetOnly = !!document.getElementById('dock') && /^\/(feed|sources)(\?|$)/.test(now);
+    // Timeline and Sources (the page being left is one of them: it has the series sleeve, popstate has moved only the
+    // URL) share the sheet and the dock around it; any other page swaps the shell, dock kept.
+    var sheetOnly = !!document.getElementById('series') && !!document.getElementById('dock') && /^\/(feed|sources)(\?|$)/.test(now);
     var region = sheetOnly ? '#sheet' : '#shell';
     restorer.setAttribute('hx-select-oob', sheetOnly ? '#bar,#series,#panel' : '#bar');
     window.htmx.ajax('GET', now, { source: restorer, target: region, select: region, swap: 'outerHTML' });
