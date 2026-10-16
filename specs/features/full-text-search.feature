@@ -1,11 +1,11 @@
 Feature: Full-text search across titles, sources and post bodies
-  A search box in the top bar finds items by words in their title, their
+  A search box at the head of the timeline's list finds items by words in their title, their
   source's name or their post body, as you type. Results use the normal list
   layout, newest first, and ignore the group and Show read filters. The search
   is kept in a SQLite FTS5 index that stays in step with the items table.
 
   Covers: GET /feed?q=<text> as the search URL (bookmarkable and reloadable; the
-  page renders the box filled in and the results); a search box in the top bar
+  page renders the box filled in and the results); a search box at the head of the list
   requesting that URL via htmx on typing with a debounce, updating the list in
   place and pushing the URL, and clearing the box returning to the timeline, or to the Favourites view or
   group the search was started from (the form carrying `favourites`, `group`
@@ -150,7 +150,7 @@ Feature: Full-text search across titles, sources and post bodies
 
   Scenario: Typing requests the results via htmx and pushes the search URL
     When I request the home page "/feed"
-    Then the page has a search box in the top bar
+    Then the timeline's sheet starts with the search form
     And the search box requests the timeline via htmx as you type with a debounce
     And the search box pushes the search URL into the browser history
 

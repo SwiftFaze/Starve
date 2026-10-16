@@ -143,16 +143,6 @@ class FullTextSearchSteps {
     @Then("the search box contains {string}")
     fun searchBoxContains(text: String) = assertTrue(searchBox().contains("value=\"$text\""), searchBox())
 
-    @Then("the page has a search box in the top bar")
-    fun hasSearchBoxInTopBar() {
-        val bar =
-            World.response
-                .body()
-                .substringAfter("<header")
-                .substringBefore("</header>")
-        assertTrue(bar.contains("type=\"search\""), "no search box in the top bar")
-    }
-
     @Then("the search box requests the timeline via htmx as you type with a debounce")
     fun requestsViaHtmxWithDebounce() {
         assertTrue(searchBox().contains("hx-get=\"/feed\""), searchBox())
