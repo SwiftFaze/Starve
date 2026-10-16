@@ -65,7 +65,7 @@
     if (body.dataset.active === 'video') delete body.dataset.active;
     trackDeck();
     markPlaying();
-    if (target) target.focus();
+    if (target) target.focus({ preventScroll: true });
   };
 
   // ---- The workspace: panels tiled beside the obi, arranged by dragging their title bars ----------
@@ -1184,6 +1184,7 @@
     } else {
       var pull = Math.max(0, dy) * 0.6;
       gesture.view.style.transform = 'translateY(' + pull + 'px)';
+      reader().style.setProperty('--pull', String(Math.min(1, pull / (PULL_CLOSE_AT * 1.5))));
       showHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
     }
   }, { passive: false });
@@ -1209,14 +1210,21 @@
       return;
     }
     var pane = reader();
+    var clear = function () {
+      pane.classList.remove('pulling', 'releasing');
+      pane.style.removeProperty('--pull');
+    };
+    pane.classList.add('releasing');
     if (released && done.dy * 0.6 >= PULL_CLOSE_AT) {
+      pane.style.setProperty('--pull', '1');
       settle(done.view, 'translateY(' + window.innerHeight + 'px)', '1', OUT_MS, function () {
         window.closeReader();
-        pane.classList.remove('pulling');
+        clear();
       });
       return;
     }
-    settle(done.view, '', '', BACK_MS, function () { pane.classList.remove('pulling'); });
+    pane.style.setProperty('--pull', '0');
+    settle(done.view, '', '', BACK_MS, clear);
   }
 
   document.addEventListener('touchend', endGesture, { passive: true });
