@@ -19,7 +19,9 @@ Feature: The post view on a phone: close, fill the screen, previous and next, op
 
   Covers: Previous and Next in the reader and in the detail view, with the
   right targets for the plain timeline, a group, the Favourites view and Show
-  read; read items the list hides being skipped; the first and last rows
+  read; items read before the list was rendered, which it hides, being
+  skipped, while posts read since then (opening one marks it read) still
+  count, so walking back works; the first and last rows
   lacking Previous and Next; a neighbour that is a video or track opening its
   detail view and not its player; an unknown group in the list context being
   a 404; "Open post" in the player fragment of YouTube, SoundCloud and
