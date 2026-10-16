@@ -54,7 +54,7 @@ class PlayerControllerTest {
 
         controller(mapOf(7L to "https://soundcloud.com/a/b")).player(OWNER, 7, model)
 
-        assertEquals(NowPlayingView("STV 0007", "Item 7", "Source", null), model.getAttribute("item"))
+        assertEquals(NowPlayingView(7, "STV 0007", "Item 7", "Source", null), model.getAttribute("item"))
     }
 
     @Test

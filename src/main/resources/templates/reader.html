@@ -18,6 +18,7 @@
               title="Centre the post"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
           d="M2 3h12v1.5H2zM4 6.25h8v1.5H4zM2 9.5h12V11H2zM4 12.75h8v1.5H4z"/></svg></button>
     </div>
+    <th:block th:replace="~{post-nav :: nav(${post.previous},${post.next})}"></th:block>
     <h2 class="reader-title" th:text="${post.title}">Title</h2>
     <p class="reader-meta">
       <img class="site-icon" th:if="${post.siteIcon}" th:src="${post.siteIcon}" alt="" loading="lazy">

@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException
 
 /** What the dock shows about the playing item. */
 data class NowPlayingView(
+    val id: Long,
     val catalogueNumber: String,
     val title: String,
     val sourceTitle: String,
@@ -55,5 +56,5 @@ class PlayerController(
         return "player :: content"
     }
 
-    private fun ItemRef.toView() = NowPlayingView(Catalogue.number(id), title, sourceTitle, thumbnailUrl)
+    private fun ItemRef.toView() = NowPlayingView(id, Catalogue.number(id), title, sourceTitle, thumbnailUrl)
 }

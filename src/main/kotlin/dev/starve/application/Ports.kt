@@ -261,6 +261,16 @@ interface ItemRepository {
         limit: Int,
     ): List<TimelineItem>
 
+    /**
+     * The rows of the list [filter] narrows to that sit just above ([Neighbours.previous], newer) and just below
+     * ([Neighbours.next], older) item [id], which was published at [publishedAt]; null at either end.
+     */
+    fun neighbours(
+        owner: Long,
+        position: ListPosition,
+        filter: ListFilter,
+    ): Neighbours
+
     /** [owner]'s item [id], or null when [owner] has no such item. */
     fun find(
         owner: Long,
@@ -308,6 +318,30 @@ interface ItemRepository {
 data class TimelineFilter(
     val showRead: Boolean,
     val groupId: Long? = null,
+)
+
+/**
+ * Narrows a list around an item: the timeline (read items only when [showRead], only [groupId]'s if given), or the
+ * Favourites view when [favourites], which ignores read state and group. A hidden read item still counts as listed
+ * when it was read at or after [seen], the moment the list was rendered; without [seen] only unread items count.
+ */
+data class ListFilter(
+    val showRead: Boolean,
+    val groupId: Long? = null,
+    val favourites: Boolean = false,
+    val seen: Long? = null,
+)
+
+/** Where an item sits in every list: its id and published date. */
+data class ListPosition(
+    val id: Long,
+    val publishedAt: Instant,
+)
+
+/** The rows just above (newer) and below (older) an item in a list; null at either end. */
+data class Neighbours(
+    val previous: TimelineItem?,
+    val next: TimelineItem?,
 )
 
 /** One item as needed to open it, or to name it while it plays. */

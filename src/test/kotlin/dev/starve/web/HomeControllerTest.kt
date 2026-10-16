@@ -44,6 +44,7 @@ class HomeControllerTest {
             SearchService(items, MemorySources(mutableListOf(source)), clock),
             LaterService(items, MemorySources(mutableListOf(source)), clock),
             GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources()),
+            clock,
         )
 
     private fun row(id: Long) = TimelineItem(id, "A", "T$id", published, "http://img.test/$id", id == 1L)
@@ -59,7 +60,16 @@ class HomeControllerTest {
         assertEquals("home", view)
         val item = (model.getAttribute("items") as List<*>).single() as TimelineItemView
         val expected =
-            TimelineItemView(1, "A", "T1", "2026-10-10 08:05 UTC", published.toString(), "http://img.test/1", true)
+            TimelineItemView(
+                1,
+                "A",
+                "T1",
+                "2026-10-10 08:05 UTC",
+                published.toString(),
+                "http://img.test/1",
+                true,
+                listQuery = "seen=${now.toEpochMilli()}",
+            )
         assertEquals(expected, item)
         assertEquals(1L, item.id)
         assertEquals("T1", item.title)
@@ -90,7 +100,10 @@ class HomeControllerTest {
         controller(items).home(OWNER, TimelineQuery(show = "all"), null, model)
 
         assertEquals(true, items.requested!!.second)
-        assertEquals("/feed?after=${published.toEpochMilli()}_50&show=all", model.getAttribute("moreHref"))
+        assertEquals(
+            "/feed?after=${published.toEpochMilli()}_50&show=all&seen=${now.toEpochMilli()}",
+            model.getAttribute("moreHref"),
+        )
     }
 
     @Test
@@ -135,7 +148,10 @@ class HomeControllerTest {
 
         controller(items).home(OWNER, TimelineQuery(favourites = "1"), null, model)
 
-        assertEquals("/feed?after=${published.toEpochMilli()}_50&favourites=1", model.getAttribute("moreHref"))
+        assertEquals(
+            "/feed?after=${published.toEpochMilli()}_50&favourites=1&seen=${now.toEpochMilli()}",
+            model.getAttribute("moreHref"),
+        )
         assertEquals(SeriesView("Favourites", null), model.getAttribute("series"))
     }
 
@@ -235,7 +251,10 @@ class HomeControllerTest {
         controller(items).home(OWNER, TimelineQuery(show = "all", group = "2"), null, model)
 
         assertEquals(2L, items.requestedGroup)
-        assertEquals("/feed?after=${published.toEpochMilli()}_50&show=all&group=2", model.getAttribute("moreHref"))
+        assertEquals(
+            "/feed?after=${published.toEpochMilli()}_50&show=all&group=2&seen=${now.toEpochMilli()}",
+            model.getAttribute("moreHref"),
+        )
         assertEquals("/feed?group=2", model.getAttribute("toggleHref"))
         assertEquals(2L, model.getAttribute("groupId"))
     }
@@ -383,7 +402,7 @@ class HomeControllerTest {
 
         val href = model.getAttribute("moreHref") as String
         assertTrue(href.startsWith("/feed?q=a&after="), href)
-        assertTrue(href.endsWith("&favourites=1"), href)
+        assertTrue(href.contains("&favourites=1&seen="), href)
     }
 
     @Test
@@ -419,7 +438,7 @@ class HomeControllerTest {
 
         val href = model.getAttribute("moreHref") as String
         assertTrue(href.startsWith("/feed?q=a&after="), href)
-        assertTrue(href.endsWith("&later=1"), href)
+        assertTrue(href.contains("&later=1&seen="), href)
     }
 
     @Test
@@ -467,7 +486,7 @@ class HomeControllerTest {
 
         controller(TimelineItems(savedRows = saved)).home(OWNER, TimelineQuery(later = "1"), null, model)
 
-        assertEquals("/feed?after=50_50&later=1", model.getAttribute("moreHref"))
+        assertEquals("/feed?after=50_50&later=1&seen=${now.toEpochMilli()}", model.getAttribute("moreHref"))
         assertEquals(SeriesView("Later", null), model.getAttribute("series"))
     }
 

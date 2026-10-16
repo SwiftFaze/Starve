@@ -2,6 +2,8 @@ package dev.starve.infra
 
 import dev.starve.application.DetailRef
 import dev.starve.application.ItemRef
+import dev.starve.application.ListFilter
+import dev.starve.application.ListPosition
 import dev.starve.application.Oembed
 import dev.starve.application.PostRef
 import dev.starve.application.TimelineFilter
@@ -222,6 +224,40 @@ class JdbcRepositoriesTest {
 
         val all = items.timeline(OWNER, null, TimelineFilter(true), 10)
         assertEquals(listOf(true, false, false), all.map { it.playable })
+    }
+
+    @Test
+    fun `a hidden read item counts as listed only when it was read at or after the list was rendered`() {
+        val source = sources.insert(OWNER, "http://a.test/f", "Src")
+        val at = Instant.parse("2026-10-11T12:00:00Z")
+        items.insertNew(
+            source.id,
+            listOf(dated("newer", at), dated("current", at.minusSeconds(60)), dated("older", at.minusSeconds(120))),
+            at,
+        )
+
+        fun idOf(title: String): Long =
+            jdbc
+                .sql("SELECT id FROM items WHERE title = ?")
+                .param(title)
+                .query(Long::class.java)
+                .single()
+        items.markRead(OWNER, idOf("older"), Instant.ofEpochMilli(100))
+        items.markRead(OWNER, idOf("newer"), Instant.ofEpochMilli(300))
+        val current = idOf("current")
+        val publishedAt = at.minusSeconds(60)
+
+        val seen = items.neighbours(OWNER, ListPosition(current, publishedAt), ListFilter(showRead = false, seen = 200))
+        assertEquals("newer", seen.previous?.title)
+        assertEquals(null, seen.next)
+
+        val unseen = items.neighbours(OWNER, ListPosition(current, publishedAt), ListFilter(showRead = false))
+        assertEquals(null, unseen.previous)
+        assertEquals(null, unseen.next)
+
+        val all = items.neighbours(OWNER, ListPosition(current, publishedAt), ListFilter(showRead = true))
+        assertEquals("newer", all.previous?.title)
+        assertEquals("older", all.next?.title)
     }
 
     @Test

@@ -164,6 +164,12 @@ open class MemoryItems(
         limit: Int,
     ): List<TimelineItem> = emptyList()
 
+    override fun neighbours(
+        owner: Long,
+        position: ListPosition,
+        filter: ListFilter,
+    ): Neighbours = Neighbours(null, null)
+
     override fun find(
         owner: Long,
         id: Long,

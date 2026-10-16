@@ -188,9 +188,12 @@ outlined in red. Empty paragraphs and long runs of line breaks are dropped from 
 so feed padding does not show as blank lines.
 
 On a phone a post opens full screen above the player; the top bar, list and video step
-aside until **Close**, which returns you to the same place in the list. The post's head
-tucks away while you read down and comes back as soon as you scroll up, and a button
-returns to the top of a long post or list.
+aside until **Close** (or a pull down from the top of the post), which returns you to the
+same place in the list. **Previous** and **Next** in the post's head step through the
+list you opened it from, posts you have just read included. The head tucks away while
+you read down and comes back once you scroll up deliberately, and a button returns to the
+top of a long post or list. While something plays, **Open post** in the player opens its
+post.
 
 ## Detail view for tracks and videos
 

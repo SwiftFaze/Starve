@@ -1043,17 +1043,82 @@
 
   var lastReaderTop = 0;
 
+  // ---- Phones: the head tucks away past 120px of scrolling down; it comes back after 64px of upward travel
+  //      (a deliberate move, not a micro adjustment) or on reaching the top. Desktop never tucks. ----------
+
+  var TUCK_AT = 120;
+  var REVEAL_AFTER = 64;
+  var upTravel = 0;
+
+  function tuckStep(head, top) {
+    if (!phone()) head.classList.remove('tucked');
+    else if (top > lastReaderTop) {
+      upTravel = 0;
+      head.classList.toggle('tucked', top > TUCK_AT);
+    } else if (top < lastReaderTop) {
+      upTravel += lastReaderTop - top;
+      if (top <= 0 || upTravel >= REVEAL_AFTER) {
+        head.classList.remove('tucked');
+        upTravel = 0;
+      }
+    }
+  }
+
   document.addEventListener('scroll', function (event) {
     var pane = reader();
     if (event.target !== pane || !postView()) return;
     var top = pane.scrollTop;
     var head = postView().querySelector('.reader-head');
-    if (head) head.classList.toggle('tucked', phone() && top > lastReaderTop && top > 120);
+    if (head) tuckStep(head, top);
     lastReaderTop = top;
     syncTop();
   }, true);
 
   window.addEventListener('scroll', syncTop, { passive: true });
+
+  // ---- Phones: pull down at the very top of a post to close it, as Close does. Past 80px and released, it
+  //      closes (focus returns to the row); a shorter pull springs back. Mid-post, a drag just scrolls. ----
+
+  var PULL_CLOSE_AT = 80;
+  var SPRING_MS = 200;
+  var pull = null;
+
+  function springBack(view) {
+    view.style.transition = 'transform ' + SPRING_MS + 'ms ease-out';
+    view.style.transform = '';
+    setTimeout(function () { view.style.transition = ''; }, SPRING_MS + 20);
+  }
+
+  document.addEventListener('touchstart', function (event) {
+    var pane = reader();
+    pull = null;
+    if (!phone() || !pane || !postView() || !pane.contains(event.target) || pane.scrollTop > 0) return;
+    pull = { y: event.touches[0].clientY, dy: 0, view: postView() };
+    pull.view.style.transition = '';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function (event) {
+    if (!pull) return;
+    var dy = event.touches[0].clientY - pull.y;
+    pull.dy = Math.max(0, dy);
+    if (dy > 0) event.preventDefault();
+    pull.view.style.transform = pull.dy > 0 ? 'translateY(' + pull.dy + 'px)' : '';
+  }, { passive: false });
+
+  function endPull(event) {
+    if (!pull) return;
+    var done = pull;
+    pull = null;
+    if (event.type === 'touchend' && done.dy >= PULL_CLOSE_AT) {
+      done.view.style.transform = '';
+      window.closeReader();
+    } else {
+      springBack(done.view);
+    }
+  }
+
+  document.addEventListener('touchend', endPull, { passive: true });
+  document.addEventListener('touchcancel', endPull, { passive: true });
 
   function scroller() {
     if (body.classList.contains('reading') && postView()) return reader();
