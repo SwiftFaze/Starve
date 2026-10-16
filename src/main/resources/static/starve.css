@@ -2289,6 +2289,18 @@ a.title:hover {
   cursor: pointer;
 }
 
+/* The art and the title hold the first two cells, so Open post can lie over them without pushing the
+   deck's other parts along. */
+.now-art {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.now-text {
+  grid-column: 2;
+  grid-row: 1;
+}
+
 .player:has(.open-post:hover) .now-title {
   text-decoration: underline;
   text-underline-offset: 0.2em;
@@ -4721,12 +4733,12 @@ body.dealing #series .series-meta {
   }
 
   /* Pulled down, the post slides over the list, which shows through a veil: dark and blurred at first,
-     clearing as the pull nears the mark (--pull runs 0 to 1, set by deck.js), so the list reads as
+     clearing only past the mark (--pull and the slower --pull-blur run 0 to 1, set by deck.js), so the list reads as
      behind and only comes forward once letting go will close the post. */
   #reader.pulling {
     background: color-mix(in srgb, var(--ground) calc(100% - var(--pull, 0) * 100%), transparent);
-    -webkit-backdrop-filter: blur(calc((1 - var(--pull, 0)) * 8px));
-    backdrop-filter: blur(calc((1 - var(--pull, 0)) * 8px));
+    -webkit-backdrop-filter: blur(calc((1 - var(--pull-blur, 0)) * 16px));
+    backdrop-filter: blur(calc((1 - var(--pull-blur, 0)) * 16px));
   }
 
   #reader.pulling.releasing {

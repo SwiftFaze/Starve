@@ -1184,10 +1184,11 @@
     } else {
       var pull = Math.max(0, dy) * 0.6;
       gesture.view.style.transform = 'translateY(' + pull + 'px)';
-      // The veil holds through the first half of the pull and is still mostly there at the mark; it only
-      // clears well past it (and fully once letting go carries the post away).
-      var veil = Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT / 2) / (PULL_CLOSE_AT * 2)));
+      // The veil holds in full up to the mark and clears only past it, over twice the mark's distance
+      // (fully once letting go carries the post away); the blur lifts more slowly than the dark.
+      var veil = Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT) / (PULL_CLOSE_AT * 2)));
       reader().style.setProperty('--pull', String(veil));
+      reader().style.setProperty('--pull-blur', String(veil * veil));
       showHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
     }
   }, { passive: false });
@@ -1216,10 +1217,12 @@
     var clear = function () {
       pane.classList.remove('pulling', 'releasing');
       pane.style.removeProperty('--pull');
+      pane.style.removeProperty('--pull-blur');
     };
     pane.classList.add('releasing');
     if (released && done.dy * 0.6 >= PULL_CLOSE_AT) {
       pane.style.setProperty('--pull', '1');
+      pane.style.setProperty('--pull-blur', '1');
       settle(done.view, 'translateY(' + window.innerHeight + 'px)', '1', OUT_MS, function () {
         window.closeReader();
         clear();
@@ -1227,6 +1230,7 @@
       return;
     }
     pane.style.setProperty('--pull', '0');
+    pane.style.setProperty('--pull-blur', '0');
     settle(done.view, '', '', BACK_MS, clear);
   }
 
