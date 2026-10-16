@@ -120,9 +120,13 @@ class PlayerControllerTest {
             }
         val model = ConcurrentModel()
         PlayerController(
-            PlayerService(favourite, object : EmbedChecker {
-                override fun allowsEmbedding(video: Playable.YouTube) = true
-            }, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)),
+            PlayerService(
+                favourite,
+                object : EmbedChecker {
+                    override fun allowsEmbedding(video: Playable.YouTube) = true
+                },
+                Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
+            ),
         ).player(OWNER, 3, model)
 
         assertEquals(StarView("deck-star-3", 3, true, from = "deck"), model.getAttribute("star"))

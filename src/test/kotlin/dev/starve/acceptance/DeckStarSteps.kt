@@ -206,6 +206,7 @@ class DeckStarSteps {
         val HTMX = mapOf("HX-Request" to "true")
         val STAR = Regex("<form[^>]*class=\"star\"[^>]*>")
         val STAR_FORM = Regex("<form[^>]*>")
+
         /** The id prefix of any star: the row's, the deck's, the reader's or the detail view's. */
         const val ANY_STAR = "(?:star|deck-star|reader-star|detail-star)"
 
