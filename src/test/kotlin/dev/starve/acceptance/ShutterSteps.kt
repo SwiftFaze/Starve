@@ -42,6 +42,12 @@ class ShutterSteps {
         assertFalse(form.contains("hx-"), form)
     }
 
+    @Then("the page loads the docs script")
+    fun loadsDocsScript() {
+        val page = World.response.body()
+        assertTrue(page.contains("<script src=\"/docs.js\""), page)
+    }
+
     private fun anchors(label: String): List<String> =
         Regex("<a [^>]*>\\s*${Regex.escape(label)}\\s*</a>")
             .findAll(body())

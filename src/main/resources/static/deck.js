@@ -657,10 +657,10 @@
     var post = stored('starve.open.post');
     var play = stored('starve.open.play');
     // Each request comes from its own target, so neither cancels the other.
-    if (post && !postView()) {
+    if (post && !postView() && reader()) {
       window.htmx.ajax('GET', '/items/' + post + '/reader', { source: reader(), target: '#reader', swap: 'innerHTML' });
     }
-    if (play && !player()) {
+    if (play && !player() && dock()) {
       resumeAt = Number(stored('starve.open.at')) || 0;
       window.htmx.ajax('GET', '/items/' + play + '/player', { source: dock(), target: '#dock', swap: 'innerHTML' });
     }

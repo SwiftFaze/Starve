@@ -118,6 +118,7 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
     Then the response status is 200
     And the response is a complete HTML document
     And the page loads the htmx script
+    And the page loads the deck script
     And the page loads the theme script before its stylesheet
 
     Examples:
@@ -135,6 +136,7 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
     Then the response status is 200
     And the response is a complete HTML document
     And the page loads the htmx script
+    And the page loads the docs script
     And the page loads the theme script before its stylesheet
 
     Examples:
