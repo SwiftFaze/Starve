@@ -1098,7 +1098,7 @@
   //      sideways scrolling, and a swipe from the screen's edge is left to the browser (iOS goes back). --
 
   var LOCK_AFTER = 10;
-  var EDGE = 24;
+  var SCREEN_EDGE = 24;
   var PULL_CLOSE_AT = 80;
   var FLICK = 0.5; // px per ms
   var OUT_MS = 220;
@@ -1109,7 +1109,7 @@
 
   function stillMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
-  function hint() {
+  function gestureHint() {
     var pane = reader();
     var label = pane.querySelector(':scope > .gesture-hint');
     if (!label) {
@@ -1121,15 +1121,15 @@
     return label;
   }
 
-  function showHint(side, text, ready, progress) {
-    var label = hint();
+  function showGestureHint(side, text, ready, progress) {
+    var label = gestureHint();
     label.textContent = text;
     label.dataset.side = side;
     label.classList.toggle('ready', ready);
     label.style.opacity = String(Math.min(1, progress));
   }
 
-  function hideHint() {
+  function hideGestureHint() {
     var label = reader() && reader().querySelector(':scope > .gesture-hint');
     if (label) label.remove();
   }
@@ -1159,7 +1159,7 @@
     var view = postView();
     var touch = event.touches[0];
     if (!phone() || !pane || !view || !pane.contains(event.target) || event.touches.length > 1) return;
-    if (touch.clientX < EDGE || touch.clientX > window.innerWidth - EDGE) return;
+    if (touch.clientX < SCREEN_EDGE || touch.clientX > window.innerWidth - SCREEN_EDGE) return;
     gesture = {
       x: touch.clientX, y: touch.clientY, t: Date.now(), dx: 0, dy: 0, axis: null, view: view,
       atTop: pane.scrollTop <= 0, wide: scrollsSideways(event.target, pane)
@@ -1193,7 +1193,7 @@
       gesture.view.style.transform = 'translateX(' + shift + 'px)';
       gesture.view.style.opacity = String(1 - Math.min(0.5, Math.abs(shift) / width));
       var text = link ? (dx < 0 ? 'Next post ›' : '‹ Previous post') : (dx < 0 ? 'Last post' : 'First post');
-      showHint(dx < 0 ? 'right' : 'left', text, !!link && Math.abs(dx) >= mark, Math.abs(dx) / mark);
+      showGestureHint(dx < 0 ? 'right' : 'left', text, !!link && Math.abs(dx) >= mark, Math.abs(dx) / mark);
     } else {
       var pull = Math.max(0, dy);
       gesture.view.style.transform = 'translateY(' + pull + 'px)';
@@ -1203,7 +1203,7 @@
       var veil = Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT) / (window.innerHeight * 0.85 - PULL_CLOSE_AT)));
       reader().style.setProperty('--pull', String(veil));
       reader().style.setProperty('--pull-blur', String(veil * veil));
-      showHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
+      showGestureHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
     }
   }, { passive: false });
 
@@ -1212,7 +1212,7 @@
     var done = gesture;
     gesture = null;
     if (!done.axis) return;
-    hideHint();
+    hideGestureHint();
     var width = window.innerWidth;
     var speed = Math.abs(done.axis === 'x' ? done.dx : done.dy) / Math.max(1, Date.now() - done.t);
     var released = event.type === 'touchend';
@@ -1581,32 +1581,7 @@
   }
 
 
-  // On a phone the search form sits at the top of the list, under the obi, instead of in the bar. A swap
-  // of the bar (a group change) brings a fresh form that knows the new group: it replaces the one at the
-  // list, unless that one is being typed into. Wider, the form goes back to the bar, before its menu.
-  function placeSearch() {
-    var bar = document.getElementById('bar');
-    var sheet = document.getElementById('sheet');
-    var fresh = bar ? bar.querySelector('.search') : null;
-    var placed = sheet ? sheet.parentNode.querySelector(':scope > .search') : null;
-    if (phone() && sheet) {
-      // Only the timeline searches: Sources swaps in under the same obi and keeps no form there.
-      if (!onTimeline()) {
-        if (placed) placed.remove();
-        return;
-      }
-      if (fresh && placed && placed.contains(document.activeElement)) fresh.remove();
-      else if (fresh) {
-        if (placed) placed.remove();
-        sheet.parentNode.insertBefore(fresh, sheet);
-      }
-    } else if (placed && bar && !fresh) {
-      bar.insertBefore(placed, bar.querySelector('.bar-menu'));
-    }
-  }
-
   function placeChrome() {
-    placeSearch();
     placePostActions();
   }
 

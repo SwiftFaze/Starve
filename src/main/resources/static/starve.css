@@ -394,11 +394,23 @@ input[type="file"].field::file-selector-button {
 }
 
 /* Search is a field like every other: a sunk well, a mono hint, the magnifier drawn inside it. */
+/* Search heads the timeline's list, full width above its head. */
 .search {
   position: relative;
   display: flex;
   align-items: center;
-  margin-left: auto;
+  margin: 0 0 2rem;
+}
+
+.search input,
+.search input:focus,
+.search input:not(:placeholder-shown) {
+  width: 100%;
+}
+
+/* The search's results replace this, below the field. It adds no box of its own. */
+.sheet-body {
+  display: contents;
 }
 
 .search .icon {
@@ -414,9 +426,8 @@ input[type="file"].field::file-selector-button {
 }
 
 .search input {
-  width: 9.5rem;
-  min-height: 2.25rem;
-  padding: 0.375rem 0.625rem 0.375rem 2rem;
+  min-height: 2.5rem;
+  padding: 0.375rem 0.75rem 0.375rem 2.25rem;
   border: 1px solid var(--line-strong);
   border-radius: 0;
   background: var(--sunk);
@@ -437,27 +448,17 @@ input[type="file"].field::file-selector-button {
   border-color: var(--cyan);
 }
 
-.search input:focus,
-.search input:not(:placeholder-shown) {
-  width: 14rem;
-}
-
 .search input::-webkit-search-cancel-button {
   appearance: none;
 }
 
-/* The account actions end the top bar: Account, Settings (admins) and Sign out. The search form,
-   where there is one, pushes them right already. */
+/* The account actions end the top bar: Account, Settings (admins) and Sign out. */
 .bar-actions {
   display: flex;
   align-items: center;
   align-self: stretch;
   gap: 1.25rem;
   margin-left: auto;
-}
-
-.search ~ .bar-actions {
-  margin-left: 0;
 }
 
 /* The phone's menu button and the obi's group picker; desktop shows the actions and group tabs as they are. */
@@ -3362,8 +3363,7 @@ body[data-split][data-list="strip"] .load-more {
     display: none;
   }
 
-  .bar .bar-actions,
-  .bar .search ~ .bar-actions {
+  .bar .bar-actions {
     order: 1;
     gap: 0.75rem;
     margin-left: auto;
@@ -4319,18 +4319,12 @@ body.dealing #series .series-meta {
     letter-spacing: 0.04em;
   }
 
-  /* Search leaves the bar: deck.js sets the form at the top of the list, under the obi, where it scrolls
-     away with the rows and keeps a search in force in view. */
-  .js .bar .search {
-    display: none;
+  /* Search heads the list under the obi, where it scrolls away with the rows. */
+  .sheet > .search {
+    margin: 0 0 0.75rem;
   }
 
-  .label > .search {
-    display: flex;
-    margin: 0.75rem var(--gutter) 0;
-  }
-
-  .label > .search .icon {
+  .sheet > .search .icon {
     top: 0;
     bottom: 0;
     margin: auto 0;
@@ -4339,9 +4333,9 @@ body.dealing #series .series-meta {
     height: 1rem;
   }
 
-  .label > .search input,
-  .label > .search input:focus,
-  .label > .search input:not(:placeholder-shown) {
+  .sheet > .search input,
+  .sheet > .search input:focus,
+  .sheet > .search input:not(:placeholder-shown) {
     width: 100%;
     min-height: 2.75rem;
     padding-left: 2.5rem;
