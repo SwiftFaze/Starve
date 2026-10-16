@@ -87,7 +87,7 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
     And the "Back to Settings" link to "/settings" requests its page via htmx and pushes its URL
 
   Scenario Outline: The public pages' links request their page via htmx
-    Given signups are open
+    Given signups are on
     And I am not signed in
     When I request "<page>"
     Then the "<label>" link to "<href>" requests its page via htmx and pushes its URL
@@ -128,7 +128,7 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
       | /account  |
 
   Scenario Outline: A public page answers an htmx request with a complete page and loads the scripts a swap needs
-    Given signups are open
+    Given signups are on
     And I am not signed in
     When I request the page "<page>" via htmx
     Then the response status is 200
