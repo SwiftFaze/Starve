@@ -32,7 +32,7 @@ Feature: Embedded playback for YouTube and SoundCloud items
     Given the source "Tube" has an unread item "Clip" with the link "<link>" published 1 days ago
     When I request the player of the item "Clip" via htmx
     Then the response status is 200
-    And the response contains an iframe whose source is "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&enablejsapi=1&controls=0&rel=0&iv_load_policy=3&playsinline=1"
+    And the response contains an iframe whose source is "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&enablejsapi=1&controls=1&rel=0&iv_load_policy=3&playsinline=1"
     And the iframe allows "autoplay; encrypted-media; picture-in-picture"
     And the iframe allows fullscreen
     And the player is wrapped in a responsive 16:9 container
@@ -88,7 +88,7 @@ Feature: Embedded playback for YouTube and SoundCloud items
     And the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago
     When I request the player of the item "Clip" via htmx
     Then the response status is 200
-    And the response contains an iframe whose source is "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&enablejsapi=1&controls=0&rel=0&iv_load_policy=3&playsinline=1"
+    And the response contains an iframe whose source is "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&enablejsapi=1&controls=1&rel=0&iv_load_policy=3&playsinline=1"
 
 # Non-goals:
 #   - Downloads, other platforms (Vimeo, Spotify, etc.). The dock is

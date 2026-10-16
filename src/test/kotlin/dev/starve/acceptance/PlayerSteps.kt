@@ -50,6 +50,9 @@ class PlayerSteps {
     @Then("the response contains no iframe")
     fun containsNoIframe() = assertFalse(World.response.body().contains("<iframe"))
 
+    @Then("nothing covers the YouTube video")
+    fun nothingCoversVideo() = assertFalse(World.response.body().contains("class=\"shield\""), World.response.body())
+
     private fun requestPlayerOf(id: Long) {
         World.response = app.get("/items/$id/player", mapOf("HX-Request" to "true"))
     }
