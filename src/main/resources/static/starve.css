@@ -413,6 +413,11 @@ input[type="file"].field::file-selector-button {
   margin: 0;
 }
 
+/* Folded to its STV strip, the list has no room to search in. */
+body[data-list="strip"] .sheet > .search {
+  display: none;
+}
+
 /* The tiled list has a shallower top. */
 body[data-split] .sheet > .search {
   top: 1.25rem;
@@ -2721,6 +2726,17 @@ body[data-split] .reader-close {
   text-transform: uppercase;
   color: var(--text-2);
   vertical-align: 0.1em;
+}
+
+/* While a panel is dragged the deck, and the video inside it, steps under the panel chrome: the dock sits
+   outside the sleeve's layer (#81), so otherwise the video would cover the drop preview and the lifted
+   title bar. Its iframe also leaves the pointer to the drag. */
+body.dragging-pane .player {
+  z-index: 0;
+}
+
+body.dragging-pane .ratio-16x9 iframe {
+  pointer-events: none;
 }
 
 /* Where a dragged title bar will land: half a panel to split it, all of it to swap, or a band along
