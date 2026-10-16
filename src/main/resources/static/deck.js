@@ -65,7 +65,7 @@
     if (body.dataset.active === 'video') delete body.dataset.active;
     trackDeck();
     markPlaying();
-    if (target) target.focus();
+    if (target) target.focus({ preventScroll: true });
   };
 
   // ---- The workspace: panels tiled beside the obi, arranged by dragging their title bars ----------
@@ -510,13 +510,35 @@
       if (!spot) return;
       drop(from, spot.target, spot.zone);
       saveTree();
+      var video = videoBox();
+      var was = video ? video.getBoundingClientRect() : null;
       body.classList.add('swapping');
       layout();
+      if (video && was) slideVideo(video, was);
       setTimeout(function () { body.classList.remove('swapping'); }, 260);
     }
     bar.addEventListener('pointermove', move);
     bar.addEventListener('pointerup', up);
   });
+
+  // The video box slides by transform, not by its size: an iframe resized frame by frame makes the player
+  // inside re-lay out out of step with the slide, and it jitters. So the box takes its new size at once
+  // (the iframe re-lays out once) and is drawn from the old box to the new one, translated and scaled.
+  function slideVideo(box, was) {
+    var now = box.getBoundingClientRect();
+    if (!now.width || !now.height || stillMotion()) return;
+    box.style.transition = 'none';
+    box.style.transformOrigin = '0 0';
+    box.style.transform = 'translate(' + (was.left - now.left) + 'px, ' + (was.top - now.top) + 'px) scale(' +
+      (was.width / now.width) + ', ' + (was.height / now.height) + ')';
+    box.getBoundingClientRect();
+    box.style.transition = 'transform var(--move)';
+    box.style.transform = '';
+    setTimeout(function () {
+      box.style.transition = '';
+      box.style.transformOrigin = '';
+    }, 300);
+  }
 
   // ---- Rules between panels: drag, arrow keys (32px), double click to even the split out ------------
 
@@ -999,15 +1021,28 @@
     return box;
   }
 
+  // Feed artwork comes as a thumbnail: SoundCloud's has a size in its name (-large is 100px) and YouTube's
+  // is hqdefault (480px); zoomed, ask for the largest each serves.
+  function largerArt(src) {
+    if (/sndcdn\.com\//.test(src)) return src.replace(/-(large|t\d+x\d+|crop|small|badge|tiny|mini)\.(jpg|png)/, '-t500x500.$2');
+    if (/ytimg\.com\//.test(src)) return src.replace(/\/(hq|mq|sd)default\.jpg/, '/maxresdefault.jpg');
+    return src;
+  }
+
   document.addEventListener('click', function (event) {
-    var image = event.target.closest && event.target.closest('.reader-body img, .reader-image');
+    var image = event.target.closest && event.target.closest('.reader-body img, .reader-image, .detail-art');
     if (!image || !image.currentSrc) return;
     // A picture that links to a larger copy shows that copy here, without leaving the app.
     var link = image.closest('a[href]');
-    var large = link && /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(link.href) ? link.href : image.currentSrc;
+    var large = link && /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(link.href) ? link.href : largerArt(image.currentSrc);
     event.preventDefault();
     var box = lightbox();
     var shown = box.querySelector('img');
+    // Should a larger size not exist, the picture as shown stands in.
+    shown.onerror = function () {
+      shown.onerror = null;
+      shown.src = image.currentSrc;
+    };
     shown.src = large;
     shown.alt = image.alt || '';
     if (box.showModal) box.showModal();
@@ -1076,49 +1111,182 @@
 
   window.addEventListener('scroll', syncTop, { passive: true });
 
-  // ---- Phones: pull down at the very top of a post to close it, as Close does. Past 80px and released, it
-  //      closes (focus returns to the row); a shorter pull springs back. Mid-post, a drag just scrolls. ----
+  // ---- Phones: a post follows the finger. Sideways it steps through the list (left: the next, older
+  //      post; right: the previous, newer one), pulled down from the very top it closes, as Close does.
+  //      The post moves with the finger the whole way, a caption at the edge says what letting go will do,
+  //      and letting go past the mark (or with a flick) carries the post off that side while the next one
+  //      slides in from the other. Short of the mark it eases back. The direction locks after the first
+  //      few pixels, so an ordinary scroll stays a scroll; code blocks and wide tables keep their own
+  //      sideways scrolling, and a swipe from the screen's edge is left to the browser (iOS goes back). --
 
+  var LOCK_AFTER = 10;
+  var SCREEN_EDGE = 24;
   var PULL_CLOSE_AT = 80;
-  var SPRING_MS = 200;
-  var pull = null;
+  var FLICK = 0.5; // px per ms
+  var OUT_MS = 220;
+  var BACK_MS = 260;
+  var IN_MS = 320;
+  var gesture = null;
+  var arriving = null;
 
-  function springBack(view) {
-    view.style.transition = 'transform ' + SPRING_MS + 'ms ease-out';
-    view.style.transform = '';
-    setTimeout(function () { view.style.transition = ''; }, SPRING_MS + 20);
+  function stillMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  function gestureHint() {
+    var pane = reader();
+    var label = pane.querySelector(':scope > .gesture-hint');
+    if (!label) {
+      label = document.createElement('div');
+      label.className = 'gesture-hint';
+      label.setAttribute('aria-hidden', 'true');
+      pane.appendChild(label);
+    }
+    return label;
+  }
+
+  function showGestureHint(side, text, ready, progress) {
+    var label = gestureHint();
+    label.textContent = text;
+    label.dataset.side = side;
+    label.classList.toggle('ready', ready);
+    label.style.opacity = String(Math.min(1, progress));
+  }
+
+  function hideGestureHint() {
+    var label = reader() && reader().querySelector(':scope > .gesture-hint');
+    if (label) label.remove();
+  }
+
+  function settle(view, transform, opacity, ms, then) {
+    view.style.transition = stillMotion() ? 'none'
+      : 'transform ' + ms + 'ms cubic-bezier(0.16, 1, 0.3, 1), opacity ' + ms + 'ms ease-out';
+    view.style.transform = transform;
+    view.style.opacity = opacity;
+    setTimeout(function () {
+      view.style.transition = '';
+      if (then) then();
+    }, stillMotion() ? 0 : ms);
+  }
+
+  // Wide content scrolls sideways on its own; a swipe starting there is left to it.
+  function scrollsSideways(target, pane) {
+    for (var node = target; node && node !== pane; node = node.parentElement) {
+      if (node.matches('pre, table') || node.scrollWidth > node.clientWidth + 1) return true;
+    }
+    return false;
   }
 
   document.addEventListener('touchstart', function (event) {
+    gesture = null;
     var pane = reader();
-    pull = null;
-    if (!phone() || !pane || !postView() || !pane.contains(event.target) || pane.scrollTop > 0) return;
-    pull = { y: event.touches[0].clientY, dy: 0, view: postView() };
-    pull.view.style.transition = '';
+    var view = postView();
+    var touch = event.touches[0];
+    if (!phone() || !pane || !view || !pane.contains(event.target) || event.touches.length > 1) return;
+    if (touch.clientX < SCREEN_EDGE || touch.clientX > window.innerWidth - SCREEN_EDGE) return;
+    gesture = {
+      x: touch.clientX, y: touch.clientY, t: Date.now(), dx: 0, dy: 0, axis: null, view: view,
+      atTop: pane.scrollTop <= 0, wide: scrollsSideways(event.target, pane)
+    };
+    view.style.transition = '';
   }, { passive: true });
 
   document.addEventListener('touchmove', function (event) {
-    if (!pull) return;
-    var dy = event.touches[0].clientY - pull.y;
-    pull.dy = Math.max(0, dy);
-    if (dy > 0) event.preventDefault();
-    pull.view.style.transform = pull.dy > 0 ? 'translateY(' + pull.dy + 'px)' : '';
+    if (!gesture) return;
+    var touch = event.touches[0];
+    var dx = touch.clientX - gesture.x;
+    var dy = touch.clientY - gesture.y;
+    if (!gesture.axis) {
+      if (Math.abs(dx) < LOCK_AFTER && Math.abs(dy) < LOCK_AFTER) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.2 && !gesture.wide) gesture.axis = 'x';
+      else if (dy > 0 && gesture.atTop) {
+        gesture.axis = 'y';
+        reader().classList.add('pulling');
+      }
+      else { gesture = null; return; }
+    }
+    event.preventDefault();
+    gesture.dx = dx;
+    gesture.dy = dy;
+    var width = window.innerWidth;
+    if (gesture.axis === 'x') {
+      var link = gesture.view.querySelector(dx < 0 ? '.post-next' : '.post-prev');
+      // With nowhere to go the post only gives a little, like a rubber band.
+      var shift = link ? dx : dx / 4;
+      var mark = width / 4;
+      gesture.view.style.transform = 'translateX(' + shift + 'px)';
+      gesture.view.style.opacity = String(1 - Math.min(0.5, Math.abs(shift) / width));
+      var text = link ? (dx < 0 ? 'Next post ›' : '‹ Previous post') : (dx < 0 ? 'Last post' : 'First post');
+      showGestureHint(dx < 0 ? 'right' : 'left', text, !!link && Math.abs(dx) >= mark, Math.abs(dx) / mark);
+    } else {
+      var pull = Math.max(0, dy);
+      gesture.view.style.transform = 'translateY(' + pull + 'px)';
+      // The veil holds in full up to the mark and clears only as the post travels on, coming clear when
+      // it nears the bottom of the screen (or once letting go carries it away); the blur lifts more
+      // slowly than the dark.
+      var veil = Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT) / (window.innerHeight * 0.85 - PULL_CLOSE_AT)));
+      reader().style.setProperty('--pull', String(veil));
+      reader().style.setProperty('--pull-blur', String(veil * veil));
+      showGestureHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
+    }
   }, { passive: false });
 
-  function endPull(event) {
-    if (!pull) return;
-    var done = pull;
-    pull = null;
-    if (event.type === 'touchend' && done.dy >= PULL_CLOSE_AT) {
-      done.view.style.transform = '';
-      window.closeReader();
-    } else {
-      springBack(done.view);
+  function endGesture(event) {
+    if (!gesture) return;
+    var done = gesture;
+    gesture = null;
+    if (!done.axis) return;
+    hideGestureHint();
+    var width = window.innerWidth;
+    var speed = Math.abs(done.axis === 'x' ? done.dx : done.dy) / Math.max(1, Date.now() - done.t);
+    var released = event.type === 'touchend';
+    if (done.axis === 'x') {
+      var link = done.view.querySelector(done.dx < 0 ? '.post-next' : '.post-prev');
+      if (released && link && (Math.abs(done.dx) >= width / 4 || speed >= FLICK)) {
+        var side = done.dx < 0 ? -1 : 1;
+        arriving = side < 0 ? 'from-right' : 'from-left';
+        settle(done.view, 'translateX(' + side * width + 'px)', '0', OUT_MS, function () { link.click(); });
+        return;
+      }
+      settle(done.view, '', '', BACK_MS);
+      return;
     }
+    var pane = reader();
+    var clear = function () {
+      pane.classList.remove('pulling', 'releasing');
+      pane.style.removeProperty('--pull');
+      pane.style.removeProperty('--pull-blur');
+    };
+    pane.classList.add('releasing');
+    if (released && done.dy >= PULL_CLOSE_AT) {
+      pane.style.setProperty('--pull', '1');
+      pane.style.setProperty('--pull-blur', '1');
+      settle(done.view, 'translateY(' + window.innerHeight + 'px)', '1', OUT_MS, function () {
+        window.closeReader();
+        clear();
+      });
+      return;
+    }
+    pane.style.setProperty('--pull', '0');
+    pane.style.setProperty('--pull-blur', '0');
+    settle(done.view, '', '', BACK_MS, clear);
   }
 
-  document.addEventListener('touchend', endPull, { passive: true });
-  document.addEventListener('touchcancel', endPull, { passive: true });
+  document.addEventListener('touchend', endGesture, { passive: true });
+  document.addEventListener('touchcancel', endGesture, { passive: true });
+
+  // The post a swipe asked for slides in from the side it came from.
+  document.addEventListener('htmx:afterSettle', function () {
+    if (!arriving) return;
+    var view = postView();
+    var from = arriving;
+    arriving = null;
+    if (!view || stillMotion()) return;
+    view.style.transition = 'none';
+    view.style.transform = 'translateX(' + (from === 'from-right' ? 30 : -30) + '%)';
+    view.style.opacity = '0';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { settle(view, '', '', IN_MS); });
+    });
+  });
 
   function scroller() {
     if (body.classList.contains('reading') && postView()) return reader();
@@ -1345,6 +1513,108 @@
   syncCenter();
   trackBar();
   trackHeights();
+  // ---- Phone chrome: the bar's menu, the obi's group picker, a post's actions at its foot -------------
+
+  var FOLD_MS = 160;
+
+  // Opening unfolds; closing folds back first, unless [instant] (a swap is replacing the bar anyway).
+  function setMenu(open, instant) {
+    var button = document.querySelector('.bar-menu');
+    var actions = document.getElementById('bar-actions');
+    if (!button || !actions) return;
+    button.setAttribute('aria-expanded', String(open));
+    actions.classList.remove('folding');
+    if (open || instant || stillMotion() || !actions.classList.contains('open')) {
+      actions.classList.toggle('open', open);
+      return;
+    }
+    actions.classList.add('folding');
+    setTimeout(function () {
+      if (button.getAttribute('aria-expanded') === 'true') return;
+      actions.classList.remove('open', 'folding');
+    }, FOLD_MS);
+  }
+
+  // The group list drops from the obi's lower edge, wherever the bar has left it.
+  function setGroups(open, instant) {
+    var pick = document.querySelector('.series-pick');
+    var obi = document.getElementById('series');
+    if (!pick || !obi || !document.getElementById('groups')) open = false;
+    if (pick) pick.setAttribute('aria-expanded', String(open));
+    if (open) {
+      document.documentElement.style.setProperty('--groups-top', Math.round(obi.getBoundingClientRect().bottom) + 'px');
+      body.dataset.groups = 'open';
+    } else if (instant || stillMotion() || body.dataset.groups !== 'open') {
+      delete body.dataset.groups;
+    } else {
+      body.dataset.groups = 'closing';
+      setTimeout(function () {
+        if (body.dataset.groups === 'closing') delete body.dataset.groups;
+      }, FOLD_MS);
+    }
+  }
+
+  document.addEventListener('click', function (event) {
+    var menu = event.target.closest('.bar-menu');
+    if (menu) {
+      setGroups(false);
+      setMenu(menu.getAttribute('aria-expanded') !== 'true');
+      return;
+    }
+    if (phone() && event.target.closest('.series-pick, #series .series')) {
+      setMenu(false);
+      setGroups(body.dataset.groups !== 'open');
+      return;
+    }
+    if (!event.target.closest('#bar-actions')) setMenu(false);
+    if (!event.target.closest('#groups')) setGroups(false);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    setMenu(false);
+    setGroups(false);
+  });
+
+  // On a phone a post's feed link and Open original sit at its foot, so the head keeps to the number, the
+  // star, Later and Close. Wider, they go back where the markup has them.
+  function placePostActions() {
+    document.querySelectorAll('#reader .reader-view').forEach(function (view) {
+      var head = view.querySelector('.reader-head');
+      var toggles = view.querySelector('.reader-toggles');
+      var feed = view.querySelector('.feed-link');
+      var original = view.querySelector('.reader-original');
+      var foot = view.querySelector('.reader-foot');
+      if (!head) return;
+      if (phone()) {
+        if (!foot) {
+          foot = document.createElement('footer');
+          foot.className = 'reader-foot';
+          view.appendChild(foot);
+        }
+        if (feed && feed.parentNode !== foot) foot.appendChild(feed);
+        if (original && original.parentNode !== foot) foot.appendChild(original);
+      } else if (foot) {
+        if (feed && toggles) toggles.insertBefore(feed, toggles.querySelector('.center-toggle'));
+        if (original) head.appendChild(original);
+        foot.remove();
+      }
+    });
+  }
+
+
+  function placeChrome() {
+    placePostActions();
+  }
+
+  document.addEventListener('htmx:afterSettle', function () {
+    setMenu(false, true);
+    setGroups(false, true);
+    placeChrome();
+  });
+  window.matchMedia(PHONE).addEventListener('change', placeChrome);
+
   markPlaying();
   syncTop();
+  placeChrome();
 })();

@@ -21,7 +21,7 @@
       <a class="tab" href="/sources" hx-get="/sources" hx-target="#sheet" data-switch hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Sources</a>
     </nav>
-    <nav class="groups" aria-label="Groups">
+    <nav class="groups" id="groups" aria-label="Groups">
       <a class="group-link" th:each="entry : ${nav}" th:href="${entry.href}" th:text="${entry.label}"
          th:attr="aria-current=${entry.current} ? 'page',hx-get=${entry.href}"
          hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
@@ -35,16 +35,6 @@
          hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
          hx-push-url="true">Later</a>
     </nav>
-    <form class="search" role="search" action="/feed" method="get">
-      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 1.5a5.25 5.25 0 0 1 4.2 8.4l3.3 3.3-1.06 1.06-3.3-3.3A5.25 5.25 0 1 1 6.75 1.5zm0 1.5a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5z"/></svg>
-      <input type="search" name="q" th:value="${query}" placeholder="Search" aria-label="Search items"
-             hx-get="/feed" hx-trigger="input changed delay:300ms, search" hx-target="#sheet" hx-swap="outerHTML"
-             hx-include="closest form" hx-push-url="true">
-      <input type="hidden" name="favourites" value="1" th:if="${favourites}">
-      <input type="hidden" name="later" value="1" th:if="${later}">
-      <input type="hidden" name="group" th:if="${groupId != null}" th:value="${groupId}">
-      <input type="hidden" name="show" value="all" th:if="${showAll}">
-    </form>
     <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
   </header>
 
@@ -52,6 +42,9 @@
     <aside class="sleeve" aria-label="Series, tools and player">
       <div id="series" class="series-block">
         <h2 class="series" th:text="${series.name}">All</h2>
+        <button type="button" class="series-pick" aria-expanded="false" aria-controls="groups"
+                aria-label="Choose a group"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
+            d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
         <p class="series-meta">
           <th:block th:if="${series.unread != null}" th:text="|${series.unread} unread|">9 unread</th:block>
           <span th:text="${later} ? 'Earliest saved first' : (${showAll} ? 'Read included, newest first' : 'Newest first')">Newest first</span>
@@ -64,6 +57,19 @@
     </aside>
 
     <main class="sheet" id="sheet" tabindex="-1" data-page="timeline" th:fragment="sheet">
+      <!-- Search heads the list. Its results swap only the sheet body below it, so the field keeps focus while typing;
+           a group change swaps the whole sheet, so the form always carries the view it searches. -->
+      <form class="search" role="search" action="/feed" method="get">
+        <label class="search-open" for="search-q"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.75 1.5a5.25 5.25 0 0 1 4.2 8.4l3.3 3.3-1.06 1.06-3.3-3.3A5.25 5.25 0 1 1 6.75 1.5zm0 1.5a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5z"/></svg></label>
+        <input type="search" id="search-q" name="q" th:value="${query}" placeholder="Search" aria-label="Search items"
+               hx-get="/feed" hx-trigger="input changed delay:300ms, search" hx-target="#sheet-body" hx-select="#sheet-body" hx-swap="outerHTML"
+               hx-include="closest form" hx-push-url="true">
+        <input type="hidden" name="favourites" value="1" th:if="${favourites}">
+        <input type="hidden" name="later" value="1" th:if="${later}">
+        <input type="hidden" name="group" th:if="${groupId != null}" th:value="${groupId}">
+        <input type="hidden" name="show" value="all" th:if="${showAll}">
+      </form>
+      <div class="sheet-body" id="sheet-body">
       <div class="sheet-head">
         <h2 class="sheet-title" th:text="${searching} ? 'Search results' : (${favourites} ? 'Favourites' : (${later} ? 'Later' : (${showAll} ? 'All releases' : 'New releases')))">New releases</h2>
         <div class="view-actions" th:if="${hasSources and !favourites and !later}">
@@ -117,6 +123,7 @@
         </th:block>
         <p class="sheet-note" th:if="${emptyFavourites}">No favourites yet. Star an item on the timeline to keep it here.</p>
         <p class="sheet-note" th:if="${emptyLater}">Nothing saved for later. Use the clock on an item to keep it here.</p>
+      </div>
       </div>
     </main>
     <aside id="reader" class="reader" aria-label="Reader" aria-live="polite"></aside>

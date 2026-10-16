@@ -5,7 +5,10 @@
      current page marked ("onAccount" / "onSettings"). Sign-out is a plain POST form, so it works without JavaScript and
      inside every swapped bar. -->
 <th:block th:fragment="bar-actions">
-<div class="bar-actions">
+<!-- On phones, with scripts, the actions fold behind this menu button (deck.js, "Phone chrome"). -->
+<button type="button" class="bar-menu" aria-expanded="false" aria-controls="bar-actions" aria-label="Menu"><svg
+    class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12v1.5H2zM2 7.25h12v1.5H2zM2 10.5h12V12H2z"/></svg></button>
+<div class="bar-actions" id="bar-actions">
   <a class="tab account-link" href="/account" hx-get="/account" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true" th:attr="aria-current=${onAccount} ? 'page'">Account</a>
   <a class="tab settings-link" href="/settings" hx-get="/settings" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true" th:if="${admin}"
      th:attr="aria-current=${onSettings} ? 'page'">Settings</a>
