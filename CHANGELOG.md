@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.16](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.15...v1.1.0-beta.16) (2026-10-16)
+
+
+### Bug Fixes
+
+* page switches swap in place behind the shutter; forms stay plain ([#85](https://github.com/SwiftFaze/Starve/issues/85)) ([319ae4e](https://github.com/SwiftFaze/Starve/commit/319ae4e0377af9eadd5ef5e12e03145db662198d))
+
 ## [1.1.0-beta.15](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.14...v1.1.0-beta.15) (2026-10-16)
 
 
