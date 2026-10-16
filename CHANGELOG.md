@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.17](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.16...v1.1.0-beta.17) (2026-10-16)
+
+
+### Features
+
+* mobile post view: Close, Previous/Next, pull-down close, Open post ([#87](https://github.com/SwiftFaze/Starve/issues/87)) ([0fb8ea7](https://github.com/SwiftFaze/Starve/commit/0fb8ea7ec5201d24928ba515604d6b36bc382430))
+
 ## [1.1.0-beta.16](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.15...v1.1.0-beta.16) (2026-10-16)
 
 
