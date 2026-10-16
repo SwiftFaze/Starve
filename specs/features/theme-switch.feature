@@ -1,9 +1,8 @@
 Feature: Theme switch and page shutter
   The caution chevrons at the foot of the obi switch between the dark and the
   light theme; the choice is remembered in the browser, and without one the
-  OS decides. Theme changes run behind a red shutter panel, and so does every
-  in-app page switch (superseded by shutter-transition-flash.feature: the
-  Timeline and Sources switch is only the first of them).
+  OS decides. Theme changes and switches between Timeline and Sources run
+  behind a red shutter panel.
 
   Covers: every page (Timeline, Sources, Import) carrying the theme switch
   and loading the theme script in its head, so a saved theme applies before
