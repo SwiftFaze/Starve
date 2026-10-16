@@ -1076,49 +1076,166 @@
 
   window.addEventListener('scroll', syncTop, { passive: true });
 
-  // ---- Phones: pull down at the very top of a post to close it, as Close does. Past 80px and released, it
-  //      closes (focus returns to the row); a shorter pull springs back. Mid-post, a drag just scrolls. ----
+  // ---- Phones: a post follows the finger. Sideways it steps through the list (left: the next, older
+  //      post; right: the previous, newer one), pulled down from the very top it closes, as Close does.
+  //      The post moves with the finger the whole way, a caption at the edge says what letting go will do,
+  //      and letting go past the mark (or with a flick) carries the post off that side while the next one
+  //      slides in from the other. Short of the mark it eases back. The direction locks after the first
+  //      few pixels, so an ordinary scroll stays a scroll; code blocks and wide tables keep their own
+  //      sideways scrolling, and a swipe from the screen's edge is left to the browser (iOS goes back). --
 
+  var LOCK_AFTER = 10;
+  var EDGE = 24;
   var PULL_CLOSE_AT = 80;
-  var SPRING_MS = 200;
-  var pull = null;
+  var FLICK = 0.5; // px per ms
+  var OUT_MS = 220;
+  var BACK_MS = 260;
+  var IN_MS = 320;
+  var gesture = null;
+  var arriving = null;
 
-  function springBack(view) {
-    view.style.transition = 'transform ' + SPRING_MS + 'ms ease-out';
-    view.style.transform = '';
-    setTimeout(function () { view.style.transition = ''; }, SPRING_MS + 20);
+  function stillMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  function hint() {
+    var pane = reader();
+    var label = pane.querySelector(':scope > .gesture-hint');
+    if (!label) {
+      label = document.createElement('div');
+      label.className = 'gesture-hint';
+      label.setAttribute('aria-hidden', 'true');
+      pane.appendChild(label);
+    }
+    return label;
+  }
+
+  function showHint(side, text, ready, progress) {
+    var label = hint();
+    label.textContent = text;
+    label.dataset.side = side;
+    label.classList.toggle('ready', ready);
+    label.style.opacity = String(Math.min(1, progress));
+  }
+
+  function hideHint() {
+    var label = reader() && reader().querySelector(':scope > .gesture-hint');
+    if (label) label.remove();
+  }
+
+  function settle(view, transform, opacity, ms, then) {
+    view.style.transition = stillMotion() ? 'none'
+      : 'transform ' + ms + 'ms cubic-bezier(0.16, 1, 0.3, 1), opacity ' + ms + 'ms ease-out';
+    view.style.transform = transform;
+    view.style.opacity = opacity;
+    setTimeout(function () {
+      view.style.transition = '';
+      if (then) then();
+    }, stillMotion() ? 0 : ms);
+  }
+
+  // Wide content scrolls sideways on its own; a swipe starting there is left to it.
+  function scrollsSideways(target, pane) {
+    for (var node = target; node && node !== pane; node = node.parentElement) {
+      if (node.matches('pre, table') || node.scrollWidth > node.clientWidth + 1) return true;
+    }
+    return false;
   }
 
   document.addEventListener('touchstart', function (event) {
+    gesture = null;
     var pane = reader();
-    pull = null;
-    if (!phone() || !pane || !postView() || !pane.contains(event.target) || pane.scrollTop > 0) return;
-    pull = { y: event.touches[0].clientY, dy: 0, view: postView() };
-    pull.view.style.transition = '';
+    var view = postView();
+    var touch = event.touches[0];
+    if (!phone() || !pane || !view || !pane.contains(event.target) || event.touches.length > 1) return;
+    if (touch.clientX < EDGE || touch.clientX > window.innerWidth - EDGE) return;
+    gesture = {
+      x: touch.clientX, y: touch.clientY, t: Date.now(), dx: 0, dy: 0, axis: null, view: view,
+      atTop: pane.scrollTop <= 0, wide: scrollsSideways(event.target, pane)
+    };
+    view.style.transition = '';
   }, { passive: true });
 
   document.addEventListener('touchmove', function (event) {
-    if (!pull) return;
-    var dy = event.touches[0].clientY - pull.y;
-    pull.dy = Math.max(0, dy);
-    if (dy > 0) event.preventDefault();
-    pull.view.style.transform = pull.dy > 0 ? 'translateY(' + pull.dy + 'px)' : '';
+    if (!gesture) return;
+    var touch = event.touches[0];
+    var dx = touch.clientX - gesture.x;
+    var dy = touch.clientY - gesture.y;
+    if (!gesture.axis) {
+      if (Math.abs(dx) < LOCK_AFTER && Math.abs(dy) < LOCK_AFTER) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.2 && !gesture.wide) gesture.axis = 'x';
+      else if (dy > 0 && gesture.atTop) {
+        gesture.axis = 'y';
+        reader().classList.add('pulling');
+      }
+      else { gesture = null; return; }
+    }
+    event.preventDefault();
+    gesture.dx = dx;
+    gesture.dy = dy;
+    var width = window.innerWidth;
+    if (gesture.axis === 'x') {
+      var link = gesture.view.querySelector(dx < 0 ? '.post-next' : '.post-prev');
+      // With nowhere to go the post only gives a little, like a rubber band.
+      var shift = link ? dx : dx / 4;
+      var mark = width / 4;
+      gesture.view.style.transform = 'translateX(' + shift + 'px)';
+      gesture.view.style.opacity = String(1 - Math.min(0.5, Math.abs(shift) / width));
+      var text = link ? (dx < 0 ? 'Next post ›' : '‹ Previous post') : (dx < 0 ? 'Last post' : 'First post');
+      showHint(dx < 0 ? 'right' : 'left', text, !!link && Math.abs(dx) >= mark, Math.abs(dx) / mark);
+    } else {
+      var pull = Math.max(0, dy) * 0.6;
+      gesture.view.style.transform = 'translateY(' + pull + 'px)';
+      showHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
+    }
   }, { passive: false });
 
-  function endPull(event) {
-    if (!pull) return;
-    var done = pull;
-    pull = null;
-    if (event.type === 'touchend' && done.dy >= PULL_CLOSE_AT) {
-      done.view.style.transform = '';
-      window.closeReader();
-    } else {
-      springBack(done.view);
+  function endGesture(event) {
+    if (!gesture) return;
+    var done = gesture;
+    gesture = null;
+    if (!done.axis) return;
+    hideHint();
+    var width = window.innerWidth;
+    var speed = Math.abs(done.axis === 'x' ? done.dx : done.dy) / Math.max(1, Date.now() - done.t);
+    var released = event.type === 'touchend';
+    if (done.axis === 'x') {
+      var link = done.view.querySelector(done.dx < 0 ? '.post-next' : '.post-prev');
+      if (released && link && (Math.abs(done.dx) >= width / 4 || speed >= FLICK)) {
+        var side = done.dx < 0 ? -1 : 1;
+        arriving = side < 0 ? 'from-right' : 'from-left';
+        settle(done.view, 'translateX(' + side * width + 'px)', '0', OUT_MS, function () { link.click(); });
+        return;
+      }
+      settle(done.view, '', '', BACK_MS);
+      return;
     }
+    var pane = reader();
+    if (released && done.dy * 0.6 >= PULL_CLOSE_AT) {
+      settle(done.view, 'translateY(' + window.innerHeight + 'px)', '1', OUT_MS, function () {
+        window.closeReader();
+        pane.classList.remove('pulling');
+      });
+      return;
+    }
+    settle(done.view, '', '', BACK_MS, function () { pane.classList.remove('pulling'); });
   }
 
-  document.addEventListener('touchend', endPull, { passive: true });
-  document.addEventListener('touchcancel', endPull, { passive: true });
+  document.addEventListener('touchend', endGesture, { passive: true });
+  document.addEventListener('touchcancel', endGesture, { passive: true });
+
+  // The post a swipe asked for slides in from the side it came from.
+  document.addEventListener('htmx:afterSettle', function () {
+    if (!arriving) return;
+    var view = postView();
+    var from = arriving;
+    arriving = null;
+    if (!view || stillMotion()) return;
+    view.style.transition = 'none';
+    view.style.transform = 'translateX(' + (from === 'from-right' ? 30 : -30) + '%)';
+    view.style.opacity = '0';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { settle(view, '', '', IN_MS); });
+    });
+  });
 
   function scroller() {
     if (body.classList.contains('reading') && postView()) return reader();
@@ -1347,16 +1464,28 @@
   trackHeights();
   // ---- Phone chrome: the bar's menu, the obi's group picker, a post's actions at its foot -------------
 
-  function setMenu(open) {
+  var FOLD_MS = 160;
+
+  // Opening unfolds; closing folds back first, unless [instant] (a swap is replacing the bar anyway).
+  function setMenu(open, instant) {
     var button = document.querySelector('.bar-menu');
     var actions = document.getElementById('bar-actions');
     if (!button || !actions) return;
     button.setAttribute('aria-expanded', String(open));
-    actions.classList.toggle('open', open);
+    actions.classList.remove('folding');
+    if (open || instant || stillMotion() || !actions.classList.contains('open')) {
+      actions.classList.toggle('open', open);
+      return;
+    }
+    actions.classList.add('folding');
+    setTimeout(function () {
+      if (button.getAttribute('aria-expanded') === 'true') return;
+      actions.classList.remove('open', 'folding');
+    }, FOLD_MS);
   }
 
   // The group list drops from the obi's lower edge, wherever the bar has left it.
-  function setGroups(open) {
+  function setGroups(open, instant) {
     var pick = document.querySelector('.series-pick');
     var obi = document.getElementById('series');
     if (!pick || !obi || !document.getElementById('groups')) open = false;
@@ -1364,8 +1493,13 @@
     if (open) {
       document.documentElement.style.setProperty('--groups-top', Math.round(obi.getBoundingClientRect().bottom) + 'px');
       body.dataset.groups = 'open';
-    } else {
+    } else if (instant || stillMotion() || body.dataset.groups !== 'open') {
       delete body.dataset.groups;
+    } else {
+      body.dataset.groups = 'closing';
+      setTimeout(function () {
+        if (body.dataset.groups === 'closing') delete body.dataset.groups;
+      }, FOLD_MS);
     }
   }
 
@@ -1391,12 +1525,13 @@
     setGroups(false);
   });
 
-  // On a phone a post's star, Later, feed link and Open original sit at its foot, so the head keeps to
-  // Close, the number and Previous/Next. Wider, they go back where the markup has them.
+  // On a phone a post's feed link and Open original sit at its foot, so the head keeps to the number, the
+  // star, Later and Close. Wider, they go back where the markup has them.
   function placePostActions() {
     document.querySelectorAll('#reader .reader-view').forEach(function (view) {
       var head = view.querySelector('.reader-head');
       var toggles = view.querySelector('.reader-toggles');
+      var feed = view.querySelector('.feed-link');
       var original = view.querySelector('.reader-original');
       var foot = view.querySelector('.reader-foot');
       if (!head) return;
@@ -1406,25 +1541,54 @@
           foot.className = 'reader-foot';
           view.appendChild(foot);
         }
-        if (toggles && toggles.parentNode !== foot) foot.appendChild(toggles);
+        if (feed && feed.parentNode !== foot) foot.appendChild(feed);
         if (original && original.parentNode !== foot) foot.appendChild(original);
       } else if (foot) {
-        var cat = head.querySelector('.reader-cat');
-        if (toggles) head.insertBefore(toggles, cat ? cat.nextSibling : head.firstChild);
+        if (feed && toggles) toggles.insertBefore(feed, toggles.querySelector('.center-toggle'));
         if (original) head.appendChild(original);
         foot.remove();
       }
     });
   }
 
-  document.addEventListener('htmx:afterSettle', function () {
-    setMenu(false);
-    setGroups(false);
+
+  // On a phone the search form sits at the top of the list, under the obi, instead of in the bar. A swap
+  // of the bar (a group change) brings a fresh form that knows the new group: it replaces the one at the
+  // list, unless that one is being typed into. Wider, the form goes back to the bar, before its menu.
+  function placeSearch() {
+    var bar = document.getElementById('bar');
+    var sheet = document.getElementById('sheet');
+    var fresh = bar ? bar.querySelector('.search') : null;
+    var placed = sheet ? sheet.parentNode.querySelector(':scope > .search') : null;
+    if (phone() && sheet) {
+      // Only the timeline searches: Sources swaps in under the same obi and keeps no form there.
+      if (!onTimeline()) {
+        if (placed) placed.remove();
+        return;
+      }
+      if (fresh && placed && placed.contains(document.activeElement)) fresh.remove();
+      else if (fresh) {
+        if (placed) placed.remove();
+        sheet.parentNode.insertBefore(fresh, sheet);
+      }
+    } else if (placed && bar && !fresh) {
+      bar.insertBefore(placed, bar.querySelector('.bar-menu'));
+    }
+  }
+
+  function placeChrome() {
+    placeSearch();
     placePostActions();
+  }
+
+  document.addEventListener('htmx:afterSettle', function () {
+    setMenu(false, true);
+    setGroups(false, true);
+    placeChrome();
   });
-  window.matchMedia(PHONE).addEventListener('change', placePostActions);
+  window.matchMedia(PHONE).addEventListener('change', placeChrome);
 
   markPlaying();
   syncTop();
-  placePostActions();
+  placeChrome();
 })();
