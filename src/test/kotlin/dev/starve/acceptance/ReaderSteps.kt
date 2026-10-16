@@ -90,7 +90,7 @@ class ReaderSteps {
     @Then("the title of {string} requests its reader into the reader pane via htmx")
     fun titleRequestsReader(title: String) {
         val tag = titleTag(title)
-        assertTrue(tag.contains("hx-get=\"/items/${itemId(title)}/reader\""), tag)
+        assertTrue(Regex("hx-get=\"/items/${itemId(title)}/reader[?\"]").containsMatchIn(tag), tag)
         assertTrue(tag.contains("hx-target=\"#reader\""), tag)
     }
 

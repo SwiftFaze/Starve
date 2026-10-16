@@ -1,12 +1,21 @@
 package dev.starve.web
 
 import dev.starve.application.ArticleFetcher
+import dev.starve.application.GroupService
 import dev.starve.application.HtmlText
+import dev.starve.application.ListFilter
+import dev.starve.application.ListPosition
 import dev.starve.application.MemoryArticles
+import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
+import dev.starve.application.MemorySources
+import dev.starve.application.Neighbours
 import dev.starve.application.OWNER
 import dev.starve.application.PostRef
 import dev.starve.application.ReaderService
+import dev.starve.application.TimelineItems
+import dev.starve.application.TimelineService
+import dev.starve.domain.TimelineItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -20,21 +29,45 @@ import java.time.ZoneOffset
 class ReaderControllerTest {
     private val published = Instant.parse("2026-10-11T09:30:00Z")
 
-    private fun controller(vararg posts: PostRef) =
-        ReaderController(
-            ReaderService(
-                object : MemoryItems() {
-                    override fun findPost(
-                        owner: Long,
-                        id: Long,
-                    ) = posts.firstOrNull { it.id == id }
-                },
-                MemoryArticles(),
-                Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
-                ArticleFetcher { null },
-                HtmlText { it },
-            ),
+    private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
+
+    private fun controller(
+        vararg posts: PostRef,
+        canned: Neighbours = Neighbours(null, null),
+    ): ReaderController {
+        val items =
+            object : MemoryItems() {
+                override fun findPost(
+                    owner: Long,
+                    id: Long,
+                ) = posts.firstOrNull { it.id == id }
+
+                override fun neighbours(
+                    owner: Long,
+                    position: ListPosition,
+                    filter: ListFilter,
+                ) = canned
+            }
+        return ReaderController(
+            ReaderService(items, MemoryArticles(), clock, ArticleFetcher { null }, HtmlText { it }),
+            TimelineService(items, TimelineItems(), MemorySources(), clock),
+            GroupService(MemoryGroups(), MemorySources()),
         )
+    }
+
+    @Test
+    fun `the reader links Previous and Next into the list it was opened from`() {
+        val model = ConcurrentModel()
+        val post = PostRef(7, "https://blog.example/a", "Title", "Blog", published, "<p>Hi</p>")
+        val newer = TimelineItem(3, "Blog", "Newer", published, null, false, playable = true)
+        val older = TimelineItem(4, "Blog", "Older", published, null, false)
+
+        controller(post, canned = Neighbours(newer, older)).reader(OWNER, 7, model, TimelineQuery(show = "all"))
+
+        val view = model.getAttribute("post") as ReaderView
+        assertEquals(PostLink("/items/3/detail?show=all"), view.previous)
+        assertEquals(PostLink("/items/4/reader?show=all"), view.next)
+    }
 
     @Test
     fun `a post renders the reader fragment with its view`() {

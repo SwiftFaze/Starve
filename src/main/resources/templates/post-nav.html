@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- The Previous (newer) and Next (older) links of a post's head; each opens that neighbour's post into the reader pane. -->
+<th:block th:fragment="nav(previous,next)">
+<nav class="post-nav" th:if="${previous != null or next != null}" aria-label="Neighbouring posts">
+  <a class="post-prev" th:if="${previous != null}" th:href="${previous.href}" th:attr="hx-get=${previous.href}"
+     hx-target="#reader" hx-swap="innerHTML" title="Newer post">Previous</a>
+  <a class="post-next" th:if="${next != null}" th:href="${next.href}" th:attr="hx-get=${next.href}"
+     hx-target="#reader" hx-swap="innerHTML" title="Older post">Next</a>
+</nav>
+</th:block>
+</body>
+</html>

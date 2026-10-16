@@ -9,7 +9,6 @@ import dev.starve.application.TimelinePage
 import dev.starve.application.TimelineService
 import dev.starve.domain.Catalogue
 import dev.starve.domain.Cursor
-import dev.starve.domain.Group
 import dev.starve.domain.LaterCursor
 import dev.starve.domain.TimelineItem
 import org.springframework.http.HttpStatus
@@ -23,8 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ResponseStatusException
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
+import java.time.Clock
 import java.time.Instant
 
 /**
@@ -54,12 +52,16 @@ data class TimelineItemView(
     val faviconUrl: String? = null,
     val favourite: Boolean = false,
     val later: Boolean = false,
+    /** The query string of the list the row is in, which its reader link keeps (empty for the plain timeline). */
+    val listQuery: String = "",
 ) {
     val catalogueNumber: String get() = Catalogue.number(id)
 
     val star: StarView get() = StarView("star-$id", id, favourite)
 
     val laterToggle: LaterView get() = LaterView("later-$id", id, later)
+
+    val readerHref: String get() = withQuery("/items/$id/reader", listQuery)
 }
 
 /** One link of the group navigation, e.g. label "Music [12]". */
@@ -101,37 +103,8 @@ data class TimelineQuery(
     val favourites: String? = null,
     val later: String? = null,
     val q: String? = null,
+    val seen: String? = null,
 )
-
-/**
- * Which timeline is on screen: search results for [text], the Favourites view, the Later view, or the timeline with
- * read items and an optional group. Searching ignores the other settings for its results but keeps them, so
- * clearing the search returns to the view it started from.
- */
-private data class Scope(
-    val favourites: Boolean,
-    val later: Boolean,
-    val showAll: Boolean,
-    val groupId: Long?,
-    val text: String,
-) {
-    val searching get() = text.isNotBlank()
-
-    /** The `q=` URL parameter that keeps the search, or null when not searching. */
-    val searchParam get() = if (searching) "q=" + URLEncoder.encode(text, StandardCharsets.UTF_8) else null
-
-    /** The query parameter that selects this view, or null for the plain timeline. */
-    val filter: String?
-        get() =
-            when {
-                favourites -> FAVOURITES_FILTER
-                later -> LATER_FILTER
-                else -> null
-            }
-}
-
-private const val FAVOURITES_FILTER = "favourites=1"
-private const val LATER_FILTER = "later=1"
 
 @Controller
 class HomeController(
@@ -139,6 +112,7 @@ class HomeController(
     private val search: SearchService,
     private val laterService: LaterService,
     private val groups: GroupService,
+    private val clock: Clock,
 ) {
     @GetMapping("/feed")
     fun home(
@@ -147,7 +121,8 @@ class HomeController(
         @RequestHeader("HX-Request", required = false) htmx: String?,
         model: Model,
     ): String {
-        val scope = scopeOf(owner, query)
+        // A list rendered now is stamped now; a page of a list already on screen keeps that list's stamp.
+        val scope = scopeOf(groups, owner, query).let { it.copy(seen = it.seen ?: clock.millis()) }
         addPage(model, pageFor(owner, scope, query.after), scope)
         fragmentFor(htmx, query)?.let { return it }
         addChrome(model, groups.navigation(owner), scope)
@@ -198,35 +173,6 @@ class HomeController(
 
     private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
 
-    /** The group of [raw]; while [searching] an unknown one is dropped instead of answered with 404. */
-    private fun groupIdFor(
-        owner: Long,
-        raw: String,
-        searching: Boolean,
-    ): Long? = if (searching) raw.toLongOrNull()?.let { groups.find(owner, it) }?.id else resolveGroup(owner, raw).id
-
-    private fun resolveGroup(
-        owner: Long,
-        raw: String,
-    ): Group = raw.toLongOrNull()?.let { groups.find(owner, it) } ?: throw notFound()
-
-    /** Which view the query selects: Favourites wins over Later, and neither takes a group or read state. */
-    private fun scopeOf(
-        owner: Long,
-        query: TimelineQuery,
-    ): Scope {
-        val favourites = query.favourites == "1"
-        val later = !favourites && query.later == "1"
-        val plain = !favourites && !later
-        return Scope(
-            favourites = favourites,
-            later = later,
-            showAll = plain && query.show == "all",
-            groupId = if (plain) query.group?.let { groupIdFor(owner, it, !query.q.isNullOrBlank()) } else null,
-            text = query.q.orEmpty(),
-        )
-    }
-
     /** The navigation, series and toggles around the page; only a full page needs them. */
     private fun addChrome(
         model: Model,
@@ -256,7 +202,7 @@ private fun addPage(
     model.addAttribute("later", scope.later)
     model.addAttribute("searching", scope.searching)
     model.addAttribute("query", scope.text)
-    model.addAttribute("items", page.items.map { it.toView() })
+    model.addAttribute("items", page.items.map { it.toView(scope.listQuery) })
     model.addAttribute("emptyFavourites", scope.favourites && !scope.searching && page.items.isEmpty())
     model.addAttribute("emptyLater", scope.later && !scope.searching && page.items.isEmpty())
     model.addAttribute("hasSources", page.hasSources)
@@ -297,7 +243,8 @@ private fun moreHref(
 ): String? =
     page.next?.let {
         val show = if (scope.showAll) "all" else null
-        link(listOfNotNull(scope.searchParam) + parts(scope.groupId, show, it.encode(), scope.filter))
+        val rest = parts(scope.groupId, show, it.encode(), scope.filter)
+        link(listOfNotNull(scope.searchParam) + rest + listOfNotNull(scope.seenParam))
     }
 
 private fun href(
@@ -322,7 +269,7 @@ private fun parts(
 
 private fun link(query: List<String>): String = if (query.isEmpty()) "/feed" else "/feed?" + query.joinToString("&")
 
-private fun TimelineItem.toView() =
+private fun TimelineItem.toView(listQuery: String) =
     TimelineItemView(
         id,
         sourceTitle,
@@ -335,4 +282,5 @@ private fun TimelineItem.toView() =
         faviconUrl,
         favourite,
         later,
+        listQuery,
     )

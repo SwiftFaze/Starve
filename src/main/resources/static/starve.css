@@ -2272,6 +2272,12 @@ a.title:hover {
   align-self: center;
 }
 
+/* Open post and the post's Previous and Next are phone controls: tiled desktop has title bars instead. */
+.open-post,
+.post-nav {
+  display: none;
+}
+
 .ticker {
   display: inline-block;
 }
@@ -2580,7 +2586,11 @@ body[data-active="post"] .pane-frame[data-pane="post"] {
 }
 
 /* Tiled, a post closes from its title bar's ×; its own Close is only for phones, which have no title bars. */
-body[data-split] /* Beside the post's number: opening it has marked it read. */
+body[data-split] .reader-close {
+  display: none;
+}
+
+/* Beside the post's number: opening it has marked it read. */
 .read-tag {
   margin-left: 0.75rem;
   padding: 0.2rem 0.375rem;
@@ -2590,10 +2600,6 @@ body[data-split] /* Beside the post's number: opening it has marked it read. */
   text-transform: uppercase;
   color: var(--text-2);
   vertical-align: 0.1em;
-}
-
-.reader-close {
-  display: none;
 }
 
 /* Where a dragged title bar will land: half a panel to split it, all of it to swap, or a band along
@@ -3532,10 +3538,10 @@ body[data-split][data-list="strip"] .load-more {
   /* The deck: the waveform across the top, where a thumb reaches it, then art, title and Eject. */
   .player {
     --deck-control: 2.75rem;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
     grid-template-areas:
-      "transport transport transport transport"
-      "art text star stop";
+      "transport transport transport transport transport"
+      "art text star open stop";
     gap: 0.5rem 0.75rem;
     padding: 0.5rem 0.75rem 0.625rem;
     padding-bottom: calc(0.625rem + env(safe-area-inset-bottom));
@@ -3557,6 +3563,23 @@ body[data-split][data-list="strip"] .load-more {
 
   .now > .star {
     grid-area: star;
+  }
+
+  /* Open post: the deck's control beside the star, the size of the other square controls. */
+  .open-post {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    grid-area: open;
+    min-height: var(--deck-control);
+    padding: 0 0.625rem;
+    border: 1px solid var(--line-strong);
+    background: var(--ground);
+    color: var(--text);
+    font: 500 0.6875rem/1 var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .now-cat {
@@ -3611,17 +3634,19 @@ body[data-split][data-list="strip"] .load-more {
 
   /* Reading on a phone: the post takes the whole screen above the deck; the bar, the obi, the list
      and the video step away until Close. The list keeps its place underneath. */
+  /* Anchored to the top edge with an explicit height from the dynamic viewport, not by its bottom edge, so
+     the post starts at the screen's top whatever Safari's toolbars are doing. The background paints under
+     the whole panel, so a rubber-band pull at the top reveals ground, never the page behind. */
   #reader:has(.reader-view) {
     position: fixed;
-    inset: 0 0 var(--deck-h);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(100dvh - var(--deck-h));
     z-index: 35;
     overflow-y: auto;
     overscroll-behavior: contain;
     background: var(--ground);
-  }
-
-  body.reading {
-    overflow: hidden;
   }
 
   body.reading .ratio-16x9 {
@@ -3985,6 +4010,26 @@ body[data-reader-center] .reader-view .reader-head {
   .reader-toggles .toggle {
     width: 2.75rem;
     min-height: 2.75rem;
+  }
+
+  /* Previous and Next: a row of thumb-sized links between the head's top row and its title. */
+  .post-nav {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 0.5rem;
+  }
+
+  .post-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 0.875rem;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font: 500 0.75rem/1 var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
   }
 }
 

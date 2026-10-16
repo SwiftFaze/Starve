@@ -13,6 +13,8 @@
       <span class="now-source" th:text="${item.sourceTitle}">Source</span>
     </div>
     <th:block th:replace="~{star :: star}"></th:block>
+    <button type="button" class="open-post" hx-target="#reader" hx-swap="innerHTML" title="Open this item's post"
+            th:attr="hx-get=@{/items/{id}/detail(id=${item.id})}">Open post</button>
   </div>
 
   <div class="transport" th:unless="${kind == 'disabled'}">

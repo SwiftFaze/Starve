@@ -2,9 +2,14 @@ package dev.starve.web
 
 import dev.starve.application.DetailRef
 import dev.starve.application.DetailService
+import dev.starve.application.GroupService
+import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
+import dev.starve.application.MemorySources
 import dev.starve.application.OWNER
 import dev.starve.application.SoundCloudOembed
+import dev.starve.application.TimelineItems
+import dev.starve.application.TimelineService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -19,19 +24,21 @@ class DetailControllerTest {
     private val published = Instant.parse("2026-10-11T09:30:00Z")
     private val youtube = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-    private fun controller(vararg items: DetailRef) =
-        DetailController(
-            DetailService(
-                object : MemoryItems() {
-                    override fun findDetail(
-                        owner: Long,
-                        id: Long,
-                    ) = items.firstOrNull { it.id == id }
-                },
-                SoundCloudOembed { null },
-                Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
-            ),
+    private fun controller(vararg items: DetailRef): DetailController {
+        val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
+        val repository =
+            object : MemoryItems() {
+                override fun findDetail(
+                    owner: Long,
+                    id: Long,
+                ) = items.firstOrNull { it.id == id }
+            }
+        return DetailController(
+            DetailService(repository, SoundCloudOembed { null }, clock),
+            TimelineService(repository, TimelineItems(), MemorySources(), clock),
+            GroupService(MemoryGroups(), MemorySources()),
         )
+    }
 
     @Test
     fun `a playable item renders the detail fragment with its view`() {

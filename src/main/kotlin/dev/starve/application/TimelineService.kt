@@ -51,6 +51,13 @@ class TimelineService(
         return pageOf(owner, favourites.favourites(owner, after, TimelineRules.PAGE_SIZE + 1), renderedAt)
     }
 
+    /** The rows of the list [filter] selects just above and below item [id] (published at [publishedAt]). */
+    fun neighbours(
+        owner: Long,
+        position: ListPosition,
+        filter: ListFilter,
+    ): Neighbours = items.neighbours(owner, position, filter)
+
     private fun pageOf(
         owner: Long,
         rows: List<TimelineItem>,
