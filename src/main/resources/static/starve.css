@@ -2211,6 +2211,7 @@ a.title:hover {
 
 .player {
   position: fixed;
+  --deck-control: 2.5rem;
   left: 0;
   right: 0;
   bottom: 0;
@@ -2320,9 +2321,12 @@ a.title:hover {
   min-width: 0;
 }
 
-.pause {
-  width: 2.5rem;
-  height: 2.5rem;
+/* The deck's two square controls, the play/pause and the favourite star, share one size. */
+.pause,
+.now-line .toggle {
+  width: var(--deck-control);
+  height: var(--deck-control);
+  min-height: var(--deck-control);
   padding: 0;
   flex: none;
 }
@@ -3545,6 +3549,7 @@ body[data-split][data-list="strip"] .load-more {
 
   /* The deck: the waveform across the top, where a thumb reaches it, then art, title and Eject. */
   .player {
+    --deck-control: 2.75rem;
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "transport transport transport"
@@ -3572,12 +3577,6 @@ body[data-split][data-list="strip"] .load-more {
     font-size: 0.875rem;
   }
 
-  /* Phones: the star is a touch target like the rest of the deck. */
-  .now-line .toggle {
-    width: 2.75rem;
-    min-height: 2.75rem;
-  }
-
   .player > .stop {
     grid-area: stop;
     min-height: 2.75rem;
@@ -3586,11 +3585,6 @@ body[data-split][data-list="strip"] .load-more {
   .transport {
     grid-area: transport;
     gap: 0.5rem;
-  }
-
-  .pause {
-    width: 2.75rem;
-    height: 2.75rem;
   }
 
   .wave {

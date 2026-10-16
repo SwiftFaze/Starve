@@ -839,8 +839,8 @@
     var player = {
       origin: SOUNDCLOUD, frame: frame, playing: false, position: 0, duration: 0,
       play: function () {
-        call('play');
         heard = false;
+        call('play');
         clearTimeout(attempt);
         attempt = setTimeout(function () {
           if (state === player && !heard) frame.closest('.player').classList.add('native');
@@ -866,9 +866,9 @@
             if (data.value && data.value.waveform_url) realWaveform(data.value.waveform_url);
             if (data.value && data.value.duration) player.duration = data.value.duration / 1000;
             break;
+          // Progress only moves the playhead: a tick already in flight after a pause must not flip the state back.
           case 'playProgress':
             heard = true;
-            player.playing = true;
             if (data.value && !seeking) player.position = (data.value.currentPosition || 0) / 1000;
             break;
           case 'play': heard = true; player.playing = true; break;
