@@ -35,7 +35,9 @@ enum class StarPlace(
     DETAIL("detail", "detail-star"),
     ;
 
-    /** This place's star for [itemId]; its id names the item, so a refresh for an item not on screen matches nothing. */
+    /**
+     * This place's star for [itemId]; its id names the item, so a refresh for an item not on screen matches nothing.
+     */
     fun view(
         itemId: Long,
         favourite: Boolean,

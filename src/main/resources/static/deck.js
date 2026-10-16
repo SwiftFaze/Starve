@@ -816,13 +816,8 @@
           resume(player);
         }
         // Each state change arrives as a bare number (1 playing, 2 paused, 0 ended, 3 buffering); the periodic
-        // infoDelivery carries the same state as info.playerState. Only the playing states count as playing.
-        if (data.event === 'onStateChange' && typeof info === 'number') {
-          player.playing = isPlaying(info);
-          enable();
-          render();
-          return;
-        }
+        // infoDelivery carries the same state as info.playerState. Read both alike.
+        if (data.event === 'onStateChange' && typeof info === 'number') info = { playerState: info };
         if (!info || typeof info !== 'object') return;
         if (typeof info.currentTime === 'number' && !seeking) player.position = info.currentTime;
         if (typeof info.duration === 'number') player.duration = info.duration;
