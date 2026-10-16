@@ -238,8 +238,7 @@ class FavouriteSteps {
 
     private fun firstStar(): String = requireNotNull(STAR.find(body())) { "no star in ${body()}" }.value
 
-    private fun readerStar(): String =
-        requireNotNull(Regex("<form[^>]*id=\"reader-star\"[^>]*>").find(body())) { "no reader star in ${body()}" }.value
+    private fun readerStar(): String = requireNotNull(READER_STAR.find(body())) { "no reader star in ${body()}" }.value
 
     private fun entryStar(title: String): String =
         requireNotNull(STAR.find(World.entry(title))) { "no star in ${World.entry(title)}" }.value
@@ -294,6 +293,7 @@ class FavouriteSteps {
     private companion object {
         val HTMX = mapOf("HX-Request" to "true")
         val STAR = Regex("<form[^>]*class=\"star\"[^>]*>")
+        val READER_STAR = Regex("<form[^>]*id=\"reader-star-\\d+\"[^>]*>")
 
         /** Unknown-item outline verbs mapped to the endpoint they post to. */
         val UNKNOWN_TOGGLES =

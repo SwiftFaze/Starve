@@ -12,6 +12,7 @@
       <span class="now-title" th:text="${item.title}">Title</span>
       <span class="now-source" th:text="${item.sourceTitle}">Source</span>
     </div>
+    <th:block th:replace="~{star :: star}"></th:block>
   </div>
 
   <div class="transport" th:unless="${kind == 'disabled'}">

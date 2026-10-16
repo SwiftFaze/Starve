@@ -122,7 +122,8 @@ sources' items with the same order, paging and read state; **Mark all read** and
 
 ## Favourites
 
-Each timeline row and the reader pane has a star. Starring an item keeps it: the
+Each timeline row, the reader pane, the player deck and the detail view of a YouTube or
+SoundCloud item has a star. A star toggled in any of them updates the item's others at once. Starring an item keeps it: the
 retention purge never deletes a favourite, and starring does not change whether
 the item is read. **Favourites** in the navigation (`/feed?favourites=1`) lists the
 starred items of every source, read or not, newest first, with the same paging.

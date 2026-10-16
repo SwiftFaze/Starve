@@ -1,6 +1,8 @@
 package dev.starve.web
 
 import dev.starve.application.EmbedChecker
+import dev.starve.application.ItemRef
+import dev.starve.application.MemoryItems
 import dev.starve.application.OWNER
 import dev.starve.application.PlayerService
 import dev.starve.application.TimelineItems
@@ -96,5 +98,47 @@ class PlayerControllerTest {
             val e = assertThrows(ResponseStatusException::class.java) { c.player(OWNER, it, ConcurrentModel()) }
             assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
         }
+    }
+
+    @Test
+    fun `the deck carries the star of the playing item, empty when it is not a favourite`() {
+        val model = ConcurrentModel()
+
+        controller(mapOf(1L to "https://youtu.be/dQw4w9WgXcQ")).player(OWNER, 1, model)
+
+        assertEquals(StarView("deck-star-1", 1, false, from = "deck"), model.getAttribute("star"))
+    }
+
+    @Test
+    fun `the deck carries a filled star for a favourite`() {
+        val favourite =
+            object : MemoryItems() {
+                override fun find(
+                    owner: Long,
+                    id: Long,
+                ) = ItemRef(id, "https://soundcloud.com/a/b", "Item $id", "Source", null, favourite = true)
+            }
+        val model = ConcurrentModel()
+        PlayerController(
+            PlayerService(
+                favourite,
+                object : EmbedChecker {
+                    override fun allowsEmbedding(video: Playable.YouTube) = true
+                },
+                Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
+            ),
+        ).player(OWNER, 3, model)
+
+        assertEquals(StarView("deck-star-3", 3, true, from = "deck"), model.getAttribute("star"))
+    }
+
+    @Test
+    fun `a video whose embedding is disabled still carries its deck star`() {
+        val model = ConcurrentModel()
+
+        controller(mapOf(1L to "https://youtu.be/dQw4w9WgXcQ"), allowed = false).player(OWNER, 1, model)
+
+        assertEquals("disabled", model.getAttribute("kind"))
+        assertEquals(StarView("deck-star-1", 1, false, from = "deck"), model.getAttribute("star"))
     }
 }
