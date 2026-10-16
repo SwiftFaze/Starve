@@ -836,10 +836,16 @@
     // If no 'play' or 'playProgress' answers a play attempt in time, SoundCloud's own player takes over.
     var heard = false;
     var attempt = null;
+    // iOS answers the first play of a track with 'play' then at once 'pause', before any progress; a second play
+    // then works. So a pause that lands that soon after the deck asked to play, with no progress yet, plays again.
+    var wantedAt = 0;
+    var retried = false;
     var player = {
       origin: SOUNDCLOUD, frame: frame, playing: false, position: 0, duration: 0,
       play: function () {
         heard = false;
+        wantedAt = Date.now();
+        retried = false;
         call('play');
         clearTimeout(attempt);
         attempt = setTimeout(function () {
@@ -869,10 +875,19 @@
           // Progress only moves the playhead: a tick already in flight after a pause must not flip the state back.
           case 'playProgress':
             heard = true;
+            wantedAt = 0;
             if (data.value && !seeking) player.position = (data.value.currentPosition || 0) / 1000;
             break;
           case 'play': heard = true; player.playing = true; break;
-          case 'pause': player.playing = false; break;
+          case 'pause':
+            if (wantedAt && !retried && Date.now() - wantedAt < 2000) {
+              retried = true;
+              call('play');
+              break;
+            }
+            wantedAt = 0;
+            player.playing = false;
+            break;
           case 'finish': player.playing = false; player.position = player.duration; break;
         }
         render();
