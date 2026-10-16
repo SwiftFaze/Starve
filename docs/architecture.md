@@ -69,7 +69,7 @@ favourite. `FavouriteService` (wired by `FavouriteConfig`) stars and unstars thr
 `FavouriteRepository.favourites`, which ignores read state, show and group. The retention
 exemption lives in the SQL of `deleteFirstSeenBefore` (`favourited_at IS NULL`), and
 removing a source deletes its favourites through the items' `ON DELETE CASCADE`.
-`FavouriteController` answers htmx toggles with the re-rendered `StarView`.
+`FavouriteController` answers htmx toggles with every star of the item: the clicked one, then the others out of band. `StarPlace` (row, deck, reader, detail) names the places a star sits; each has its own element id (`star-<id>`, `deck-star-<id>`, `reader-star-<id>`, `detail-star-<id>`) and a `from` value that the star's toggle posts, so a refresh for an item that is not on screen matches nothing. `PlayerController` and `DetailController` add their place's star to the model.
 
 Later: `items.later_at` (V12, nullable; the timestamp is the mark and the queue order)
 flags an item saved for later, independent of `favourited_at` and read state.

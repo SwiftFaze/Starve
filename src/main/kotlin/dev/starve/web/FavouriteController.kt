@@ -11,8 +11,9 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.ModelAndView
 
 /**
- * The favourite star toggles. Both endpoints are idempotent. An htmx request gets the re-rendered star; a plain
- * one is redirected to the timeline. An id that is not a number is treated like an unknown one.
+ * The favourite star toggles. Both endpoints are idempotent. An htmx request gets every star of the item back: the
+ * one clicked, then the others out of band. A plain one is redirected to the timeline. An id that is not a number is
+ * treated like an unknown one.
  */
 @Controller
 class FavouriteController(
@@ -34,7 +35,7 @@ class FavouriteController(
         @RequestHeader("HX-Request", required = false) htmx: String?,
     ): ModelAndView = toggle(owner, id, false, Origin(from, htmx))
 
-    /** Where a toggle came from: the pane it was clicked in, and whether htmx sent it. */
+    /** Where a toggle came from: the place it was clicked in, and whether htmx sent it. */
     private data class Origin(
         val from: String?,
         val htmx: String?,
@@ -49,27 +50,17 @@ class FavouriteController(
         val id = raw.toLongOrNull() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         val found = if (favourite) favourites.favourite(owner, id) else favourites.unfavourite(owner, id)
         if (!found) throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        return when {
-            origin.htmx == null -> ModelAndView("redirect:/feed")
-            origin.from == FROM_READER -> readerAnswer(id, favourite)
-            else -> ModelAndView("star :: star", mapOf("star" to StarView("star-$id", id, favourite)))
-        }
+        if (origin.htmx == null) return ModelAndView("redirect:/feed")
+        return answer(id, favourite, StarPlace.from(origin.from))
     }
 
-    /** The reader's star, plus the timeline row's star refreshed out of band. */
-    private fun readerAnswer(
+    /** The clicked place's star first, then every other place's star out of band. */
+    private fun answer(
         id: Long,
         favourite: Boolean,
-    ): ModelAndView =
-        ModelAndView(
-            "star :: pair",
-            mapOf(
-                "star" to StarView("reader-star", id, favourite, fromReader = true),
-                "rowStar" to StarView("star-$id", id, favourite, oob = true),
-            ),
-        )
-
-    private companion object {
-        const val FROM_READER = "reader"
+        clicked: StarPlace,
+    ): ModelAndView {
+        val others = StarPlace.entries.filter { it != clicked }.map { it.view(id, favourite, oob = true) }
+        return ModelAndView("star :: set", mapOf("stars" to listOf(clicked.view(id, favourite)) + others))
     }
 }

@@ -41,7 +41,7 @@ class ReaderController(
     ): String {
         val post = reader.open(owner, id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         model.addAttribute("post", post.toView())
-        model.addAttribute("star", StarView("reader-star", post.id, post.favourite, fromReader = true))
+        model.addAttribute("star", StarPlace.READER.view(post.id, post.favourite))
         model.addAttribute("laterToggle", LaterView("reader-later", post.id, post.later, from = "reader"))
         return "reader :: content"
     }

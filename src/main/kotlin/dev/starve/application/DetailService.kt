@@ -34,6 +34,7 @@ class DetailService(
             description = oembed?.description ?: item.body,
             later = item.later,
             sourceUrl = item.sourceUrl,
+            favourite = item.favourite,
         )
     }
 

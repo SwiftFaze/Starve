@@ -77,6 +77,14 @@ class DetailServiceTest {
     ) = ItemDetail(id, link, "Title $id", "Source", published, "Feed Artist", feedThumbnail, "<p>Feed</p>")
 
     @Test
+    fun `the detail reports whether the item is a favourite`() {
+        val (service, _, _) = service(item(1, youtube).copy(favourite = true), item(2, youtube))
+
+        assertTrue(service.open(OWNER, 1)!!.favourite)
+        assertFalse(service.open(OWNER, 2)!!.favourite)
+    }
+
+    @Test
     fun `the detail reports whether the item is saved for later`() {
         val (service, _, _) = service(item(1, youtube).copy(later = true), item(2, youtube))
 

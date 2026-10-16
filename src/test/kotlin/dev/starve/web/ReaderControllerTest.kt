@@ -67,7 +67,7 @@ class ReaderControllerTest {
 
         controller(post).reader(OWNER, 7, model)
 
-        assertEquals(StarView("reader-star", 7, true, fromReader = true), model.getAttribute("star"))
+        assertEquals(StarView("reader-star-7", 7, true, from = "reader"), model.getAttribute("star"))
     }
 
     @Test
