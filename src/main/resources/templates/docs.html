@@ -11,11 +11,12 @@
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
   <script src="/docs.js" defer></script>
+  <script src="/htmx.min.js"></script>
 </head>
 <body class="docs-page">
   <header th:replace="~{public-bar :: public-bar('docs')}"></header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Docs">
       <div class="series-block">
         <h1 class="series roster-name">Docs</h1>
@@ -145,7 +146,7 @@ docker compose up -d --build</code></pre>
             <p>The database is upgraded in place when Starve starts. From source, pull and run it again.</p>
           </section>
 
-          <p class="docs-end"><a class="read-toggle filled" href="/login">Sign in</a></p>
+          <p class="docs-end"><a class="read-toggle filled" href="/login" hx-get="/login" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sign in</a></p>
         </article>
       </div>
     </main>

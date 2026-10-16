@@ -1,5 +1,6 @@
 // The theme switch and the obi shutter. The chevron block on the obi flips between dark and
-// light, remembered in this browser; the same red shutter covers theme changes and page switches.
+// light, remembered in this browser; the same red shutter covers theme changes and in-app page switches
+// (links marked data-switch). Form submissions are plain page loads and never use the shutter.
 // Loaded in <head> without defer so the saved theme is set before the first paint; with nothing
 // saved, the page follows the OS.
 (function () {
@@ -10,15 +11,6 @@
 
   // Scripts run: controls that only exist for pages without them (a Set group button) can step aside.
   root.classList.add('js');
-
-  // Arriving from a full-page switch (Docs, Settings, Sign out...): the page starts under the shutter,
-  // hidden until the panel is drawn over it, then the panel sweeps out.
-  var arriving = null;
-  try {
-    arriving = JSON.parse(sessionStorage.getItem('starve.shutter') || 'null');
-    sessionStorage.removeItem('starve.shutter');
-  } catch (e) { arriving = null; }
-  if (arriving) root.dataset.shutter = 'arriving';
 
   try {
     var saved = localStorage.getItem(KEY);
@@ -107,8 +99,7 @@
     part(frame, 'shutter-chevrons');
     part(frame, 'shutter-scan');
     panel.appendChild(frame);
-    // Before the body exists (a page arriving under the shutter), the panel hangs off the root element.
-    (document.body || document.documentElement).appendChild(panel);
+    document.body.appendChild(panel);
     return panel;
   }
 
@@ -136,14 +127,16 @@
     }).then(function () { busy = false; }, function () { busy = false; });
   });
 
-  // Pages: the Timeline and Sources tabs are htmx requests that swap the page around the dock,
-  // so the player is never replaced and whatever plays keeps playing. The panel sweeps in first,
-  // then the request goes out, then the panel sweeps out once the new page has settled. Without
-  // JavaScript, with reduced motion, or after a failed request the tab is an ordinary link.
+  // Pages: every link marked data-switch is an htmx request. The Timeline and Sources tabs swap the
+  // sheet around the dock, so whatever plays keeps playing. Every other link swaps the shell (#shell:
+  // sleeve, sheet, dock and all) because its destination is a different shell; the dock goes with it
+  // and playback stops, as a page load always has. The panel sweeps in first, then the request goes
+  // out, then the panel sweeps out once the new page has settled. Without JavaScript, with reduced
+  // motion, or after a failed request the link is an ordinary link.
   var pending = null;
 
   // The page you are already on: glide back to the top instead of reloading, or, already at
-  // the top, blink the tab's marker to say "you are here".
+  // the top, blink the link's marker to say "you are here".
   function here(link) {
     var sheet = document.body.dataset.split === 'on' ? document.getElementById('sheet') : null;
     var scroller = sheet || document.scrollingElement || document.documentElement;
@@ -159,7 +152,7 @@
 
   // Capture phase, so htmx never sees a click that is not a plain request for another page.
   document.addEventListener('click', function (event) {
-    var link = event.target.closest('a.tab');
+    var link = event.target.closest('[data-switch]');
     if (!link) return;
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
       event.stopPropagation();
@@ -181,9 +174,54 @@
     window.location.href = failed.href;
   }
 
+  // A swap of the shell. The response is the complete page the client selects from: its body class and
+  // data attributes (the deck's state included, which a non-deck page must not keep), its title (htmx sets
+  // that) and its description are taken over here, before the swap. A response without the shell (a
+  // fragment, or a session that has ended, which is an HX-Redirect) is not swapped: the link is followed
+  // as a plain load instead, so the shutter never sticks.
+  document.addEventListener('htmx:beforeSwap', function (event) {
+    var target = event.detail.target;
+    if (!target || target.id !== 'shell') return;
+    var page = new DOMParser().parseFromString(event.detail.serverResponse || '', 'text/html');
+    if (!page.getElementById('shell')) {
+      event.detail.shouldSwap = false;
+      if (pending) fallBack();
+      else if (event.detail.elt === restorer) window.location.reload();
+      else window.location.href = event.detail.requestConfig.path;
+      return;
+    }
+    // The dock sits outside the shell. A page with a dock to a page with one keeps the live dock, and so keeps
+    // what is playing (its playing and video state carries over); a page without one removes it, which stops
+    // playback; a page that brings one adds it, empty, after the shell.
+    var body = document.body;
+    var dock = document.getElementById('dock');
+    var nextDock = page.getElementById('dock');
+    var carried = dock && nextDock ? ['playing', 'video'].map(function (name) { return [name, body.dataset[name]]; }) : [];
+    Array.prototype.slice.call(body.attributes).forEach(function (attr) {
+      if (attr.name === 'class' || attr.name.indexOf('data-') === 0) body.removeAttribute(attr.name);
+    });
+    Array.prototype.slice.call(page.body.attributes).forEach(function (attr) {
+      if (attr.name === 'class' || attr.name.indexOf('data-') === 0) body.setAttribute(attr.name, attr.value);
+    });
+    carried.forEach(function (pair) { if (pair[1] !== undefined) body.dataset[pair[0]] = pair[1]; });
+    if (dock && !nextDock) dock.remove();
+    else if (!dock && nextDock) document.getElementById('shell').insertAdjacentElement('afterend', document.importNode(nextDock, true));
+    var description = page.querySelector('meta[name="description"]');
+    var mine = document.querySelector('meta[name="description"]');
+    if (description && !mine) {
+      mine = document.createElement('meta');
+      mine.name = 'description';
+      document.head.appendChild(mine);
+    }
+    if (mine) {
+      if (description) mine.content = description.content;
+      else mine.remove();
+    }
+  });
+
   document.addEventListener('htmx:confirm', function (event) {
     var link = event.detail.elt;
-    if (!link.matches || !link.matches('a.tab') || still()) return;
+    if (!link.matches || !link.matches('[data-switch]') || still()) return;
     event.preventDefault();
     busy = true;
     var panel = shutter(link.textContent.trim(), '-130%', 'Page', '\u2192 ' + link.getAttribute('href'));
@@ -223,11 +261,15 @@
     if (!restorer) {
       restorer = document.createElement('span');
       restorer.hidden = true;
-      restorer.setAttribute('hx-select-oob', '#bar,#series,#panel');
       document.body.appendChild(restorer);
       window.htmx.process(restorer);
     }
-    window.htmx.ajax('GET', now, { source: restorer, target: '#sheet', select: '#sheet', swap: 'outerHTML' });
+    // Timeline and Sources (the page being left is one of them: it has the series sleeve, popstate has moved only the
+    // URL) share the sheet and the dock around it, so only they swap the sheet; any other page swaps the shell.
+    var sheetOnly = !!document.getElementById('series') && !!document.getElementById('dock') && /^\/(feed|sources)(\?|$)/.test(now);
+    var region = sheetOnly ? '#sheet' : '#shell';
+    restorer.setAttribute('hx-select-oob', sheetOnly ? '#bar,#series,#panel' : '#bar');
+    window.htmx.ajax('GET', now, { source: restorer, target: region, select: region, swap: 'outerHTML' });
   }, true);
 
   ['htmx:responseError', 'htmx:sendError', 'htmx:swapError'].forEach(function (name) {
@@ -243,60 +285,6 @@
     document.querySelectorAll('.shutter').forEach(function (panel) { panel.remove(); });
     pending = null;
     busy = false;
-  });
-
-  // ---- Full-page switches: the bar's plain links (Docs, Settings, Account, Sign in, the wordmark) and
-  // Sign out run behind the same shutter. It sweeps in here; the next page opens covered and sweeps it out.
-
-  // The links that switch to another page of the app: the bar's, the landing's, the access pages' and docs'.
-  var SWITCH_LINKS = '#bar a[href], .cover a[href], .access a[href], .docs-end a[href]';
-
-  function leave(label, href, go) {
-    if (busy) return;
-    busy = true;
-    var panel = shutter(label, '-130%', 'Page', '→ ' + href);
-    sweepIn(panel).then(function () {
-      try { sessionStorage.setItem('starve.shutter', JSON.stringify({ label: label, href: href })); } catch (e) { /* storage blocked */ }
-      go();
-    }, go);
-  }
-
-  document.addEventListener('click', function (event) {
-    if (event.defaultPrevented || still()) return;
-    var link = event.target.closest(SWITCH_LINKS);
-    if (!link || link.hasAttribute('hx-get') || link.target === '_blank') return;
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    if (link.origin !== window.location.origin) return;
-    event.preventDefault();
-    leave(link.textContent.trim() || 'Starve', link.getAttribute('href'), function () { window.location.href = link.href; });
-  });
-
-  // Sign out, and the sign-in, sign-up and setup forms, which all land on another page.
-  document.addEventListener('submit', function (event) {
-    var form = event.target.closest('#bar form.signout, .access-form');
-    if (!form || event.defaultPrevented || still() || !form.reportValidity()) return;
-    event.preventDefault();
-    var button = form.querySelector('button[type="submit"]');
-    var label = button ? button.textContent.trim() : 'Starve';
-    leave(label, form.getAttribute('action') || '/', function () { HTMLFormElement.prototype.submit.call(form); });
-  });
-
-  // The arriving page's panel is drawn now, from its first frame, so the switch reads as one sheet. The
-  // page is shown, and the panel leaves, only once its fonts are in: otherwise the text would visibly jump
-  // as the web fonts swap in under a page that is already uncovered.
-  var arrivingPanel = arriving ? shutter(arriving.label, '0%', 'Page', '→ ' + arriving.href) : null;
-
-  document.addEventListener('DOMContentLoaded', function () {
-    if (!arrivingPanel) return;
-    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-    var timeout = new Promise(function (resolve) { setTimeout(resolve, 1500); });
-    Promise.race([fonts, timeout]).then(function () {
-      var panel = arrivingPanel;
-      delete root.dataset.shutter;
-      if (still()) { panel.remove(); return; }
-      busy = true;
-      sweepOut(panel, 150).then(function () { busy = false; }, function () { busy = false; });
-    });
   });
 
   // The obi on the timeline is swapped by htmx, so its new switch is labelled again.

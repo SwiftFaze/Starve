@@ -1,5 +1,6 @@
 Feature: Sources keeps the player deck playing
-  The timeline and Sources are two views of one shell. Moving between them
+  The timeline, Sources, Account and Settings are views of one shell (Account
+  and Settings joined in shutter-transition-flash.feature, #81). Moving between them
   through the top-bar page tabs, in either direction, swaps the page content
   via htmx and pushes the page's URL, so the player dock (and the deck in it)
   is never replaced and whatever is playing keeps playing. Adding, removing,
@@ -46,16 +47,18 @@ Feature: Sources keeps the player deck playing
     And every page tab pushes its URL to the browser history
     And every page tab still works without JavaScript
 
-  Scenario Outline: Both pages carry the dock outside everything a tab swaps
+  Scenario Outline: Every page of the shell carries the dock outside everything a tab swaps
     When I request "<page>"
     Then the response status is 200
     And the page has a player dock
     And no page tab or form on the page swaps a region containing the dock
 
     Examples:
-      | page     |
-      | /feed        |
-      | /sources |
+      | page      |
+      | /feed     |
+      | /sources  |
+      | /account  |
+      | /settings |
 
   Scenario: Loading Sources directly renders a full page
     When I request "/sources"
@@ -75,9 +78,11 @@ Feature: Sources keeps the player deck playing
     And the page has a player dock
 
     Examples:
-      | page     | heading       |
-      | /feed        | New releases  |
-      | /sources | Subscriptions |
+      | page      | heading         |
+      | /feed     | New releases    |
+      | /sources  | Subscriptions   |
+      | /account  | Change password |
+      | /settings | Settings        |
 
   Scenario: Returning to the timeline from Sources shows the timeline in full
     Given the group "Music" exists

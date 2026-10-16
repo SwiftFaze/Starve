@@ -9,11 +9,13 @@
   <link rel="stylesheet" href="/starve.css">
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/htmx.min.js"></script>
+  <script src="/docs.js" defer></script>
 </head>
 <body class="access-page">
   <header th:replace="~{public-bar :: public-bar('setup')}"></header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Set up Starve">
       <div class="series-block">
         <h1 class="series roster-name">Set up</h1>
@@ -51,7 +53,7 @@
         <div><dt>First run</dt><dd>This creates the first account on this instance, with admin rights.</dd></div>
         <div><dt>Setup code</dt><dd>A new code is printed at every start, and stops working once an account exists.</dd></div>
         <div><dt>Afterwards</dt><dd>Admins can open signups for others from Settings.</dd></div>
-        <div><dt>Help</dt><dd>The <a href="/docs">install and setup guide</a> walks through every step.</dd></div>
+        <div><dt>Help</dt><dd>The <a href="/docs" hx-get="/docs" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">install and setup guide</a> walks through every step.</dd></div>
       </dl>
     </main>
   </div>

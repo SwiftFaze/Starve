@@ -34,8 +34,15 @@ class AccountSteps {
 
     // ---- Arrangement ------------------------------------------------------------------------
 
+    /**
+     * A running application over an empty database. A Background that already started the app gets a fresh
+     * database first.
+     */
     @Given("the application is running with no users yet")
-    fun runningWithNoUsers() = app.start()
+    fun runningWithNoUsers() {
+        if (app.isRunning()) app.freshDatabase()
+        app.start()
+    }
 
     @Given("the application is running with the user {string} with password {string}")
     fun runningWithUser(
