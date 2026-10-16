@@ -11,10 +11,9 @@
   </form>
 </th:block>
 
-<!-- The reader's star ("star") and the timeline row's star ("rowStar"), answered together to an htmx toggle. -->
-<th:block th:fragment="pair">
-  <th:block th:replace="~{::star}"></th:block>
-  <th:block th:with="star=${rowStar}"><th:block th:replace="~{::star}"></th:block></th:block>
+<!-- Every star of one toggle, from the model attribute "stars": the clicked one first, the others out of band. -->
+<th:block th:fragment="set">
+  <th:block th:each="star : ${stars}"><th:block th:replace="~{::star}"></th:block></th:block>
 </th:block>
 </body>
 </html>

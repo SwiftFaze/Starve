@@ -2266,6 +2266,23 @@ a.title:hover {
   text-overflow: ellipsis;
 }
 
+/* The title with the favourite star beside it: the title takes the room and keeps its ellipsis or ticker. */
+.now-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.now-line .now-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.now-line .star {
+  flex: none;
+}
+
 .ticker {
   display: inline-block;
 }
@@ -3553,6 +3570,12 @@ body[data-split][data-list="strip"] .load-more {
 
   .now-cat {
     font-size: 0.875rem;
+  }
+
+  /* Phones: the star is a touch target like the rest of the deck. */
+  .now-line .toggle {
+    width: 2.75rem;
+    min-height: 2.75rem;
   }
 
   .player > .stop {

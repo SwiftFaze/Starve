@@ -779,6 +779,11 @@
     if (frame && frame.contentWindow) frame.contentWindow.postMessage(JSON.stringify(message), origin);
   }
 
+  // YouTube's player states that mean the video is playing: playing (1) and buffering on the way to it (3).
+  function isPlaying(playerState) {
+    return playerState === 1 || playerState === 3;
+  }
+
   function youtube(frame) {
     var command = function (func, args) { post(frame, YOUTUBE, { event: 'command', func: func, args: args || [] }); };
     var player = {
@@ -796,10 +801,18 @@
           player.volume(savedVolume());
           resume(player);
         }
+        // Each state change arrives as a bare number (1 playing, 2 paused, 0 ended, 3 buffering); the periodic
+        // infoDelivery carries the same state as info.playerState. Only the playing states count as playing.
+        if (data.event === 'onStateChange' && typeof info === 'number') {
+          player.playing = isPlaying(info);
+          enable();
+          render();
+          return;
+        }
         if (!info || typeof info !== 'object') return;
         if (typeof info.currentTime === 'number' && !seeking) player.position = info.currentTime;
         if (typeof info.duration === 'number') player.duration = info.duration;
-        if (typeof info.playerState === 'number') player.playing = info.playerState === 1 || info.playerState === 3;
+        if (typeof info.playerState === 'number') player.playing = isPlaying(info.playerState);
         enable();
         render();
       }
@@ -819,9 +832,20 @@
       if (value !== undefined) message.value = value;
       post(frame, SOUNDCLOUD, message);
     };
+    // A play message is not a user gesture inside the widget, so iOS Safari may refuse it without a word.
+    // If no 'play' or 'playProgress' answers a play attempt in time, SoundCloud's own player takes over.
+    var heard = false;
+    var attempt = null;
     var player = {
       origin: SOUNDCLOUD, frame: frame, playing: false, position: 0, duration: 0,
-      play: function () { call('play'); },
+      play: function () {
+        call('play');
+        heard = false;
+        clearTimeout(attempt);
+        attempt = setTimeout(function () {
+          if (state === player && !heard) frame.closest('.player').classList.add('native');
+        }, 5000);
+      },
       pause: function () { call('pause'); },
       seek: function (seconds) { call('seekTo', seconds * 1000); },
       volume: function (level) { call('setVolume', level); },
@@ -843,10 +867,11 @@
             if (data.value && data.value.duration) player.duration = data.value.duration / 1000;
             break;
           case 'playProgress':
+            heard = true;
             player.playing = true;
             if (data.value && !seeking) player.position = (data.value.currentPosition || 0) / 1000;
             break;
-          case 'play': player.playing = true; break;
+          case 'play': heard = true; player.playing = true; break;
           case 'pause': player.playing = false; break;
           case 'finish': player.playing = false; player.position = player.duration; break;
         }

@@ -42,12 +42,14 @@ class PlayerController(
                 model.addAttribute("kind", "disabled")
                 model.addAttribute("watchUrl", result.watchUrl)
                 model.addAttribute("item", result.item.toView())
+                model.addAttribute("star", StarPlace.DECK.view(result.item.id, result.item.favourite))
             }
 
             is PlayerResult.Embed -> {
                 model.addAttribute("kind", if (result.playable is Playable.YouTube) "youtube" else "soundcloud")
                 model.addAttribute("embedUrl", result.playable.embedUrl)
                 model.addAttribute("item", result.item.toView())
+                model.addAttribute("star", StarPlace.DECK.view(result.item.id, result.item.favourite))
             }
         }
         return "player :: content"
