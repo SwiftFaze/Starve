@@ -4320,25 +4320,26 @@ body.dealing #series .series-meta {
     background: var(--red);
   }
 
-  .js .search:focus-within {
-    position: absolute;
-    inset: 0 var(--gutter);
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    background: var(--ground);
-  }
-
-  .js .search:focus-within .search-open {
-    position: absolute;
-    left: 0;
-    pointer-events: none;
+  /* Searching keeps the bar as it is: the icon shows it is active and the field opens as a row of its
+     own just under the bar. */
+  .js .search:focus-within .search-open,
+  .js .search:focus-within .search-open .icon {
+    background: var(--text);
+    color: var(--ground);
   }
 
   .js .search:focus-within input {
-    flex: 1;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 3;
     width: 100%;
-    padding-left: 2.5rem;
+    min-height: 3.25rem;
+    padding: 0 var(--gutter);
+    border: 0;
+    border-bottom: 1px solid var(--line-strong);
+    background: var(--sunk);
   }
 
   /* The account actions fold behind the menu button and drop down from the bar's right edge. */
@@ -4558,8 +4559,9 @@ body.dealing #series .series-meta {
     letter-spacing: 0.04em;
   }
 
-  /* The post head: Close, the catalogue number and Previous/Next on one row, the title under them. The
-     star, Later, the feed link and Open original wait at the post's foot (deck.js moves them there). */
+  /* The post head: Previous/Next, the catalogue number and Close (a square ×, top right, where a phone
+     closes things) on one row, the title under them. The star, Later, the feed link and Open original
+     wait at the post's foot (deck.js moves them there). */
   .reader-head {
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.5rem 0.75rem;
@@ -4567,8 +4569,25 @@ body.dealing #series .series-meta {
   }
 
   .reader-close {
-    grid-column: 1;
+    grid-column: 3;
     grid-row: 1;
+    position: relative;
+    width: 2.75rem;
+    padding: 0;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+
+  .reader-close::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1rem;
+    height: 1rem;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3l10 10M13 3L3 13' stroke='black' stroke-width='1.8' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3l10 10M13 3L3 13' stroke='black' stroke-width='1.8' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
   }
 
   .reader-cat {
@@ -4579,7 +4598,7 @@ body.dealing #series .series-meta {
   }
 
   .post-nav {
-    grid-column: 3;
+    grid-column: 1;
     grid-row: 1;
     gap: 0.375rem;
   }
