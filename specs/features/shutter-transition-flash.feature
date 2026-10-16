@@ -79,6 +79,7 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
     And the "Sources" link to "/sources" requests its page via htmx and pushes its URL
     And the "Starve" link to "/feed" requests its page via htmx and pushes its URL
     And the "Cancel" link to "/settings" requests its page via htmx and pushes its URL
+    And the page loads the deck script
 
   Scenario: The temporary password page's links request their page via htmx
     Given the user "friend" exists
@@ -86,6 +87,7 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
     Then the "Timeline" link to "/feed" requests its page via htmx and pushes its URL
     And the "Starve" link to "/feed" requests its page via htmx and pushes its URL
     And the "Back to Settings" link to "/settings" requests its page via htmx and pushes its URL
+    And the page loads the deck script
 
   Scenario Outline: The public pages' links request their page via htmx
     Given signups are on

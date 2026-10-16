@@ -13,14 +13,7 @@
   <script src="/deck.js" defer></script>
 </head>
 <body>
-  <header class="bar" id="bar">
-    <p class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Starve</a></p>
-    <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
-      <a class="tab" href="/sources" hx-get="/sources" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sources</a>
-    </nav>
-    <th:block th:with="onSettings=true"><th:block th:replace="~{bar-actions :: bar-actions}"></th:block></th:block>
-  </header>
+  <header th:replace="~{app-bar :: app-bar('settings')}"></header>
 
   <div class="label" id="shell">
     <aside class="sleeve" aria-label="Delete user">

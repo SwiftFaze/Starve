@@ -226,7 +226,7 @@ video keeps 16:9 at the largest size that fits, so there are no black bars. **Ej
 phone the video always sits full width above the deck, and the waveform runs across
 the top of the deck where it is easy to reach.
 
-Switching between **Timeline** and **Sources**, and adding, removing or grouping
+Switching between **Timeline**, **Sources**, **Account** and **Settings**, and adding, removing or grouping
 sources, swaps the page around the player, so whatever is playing keeps playing.
 A browser reload or opening an item still starts the page afresh.
 

@@ -264,9 +264,8 @@
       document.body.appendChild(restorer);
       window.htmx.process(restorer);
     }
-    // Timeline and Sources share the dock, so only they swap the sheet and keep it; any other page swaps the shell.
     // Timeline and Sources (the page being left is one of them: it has the series sleeve, popstate has moved only the
-    // URL) share the sheet and the dock around it; any other page swaps the shell, dock kept.
+    // URL) share the sheet and the dock around it, so only they swap the sheet; any other page swaps the shell.
     var sheetOnly = !!document.getElementById('series') && !!document.getElementById('dock') && /^\/(feed|sources)(\?|$)/.test(now);
     var region = sheetOnly ? '#sheet' : '#shell';
     restorer.setAttribute('hx-select-oob', sheetOnly ? '#bar,#series,#panel' : '#bar');
