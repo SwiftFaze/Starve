@@ -14,17 +14,17 @@
 </head>
 <body>
   <header class="bar" id="bar">
-    <p class="wordmark"><a href="/feed">Starve</a></p>
+    <p class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Starve</a></p>
     <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/feed" hx-get="/feed" hx-target="#sheet" hx-select="#sheet"
+      <a class="tab" href="/feed" hx-get="/feed" hx-target="#sheet" data-switch hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
-      <a class="tab" href="/sources" aria-current="page" hx-get="/sources" hx-target="#sheet" hx-select="#sheet"
+      <a class="tab" href="/sources" aria-current="page" hx-get="/sources" hx-target="#sheet" data-switch hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Sources</a>
     </nav>
     <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
   </header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Roster, tools and player"
            th:with="failing=${#lists.size(sources.?[error != null])},total=${#lists.size(sources)},grouped=${#lists.size(groups)}">
       <div id="series" class="series-block">

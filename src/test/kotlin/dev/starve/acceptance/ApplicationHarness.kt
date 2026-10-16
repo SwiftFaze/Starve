@@ -234,6 +234,8 @@ class ApplicationHarness(
                 )
     }
 
+    fun isRunning(): Boolean = context != null
+
     fun stop() {
         context?.close()
         context = null

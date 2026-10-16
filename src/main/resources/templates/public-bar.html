@@ -5,11 +5,11 @@
      same links in the same places on all of them, the current one marked. "here" names the current page;
      "setup" leaves out Sign in, which cannot be reached before the first account exists. -->
 <header class="bar" id="bar" th:fragment="public-bar(here)">
-  <p class="wordmark"><a href="/">Starve</a></p>
+  <p class="wordmark"><a href="/" hx-get="/" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Starve</a></p>
   <p class="bar-caption" aria-hidden="true">No algorithm &middot; Self-hosted</p>
   <nav class="bar-actions" aria-label="Pages">
-    <a class="tab" href="/docs" th:attr="aria-current=${here == 'docs'} ? 'page'">Docs</a>
-    <a class="tab" href="/login" th:unless="${here == 'setup'}"
+    <a class="tab" href="/docs" hx-get="/docs" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true" th:attr="aria-current=${here == 'docs'} ? 'page'">Docs</a>
+    <a class="tab" href="/login" hx-get="/login" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true" th:unless="${here == 'setup'}"
        th:attr="aria-current=${here == 'login'} ? 'page'">Sign in</a>
   </nav>
 </header>

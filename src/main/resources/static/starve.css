@@ -656,8 +656,8 @@ button.toggle[aria-pressed="true"]:hover {
   animation: march 450ms linear infinite;
 }
 
-/* The theme change: theme.js sweeps this red obi shutter across the page and swaps the
-   theme while it covers everything. Chevron edges lead and trail it. */
+/* The theme change and the in-app page switches: theme.js sweeps this red obi shutter across the page and
+   swaps the theme or the page while it covers everything. Chevron edges lead and trail it. */
 .shutter {
   position: fixed;
   inset: 0;
@@ -680,17 +680,6 @@ button.toggle[aria-pressed="true"]:hover {
   bottom: 0;
   width: 3rem;
   background: repeating-linear-gradient(-45deg, var(--red) 0 25%, transparent 25% 50%) 0 0 / 1.5rem 1.5rem;
-}
-
-/* A page arriving under the shutter is solid obi red from its first frame, its content hidden, until
-   the panel is drawn over it, so no ground colour or stand-in font ever shows between the two panels. */
-:root[data-shutter="arriving"] body {
-  background: var(--red);
-}
-
-:root[data-shutter="arriving"] body > *,
-:root[data-shutter="arriving"] body::after {
-  visibility: hidden;
 }
 
 /* The panel's spec sheet: hairline frame, crosses, corner captions, barcode and chevrons. */

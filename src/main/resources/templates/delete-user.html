@@ -9,18 +9,19 @@
   <link rel="stylesheet" href="/starve.css">
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/htmx.min.js"></script>
 </head>
 <body>
   <header class="bar" id="bar">
-    <p class="wordmark"><a href="/feed">Starve</a></p>
+    <p class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Starve</a></p>
     <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/feed">Timeline</a>
-      <a class="tab" href="/sources">Sources</a>
+      <a class="tab" href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
+      <a class="tab" href="/sources" hx-get="/sources" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sources</a>
     </nav>
     <th:block th:with="onSettings=true"><th:block th:replace="~{bar-actions :: bar-actions}"></th:block></th:block>
   </header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Delete user">
       <div class="series-block">
         <h1 class="series roster-name">Delete</h1>
@@ -37,7 +38,7 @@
           and items will be permanently deleted. This cannot be undone.</p>
         <div class="confirm-actions">
           <button type="submit" class="danger">Delete permanently</button>
-          <a class="read-toggle" href="/settings">Cancel</a>
+          <a class="read-toggle" href="/settings" hx-get="/settings" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Cancel</a>
         </div>
       </form>
     </main>

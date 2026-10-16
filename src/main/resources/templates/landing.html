@@ -10,11 +10,12 @@
   <link rel="stylesheet" href="/starve.css">
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/htmx.min.js"></script>
 </head>
 <body class="landing">
   <header th:replace="~{public-bar :: public-bar('landing')}"></header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Starve">
       <div class="series-block">
         <h1 class="series">Starve</h1>
@@ -33,11 +34,11 @@
           <p class="cover-pitch">One timeline of the feeds, channels and artists you chose, newest first.
             Nothing ranked, nothing suggested, and it ends.</p>
           <div class="cover-actions">
-            <a class="read-toggle filled" href="/login">Sign in</a>
-            <a class="read-toggle" href="/signup" th:if="${signupsOpen}">Sign up</a>
+            <a class="read-toggle filled" href="/login" hx-get="/login" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sign in</a>
+            <a class="read-toggle" href="/signup" hx-get="/signup" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true" th:if="${signupsOpen}">Sign up</a>
           </div>
           <p class="cover-small" th:unless="${signupsOpen}">Accounts on this instance are made by its owner.
-            Run your own: <a href="/docs">install guide</a>.</p>
+            Run your own: <a href="/docs" hx-get="/docs" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">install guide</a>.</p>
           <p class="cover-small" th:if="${signupsOpen}">Signups are open on this instance.</p>
         </div>
 

@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="/starve.css">
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/htmx.min.js"></script>
 </head>
 <body class="access-page">
   <header th:replace="~{public-bar :: public-bar('login')}"></header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Sign in">
       <div class="series-block">
         <h1 class="series roster-name">Sign in</h1>
@@ -46,7 +47,7 @@
           instance's database.</dd></div>
         <div><dt>Accounts</dt>
           <dd th:unless="${signupsOpen}">Made by the owner. Ask them if you need one.</dd>
-          <dd th:if="${signupsOpen}">Signups are open. <a href="/signup">Sign up</a> for a new account.</dd></div>
+          <dd th:if="${signupsOpen}">Signups are open. <a href="/signup" hx-get="/signup" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sign up</a> for a new account.</dd></div>
         <div><dt>Feeds</dt><dd>Each account has its own sources, groups and timeline.</dd></div>
       </dl>
     </main>

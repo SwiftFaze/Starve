@@ -9,11 +9,12 @@
   <link rel="stylesheet" href="/starve.css">
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/htmx.min.js"></script>
 </head>
 <body class="access-page">
   <header th:replace="~{public-bar :: public-bar('signup')}"></header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Sign up">
       <div class="series-block">
         <h1 class="series roster-name" th:text="${open} ? 'Sign up' : 'Closed'">Sign up</h1>
@@ -40,7 +41,7 @@
         <p class="hint" id="password-hint">At least 10 characters</p>
 
         <button type="submit" class="primary">Sign up</button>
-        <p class="access-alt">Already have an account? <a href="/login">Sign in</a></p>
+        <p class="access-alt">Already have an account? <a href="/login" hx-get="/login" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sign in</a></p>
       </form>
 
       <div class="access-form" th:unless="${open}">
@@ -49,7 +50,7 @@
         </div>
         <p class="sheet-note">New accounts are not being accepted on this instance right now. Its owner can open
           signups again from Settings.</p>
-        <a class="read-toggle filled" href="/login">Sign in</a>
+        <a class="read-toggle filled" href="/login" hx-get="/login" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sign in</a>
       </div>
 
       <dl class="access-notes">

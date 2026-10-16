@@ -96,7 +96,13 @@
     button.reset = setTimeout(function () { button.textContent = 'Copy'; }, 1600);
   }
 
-  document.querySelectorAll('.docs-body pre').forEach(function (pre) {
+  // The code blocks of the page on screen. It runs on load and after each htmx swap that brings a docs page in,
+  // and a block already enhanced is left alone.
+  function enhance() {
+    document.querySelectorAll('.docs-body pre:not(.has-copy)').forEach(enhancePre);
+  }
+
+  function enhancePre(pre) {
     var code = pre.querySelector('code') || pre;
     var text = code.textContent;
     var language = (code.className.match(/language-(\w+)/) || [])[1];
@@ -118,5 +124,8 @@
     });
     pre.classList.add('has-copy');
     pre.appendChild(button);
-  });
+  }
+
+  enhance();
+  document.addEventListener('htmx:afterSettle', enhance);
 })();

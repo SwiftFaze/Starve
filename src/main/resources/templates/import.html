@@ -13,15 +13,15 @@
 </head>
 <body>
   <header class="bar" id="bar">
-    <p class="wordmark"><a href="/feed">Starve</a></p>
+    <p class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Starve</a></p>
     <nav class="pages" aria-label="Pages">
-      <a class="tab" href="/feed">Timeline</a>
-      <a class="tab" href="/sources">Sources</a>
+      <a class="tab" href="/feed" hx-get="/feed" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
+      <a class="tab" href="/sources" hx-get="/sources" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true">Sources</a>
     </nav>
     <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
   </header>
 
-  <div class="label">
+  <div class="label" id="shell">
     <aside class="sleeve" aria-label="Upload a subscription file">
       <div class="series-block">
         <h1 class="series roster-name">Import subscriptions</h1>

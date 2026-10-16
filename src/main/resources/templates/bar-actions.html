@@ -6,8 +6,8 @@
      inside every swapped bar. -->
 <th:block th:fragment="bar-actions">
 <div class="bar-actions">
-  <a class="tab account-link" href="/account" th:attr="aria-current=${onAccount} ? 'page'">Account</a>
-  <a class="tab settings-link" href="/settings" th:if="${admin}"
+  <a class="tab account-link" href="/account" hx-get="/account" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true" th:attr="aria-current=${onAccount} ? 'page'">Account</a>
+  <a class="tab settings-link" href="/settings" hx-get="/settings" data-switch hx-target="#shell" hx-select="#shell" hx-select-oob="#bar" hx-swap="outerHTML" hx-push-url="true" th:if="${admin}"
      th:attr="aria-current=${onSettings} ? 'page'">Settings</a>
   <form class="signout" method="post" th:action="@{/logout}">
     <button type="submit" aria-label="Sign out" title="Sign out">Sign out</button>

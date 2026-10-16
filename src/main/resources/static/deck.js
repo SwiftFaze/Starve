@@ -651,11 +651,11 @@
 
   var pendingTop = 0;
 
-  function restoreView() {
+  // The stored post and player come back where they are missing: on a reload, or on arriving at the timeline.
+  function reopenStored() {
     if (!window.htmx || !onTimeline() || phone()) return;
     var post = stored('starve.open.post');
     var play = stored('starve.open.play');
-    pendingTop = Number(stored('starve.list.top')) || 0;
     // Each request comes from its own target, so neither cancels the other.
     if (post && !postView()) {
       window.htmx.ajax('GET', '/items/' + post + '/reader', { source: reader(), target: '#reader', swap: 'innerHTML' });
@@ -664,6 +664,12 @@
       resumeAt = Number(stored('starve.open.at')) || 0;
       window.htmx.ajax('GET', '/items/' + play + '/player', { source: dock(), target: '#dock', swap: 'innerHTML' });
     }
+  }
+
+  function restoreView() {
+    if (!window.htmx || !onTimeline() || phone()) return;
+    pendingTop = Number(stored('starve.list.top')) || 0;
+    reopenStored();
     if (pendingTop) setTimeout(applyTop, 0);
   }
 
@@ -1185,6 +1191,18 @@
     if (event.detail && event.detail.target === reader()) readerOpened();
   });
   document.addEventListener('htmx:afterSettle', markPlaying);
+
+  // ---- Swaps between pages (theme.js swaps the shell for non-deck pages) ---------------------
+
+  // A shell swap takes the dock with it, so the player it held is gone: forget it. Arriving on the timeline from
+  // a page without the deck brings the stored post and player back, as a page load did.
+  var awayFromTimeline = !onTimeline();
+  document.addEventListener('htmx:afterSettle', function () {
+    if (!player()) state = null;
+    var away = !onTimeline();
+    if (awayFromTimeline && !away) reopenStored();
+    awayFromTimeline = away;
+  });
 
   // ---- Measured heights -----------------------------------------------------------------
 
