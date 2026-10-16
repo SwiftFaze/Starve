@@ -760,21 +760,6 @@
     if (state.playing) state.pause(); else state.play();
   });
 
-  // The shield over the video keeps the pointer away from YouTube's own hover overlay:
-  // a click plays or pauses, a double click goes fullscreen.
-  document.addEventListener('click', function (event) {
-    if (!event.target.closest('#dock .shield') || !state) return;
-    state.playing ? state.pause() : state.play();
-  });
-
-  document.addEventListener('dblclick', function (event) {
-    var shield = event.target.closest('#dock .shield');
-    if (!shield) return;
-    var box = shield.parentElement;
-    if (document.fullscreenElement) document.exitFullscreen();
-    else if (box.requestFullscreen) box.requestFullscreen();
-  });
-
   function post(frame, origin, message) {
     if (frame && frame.contentWindow) frame.contentWindow.postMessage(JSON.stringify(message), origin);
   }

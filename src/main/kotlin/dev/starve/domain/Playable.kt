@@ -14,11 +14,11 @@ sealed interface Playable {
     ) : Playable {
         val watchUrl: String get() = "https://www.youtube.com/watch?v=$videoId"
 
-        // The deck drives playback over the iframe API, so YouTube's own controls stay hidden.
+        // The deck drives playback over the iframe API alongside YouTube's own controls, which stay visible.
         override val embedUrl: String
             get() =
                 "https://www.youtube-nocookie.com/embed/$videoId" +
-                    "?autoplay=1&enablejsapi=1&controls=0&rel=0&iv_load_policy=3&playsinline=1"
+                    "?autoplay=1&enablejsapi=1&controls=1&rel=0&iv_load_policy=3&playsinline=1"
     }
 
     data class SoundCloud(

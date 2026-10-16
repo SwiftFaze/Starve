@@ -79,7 +79,7 @@ class PlayableTest {
         assertEquals("https://www.youtube.com/watch?v=dQw4w9WgXcQ", video.watchUrl)
         assertEquals(
             "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" +
-                "?autoplay=1&enablejsapi=1&controls=0&rel=0&iv_load_policy=3&playsinline=1",
+                "?autoplay=1&enablejsapi=1&controls=1&rel=0&iv_load_policy=3&playsinline=1",
             video.embedUrl,
         )
     }
