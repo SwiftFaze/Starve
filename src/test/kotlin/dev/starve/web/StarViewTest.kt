@@ -40,4 +40,17 @@ class StarViewTest {
         assertEquals(StarPlace.ROW, StarPlace.from(null))
         assertEquals(StarPlace.ROW, StarPlace.from("elsewhere"))
     }
+
+    @Test
+    fun `a place's star carries the item, its state, its place and whether it is out of band`() {
+        val star = StarPlace.DETAIL.view(7, true, oob = true)
+
+        assertEquals(7L, star.itemId)
+        assertEquals(true, star.favourite)
+        assertEquals("detail", star.from)
+        assertEquals(true, star.oob)
+        assertEquals(false, StarPlace.ROW.view(7, false).favourite)
+        assertEquals(false, StarPlace.ROW.view(7, false).oob)
+        assertEquals(null, StarPlace.ROW.view(7, false).from)
+    }
 }
