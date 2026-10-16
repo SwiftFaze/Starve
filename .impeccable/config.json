@@ -939,6 +939,15 @@
         ],
         "createdAt": "2026-10-15T05:54:06.391Z",
         "reason": "model judgement: the scale lives in starve.css (Akira sheet title 1.75rem, landing cover 4.75rem, docs h3 1.25rem over 0.9375-1rem body); the template-only scan cannot see it"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/main/resources/static/deck.js"
+        ],
+        "createdAt": "2026-10-16T22:11:40.299Z",
+        "reason": "Claude, on evidence: the lightbox <img alt=''> is built empty and gets its src (deck.js shown.src = large) before the dialog opens; no broken image ever renders"
       }
     ]
   }

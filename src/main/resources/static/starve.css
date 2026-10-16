@@ -453,8 +453,14 @@ input[type="file"].field::file-selector-button {
   margin-left: auto;
 }
 
-.search + .bar-actions {
+.search ~ .bar-actions {
   margin-left: 0;
+}
+
+/* The phone's menu button and the obi's group picker; desktop shows the actions and group tabs as they are. */
+.bar-menu,
+.series-pick {
+  display: none;
 }
 
 .signout {
@@ -3314,7 +3320,7 @@ body[data-split][data-list="strip"] .load-more {
   }
 
   .bar .bar-actions,
-  .bar .search + .bar-actions {
+  .bar .search ~ .bar-actions {
     order: 1;
     gap: 0.75rem;
     margin-left: auto;
@@ -4232,6 +4238,393 @@ body.dealing #series .series-meta {
   .add-source .field-row > button,
   .add-source .field-row > .read-toggle {
     flex: 1;
+    min-height: 2.75rem;
+  }
+}
+
+/* ---- Phone chrome (#80): one bar row, the obi as group picker, a compact sheet head, a calm post head ----
+   Laid out for a 375px-wide phone (iPhone SE). Without scripts the bar wraps and the group tabs stay a row of
+   their own, as before; every control is a plain link or form either way. */
+
+@media (max-width: 60rem) {
+  /* One row: the wordmark, the two pages, search folded to its icon, the menu. */
+  .js .bar {
+    flex-wrap: nowrap;
+    gap: 0 0.75rem;
+    min-height: 3.25rem;
+    padding-top: 0;
+  }
+
+  .js .bar::after {
+    display: none;
+  }
+
+  .js .wordmark {
+    flex: none;
+    font-size: 0.9375rem;
+  }
+
+  .js .pages {
+    order: 1;
+    gap: 0.875rem;
+  }
+
+  .js .pages .tab {
+    min-height: 2.75rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Search waits behind its icon (a label, so a tap focuses the field even without scripts) and opens
+     over the whole bar while it has focus. A search in force keeps a red mark on the icon. */
+  .js .search {
+    order: 2;
+    position: static;
+    flex-basis: auto;
+    margin: 0 0 0 auto;
+  }
+
+  .js .search-open {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--text-2);
+  }
+
+  .js .search .icon {
+    position: static;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .js .search:not(:focus-within) input {
+    position: absolute;
+    width: 1px;
+    min-height: 0;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+  }
+
+  .js .search:not(:focus-within):has(input:not(:placeholder-shown)) .search-open::after {
+    content: "";
+    position: absolute;
+    top: 0.625rem;
+    right: 0.5rem;
+    width: 0.375rem;
+    height: 0.375rem;
+    background: var(--red);
+  }
+
+  .js .search:focus-within {
+    position: absolute;
+    inset: 0 var(--gutter);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    background: var(--ground);
+  }
+
+  .js .search:focus-within .search-open {
+    position: absolute;
+    left: 0;
+    pointer-events: none;
+  }
+
+  .js .search:focus-within input {
+    flex: 1;
+    width: 100%;
+    padding-left: 2.5rem;
+  }
+
+  /* The account actions fold behind the menu button and drop down from the bar's right edge. */
+  .js .bar-menu {
+    order: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 2.75rem;
+    min-height: 2.75rem;
+    margin-left: auto;
+    padding: 0;
+  }
+
+  /* Where there is a search form it already pushes the menu to the right edge. */
+  .js .search ~ .bar-menu {
+    margin-left: 0;
+  }
+
+  .js .bar-menu .icon {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+  }
+
+  .js .bar-menu[aria-expanded="true"] {
+    background: var(--text);
+    color: var(--ground);
+  }
+
+  .js .bar .bar-actions {
+    display: none;
+  }
+
+  .js .bar .bar-actions.open {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    min-width: 13rem;
+    margin: 0;
+    border: 1px solid var(--line-strong);
+    background: var(--raised);
+  }
+
+  .js .bar-actions.open > .tab,
+  .js .bar-actions.open .signout button {
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  .js .bar-actions.open > * + * {
+    border-top: 1px solid var(--line);
+  }
+
+  .js .bar-actions.open .signout button {
+    gap: 0.75rem;
+    border: 0;
+    background: none;
+    color: var(--text-2);
+  }
+
+  .js .bar-actions.open .signout button:hover,
+  .js .bar-actions.open .signout button:focus-visible {
+    color: var(--text);
+  }
+
+  /* The group tabs leave the bar: the obi's name opens them as a list under the band. */
+  .js .bar .groups {
+    display: none;
+  }
+
+  .js [data-groups="open"] .bar .groups {
+    position: fixed;
+    top: var(--groups-top, 6rem);
+    left: 0;
+    right: 0;
+    z-index: 31;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-height: calc(100dvh - var(--groups-top, 6rem) - var(--deck-h, 0px));
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 0;
+    border-bottom: 1px solid var(--line-strong);
+    background: var(--raised);
+  }
+
+  .js [data-groups="open"] .groups > a {
+    flex: none;
+    min-height: 2.75rem;
+    padding: 0 var(--gutter);
+    font-size: 0.75rem;
+  }
+
+  .js [data-groups="open"] .groups > a + a {
+    border-top: 1px solid var(--line);
+  }
+
+  /* The obi: one slim band, the name with its picker chevron, the unread count, the theme switch. */
+  .series-block {
+    height: 2.75rem;
+    gap: 0.5rem;
+  }
+
+  .series-block .series {
+    order: 0;
+    font-size: clamp(0.875rem, 4.6vw, 1.125rem);
+  }
+
+  .js .series-pick {
+    order: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    margin-left: -0.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--on-obi);
+  }
+
+  .series-pick .icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: transform var(--move);
+  }
+
+  .series-pick[aria-expanded="true"] .icon {
+    transform: rotate(180deg);
+  }
+
+  .js #series:has(.series-pick) .series {
+    cursor: pointer;
+  }
+
+  /* Only the unread count: the order and the STV range are desktop detail. */
+  .series-block .series-meta {
+    order: 2;
+    flex-direction: row;
+    margin-left: auto;
+    font-size: 0.6875rem;
+  }
+
+  .series-block .series-meta > span {
+    display: none;
+  }
+
+  /* The sheet head: the view's name and its two actions on one line. */
+  .sheet {
+    padding-top: 0.75rem;
+  }
+
+  .sheet-head {
+    flex-wrap: nowrap;
+    row-gap: 0;
+    gap: 0.5rem;
+    min-height: 0;
+    padding-bottom: 0.625rem;
+  }
+
+  .sheet-head .sheet-title {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    line-height: 2.75rem;
+  }
+
+  .view-actions {
+    flex: none;
+    flex-basis: auto;
+    margin-left: auto;
+  }
+
+  /* With Show read and Mark all read beside it the name would be cut to "New re…"; the obi and the
+     Show read state already say which view this is, so the name stays for screen readers only. Search,
+     Favourites and Later have no such actions and keep their name. */
+  .sheet-head:has(.read-toggle) .sheet-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .sheet-head:has(.read-toggle) .view-actions {
+    margin-left: 0;
+  }
+
+  .view-actions .read-toggle,
+  .view-actions button {
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* The post head: Close, the catalogue number and Previous/Next on one row, the title under them. The
+     star, Later, the feed link and Open original wait at the post's foot (deck.js moves them there). */
+  .reader-head {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.5rem 0.75rem;
+    padding: 0.5rem var(--gutter) 0.875rem;
+  }
+
+  .reader-close {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .reader-cat {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .post-nav {
+    grid-column: 3;
+    grid-row: 1;
+    gap: 0.375rem;
+  }
+
+  .post-nav a {
+    justify-content: center;
+    width: 2.75rem;
+    padding: 0;
+  }
+
+  .post-nav .icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .post-nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .reader-head > .reader-toggles {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .center-toggle {
+    display: none;
+  }
+
+  .reader-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--text);
+  }
+
+  .reader-foot .reader-original {
+    margin-left: auto;
     min-height: 2.75rem;
   }
 }

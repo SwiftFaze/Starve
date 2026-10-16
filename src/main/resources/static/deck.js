@@ -1345,6 +1345,86 @@
   syncCenter();
   trackBar();
   trackHeights();
+  // ---- Phone chrome: the bar's menu, the obi's group picker, a post's actions at its foot -------------
+
+  function setMenu(open) {
+    var button = document.querySelector('.bar-menu');
+    var actions = document.getElementById('bar-actions');
+    if (!button || !actions) return;
+    button.setAttribute('aria-expanded', String(open));
+    actions.classList.toggle('open', open);
+  }
+
+  // The group list drops from the obi's lower edge, wherever the bar has left it.
+  function setGroups(open) {
+    var pick = document.querySelector('.series-pick');
+    var obi = document.getElementById('series');
+    if (!pick || !obi || !document.getElementById('groups')) open = false;
+    if (pick) pick.setAttribute('aria-expanded', String(open));
+    if (open) {
+      document.documentElement.style.setProperty('--groups-top', Math.round(obi.getBoundingClientRect().bottom) + 'px');
+      body.dataset.groups = 'open';
+    } else {
+      delete body.dataset.groups;
+    }
+  }
+
+  document.addEventListener('click', function (event) {
+    var menu = event.target.closest('.bar-menu');
+    if (menu) {
+      setGroups(false);
+      setMenu(menu.getAttribute('aria-expanded') !== 'true');
+      return;
+    }
+    if (phone() && event.target.closest('.series-pick, #series .series')) {
+      setMenu(false);
+      setGroups(body.dataset.groups !== 'open');
+      return;
+    }
+    if (!event.target.closest('#bar-actions')) setMenu(false);
+    if (!event.target.closest('#groups')) setGroups(false);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    setMenu(false);
+    setGroups(false);
+  });
+
+  // On a phone a post's star, Later, feed link and Open original sit at its foot, so the head keeps to
+  // Close, the number and Previous/Next. Wider, they go back where the markup has them.
+  function placePostActions() {
+    document.querySelectorAll('#reader .reader-view').forEach(function (view) {
+      var head = view.querySelector('.reader-head');
+      var toggles = view.querySelector('.reader-toggles');
+      var original = view.querySelector('.reader-original');
+      var foot = view.querySelector('.reader-foot');
+      if (!head) return;
+      if (phone()) {
+        if (!foot) {
+          foot = document.createElement('footer');
+          foot.className = 'reader-foot';
+          view.appendChild(foot);
+        }
+        if (toggles && toggles.parentNode !== foot) foot.appendChild(toggles);
+        if (original && original.parentNode !== foot) foot.appendChild(original);
+      } else if (foot) {
+        var cat = head.querySelector('.reader-cat');
+        if (toggles) head.insertBefore(toggles, cat ? cat.nextSibling : head.firstChild);
+        if (original) head.appendChild(original);
+        foot.remove();
+      }
+    });
+  }
+
+  document.addEventListener('htmx:afterSettle', function () {
+    setMenu(false);
+    setGroups(false);
+    placePostActions();
+  });
+  window.matchMedia(PHONE).addEventListener('change', placePostActions);
+
   markPlaying();
   syncTop();
+  placePostActions();
 })();

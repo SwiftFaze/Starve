@@ -5,9 +5,13 @@
 <th:block th:fragment="nav(previous,next)">
 <nav class="post-nav" th:if="${previous != null or next != null}" aria-label="Neighbouring posts">
   <a class="post-prev" th:if="${previous != null}" th:href="${previous.href}" th:attr="hx-get=${previous.href}"
-     hx-target="#reader" hx-swap="innerHTML" title="Newer post">Previous</a>
+     hx-target="#reader" hx-swap="innerHTML" title="Newer post"><svg class="icon" viewBox="0 0 16 16"
+     aria-hidden="true"><path d="M10.5 2.5L5 8l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span
+     class="post-nav-label">Previous</span></a>
   <a class="post-next" th:if="${next != null}" th:href="${next.href}" th:attr="hx-get=${next.href}"
-     hx-target="#reader" hx-swap="innerHTML" title="Older post">Next</a>
+     hx-target="#reader" hx-swap="innerHTML" title="Older post"><span class="post-nav-label">Next</span><svg
+     class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2.5L11 8l-5.5 5.5" fill="none"
+     stroke="currentColor" stroke-width="1.6"/></svg></a>
 </nav>
 </th:block>
 </body>
