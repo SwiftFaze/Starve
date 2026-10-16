@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.0-beta.18](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.17...v1.1.0-beta.18) (2026-10-16)
+
+
+### Features
+
+* phone header in one row, obi group picker, post gestures, title-row search ([807b8a5](https://github.com/SwiftFaze/Starve/commit/807b8a5a8490bd6bb81e0ff7962a6ed322467933))
+* search waits as an icon in the list's title row and unfolds across it ([0e0f9b6](https://github.com/SwiftFaze/Starve/commit/0e0f9b6a5b7b6d0d55153104b244a284c080ff7b)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+* the deck's title opens its post on desktop too; a pull-down clears a veil; Eject keeps the list still ([3221393](https://github.com/SwiftFaze/Starve/commit/3221393cb687ed783959b4b58a1ae20ac952f134)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+* zoom a post's artwork; the deck's title no longer fills on hover; the pull-down veil clears only near the bottom ([ee0d3c0](https://github.com/SwiftFaze/Starve/commit/ee0d3c070d90fc93220f26a2c5761e22ed72af50)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+
+
+### Bug Fixes
+
+* a dragged panel's drop target shows over the video; search hides in mini mode ([ccfe82a](https://github.com/SwiftFaze/Starve/commit/ccfe82a72647727cc3e66a5725eaacaf3f70e469)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+* centre the search icon in its field on desktop ([1aa6dfc](https://github.com/SwiftFaze/Starve/commit/1aa6dfc64c6d999ac3656fcc5a0a727cde3542fd)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+* desktop deck keeps one row with Open post over it; a stronger, longer pull-down blur ([46404ec](https://github.com/SwiftFaze/Starve/commit/46404ecd267bc680f949a09507009757a6585292)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+* search heads the list on every screen; the panel drop target shows again ([7014372](https://github.com/SwiftFaze/Starve/commit/70143729478051cf995239c679f75e47d5577d6b)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+* the pull-down veil holds longer before the list comes clear ([cdbda7d](https://github.com/SwiftFaze/Starve/commit/cdbda7d10b91f0a7732a0535ade3eaaa5d1e6a64)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+* the video panel slides by transform when panes swap, so the player stops jittering ([89ee987](https://github.com/SwiftFaze/Starve/commit/89ee987f61ad10cba4f7e1ed0964ff969ca686c0)), closes [#80](https://github.com/SwiftFaze/Starve/issues/80)
+
 ## [1.1.0-beta.17](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.16...v1.1.0-beta.17) (2026-10-16)
 
 
