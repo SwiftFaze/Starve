@@ -403,6 +403,9 @@ input[type="file"].field::file-selector-button {
 
 .search .icon {
   position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
   left: 0.625rem;
   width: 0.875rem;
   height: 0.875rem;
