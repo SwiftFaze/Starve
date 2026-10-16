@@ -2469,8 +2469,7 @@ a.title:hover {
   background: var(--ground);
 }
 
-.ratio-16x9 iframe,
-.shield {
+.ratio-16x9 iframe {
   grid-area: 1 / 1;
   width: min(100cqw, 100cqh * 16 / 9);
   height: auto;
@@ -2481,11 +2480,6 @@ a.title:hover {
   display: block;
   border: 0;
   background: #000;
-}
-
-.shield {
-  position: relative;
-  cursor: pointer;
 }
 
 .ratio-16x9:fullscreen {

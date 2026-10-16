@@ -10,13 +10,14 @@ Feature: Player deck along the bottom of the timeline
   the workspace, the panel takes that whole edge. The rules between panels are
   dragged to resize them, the arrangement and sizes are remembered, and the
   panel last clicked is outlined. The deck drives the embeds over their
-  postMessage APIs, so YouTube's own controls are hidden.
+  postMessage APIs alongside YouTube's own controls, which stay visible (see
+  youtube-embed-controls.feature).
 
   Covers: the deck controls in the player fragment (pause, seek, volume,
   elapsed, total, Eject); the waveform drawn from bars seeded by the item id,
   so an item always shows the same waveform; no layout buttons in the deck
   (the arrangement is made by dragging title bars); the YouTube embed URL
-  asking for the JS API and no YouTube controls; the list splitter on the
+  asking for the JS API and YouTube's own controls; the list splitter on the
   timeline; the deck script being served.
   Supersedes: the 2 col / 3 col / Bottom / PiP layout buttons and the
   picture-in-picture window this file described during #38 (removed: every
@@ -75,8 +76,6 @@ Feature: Player deck along the bottom of the timeline
 # Risks:
 #   - SoundCloud's widget handshake can fail in some browsers; the deck then
 #     shows SoundCloud's own player above it after 8 seconds (playtest).
-#   - YouTube still shows its title bar briefly at start and after a seek;
-#     its embed cannot turn that off (accepted in playtest).
 #
 # Open questions:
 #   - None.

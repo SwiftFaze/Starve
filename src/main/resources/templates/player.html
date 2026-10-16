@@ -41,7 +41,7 @@
 
 
   <div class="ratio-16x9" th:if="${kind == 'youtube'}"><iframe th:src="${embedUrl}" title="YouTube video player"
-            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe><div class="shield" aria-hidden="true"></div></div>
+            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
   <iframe class="sc-frame" th:if="${kind == 'soundcloud'}" th:src="${embedUrl}" title="SoundCloud player"
           height="166" scrolling="no" allow="autoplay"></iframe>
   <div class="player-off" th:if="${kind == 'disabled'}">
