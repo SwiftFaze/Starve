@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.15](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.14...v1.1.0-beta.15) (2026-10-16)
+
+
+### Bug Fixes
+
+* deck star, play/pause and SoundCloud on iOS ([#82](https://github.com/SwiftFaze/Starve/issues/82)) ([2572907](https://github.com/SwiftFaze/Starve/commit/2572907c39f68040eed7e3d222c5b3fb3daf3cf5))
+* re-enable YouTube's own controls ([#83](https://github.com/SwiftFaze/Starve/issues/83)) ([a9b34c2](https://github.com/SwiftFaze/Starve/commit/a9b34c268e204bf6815c726b12393d62565c5355))
+
 ## [1.1.0-beta.14](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.13...v1.1.0-beta.14) (2026-10-15)
 
 
