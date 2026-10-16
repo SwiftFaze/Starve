@@ -235,8 +235,13 @@ class JdbcRepositoriesTest {
             listOf(dated("newer", at), dated("current", at.minusSeconds(60)), dated("older", at.minusSeconds(120))),
             at,
         )
+
         fun idOf(title: String): Long =
-            jdbc.sql("SELECT id FROM items WHERE title = ?").param(title).query(Long::class.java).single()
+            jdbc
+                .sql("SELECT id FROM items WHERE title = ?")
+                .param(title)
+                .query(Long::class.java)
+                .single()
         items.markRead(OWNER, idOf("older"), Instant.ofEpochMilli(100))
         items.markRead(OWNER, idOf("newer"), Instant.ofEpochMilli(300))
         val current = idOf("current")

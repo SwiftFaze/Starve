@@ -290,7 +290,6 @@ private const val UPSERT_SQL =
         "SET thumbnail_url = COALESCE(items.thumbnail_url, excluded.thumbnail_url), " +
         "body = COALESCE(items.body, excluded.body) RETURNING id"
 
-
 /**
  * Inserts a new item; for a known one only fills in a thumbnail or body it did not have yet. The search index
  * row is written for a new item, and again when a body is filled in (the only change that alters indexed text).

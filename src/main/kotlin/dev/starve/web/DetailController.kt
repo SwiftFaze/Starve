@@ -2,8 +2,8 @@ package dev.starve.web
 
 import dev.starve.application.DetailService
 import dev.starve.application.GroupService
-import dev.starve.application.ListPosition
 import dev.starve.application.ItemDetail
+import dev.starve.application.ListPosition
 import dev.starve.application.TimelineService
 import dev.starve.domain.Catalogue
 import org.springframework.http.HttpStatus
