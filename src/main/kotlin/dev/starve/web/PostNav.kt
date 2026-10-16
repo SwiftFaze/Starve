@@ -28,7 +28,7 @@ internal fun withQuery(
     query: String,
 ): String = if (query.isEmpty()) path else "$path?$query"
 
-/** The Previous and Next links of post [id] (published at [publishedAt]) in the list [scope] shows. */
+/** The Previous and Next links of the post at [position] in the list [scope] shows. */
 internal fun postNav(
     timeline: TimelineService,
     owner: Long,
