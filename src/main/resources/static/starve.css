@@ -4725,8 +4725,8 @@ body.dealing #series .series-meta {
      behind and only comes forward once letting go will close the post. */
   #reader.pulling {
     background: color-mix(in srgb, var(--ground) calc(100% - var(--pull, 0) * 100%), transparent);
-    -webkit-backdrop-filter: blur(calc((1 - var(--pull, 0)) * 6px));
-    backdrop-filter: blur(calc((1 - var(--pull, 0)) * 6px));
+    -webkit-backdrop-filter: blur(calc((1 - var(--pull, 0)) * 8px));
+    backdrop-filter: blur(calc((1 - var(--pull, 0)) * 8px));
   }
 
   #reader.pulling.releasing {
