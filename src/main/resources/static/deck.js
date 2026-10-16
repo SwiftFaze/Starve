@@ -999,15 +999,28 @@
     return box;
   }
 
+  // Feed artwork comes as a thumbnail: SoundCloud's has a size in its name (-large is 100px) and YouTube's
+  // is hqdefault (480px); zoomed, ask for the largest each serves.
+  function largerArt(src) {
+    if (/sndcdn\.com\//.test(src)) return src.replace(/-(large|t\d+x\d+|crop|small|badge|tiny|mini)\.(jpg|png)/, '-t500x500.$2');
+    if (/ytimg\.com\//.test(src)) return src.replace(/\/(hq|mq|sd)default\.jpg/, '/maxresdefault.jpg');
+    return src;
+  }
+
   document.addEventListener('click', function (event) {
-    var image = event.target.closest && event.target.closest('.reader-body img, .reader-image');
+    var image = event.target.closest && event.target.closest('.reader-body img, .reader-image, .detail-art');
     if (!image || !image.currentSrc) return;
     // A picture that links to a larger copy shows that copy here, without leaving the app.
     var link = image.closest('a[href]');
-    var large = link && /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(link.href) ? link.href : image.currentSrc;
+    var large = link && /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(link.href) ? link.href : largerArt(image.currentSrc);
     event.preventDefault();
     var box = lightbox();
     var shown = box.querySelector('img');
+    // Should a larger size not exist, the picture as shown stands in.
+    shown.onerror = function () {
+      shown.onerror = null;
+      shown.src = image.currentSrc;
+    };
     shown.src = large;
     shown.alt = image.alt || '';
     if (box.showModal) box.showModal();
@@ -1182,11 +1195,12 @@
       var text = link ? (dx < 0 ? 'Next post ›' : '‹ Previous post') : (dx < 0 ? 'Last post' : 'First post');
       showHint(dx < 0 ? 'right' : 'left', text, !!link && Math.abs(dx) >= mark, Math.abs(dx) / mark);
     } else {
-      var pull = Math.max(0, dy) * 0.6;
+      var pull = Math.max(0, dy);
       gesture.view.style.transform = 'translateY(' + pull + 'px)';
-      // The veil holds in full up to the mark and clears only past it, over twice the mark's distance
-      // (fully once letting go carries the post away); the blur lifts more slowly than the dark.
-      var veil = Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT) / (PULL_CLOSE_AT * 2)));
+      // The veil holds in full up to the mark and clears only as the post travels on, coming clear when
+      // it nears the bottom of the screen (or once letting go carries it away); the blur lifts more
+      // slowly than the dark.
+      var veil = Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT) / (window.innerHeight * 0.85 - PULL_CLOSE_AT)));
       reader().style.setProperty('--pull', String(veil));
       reader().style.setProperty('--pull-blur', String(veil * veil));
       showHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
@@ -1220,7 +1234,7 @@
       pane.style.removeProperty('--pull-blur');
     };
     pane.classList.add('releasing');
-    if (released && done.dy * 0.6 >= PULL_CLOSE_AT) {
+    if (released && done.dy >= PULL_CLOSE_AT) {
       pane.style.setProperty('--pull', '1');
       pane.style.setProperty('--pull-blur', '1');
       settle(done.view, 'translateY(' + window.innerHeight + 'px)', '1', OUT_MS, function () {

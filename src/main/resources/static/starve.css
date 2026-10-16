@@ -2301,6 +2301,13 @@ a.title:hover {
   grid-row: 1;
 }
 
+/* It lies over the art and title, so it never fills on hover like other buttons do. */
+.open-post:hover,
+.open-post:focus-visible {
+  background: none;
+  color: transparent;
+}
+
 .player:has(.open-post:hover) .now-title {
   text-decoration: underline;
   text-underline-offset: 0.2em;
@@ -3745,6 +3752,7 @@ body[data-split][data-list="strip"] .load-more {
    the header, and its control fills red while that item is in the deck (the playing row's rule). */
 .detail-art {
   display: block;
+  cursor: zoom-in;
   width: 100%;
   max-width: 26rem;
   height: auto;
