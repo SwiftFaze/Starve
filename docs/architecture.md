@@ -176,6 +176,17 @@ marks the item read, and returns null (404) for an unknown or playable item, whi
 keeps using the player. `ReaderController` renders `reader.html` as an htmx
 fragment and offers "Open original" only for http(s) links.
 
+Previous and Next (`web/PostNav`, `templates/post-nav.html`) come from the list a post was
+opened from. A row's title link carries that list's query, the same parameters `/feed`
+takes (`web/Scope`, built by `scopeOf`), plus `seen`: the moment the list was rendered.
+`ReaderController` and `DetailController` resolve the `Scope` (an unknown group is a
+404 before the item is opened) and ask `TimelineService.neighbours` for the rows on
+either side, through `ItemRepository.neighbours` with a `ListFilter`. That query
+keyset-pages on `(published_at, id)` in the list's own order. A list that hides read items
+still counts an item read at or after `seen`, so a post read since the list loaded keeps
+its place. Later and search order their rows their own way and offer no neighbours. A
+playable neighbour links to its detail view, never its player.
+
 Teaser-only posts get their article page fetched on open (V11, `items.article_checked_at`).
 `ReaderService` does so when `ArticleRules` says the stored body is under 500 plain-text
 characters (`HtmlText`, implemented by `infra/JsoupText`) and the last check is missing or
