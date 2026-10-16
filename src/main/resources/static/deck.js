@@ -510,13 +510,35 @@
       if (!spot) return;
       drop(from, spot.target, spot.zone);
       saveTree();
+      var video = videoBox();
+      var was = video ? video.getBoundingClientRect() : null;
       body.classList.add('swapping');
       layout();
+      if (video && was) slideVideo(video, was);
       setTimeout(function () { body.classList.remove('swapping'); }, 260);
     }
     bar.addEventListener('pointermove', move);
     bar.addEventListener('pointerup', up);
   });
+
+  // The video box slides by transform, not by its size: an iframe resized frame by frame makes the player
+  // inside re-lay out out of step with the slide, and it jitters. So the box takes its new size at once
+  // (the iframe re-lays out once) and is drawn from the old box to the new one, translated and scaled.
+  function slideVideo(box, was) {
+    var now = box.getBoundingClientRect();
+    if (!now.width || !now.height || stillMotion()) return;
+    box.style.transition = 'none';
+    box.style.transformOrigin = '0 0';
+    box.style.transform = 'translate(' + (was.left - now.left) + 'px, ' + (was.top - now.top) + 'px) scale(' +
+      (was.width / now.width) + ', ' + (was.height / now.height) + ')';
+    box.getBoundingClientRect();
+    box.style.transition = 'transform var(--move)';
+    box.style.transform = '';
+    setTimeout(function () {
+      box.style.transition = '';
+      box.style.transformOrigin = '';
+    }, 300);
+  }
 
   // ---- Rules between panels: drag, arrow keys (32px), double click to even the split out ------------
 
