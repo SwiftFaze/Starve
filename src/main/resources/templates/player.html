@@ -9,12 +9,10 @@
           th:text="${item.catalogueNumber}">STV 0132</span>
     <div class="now-text">
       <span class="now-cat" th:text="${item.catalogueNumber}">STV 0132</span>
-      <div class="now-line">
-        <span class="now-title" th:text="${item.title}">Title</span>
-        <th:block th:replace="~{star :: star}"></th:block>
-      </div>
+      <span class="now-title" th:text="${item.title}">Title</span>
       <span class="now-source" th:text="${item.sourceTitle}">Source</span>
     </div>
+    <th:block th:replace="~{star :: star}"></th:block>
   </div>
 
   <div class="transport" th:unless="${kind == 'disabled'}">

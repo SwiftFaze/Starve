@@ -2217,7 +2217,7 @@ a.title:hover {
   bottom: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: auto minmax(14rem, 22rem) minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(14rem, 22rem) auto minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 1.25rem;
   min-height: 5.5rem;
@@ -2267,21 +2267,9 @@ a.title:hover {
   text-overflow: ellipsis;
 }
 
-/* The title with the favourite star beside it: the title takes the room and keeps its ellipsis or ticker. */
-.now-line {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.now-line .now-title {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.now-line .star {
-  flex: none;
+/* The favourite star has its own cell after the text, centred on the deck like the play/pause beside it. */
+.now > .star {
+  align-self: center;
 }
 
 .ticker {
@@ -2323,7 +2311,7 @@ a.title:hover {
 
 /* The deck's two square controls, the play/pause and the favourite star, share one size. */
 .pause,
-.now-line .toggle {
+.now > .star .toggle {
   width: var(--deck-control);
   height: var(--deck-control);
   min-height: var(--deck-control);
@@ -3550,10 +3538,10 @@ body[data-split][data-list="strip"] .load-more {
   /* The deck: the waveform across the top, where a thumb reaches it, then art, title and Eject. */
   .player {
     --deck-control: 2.75rem;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas:
-      "transport transport transport"
-      "art text stop";
+      "transport transport transport transport"
+      "art text star stop";
     gap: 0.5rem 0.75rem;
     padding: 0.5rem 0.75rem 0.625rem;
     padding-bottom: calc(0.625rem + env(safe-area-inset-bottom));
@@ -3571,6 +3559,10 @@ body[data-split][data-list="strip"] .load-more {
 
   .now-text {
     grid-area: text;
+  }
+
+  .now > .star {
+    grid-area: star;
   }
 
   .now-cat {
