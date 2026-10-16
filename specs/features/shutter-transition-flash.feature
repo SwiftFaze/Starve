@@ -27,9 +27,10 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
   switches now include every in-app link), and the full-page-switch behaviour
   of theme.js (the bar's plain links, Sign out and the access forms sweeping
   the shutter in and then loading the next page covered), which this feature
-  retires; nothing else in theme-switch.feature or
-  sources-keeps-playing.feature changes (the Timeline <-> Sources swap that
-  keeps the dock playing is untouched).
+  retires; nothing else in theme-switch.feature changes. In
+  sources-keeps-playing.feature, Account and Settings join the Timeline and
+  Sources as pages that carry the dock, so the bar's switches between those
+  four keep playback running (playtest request).
   Out of scope: the mobile header layout (#80) and the mobile post view (#78);
   the Import link on Sources, the Delete link on Settings and the group,
   Favourites, Later and Load more links (the first two stay plain links with
@@ -184,9 +185,10 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
 #     shutter, no flash. Reset a password, then Back to Settings: the same.
 #   - Back and Forward through a few of these pages: each restores without a
 #     reload or flash.
-#   - Playing a video or track, then Timeline -> Sources: still plays on
-#     (unchanged). Timeline -> Account: playback stops, as a page change always
-#     has; no error.
+#   - Playing a video or track, then Timeline -> Sources -> Account ->
+#     Settings -> Timeline by the bar's links: it plays on throughout, and
+#     each page's sleeve and title are right. Timeline -> Import, Delete user
+#     or a form post on Account/Settings: playback stops (a full page load).
 #   - Signed out: Docs, Sign in, Sign up and the wordmark on the landing page;
 #     the cross-links between Docs, Sign in and Sign up; the guide link on the
 #     Setup page: each sweeps with no reload and no flash. The Docs table of
@@ -208,8 +210,9 @@ Feature: Page switches behind the shutter swap in place, with no reload or flash
 #   - Making Sign in, Sign up, Setup and Sign out flash-free or swapped: they
 #     change who the visitor is, and the page they land on loads different
 #     scripts, so they stay full page loads and lose the shutter.
-#   - Keeping playback running across any switch other than Timeline <->
-#     Sources.
+#   - Keeping playback running beyond the Timeline, Sources, Account and
+#     Settings bar switches (sources-keeps-playing.feature); form posts and
+#     plain-link pages still reload.
 #   - Putting the Import and Delete links behind the shutter.
 #   - A JS test runner (playtest only, as for the rest of the shutter).
 #
