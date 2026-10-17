@@ -969,10 +969,21 @@
 
   function reader() { return document.getElementById('reader'); }
 
+  // While a post covers a phone's screen, everything behind it is inert: Tab and a screen reader stay in the
+  // post (and the deck, which sits above it), and closing the post gives the page back.
+  function behindReader(inert) {
+    ['bar', 'sheet'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.inert = inert;
+    });
+    document.querySelectorAll('.sleeve').forEach(function (el) { el.inert = inert; });
+  }
+
   function emptyReader() {
     var pane = reader();
     if (pane) pane.replaceChildren();
     body.classList.remove('reading');
+    behindReader(false);
     layout();
   }
 
@@ -990,8 +1001,10 @@
     }
   };
 
-  // Opening a post marks its row read (the server already did) and makes the reader the active panel.
-  function readerOpened() {
+  // Opening a post marks its row read (the server already did) and makes the reader the active panel. Opened
+  // by the visitor (not restored on load), focus moves to the post's title, so a screen reader starts there
+  // rather than having the whole post read out.
+  function readerOpened(byVisitor) {
     var view = postView();
     if (!view) return;
     // The stored post names its view: "12" is a post in the reader, "12/detail" a playable item's detail view.
@@ -1000,11 +1013,21 @@
     var pane = reader();
     if (pane) pane.scrollTop = 0;
     body.classList.toggle('reading', phone());
+    behindReader(phone());
     layout();
     activate('post');
     markRowRead(view.dataset.item);
-    var close = view.querySelector('.reader-close');
-    if (close && phone()) close.focus({ preventScroll: true });
+    // On a phone Previous and Next are drawn nowhere (swipes do their job); they stay for screen readers but
+    // leave the tab order, so Tab never lands on something invisible.
+    view.querySelectorAll('.post-nav a').forEach(function (link) {
+      if (phone()) link.setAttribute('tabindex', '-1');
+      else link.removeAttribute('tabindex');
+    });
+    var title = view.querySelector('.reader-title');
+    if (title && byVisitor) {
+      title.setAttribute('tabindex', '-1');
+      title.focus({ preventScroll: true });
+    }
   }
 
   // ---- A post's image, clicked, opens large over the page; a click, Escape or × closes it -------------
@@ -1472,9 +1495,48 @@
 
   document.addEventListener('htmx:afterSwap', function (event) {
     if (event.detail && event.detail.target === dock()) start();
-    if (event.detail && event.detail.target === reader()) readerOpened();
+    if (event.detail && event.detail.target === reader()) {
+      var config = event.detail.requestConfig;
+      readerOpened(Boolean(config && config.triggeringEvent));
+    }
   });
   document.addEventListener('htmx:afterSettle', markPlaying);
+
+  // ---- Announcements: one polite status line for what would otherwise change silently ------------
+
+  var announced = null;
+
+  function announce(text) {
+    var line = document.getElementById('announce');
+    if (!line) return;
+    // Emptied first, so the same words twice in a row are still read out.
+    line.textContent = '';
+    setTimeout(function () { line.textContent = text; }, 60);
+  }
+
+  function unreadNote() {
+    var meta = document.querySelector('#series .series-meta');
+    var count = meta && /([0-9]+) unread/.exec(meta.textContent);
+    return count ? ' \u00b7 ' + count[1] + ' unread' : '';
+  }
+
+  function resultsNote() {
+    var rows = document.querySelectorAll('#sheet-body .item').length;
+    var more = document.querySelector('#sheet-body .load-more') ? ' shown, more below' : '';
+    if (rows === 0) return 'No results';
+    return rows + (rows === 1 ? ' result' : ' results') + more;
+  }
+
+  document.addEventListener('htmx:afterSettle', function (event) {
+    var config = event.detail.requestConfig;
+    var elt = config && config.elt;
+    if (!elt || !elt.matches || config === announced) return;
+    if (elt.matches('.read-all')) announce('All marked read');
+    else if (elt.matches('form[hx-post$="/read"]')) announce('Marked read' + unreadNote());
+    else if (elt.id === 'search-q') announce(resultsNote());
+    else return;
+    announced = config;
+  });
 
   // ---- Swaps between pages (theme.js swaps the shell for non-deck pages) ---------------------
 
