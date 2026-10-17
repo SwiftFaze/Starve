@@ -48,12 +48,12 @@
 
   // ---- The shutter: a red obi panel with chevron edges that sweeps across the page ---------
 
-  // Every sweep, in or out, theme or page, runs at one speed and easing with one hold between.
-  var SWEEP = 1250;
-  var HOLD = 400;
+  // Two paces, one easing. A theme change is rare and deliberate, so it gets the full sweep and a hold
+  // while covered. A page switch happens many times a session, so it sweeps fast with no hold (#102):
+  // still in, swap under full cover, out, but about 0.5s instead of about 3s.
+  var THEME = { sweep: 1250, hold: 400 };
+  var PAGE = { sweep: 250, hold: 0 };
   var EASE = 'cubic-bezier(0.65, 0, 0.35, 1)';
-  var IN = { duration: SWEEP, easing: EASE, fill: 'forwards' };
-  var OUT = { duration: SWEEP, delay: HOLD, easing: EASE, fill: 'forwards' };
   var busy = false;
 
   function still() {
@@ -103,12 +103,13 @@
     return panel;
   }
 
-  function sweepIn(panel) {
-    return panel.animate([{ transform: 'translateX(-130%)' }, { transform: 'translateX(0)' }], IN).finished;
+  function sweepIn(panel, pace) {
+    var timing = { duration: pace.sweep, easing: EASE, fill: 'forwards' };
+    return panel.animate([{ transform: 'translateX(-130%)' }, { transform: 'translateX(0)' }], timing).finished;
   }
 
-  function sweepOut(panel, hold) {
-    var timing = { duration: OUT.duration, delay: hold === undefined ? HOLD : hold, easing: EASE, fill: 'forwards' };
+  function sweepOut(panel, pace) {
+    var timing = { duration: pace.sweep, delay: pace.hold, easing: EASE, fill: 'forwards' };
     return panel.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(130%)' }], timing).finished
       .then(function () { panel.remove(); }, function () { panel.remove(); });
   }
@@ -121,9 +122,9 @@
     if (still()) { apply(next); return; }
     busy = true;
     var panel = shutter(next, '-130%', 'Theme', 'Switching to ' + next);
-    sweepIn(panel).then(function () {
+    sweepIn(panel, THEME).then(function () {
       apply(next);
-      return sweepOut(panel);
+      return sweepOut(panel, THEME);
     }).then(function () { busy = false; }, function () { busy = false; });
   });
 
@@ -226,7 +227,7 @@
     busy = true;
     var panel = shutter(link.textContent.trim(), '-130%', 'Page', '\u2192 ' + link.getAttribute('href'));
     pending = { elt: link, panel: panel, href: link.href };
-    sweepIn(panel).then(function () { event.detail.issueRequest(true); }, fallBack);
+    sweepIn(panel, PAGE).then(function () { event.detail.issueRequest(true); }, fallBack);
   });
 
   document.addEventListener('htmx:afterSettle', function (event) {
@@ -235,7 +236,7 @@
     var panel = pending.panel;
     pending = null;
     window.scrollTo(0, 0);
-    sweepOut(panel).then(function () { busy = false; }, function () { busy = false; });
+    sweepOut(panel, PAGE).then(function () { busy = false; }, function () { busy = false; });
   });
 
   // Back and forward between pages swapped in place: ask for the page again into the same
