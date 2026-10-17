@@ -72,7 +72,9 @@ and subscribes to that feed. A page with no discoverable feed is rejected with a
 message asking for the feed URL. Starve fetches the feed once to confirm it is
 valid RSS or Atom before saving, and rejects duplicates (including a page whose
 feed you already follow). Each source shows its title, when it
-was last fetched and its last error, if any; unsubscribe from the same page.
+was last fetched (in UTC: just the time if it was today, "yesterday" and the time
+the day before, otherwise the date; hover it for the full timestamp) and its last
+error, if any; unsubscribe from the same page.
 
 Subscriptions are polled in the background with conditional GET (ETag /
 Last-Modified), so unchanged feeds cost almost nothing. One failing feed never

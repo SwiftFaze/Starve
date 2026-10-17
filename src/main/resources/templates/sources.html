@@ -31,7 +31,7 @@
         <h1 class="series roster-name">Sources</h1>
         <p class="series-meta">
           <th:block th:text="${total == 1} ? '1 source' : |${total} sources|">24 sources</th:block>
-          <span th:text="${grouped == 1} ? 'In 1 group' : |In ${grouped} groups|">In 3 groups</span>
+          <span th:text="${grouped == 0} ? 'No groups' : (${grouped == 1} ? 'In 1 group' : |In ${grouped} groups|)">In 3 groups</span>
           <strong class="failing-count" th:if="${failing > 0}" th:text="|${failing} failing|">1 failing</strong>
         </p>
         <button type="button" class="theme-switch" aria-label="Switch theme"></button>
@@ -55,10 +55,11 @@
         <label class="field-label" for="add-url">Add a source</label>
         <div class="field-row">
           <input class="field" id="add-url" type="text" name="url" inputmode="url" autocomplete="off"
-                 spellcheck="false" placeholder="Feed, YouTube channel, SoundCloud profile or website URL" required>
+                 spellcheck="false" placeholder="Paste a feed, channel or site URL" aria-describedby="add-url-hint" required>
           <button type="submit">Add</button>
           <a class="read-toggle" href="/import" title="Import from YouTube Takeout or an OPML file">Import</a>
         </div>
+        <p class="hint" id="add-url-hint">A feed URL, or the address of a YouTube channel, SoundCloud profile or website.</p>
       </form>
       </div>
       <div class="column-body">
@@ -74,7 +75,8 @@
           <div class="status">
             <p class="error" th:if="${source.error}" th:title="${source.error}"><span class="tag">Failed</span>
               <th:block th:text="${source.error}">HTTP 404 Not Found</th:block></p>
-            <span class="last-fetched" th:if="${source.lastFetched}" th:text="${source.error} ? |Last tried ${source.lastFetched}| : |Fetched ${source.lastFetched}|">Fetched 2026-10-12 14:30:00 UTC</span>
+            <span class="last-fetched" th:if="${source.lastFetched}"><th:block th:text="${source.error} ? 'Last tried' : 'Fetched'">Fetched</th:block>
+              <time th:datetime="${source.lastFetched.iso}" th:title="${source.lastFetched.full}" th:text="${source.lastFetched.short}">17:13 UTC</time></span>
             <span class="not-fetched" th:unless="${source.lastFetched}">Not fetched yet</span>
           </div>
           <div class="actions">
