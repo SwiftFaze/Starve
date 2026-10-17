@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.24](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.23...v1.1.0-beta.24) (2026-10-17)
+
+
+### Features
+
+* one heading outline on every page ([#125](https://github.com/SwiftFaze/Starve/issues/125)) ([bef8c2a](https://github.com/SwiftFaze/Starve/commit/bef8c2a257a6337cf2efd9aebe9763c864153249))
+
 ## [1.1.0-beta.23](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.22...v1.1.0-beta.23) (2026-10-17)
 
 
