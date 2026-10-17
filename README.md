@@ -115,6 +115,11 @@ everything shown when the page was rendered, so items that arrive meanwhile stay
 unread. **Show read** adds already-read items back to the list. Read items are
 kept until the retention age removes them.
 
+The bottom of a list that still has unread items says so, e.g. "End of list · 12
+unread", counting the whole view, not just the page. Only when nothing in the view is
+unread does it say **You're all caught up**, with how often sources are checked
+(`starve.poll.interval`); **Mark all read** is not offered then.
+
 Above the list, a navigation shows **All** and each group (alphabetical) with its
 unread count, e.g. `Music [12]`. Choosing a group (`/feed?group=<id>`) shows only its
 sources' items with the same order, paging and read state; **Mark all read** and
