@@ -13,7 +13,7 @@ class MobileHeaderSteps {
 
     @Then("the top bar has a menu button controlling its account actions")
     fun barHasMenu() {
-        val menu = requireNotNull(Regex("<button[^>]*class=\"bar-menu\"[^>]*>").find(bar())) { "no menu button: ${bar()}" }.value
+        val menu = requireNotNull(MENU_BUTTON.find(bar())) { "no menu button: ${bar()}" }.value
         assertTrue(menu.contains("aria-controls=\"bar-actions\""), menu)
         assertTrue(menu.contains("aria-expanded=\"false\""), menu)
         assertTrue(bar().contains("id=\"bar-actions\""), "the menu controls no account actions: ${bar()}")
@@ -68,4 +68,8 @@ class MobileHeaderSteps {
     private fun bar(): String = body().substringAfter("<header").substringBefore("</header>")
 
     private fun series(): String = body().substringAfter("id=\"series\"").substringBefore("</div>")
+
+    private companion object {
+        val MENU_BUTTON = Regex("<button[^>]*class=\"bar-menu\"[^>]*>")
+    }
 }

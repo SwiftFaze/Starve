@@ -1189,6 +1189,32 @@
     view.style.transition = '';
   }, { passive: true });
 
+  // The post a swipe this way leads to: the next (older) one leftward, the previous (newer) one rightward.
+  function neighbour(view, dx) {
+    return view.querySelector(dx < 0 ? '.post-next' : '.post-prev');
+  }
+
+  // A swipe acts once it has crossed a quarter of the screen.
+  function swipeMark() { return window.innerWidth / 4; }
+
+  // The veil over the list behind a pulled post: 0 leaves it in full, dark and blurred, 1 lifts it. The blur
+  // lifts more slowly than the dark.
+  function liftVeil(pane, lifted) {
+    pane.style.setProperty('--pull', String(lifted));
+    pane.style.setProperty('--pull-blur', String(lifted * lifted));
+  }
+
+  // Sideways (unless the touch began on wide content) or, at the very top, downward; anything else is a scroll.
+  function lockAxis(dx, dy) {
+    if (Math.abs(dx) > Math.abs(dy) * 1.2 && !gesture.wide) {
+      gesture.axis = 'x';
+    } else if (dy > 0 && gesture.atTop) {
+      gesture.axis = 'y';
+      reader().classList.add('pulling');
+    }
+    return gesture.axis !== null;
+  }
+
   document.addEventListener('touchmove', function (event) {
     if (!gesture) return;
     var touch = event.touches[0];
@@ -1196,38 +1222,37 @@
     var dy = touch.clientY - gesture.y;
     if (!gesture.axis) {
       if (Math.abs(dx) < LOCK_AFTER && Math.abs(dy) < LOCK_AFTER) return;
-      if (Math.abs(dx) > Math.abs(dy) * 1.2 && !gesture.wide) gesture.axis = 'x';
-      else if (dy > 0 && gesture.atTop) {
-        gesture.axis = 'y';
-        reader().classList.add('pulling');
+      if (!lockAxis(dx, dy)) {
+        gesture = null;
+        return;
       }
-      else { gesture = null; return; }
     }
     event.preventDefault();
     gesture.dx = dx;
     gesture.dy = dy;
-    var width = window.innerWidth;
-    if (gesture.axis === 'x') {
-      var link = gesture.view.querySelector(dx < 0 ? '.post-next' : '.post-prev');
-      // With nowhere to go the post only gives a little, like a rubber band.
-      var shift = link ? dx : dx / 4;
-      var mark = width / 4;
-      gesture.view.style.transform = 'translateX(' + shift + 'px)';
-      gesture.view.style.opacity = String(1 - Math.min(0.5, Math.abs(shift) / width));
-      var text = link ? (dx < 0 ? 'Next post ›' : '‹ Previous post') : (dx < 0 ? 'Last post' : 'First post');
-      showGestureHint(dx < 0 ? 'right' : 'left', text, !!link && Math.abs(dx) >= mark, Math.abs(dx) / mark);
-    } else {
-      var pull = Math.max(0, dy);
-      gesture.view.style.transform = 'translateY(' + pull + 'px)';
-      // The veil holds in full up to the mark and clears only as the post travels on, coming clear when
-      // it nears the bottom of the screen (or once letting go carries it away); the blur lifts more
-      // slowly than the dark.
-      var veil = Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT) / (window.innerHeight * 0.85 - PULL_CLOSE_AT)));
-      reader().style.setProperty('--pull', String(veil));
-      reader().style.setProperty('--pull-blur', String(veil * veil));
-      showGestureHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
-    }
+    if (gesture.axis === 'x') followSwipe(gesture.view, dx);
+    else followPull(gesture.view, dy);
   }, { passive: false });
+
+  function followSwipe(view, dx) {
+    var link = neighbour(view, dx);
+    // With nowhere to go the post only gives a little, like a rubber band.
+    var shift = link ? dx : dx / 4;
+    var mark = swipeMark();
+    view.style.transform = 'translateX(' + shift + 'px)';
+    view.style.opacity = String(1 - Math.min(0.5, Math.abs(shift) / window.innerWidth));
+    var text = link ? (dx < 0 ? 'Next post ›' : '‹ Previous post') : (dx < 0 ? 'Last post' : 'First post');
+    showGestureHint(dx < 0 ? 'right' : 'left', text, !!link && Math.abs(dx) >= mark, Math.abs(dx) / mark);
+  }
+
+  function followPull(view, dy) {
+    var pull = Math.max(0, dy);
+    view.style.transform = 'translateY(' + pull + 'px)';
+    // The veil holds in full up to the mark and lifts only as the post travels on, coming clear when it nears
+    // the bottom of the screen (or once letting go carries it away).
+    liftVeil(reader(), Math.max(0, Math.min(1, (pull - PULL_CLOSE_AT) / (window.innerHeight * 0.85 - PULL_CLOSE_AT))));
+    showGestureHint('top', 'Release to close', pull >= PULL_CLOSE_AT, pull / PULL_CLOSE_AT);
+  }
 
   function endGesture(event) {
     if (!gesture) return;
@@ -1235,20 +1260,26 @@
     gesture = null;
     if (!done.axis) return;
     hideGestureHint();
-    var width = window.innerWidth;
-    var speed = Math.abs(done.axis === 'x' ? done.dx : done.dy) / Math.max(1, Date.now() - done.t);
     var released = event.type === 'touchend';
-    if (done.axis === 'x') {
-      var link = done.view.querySelector(done.dx < 0 ? '.post-next' : '.post-prev');
-      if (released && link && (Math.abs(done.dx) >= width / 4 || speed >= FLICK)) {
-        var side = done.dx < 0 ? -1 : 1;
-        arriving = side < 0 ? 'from-right' : 'from-left';
-        settle(done.view, 'translateX(' + side * width + 'px)', '0', OUT_MS, function () { link.click(); });
-        return;
-      }
-      settle(done.view, '', '', BACK_MS);
+    if (done.axis === 'x') endSwipe(done, released);
+    else endPull(done, released);
+  }
+
+  // Let go past the mark, or with a flick, the post flies off that side and its neighbour is fetched.
+  function endSwipe(done, released) {
+    var link = neighbour(done.view, done.dx);
+    var speed = Math.abs(done.dx) / Math.max(1, Date.now() - done.t);
+    if (released && link && (Math.abs(done.dx) >= swipeMark() || speed >= FLICK)) {
+      var side = done.dx < 0 ? -1 : 1;
+      arriving = side < 0 ? 'from-right' : 'from-left';
+      settle(done.view, 'translateX(' + side * window.innerWidth + 'px)', '0', OUT_MS, function () { link.click(); });
       return;
     }
+    settle(done.view, '', '', BACK_MS);
+  }
+
+  // Let go past the mark, the post drops off the bottom and closes; short of it, it eases back.
+  function endPull(done, released) {
     var pane = reader();
     var clear = function () {
       pane.classList.remove('pulling', 'releasing');
@@ -1257,16 +1288,14 @@
     };
     pane.classList.add('releasing');
     if (released && done.dy >= PULL_CLOSE_AT) {
-      pane.style.setProperty('--pull', '1');
-      pane.style.setProperty('--pull-blur', '1');
+      liftVeil(pane, 1);
       settle(done.view, 'translateY(' + window.innerHeight + 'px)', '1', OUT_MS, function () {
         window.closeReader();
         clear();
       });
       return;
     }
-    pane.style.setProperty('--pull', '0');
-    pane.style.setProperty('--pull-blur', '0');
+    liftVeil(pane, 0);
     settle(done.view, '', '', BACK_MS, clear);
   }
 
@@ -1513,6 +1542,7 @@
   syncCenter();
   trackBar();
   trackHeights();
+
   // ---- Phone chrome: the bar's menu, the obi's group picker, a post's actions at its foot -------------
 
   var FOLD_MS = 160;
@@ -1602,19 +1632,14 @@
     });
   }
 
-
-  function placeChrome() {
-    placePostActions();
-  }
-
   document.addEventListener('htmx:afterSettle', function () {
     setMenu(false, true);
     setGroups(false, true);
-    placeChrome();
+    placePostActions();
   });
-  window.matchMedia(PHONE).addEventListener('change', placeChrome);
+  window.matchMedia(PHONE).addEventListener('change', placePostActions);
 
   markPlaying();
   syncTop();
-  placeChrome();
+  placePostActions();
 })();
