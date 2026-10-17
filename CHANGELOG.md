@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0-beta.21](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.20...v1.1.0-beta.21) (2026-10-17)
+
+
+### Bug Fixes
+
+* check new passwords early and keep rejected access forms filled ([#119](https://github.com/SwiftFaze/Starve/issues/119)) ([d17e5e5](https://github.com/SwiftFaze/Starve/commit/d17e5e584d92e49ecf4ef524fd0c6c24175d878f))
+* fit Sources fetch times, say No groups, shorten the add placeholder ([#117](https://github.com/SwiftFaze/Starve/issues/117)) ([34b265f](https://github.com/SwiftFaze/Starve/commit/34b265f3a32815bc7ddc2cfd97fb3edd557692ed))
+* show the detail view's name once when artist and source match ([#116](https://github.com/SwiftFaze/Starve/issues/116)) ([9affc6b](https://github.com/SwiftFaze/Starve/commit/9affc6b77e0630b589d4381929f9ac7b1a3a0831))
+* write light-theme obi text in ink and lift all text to 11px ([#121](https://github.com/SwiftFaze/Starve/issues/121)) ([48ce09f](https://github.com/SwiftFaze/Starve/commit/48ce09fd69bcece8753a65a5d8c8060f73261fca))
+
 ## [1.1.0-beta.20](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.19...v1.1.0-beta.20) (2026-10-17)
 
 
