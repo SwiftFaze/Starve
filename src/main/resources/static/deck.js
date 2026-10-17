@@ -1704,6 +1704,152 @@
   });
   window.matchMedia(PHONE).addEventListener('change', placePostActions);
 
+  // ---- Keyboard shortcuts on the timeline (#101) --------------------------------------------------
+  // Single keys, on the timeline only, never while typing in a field or with Ctrl, Alt or Meta held. The row
+  // cursor is the focused row's title, drawn by the usual cyan focus outline (the Scanline Rule). While the
+  // YouTube player has focus its own keys apply: the page never hears them.
+
+  var KEYS = [
+    ['j / k', 'Next / previous row'],
+    ['o or Enter', 'Open the row: its post, or play it'],
+    ['m', 'Mark read, then the next row'],
+    ['Space', 'Play / pause'],
+    ['n / p', 'Next / previous post'],
+    ['/', 'Search'],
+    ['?', 'Show these keys']
+  ];
+
+  function typing(target) {
+    return !!target.closest && !!target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+  }
+
+  function rows() { return Array.prototype.slice.call(document.querySelectorAll('#sheet .item')); }
+
+  function currentRow() {
+    var active = document.activeElement;
+    return active && active.closest ? active.closest('#sheet .item') : null;
+  }
+
+  function goToRow(row) {
+    var title = row && row.querySelector('.title');
+    if (!title) return;
+    title.focus({ preventScroll: true });
+    title.scrollIntoView({ block: 'nearest' });
+  }
+
+  function stepRow(by) {
+    var all = rows();
+    if (!all.length) return;
+    var at = all.indexOf(currentRow());
+    var next = at < 0 ? (by > 0 ? 0 : all.length - 1) : Math.min(all.length - 1, Math.max(0, at + by));
+    goToRow(all[next]);
+  }
+
+  function openCurrent() {
+    var row = currentRow();
+    var title = row && row.querySelector('.title');
+    if (!title) return false;
+    title.click();
+  }
+
+  // The cursor moves on before the row leaves, so it lands on what was below it (or above, at the end).
+  function markCurrentRead() {
+    var row = currentRow();
+    var button = row && row.querySelector('form[hx-post$="/read"] button');
+    if (!button) return false;
+    var all = rows();
+    var at = all.indexOf(row);
+    var next = all[at + 1] || all[at - 1];
+    button.click();
+    goToRow(next);
+  }
+
+  function playPause(event) {
+    if (event.target.closest && event.target.closest('button') || !state) return false;
+    if (state.playing) state.pause(); else state.play();
+  }
+
+  function clickIn(selector) {
+    var control = document.querySelector(selector);
+    if (!control) return false;
+    control.click();
+  }
+
+  function focusSearch() {
+    var field = document.getElementById('search-q');
+    if (!field) return false;
+    field.focus();
+  }
+
+  // The key list: a square on the raised surface inside a strong hairline, mono keys over dim words.
+  function keysPanel() {
+    var panel = document.getElementById('keys');
+    if (panel) return panel;
+    panel = document.createElement('div');
+    panel.id = 'keys';
+    panel.className = 'keys';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'Keyboard shortcuts');
+    panel.tabIndex = -1;
+    panel.hidden = true;
+    var title = document.createElement('p');
+    title.className = 'keys-title';
+    title.textContent = 'Keys';
+    panel.appendChild(title);
+    var list = document.createElement('dl');
+    KEYS.forEach(function (pair) {
+      var entry = document.createElement('div');
+      var key = document.createElement('dt');
+      key.textContent = pair[0];
+      var what = document.createElement('dd');
+      what.textContent = pair[1];
+      entry.appendChild(key);
+      entry.appendChild(what);
+      list.appendChild(entry);
+    });
+    panel.appendChild(list);
+    body.appendChild(panel);
+    return panel;
+  }
+
+  var keysReturn = null;
+
+  function showKeys(open) {
+    var panel = keysPanel();
+    if (open === !panel.hidden) return;
+    panel.hidden = !open;
+    if (open) {
+      keysReturn = document.activeElement;
+      panel.focus();
+    } else if (keysReturn && keysReturn.focus) {
+      keysReturn.focus();
+    }
+  }
+
+  var SHORTCUTS = {
+    j: function () { stepRow(1); },
+    k: function () { stepRow(-1); },
+    o: openCurrent,
+    m: markCurrentRead,
+    ' ': playPause,
+    n: function () { return clickIn('#reader .post-next'); },
+    p: function () { return clickIn('#reader .post-prev'); },
+    '/': focusSearch,
+    '?': function () { showKeys(keysPanel().hidden); }
+  };
+
+  document.addEventListener('keydown', function (event) {
+    if (event.ctrlKey || event.altKey || event.metaKey || event.defaultPrevented) return;
+    if (!document.querySelector('#sheet[data-page="timeline"]')) return;
+    if (event.key === 'Escape') {
+      showKeys(false);
+      return;
+    }
+    var shortcut = SHORTCUTS[event.key];
+    if (!shortcut || typing(event.target)) return;
+    if (shortcut(event) !== false) event.preventDefault();
+  });
+
   markPlaying();
   syncTop();
   placePostActions();

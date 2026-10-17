@@ -145,6 +145,14 @@ deletes a saved item, though removing a source still deletes its items. If both
 `favourites=1` and `later=1` are given, Favourites wins. Searching from Later still searches
 every item, saved or not, and saved items stay searchable; clearing the search returns to Later.
 
+## Keyboard shortcuts
+
+On the timeline, single keys work whenever you are not typing in a field (and never with Ctrl, Alt or
+Cmd held): **j** / **k** move to the next / previous row, **o** or **Enter** opens it (its post, or
+plays it), **m** marks it read and moves on, **Space** plays or pauses the deck, **n** / **p** step to
+the next / previous post while one is open, **/** jumps to search, and **?** shows the list. Escape
+closes the list. While the YouTube player has focus, its own keys apply.
+
 ## Searching
 
 The magnifier at the right end of the list's title row opens a search field across
