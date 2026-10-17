@@ -38,6 +38,6 @@ class TouchTargetSteps {
     private companion object {
         const val CR = "\r"
         const val ESCAPED_NEWLINE = "\\n"
-        val LIST_END = Regex("<form [^>]*class=\"read-all list-end\"[^>]*>")
+        val LIST_END = Regex("<form [^>]*class=\"read-all end-read-all\"[^>]*>")
     }
 }

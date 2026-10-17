@@ -11,6 +11,7 @@ import dev.starve.domain.Catalogue
 import dev.starve.domain.Cursor
 import dev.starve.domain.LaterCursor
 import dev.starve.domain.TimelineItem
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ResponseStatusException
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 
 /**
@@ -113,6 +115,7 @@ class HomeController(
     private val laterService: LaterService,
     private val groups: GroupService,
     private val clock: Clock,
+    @Value("\${starve.poll.interval:PT30M}") private val pollInterval: Duration = Duration.parse("PT30M"),
 ) {
     @GetMapping("/feed")
     fun home(
@@ -123,10 +126,23 @@ class HomeController(
     ): String {
         // A list rendered now is stamped now; a page of a list already on screen keeps that list's stamp.
         val scope = scopeOf(groups, owner, query).let { it.copy(seen = it.seen ?: clock.millis()) }
+        val nav = groups.navigation(owner)
         addPage(model, pageFor(owner, scope, query.after), scope)
+        model.addAttribute("end", listEnd(nav, scope))
         fragmentFor(htmx, query)?.let { return it }
-        addChrome(model, groups.navigation(owner), scope)
+        addChrome(model, nav, scope)
         return "home"
+    }
+
+    /** How the list of the view [query] selects ends, which its end marker fetches again after an item is read. */
+    @GetMapping("/feed/end")
+    fun end(
+        @CurrentUserId owner: Long,
+        @ModelAttribute query: TimelineQuery,
+        model: Model,
+    ): String {
+        model.addAttribute("end", listEnd(groups.navigation(owner), scopeOf(groups, owner, query)))
+        return "home :: end"
     }
 
     @GetMapping("/items/{id}/open")
@@ -184,6 +200,11 @@ class HomeController(
 
     private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
 
+    private fun listEnd(
+        nav: GroupNavigation,
+        scope: Scope,
+    ) = ListEnd(seriesOf(nav, scope).unread, everyPhrase(pollInterval), viewHref("/feed/end", scope))
+
     /** The navigation, series and toggles around the page; only a full page needs them. */
     private fun addChrome(
         model: Model,
@@ -219,7 +240,7 @@ private fun addPage(
     model.addAttribute("hasSources", page.hasSources)
     model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
     model.addAttribute("moreHref", moreHref(page, scope))
-    model.addAttribute("countsHref", countsHref(scope))
+    model.addAttribute("countsHref", viewHref("/feed/counts", scope))
 }
 
 private fun seriesOf(
@@ -259,10 +280,13 @@ private fun moreHref(
         link(listOfNotNull(scope.searchParam) + rest + listOfNotNull(scope.seenParam))
     }
 
-/** Where the view [scope] shows fetches its unread counts: the view without its search, paging or render moment. */
-private fun countsHref(scope: Scope): String {
+/** [path] for the view [scope] shows: its group, filter and read state, without its search, paging or render moment. */
+private fun viewHref(
+    path: String,
+    scope: Scope,
+): String {
     val query = parts(scope.groupId, if (scope.showAll) "all" else null, null, scope.filter)
-    return "/feed/counts" + if (query.isEmpty()) "" else "?" + query.joinToString("&")
+    return path + if (query.isEmpty()) "" else "?" + query.joinToString("&")
 }
 
 private fun href(

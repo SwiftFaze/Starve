@@ -83,7 +83,7 @@
           <a class="read-toggle" th:unless="${searching}" th:href="${toggleHref}" th:attr="hx-get=${toggleHref}"
              hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
              hx-push-url="true" th:text="${showAll} ? 'Hide read' : 'Show read'">Show read</a>
-          <form th:unless="${searching}" class="read-all" method="post" th:action="@{/read-all}" hx-post="/read-all"
+          <form th:unless="${searching or end.caughtUp}" class="read-all" method="post" th:action="@{/read-all}" hx-post="/read-all"
                 hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML swap:420ms">
             <input type="hidden" name="before" th:value="${renderedAt}">
             <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
@@ -126,11 +126,23 @@
           <a th:if="${moreHref}" class="load-more" th:href="${moreHref}"
              th:attr="hx-get=${moreHref}" hx-swap="outerHTML">Load more</a>
           <p th:if="${searching and #lists.isEmpty(items)}" class="sheet-note">No matches</p>
-          <p th:if="${moreHref == null and !emptyFavourites and !emptyLater and !searching}" class="caught-up">You're all caught up</p>
+          <!-- Reaching the bottom and having nothing left to read are different moments: only a view with nothing
+               unread is caught up. The marker fetches itself again after a read, so it turns caught up in place. -->
+          <th:block th:if="${moreHref == null and !emptyFavourites and !emptyLater and !searching}">
+            <th:block th:fragment="end">
+              <th:block th:if="${end.caughtUp}">
+                <p class="caught-up">You're all caught up</p>
+                <p class="caught-up-note" th:text="|Sources are checked ${end.checked}|">Sources are checked every 30 minutes</p>
+              </th:block>
+              <p th:unless="${end.caughtUp}" class="list-end" th:attr="hx-get=${end.refreshHref}"
+                 hx-trigger="starve:read from:body" hx-swap="outerHTML">End of list<th:block th:if="${end.unread != null}"> · <span
+                  th:text="|${end.unread} unread|">2 unread</span></th:block></p>
+            </th:block>
+          </th:block>
           <!-- At the end of a long list on a phone, what comes next is within thumb reach: the bar's actions are far
                above by now. Shown only where unread rows are left on this page (CSS: phones only). -->
           <form th:if="${moreHref == null and !searching and !favourites and !later and !#lists.isEmpty(items.?[!read])}"
-                class="read-all list-end" method="post" th:action="@{/read-all}" hx-post="/read-all"
+                class="read-all end-read-all" method="post" th:action="@{/read-all}" hx-post="/read-all"
                 hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML swap:420ms">
             <input type="hidden" name="before" th:value="${renderedAt}">
             <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
