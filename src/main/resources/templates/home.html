@@ -122,6 +122,15 @@
              th:attr="hx-get=${moreHref}" hx-swap="outerHTML">Load more</a>
           <p th:if="${searching and #lists.isEmpty(items)}" class="sheet-note">No matches</p>
           <p th:if="${moreHref == null and !emptyFavourites and !emptyLater and !searching}" class="caught-up">You're all caught up</p>
+          <!-- At the end of a long list on a phone, what comes next is within thumb reach: the bar's actions are far
+               above by now. Shown only where unread rows are left on this page (CSS: phones only). -->
+          <form th:if="${moreHref == null and !searching and !favourites and !later and !#lists.isEmpty(items.?[!read])}"
+                class="read-all list-end" method="post" th:action="@{/read-all}" hx-post="/read-all"
+                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML swap:420ms">
+            <input type="hidden" name="before" th:value="${renderedAt}">
+            <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
+            <button type="submit">Mark all read</button>
+          </form>
         </th:block>
         <p class="sheet-note" th:if="${emptyFavourites}">No favourites yet. Star an item on the timeline to keep it here.</p>
         <p class="sheet-note" th:if="${emptyLater}">Nothing saved for later. Use the clock on an item to keep it here.</p>

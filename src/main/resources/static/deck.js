@@ -1363,11 +1363,26 @@
     return button;
   }
 
+  // Whether a control the reader may want sits under the button: a row's actions or a post's head. The
+  // button then steps aside rather than cover them.
+  function overControls(button) {
+    var box = button.getBoundingClientRect();
+    var points = [[box.left + 2, box.top + 2], [box.right - 2, box.top + 2], [box.left + 2, box.bottom - 2],
+      [box.right - 2, box.bottom - 2], [(box.left + box.right) / 2, (box.top + box.bottom) / 2]];
+    return points.some(function (point) {
+      return document.elementsFromPoint(point[0], point[1]).some(function (el) {
+        return el !== button && !!el.closest && !!el.closest('.item .actions, .reader-head');
+      });
+    });
+  }
+
   function syncTop() {
     if (!phone()) { var old = document.getElementById('to-top'); if (old) old.hidden = true; return; }
     var pane = scroller();
     var top = pane ? pane.scrollTop : window.scrollY;
-    topButton().hidden = top < window.innerHeight * 0.8;
+    var button = topButton();
+    button.hidden = top < window.innerHeight * 0.8;
+    if (!button.hidden && document.elementsFromPoint) button.hidden = overControls(button);
   }
 
   document.addEventListener('click', function (event) {

@@ -3857,6 +3857,62 @@ body[data-split][data-list="strip"] .load-more {
   display: none;
 }
 
+/* ---- Phone touch targets (#98): every control at least 44x44, or a 44x44 hit area around a small drawing */
+
+.list-end {
+  display: none;
+}
+
+@media (max-width: 60rem) {
+  button.toggle,
+  a.toggle {
+    width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  /* The chevrons stay a small drawing; an invisible square around them takes the tap. */
+  .theme-switch {
+    position: relative;
+  }
+
+  .theme-switch::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
+  }
+
+  /* The whole line of the wordmark is the link, not just its letters. */
+  .wordmark a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .sheet form button,
+  button.switch {
+    min-height: 2.75rem;
+  }
+
+  .docs-body pre .copy {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .list-end {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .list-end button {
+    min-width: 50%;
+  }
+}
+
 @media (min-width: 60.0625rem) {
   .to-top {
     display: none;
