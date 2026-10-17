@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.27](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.26...v1.1.0-beta.27) (2026-10-17)
+
+
+### Features
+
+* 44px phone targets, a back-to-top that steps aside, Mark all read at the end ([#133](https://github.com/SwiftFaze/Starve/issues/133)) ([b3bcf8a](https://github.com/SwiftFaze/Starve/commit/b3bcf8a620b9fb0797ba1d6b88d6c753f945a1cc))
+* keyboard shortcuts on the timeline ([#132](https://github.com/SwiftFaze/Starve/issues/132)) ([7af6f26](https://github.com/SwiftFaze/Starve/commit/7af6f268b6c06b394a7e07a0d79e51b961b728ae))
+
 ## [1.1.0-beta.26](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.25...v1.1.0-beta.26) (2026-10-17)
 
 
