@@ -431,6 +431,9 @@ The signed-out cover. A cover title in Akira, an Archivo pitch (up to 34rem, dim
 ### Access Form
 Sign in, sign up and set up share one shape: a sheet head, mono field labels over fields, a checkbox row where needed, the full-width primary button, and an Archivo line linking to the other form. Beside it, a notes list: mono uppercase terms over dim Archivo text on hairlines, under a strong hairline.
 
+### Error Page
+Every error the app answers with a page (an unknown address, someone else's or a missing id, a page for admins only, an expired form, a server failure) uses `error.html` instead of Spring Boot's Whitelabel page. It has the bar for the visitor's state (the app bar signed in, the public bar signed out) and the status code as the obi's name. The sheet head names the problem in plain words: "Nothing here", "Admins only", "This form expired", "Not allowed", "Something broke on this server", or "That didn't work". Under it are one dim line of help and a filled link back, to the Timeline signed in or Home signed out. It never shows the exception, the resource or a stack trace, so a 404 for another user's id reads exactly like one for an id that never existed. Clients that do not ask for HTML keep the JSON error body.
+
 ### Settings Sheet
 Groups under small mono uppercase headings (0.75rem, 0.12em, dim) on a strong hairline. Each setting is a row on a hairline: name in Archivo over a hint, the control on the right. The switch is one 2.5rem button split into Off and On cells; the current cell is filled with the text color, and on hover the other cell shows the raised surface.
 
