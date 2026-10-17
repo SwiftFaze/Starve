@@ -64,9 +64,16 @@ class AccountSteps {
         remembered = requireNotNull(app.loggedSetupCode()) { "no setup code logged" }
     }
 
+    /** Opens [path] as a page, with the fetch metadata a browser sends for it. */
     @Given("I have requested {string}")
     fun haveRequested(path: String) {
-        World.response = app.get(path)
+        World.response = app.get(path, PAGE_LOAD)
+    }
+
+    /** Fetches [path] the way a browser does on its own (DevTools, a manifest, robots.txt): not to show a page. */
+    @Given("the browser has fetched {string} in the background")
+    fun fetchedInBackground(path: String) {
+        World.response = app.get(path, BACKGROUND_FETCH)
     }
 
     // ---- First-run setup ----------------------------------------------------------------------
@@ -376,3 +383,12 @@ class AccountSteps {
             .query(String::class.java)
             .list()
 }
+
+private val PAGE_LOAD =
+    mapOf(
+        "Accept" to "text/html,application/xhtml+xml,*/*;q=0.8",
+        "Sec-Fetch-Dest" to "document",
+        "Sec-Fetch-Mode" to "navigate",
+    )
+
+private val BACKGROUND_FETCH = mapOf("Accept" to "*/*", "Sec-Fetch-Dest" to "empty", "Sec-Fetch-Mode" to "cors")

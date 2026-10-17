@@ -74,7 +74,7 @@ class SecurityAccessTest : SecurityTestBase() {
     fun `the page a visitor asked for is where the login returns, without a continue parameter`() {
         withAccounts()
         val session = MockHttpSession()
-        mvc.perform(get("/sources").session(session)).andExpect(status().isFound)
+        mvc.perform(get("/sources").session(session).header("Sec-Fetch-Dest", "document")).andExpect(status().isFound)
 
         val result = login(ADMIN, session = session)
 
@@ -90,6 +90,55 @@ class SecurityAccessTest : SecurityTestBase() {
         val result = login(ADMIN, session = session)
 
         assertEquals("/feed", result.response.redirectedUrl)
+    }
+
+    @Test
+    fun `without fetch metadata, a request for HTML counts as a page`() {
+        withAccounts()
+        val session = MockHttpSession()
+        mvc.perform(get("/sources").session(session).header("Accept", "text/html,*/*;q=0.8"))
+
+        assertEquals("http://localhost/sources", login(ADMIN, session = session).response.redirectedUrl)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["empty", "manifest", "image"])
+    fun `a request the browser makes on its own is not what the login returns to`(destination: String) {
+        withAccounts()
+        val session = MockHttpSession()
+        val fetch = get("/robots.txt").session(session).header("Sec-Fetch-Dest", destination)
+        mvc.perform(fetch.header("Accept", "text/html"))
+
+        assertEquals("/feed", login(ADMIN, session = session).response.redirectedUrl)
+    }
+
+    @Test
+    fun `a request without fetch metadata that does not ask for HTML is not what the login returns to`() {
+        withAccounts()
+        val session = MockHttpSession()
+        mvc.perform(get("/sources").session(session).header("Accept", "application/json"))
+
+        assertEquals("/feed", login(ADMIN, session = session).response.redirectedUrl)
+    }
+
+    @Test
+    fun `only a GET is what the login returns to`() {
+        withAccounts()
+        val session = MockHttpSession()
+        mvc.perform(post("/sources").session(session).header("Sec-Fetch-Dest", "document"))
+
+        assertEquals("/feed", login(ADMIN, session = session).response.redirectedUrl)
+    }
+
+    @Test
+    fun `a well-known path is public, so it never sends anyone to the login`() {
+        withAccounts()
+        val session = MockHttpSession()
+
+        val result = mvc.perform(get("/.well-known/appspecific/com.chrome.devtools.json").session(session)).andReturn()
+
+        assertNull(result.response.redirectedUrl)
+        assertEquals("/feed", login(ADMIN, session = session).response.redirectedUrl)
     }
 
     @Test

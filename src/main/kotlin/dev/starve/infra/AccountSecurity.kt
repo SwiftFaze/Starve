@@ -165,13 +165,29 @@ class CsrfCookieWriter : OncePerRequestFilter() {
     }
 }
 
-/** htmx fragment URLs are never saved, so a login after an htmx bounce lands on a full page. */
-fun htmxSafeRequestCache() =
+/**
+ * Saves a refused request for the login to return to only when it was a page the browser was opening. An htmx
+ * fragment would land the login on a bare fragment, and a request the browser makes on its own (DevTools' probe of
+ * a well-known path, a manifest, robots.txt) would land it on a 404.
+ */
+fun pageOnlyRequestCache() =
     HttpSessionRequestCache().apply {
         // Without this, Spring appends "?continue" to the page a login returns to.
         setMatchingRequestParameterName(null)
-        setRequestMatcher(RequestMatcher { request -> !isHtmxRequest(request) })
+        setRequestMatcher(RequestMatcher { request -> isPageLoad(request) && !isHtmxRequest(request) })
     }
+
+/**
+ * A GET the browser makes to show a page: its fetch metadata names a document, or, from a client that sends none,
+ * it asks for HTML.
+ */
+fun isPageLoad(request: HttpServletRequest): Boolean {
+    val destination = request.getHeader("Sec-Fetch-Dest")
+    val page = if (destination != null) destination == "document" else asksForHtml(request)
+    return request.method == "GET" && page
+}
+
+private fun asksForHtml(request: HttpServletRequest) = request.getHeader("Accept").orEmpty().contains("text/html")
 
 /** A browser is sent to /login; an htmx request is told to load /login as a whole page. */
 fun loginEntryPoint(): AuthenticationEntryPoint {

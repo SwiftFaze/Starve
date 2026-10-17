@@ -34,7 +34,10 @@ Feature: Accounts and login with first-run admin setup
 
   Covers: the users table and its migration; "/setup"; "/login"; "/logout";
   remember-me; the login and setup throttles; which routes are public; htmx
-  session expiry; cookie support in the acceptance-test client.
+  session expiry; cookie support in the acceptance-test client; which refused
+  request a login returns to: only a page the browser was opening, never an
+  htmx fragment or a request the browser makes on its own (#109), and
+  "/.well-known/" paths are public, so they never send anyone to the login.
   Supersedes: the "authentication" exclusion in project-skeleton.feature and
   chronological-feed.feature, and "There is no authentication" in
   docs/architecture.md.
@@ -185,6 +188,23 @@ Feature: Accounts and login with first-run admin setup
     Given a fresh SQLite database file
     And the application is running with the user "rob" with password "correct-horse-1"
     And I am not signed in
+    When I log in as "rob" with password "correct-horse-1"
+    Then the response redirects to "/feed"
+
+  Scenario: A request the browser made on its own is not where the login returns
+    Given a fresh SQLite database file
+    And the application is running with the user "rob" with password "correct-horse-1"
+    And I am not signed in
+    And the browser has fetched "/robots.txt" in the background
+    When I log in as "rob" with password "correct-horse-1"
+    Then the response redirects to "/feed"
+
+  Scenario: DevTools' probe of a well-known path never sends anyone to the login
+    Given a fresh SQLite database file
+    And the application is running with the user "rob" with password "correct-horse-1"
+    And I am not signed in
+    And the browser has fetched "/.well-known/appspecific/com.chrome.devtools.json" in the background
+    Then the response status is 404
     When I log in as "rob" with password "correct-horse-1"
     Then the response redirects to "/feed"
 

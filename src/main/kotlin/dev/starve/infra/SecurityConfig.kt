@@ -48,6 +48,8 @@ private val PUBLIC_PATHS =
         "/*.svg",
         "/fonts/**",
         "/favicon.ico",
+        // Browsers probe these on their own (Chrome's DevTools asks for one); an unknown one is a plain 404.
+        "/.well-known/**",
     )
 
 /**
@@ -107,7 +109,7 @@ class SecurityConfig {
             .formLogin { configureFormLogin(it) }
             .rememberMe { configureRememberMe(it, login) }
             .logout { configureLogout(it) }
-            .requestCache { it.requestCache(htmxSafeRequestCache()) }
+            .requestCache { it.requestCache(pageOnlyRequestCache()) }
             .exceptionHandling { it.authenticationEntryPoint(loginEntryPoint()) }
         return http.build()
     }
