@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ResponseStatusException
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
+import java.time.Clock
+import java.time.Instant
 
 data class SourceView(
     val id: Long,
     val title: String,
     val url: String,
-    val lastFetched: String?,
+    val lastFetched: FetchTime?,
     val error: String?,
     val groupId: Long?,
 )
@@ -30,6 +30,7 @@ data class SourceView(
 class SourcesController(
     private val subscriptions: SubscriptionService,
     private val groups: GroupService,
+    private val clock: Clock,
 ) {
     @GetMapping("/sources")
     fun sources(
@@ -108,7 +109,8 @@ class SourcesController(
         model: Model,
         message: String?,
     ): String {
-        model.addAttribute("sources", subscriptions.list(owner).map { it.toView() })
+        val now = clock.instant()
+        model.addAttribute("sources", subscriptions.list(owner).map { it.toView(now) })
         model.addAttribute("groups", groups.list(owner))
         model.addAttribute("message", message)
         return "sources"
@@ -125,12 +127,9 @@ class SourcesController(
         }
 }
 
-private val TIME_FORMAT: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'").withZone(ZoneOffset.UTC)
-
 private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
 
-private fun Source.toView(): SourceView {
-    val fetched = lastFetchedAt?.let { TIME_FORMAT.format(it) }
+private fun Source.toView(now: Instant): SourceView {
+    val fetched = lastFetchedAt?.let { FetchTime.of(it, now) }
     return SourceView(id, title, url, fetched, lastError, groupId)
 }
