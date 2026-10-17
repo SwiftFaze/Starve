@@ -30,6 +30,7 @@ class ErrorPagesTest {
     @Test
     fun `the copy carries the status code`() {
         assertEquals("503", ErrorCopy.of(503, signedIn = false, posted = false).code)
+        assertEquals("Try again in a moment. The details are in the server log.", ErrorCopy.of(503, false, false).help)
     }
 
     @Test
