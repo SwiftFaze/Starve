@@ -27,6 +27,7 @@ class PlayerController(
     private val player: PlayerService,
 ) {
     /** The docked player fragment of an item; requesting it marks the item read. */
+    @AnnouncesRead
     @GetMapping("/items/{id}/player")
     fun player(
         @CurrentUserId owner: Long,
