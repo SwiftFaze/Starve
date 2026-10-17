@@ -149,17 +149,6 @@ templates share:
   `#shell` (a fragment, an `HX-Redirect` after a session ends) is not swapped; the link is followed as a plain load.
 - Pages loaded from a switch need their scripts: `deck.js` on the dock pages and Import, `docs.js` on the public
   pages (it also enhances code blocks after a swap), `htmx.min.js` everywhere.
-- The timeline's search form is the first child of `#sheet`, outside `#sheet-body`. Typing swaps only `#sheet-body`
-  (`hx-target`/`hx-select="#sheet-body"`), so the field keeps focus; a group or view change swaps the whole `#sheet`
-  and so re-renders the form with the hidden origin inputs of the view it now searches.
-
-In the tiled workspace (`deck.js`, `starve.css`), two rules keep the video steady:
-
-- While a title bar is dragged, `body.dragging-pane .player` drops the deck and its video under the panel layer, so
-  the drop target and the lifted bar draw over the video, and the iframe ignores the pointer.
-- When a drop swaps or splits panels, `slideVideo` animates the video box by transform (FLIP): the box takes its new
-  size at once and is drawn from the old rectangle to the new one. Resizing the iframe frame by frame instead makes
-  the YouTube player re-lay out out of step with the slide, and it jitters.
 
 ## Detail view
 
@@ -218,8 +207,8 @@ that scrolls on its own, so the list scrolling never moves it. With a pane video
 video is a 16:9 strip above the post, and the horizontal `video-splitter` sets its height
 (`--video-h`, persisted as `starve.videoh`, Up/Down arrows step 32px, at least 120px for
 the video and 200px for the post). Opening a post never moves a video out of the pane.
-
-No layer contract changes: the sanitiser is an infra detail behind the existing fetcher port.
+Dragging and swapping panels keeps the video steady (`body.dragging-pane .player`,
+`slideVideo`'s FLIP slide); the rules and why are in `DESIGN.md`, Video Box.
 
 ## Full-text search
 
@@ -236,11 +225,11 @@ via `infra/SearchText` (jsoup). `SearchIndexMigration` (V10) back-fills existing
 with the same code. `domain/SearchRules.matchExpression` turns user input into the FTS5
 expression (each word quoted and ANDed, the last one a prefix, no operators), so
 user text can never be parsed as query syntax. `SearchService.search` goes through
-`SearchRepository.search` (`JdbcSearchRepository`, its own port like
-favourites); the layer contracts are unchanged.
-Search results ignore the view they were started from, but the search form carries it
-(Favourites, Later, group, show) as hidden origin inputs, so clearing a search returns
-there. The retention purge is a plain `DELETE` on `items` that skips favourites and items saved for later (`later_at IS NOT NULL`), so they stay
+`SearchRepository.search` (`JdbcSearchRepository`, its own port like favourites).
+The form is the first child of `#sheet`, outside `#sheet-body`: typing swaps only
+`#sheet-body`, so the field keeps focus, and a group or view change re-renders the whole
+sheet, form included. Results ignore the view a search started from, but the form carries
+it (Favourites, Later, group, show) as hidden origin inputs, so clearing it returns there. The retention purge is a plain `DELETE` on `items` that skips favourites and items saved for later (`later_at IS NOT NULL`), so they stay
 searchable (the trigger drops the rows of the items it does delete). Result rows use the shared `TIMELINE_COLUMNS`, so they carry the favourite
 and later flags.
 
