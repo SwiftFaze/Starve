@@ -207,8 +207,8 @@ that scrolls on its own, so the list scrolling never moves it. With a pane video
 video is a 16:9 strip above the post, and the horizontal `video-splitter` sets its height
 (`--video-h`, persisted as `starve.videoh`, Up/Down arrows step 32px, at least 120px for
 the video and 200px for the post). Opening a post never moves a video out of the pane.
-
-No layer contract changes: the sanitiser is an infra detail behind the existing fetcher port.
+Dragging and swapping panels keeps the video steady (`body.dragging-pane .player`,
+`slideVideo`'s FLIP slide); the rules and why are in `DESIGN.md`, Video Box.
 
 ## Full-text search
 
@@ -225,11 +225,11 @@ via `infra/SearchText` (jsoup). `SearchIndexMigration` (V10) back-fills existing
 with the same code. `domain/SearchRules.matchExpression` turns user input into the FTS5
 expression (each word quoted and ANDed, the last one a prefix, no operators), so
 user text can never be parsed as query syntax. `SearchService.search` goes through
-`SearchRepository.search` (`JdbcSearchRepository`, its own port like
-favourites); the layer contracts are unchanged.
-Search results ignore the view they were started from, but the search form carries it
-(Favourites, Later, group, show) as hidden origin inputs, so clearing a search returns
-there. The retention purge is a plain `DELETE` on `items` that skips favourites and items saved for later (`later_at IS NOT NULL`), so they stay
+`SearchRepository.search` (`JdbcSearchRepository`, its own port like favourites).
+The form is the first child of `#sheet`, outside `#sheet-body`: typing swaps only
+`#sheet-body`, so the field keeps focus, and a group or view change re-renders the whole
+sheet, form included. Results ignore the view a search started from, but the form carries
+it (Favourites, Later, group, show) as hidden origin inputs, so clearing it returns there. The retention purge is a plain `DELETE` on `items` that skips favourites and items saved for later (`later_at IS NOT NULL`), so they stay
 searchable (the trigger drops the rows of the items it does delete). Result rows use the shared `TIMELINE_COLUMNS`, so they carry the favourite
 and later flags.
 

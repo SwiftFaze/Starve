@@ -145,7 +145,8 @@ every item, saved or not, and saved items stay searchable; clearing the search r
 
 ## Searching
 
-The search box above the list finds items by words in their title, their
+The magnifier at the right end of the list's title row opens a search field across
+the row. It finds items by words in their title, their
 source's name or their post body (the text only; markup is ignored). Every word
 you type must match, and the last word also matches as a prefix, so results
 appear while you type. Results are newest first and include read items; the group
@@ -187,13 +188,17 @@ panel to swap the two; its × closes the post or ejects the video. The panel you
 outlined in red. Empty paragraphs and long runs of line breaks are dropped from posts,
 so feed padding does not show as blank lines.
 
-On a phone a post opens full screen above the player; the top bar, list and video step
-aside until **Close** (or a pull down from the top of the post), which returns you to the
-same place in the list. **Previous** and **Next** in the post's head step through the
-list you opened it from, posts you have just read included. The head tucks away while
+On a phone the top bar is one row: **Timeline**, **Sources** and a **☰** menu holding
+**Account**, **Settings** and **Sign out**. The group tabs move to the red band under it:
+tap the group's name (`ALL ▾`) to pick another. A post opens full screen above the
+player; the top bar, list and video step aside until **Close** (or a pull down from the
+top of the post), which returns you to the same place in the list. Swipe a post left for
+the next, older one or right for the previous, newer one, through the list you opened it
+from, posts you have just read included; the post follows your finger and a caption says
+what letting go will do. The feed link and **Open original** sit at the post's foot. The head tucks away while
 you read down and comes back once you scroll up deliberately, and a button returns to the
-top of a long post or list. While something plays, **Open post** in the player opens its
-post.
+top of a long post or list. While something plays, tapping its art or title in the player
+opens its post (on a desktop too, clicking them does).
 
 ## Detail view for tracks and videos
 
@@ -202,7 +207,8 @@ reader pane instead of leaving for the original site: large artwork, title,
 artist or channel, published date and description, with **Open original**, **Close**
 and a **Play** button (it reads **Pause** while that item is playing). Opening the
 view marks the item read; Play loads the item into the player exactly as the row's
-Play does, and a video already playing in the pane stays in the pane. Without
+Play does, and a video already playing in the pane stays in the pane. Clicking the
+artwork shows it full size. Without
 JavaScript the title still follows the link as before.
 
 For SoundCloud, Starve asks SoundCloud's public oEmbed (no API key) for the artist,

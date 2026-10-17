@@ -35,6 +35,12 @@ Feature: The post view on a phone: close, fill the screen, previous and next, op
   open its post on mobile (#78)" without contradicting its Non-goals (no
   target over the video). reader-pane.feature's and media-detail-view.feature's
   "has a Close control" scenarios are unchanged; the bug was CSS hiding it.
+  Superseded in part by mobile-header-layout.feature (#80): on a phone,
+  Previous and Next are no longer visible buttons. They stay in the post head
+  for screen readers, and a sideways swipe across the post follows them; the
+  links and their targets, which this file's scenarios check, are unchanged.
+  The deck's Open post now lies over its art and title, on desktop too, rather
+  than in a cell of its own after the star.
   Out of scope: the mobile header and top bar (#80), the shutter flash (#81),
   desktop changes (the new controls are hidden by CSS above 60rem), swiping
   left or right between posts, a queue or autoplay, any tap target over the
