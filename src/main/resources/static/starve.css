@@ -1597,6 +1597,17 @@ button.primary:hover {
   min-height: 2.25rem;
 }
 
+/* On a phone the question takes its own line, with the confirm and Cancel side by side under it. */
+@media (max-width: 60rem) {
+  .row-confirm-ask {
+    flex-basis: 100%;
+  }
+
+  .row-confirm button.danger {
+    min-height: 2.75rem;
+  }
+}
+
 /* Checkboxes: a square well like a field, a drawn tick when checked. */
 input[type="checkbox"] {
   appearance: none;
