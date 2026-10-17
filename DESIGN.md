@@ -385,7 +385,7 @@ A status or error line, used on every page that reports one: a 1px box padded 0.
 - **Docs contents:** a list of mono uppercase links on hairlines, under a strong hairline, sticky beside the column.
 
 ### The Obi (signature)
-The red spine. It holds the series name, set vertically in Akira and reading bottom to top. Mono meta below it gives "n unread", the sort order and the STV range, semibold. Its text is the obi ink: dark ink on red in the dark theme, white in the light theme (`--on-obi`). On Sources it carries a failing count as a block inverted in that ink. It is full height between bar and deck and never scrolls with the list. On the landing it is the cover's own spine: wider and carrying STARVE at poster size.
+The red spine. It holds the series name, set vertically in Akira and reading bottom to top. Mono meta below it gives "n unread", the sort order and the STV range, semibold. The unread count, like the group tabs' bracketed counts, follows each item read without a reload. Its text is the obi ink: dark ink on red in the dark theme, white in the light theme (`--on-obi`). On Sources it carries a failing count as a block inverted in that ink. It is full height between bar and deck and never scrolls with the list. On the landing it is the cover's own spine: wider and carrying STARVE at poster size.
 - **Theme switch:** the caution chevrons at its foot are a button that flips dark and light. The choice is stored in localStorage (`starve.theme`) and applied from `<head>` before the first paint; with nothing stored, the OS decides. The stripes sit on a 1rem square tile (`--stripe`: ink in dark, bone in light) and march sideways on hover. On phones the chevrons end the horizontal band.
 
 ### The Mark (signature)

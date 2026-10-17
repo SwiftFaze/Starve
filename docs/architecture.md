@@ -62,6 +62,17 @@ only items with `first_seen_at` at or before it, so items ingested after the
 page was rendered stay unread. `TimelineService` orchestrates; `HomeController`
 only translates requests and formats views.
 
+Live unread counts: every htmx response that marks an item read raises the htmx event
+`starve:read` through an `HX-Trigger` header (`ReadEvent.kt`). `HomeController.markRead`
+sets it on its own `ResponseEntity`; the reader, detail and player handlers are marked
+`@AnnouncesRead`, and `ReadEventInterceptor` adds the header in `postHandle`, so a 404
+raises nothing and detekt's five-parameter limit needs no response parameter. The
+timeline's hidden `#counts` listener (`hx-trigger="starve:read from:body"`) then fetches
+`/feed/counts` for the view on screen (group, Favourites or Later, read state; never the
+search or paging), whose `counts.html` fragment swaps the obi's `#series-unread` and the
+links inside `#groups` out of band. That costs one small GET per read, which is nothing
+on a LAN.
+
 Favourites: `items.favourited_at` (V9, nullable; the timestamp is the mark) flags a
 favourite. `FavouriteService` (wired by `FavouriteConfig`) stars and unstars through
 `FavouriteRepository.favourite`/`unfavourite`, both idempotent and independent of read state.
