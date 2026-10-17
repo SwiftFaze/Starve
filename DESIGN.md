@@ -27,7 +27,7 @@ colors:
   deep-cyan: "#0a6f67"
   code-amber-paper: "#8a5a00"
   code-violet-paper: "#5b49c9"
-  obi-ink-light: "#ffffff"
+  obi-ink-light: "#0c0c12"
   stripe-light: "#ebe8e0"
 typography:
   wordmark:
@@ -309,7 +309,7 @@ Ink, bone and two signals: an obi red that says "this is the series / this is pl
 - **Catalogue** (Martian Mono 500, 0.75rem, 0.04em): STV/SRC numbers at the head of each row.
 - **Meta** (Martian Mono 400, 0.75rem, 1.3): source names, dates, URLs, fetch times, elapsed/total.
 - **Nav** (Martian Mono 500, 0.75rem, 0.06em, uppercase): Timeline/Sources tabs, group links, Docs and Sign in.
-- **Label** (Martian Mono 500, 0.6875rem, 0.06em, uppercase): every button and field label (field labels, panel names, spec and note terms 0.08em). Obi meta, the bar caption and the colophon run at 0.14em.
+- **Label** (Martian Mono 500, 0.6875rem, 0.06em, uppercase): every button and field label (field labels, panel names, spec and note terms 0.08em). Obi meta, the bar caption and the colophon run at 0.14em. It is also the type floor: no text anywhere, tags and badges included, is set smaller than 0.6875rem (11px).
 - **Code** (Martian Mono 400, 0.8125rem, 1.6): code blocks. Inline code is mono 500 at 0.8125em.
 
 ### Named Rules
@@ -385,7 +385,7 @@ A status or error line, used on every page that reports one: a 1px box padded 0.
 - **Docs contents:** a list of mono uppercase links on hairlines, under a strong hairline, sticky beside the column.
 
 ### The Obi (signature)
-The red spine. It holds the series name, set vertically in Akira and reading bottom to top. Mono meta below it gives "n unread", the sort order and the STV range, semibold. Its text is the obi ink: dark ink on red in the dark theme, white in the light theme (`--on-obi`). On Sources it carries a failing count as a block inverted in that ink. It is full height between bar and deck and never scrolls with the list. On the landing it is the cover's own spine: wider and carrying STARVE at poster size.
+The red spine. It holds the series name, set vertically in Akira and reading bottom to top. Mono meta below it gives "n unread", the sort order and the STV range, semibold. Its text is the obi ink (`--on-obi`): ink on red in both themes, since white on the light red measured about 4.1:1, under AA for the 11px meta. On Sources it carries a failing count as a block inverted in that ink: red text on an ink block. It is full height between bar and deck and never scrolls with the list. On the landing it is the cover's own spine: wider and carrying STARVE at poster size.
 - **Theme switch:** the caution chevrons at its foot are a button that flips dark and light. The choice is stored in localStorage (`starve.theme`) and applied from `<head>` before the first paint; with nothing stored, the OS decides. The stripes sit on a 1rem square tile (`--stripe`: ink in dark, bone in light) and march sideways on hover. On phones the chevrons end the horizontal band.
 
 ### The Mark (signature)
@@ -426,7 +426,7 @@ The box takes whatever rectangle its panel gives it, on the ground color; the pi
 A picture in a post, or a detail view's artwork, opens in a full-screen modal over a near-black backdrop (92%), fitted to the screen inside a strong hairline on the sunk surface, with a 2.75rem square × fixed at the top right; a click anywhere closes it (zoom-out cursor). A picture linking to a larger image file shows that file. Feed artwork arrives as a thumbnail, so the lightbox asks its host for the largest size it serves (SoundCloud's 500px, YouTube's maxres) and falls back to the picture as shown when there is none.
 
 ### Landing J-Card
-The signed-out cover. A cover title in Akira, an Archivo pitch (up to 34rem, dim) and the actions (filled Sign in, outline Sign up when signups are open, both 3rem tall). Beside it, a demo release list on the raised surface inside a strong hairline with registration crosses: an Akira head with a mono "Demo" tag, six rows built from the app's own row parts with abstract hairline art blocks, which strike themselves read one by one (520ms each, 0.55s apart) and end on "You're all caught up". Below: an A/B-side tracklist (mono track numbers A1–B3, Archivo 600 names over dim descriptions), a specifications list (mono terms, Archivo values, hairline rows), and a colophon of mono captions with a barcode. Under reduced motion the demo shows its finished state.
+The signed-out cover. A cover title in Akira, an Archivo pitch (up to 34rem, dim) and the actions (filled Sign in, outline Sign up when signups are open, both 3rem tall). Beside it, a demo release list on the raised surface inside a strong hairline with registration crosses: an Akira head with a mono "Demo" tag, six rows built from the app's own row parts with abstract hairline art blocks, which strike themselves read one by one (520ms each, 0.55s apart), each title fading to the dim tier as it strikes (never the whole row's opacity, which took its faint source and date under AA) and end on "You're all caught up". Below: an A/B-side tracklist (mono track numbers A1–B3, Archivo 600 names over dim descriptions), a specifications list (mono terms, Archivo values, hairline rows), and a colophon of mono captions with a barcode. Under reduced motion the demo shows its finished state.
 
 ### Access Form
 Sign in, sign up and set up share one shape: a sheet head, mono field labels over fields, a checkbox row where needed, the full-width primary button, and an Archivo line linking to the other form. Beside it, a notes list: mono uppercase terms over dim Archivo text on hairlines, under a strong hairline.

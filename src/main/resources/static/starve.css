@@ -37,8 +37,8 @@
   font-display: block;
 }
 
-/* The obi ink is a typed colour so it can transition: when the theme swaps under the shutter,
-   the panel's text and the red band's text fade between ink and white instead of jumping. */
+/* The obi ink is a typed colour so it can transition when the theme swaps under the shutter. Both themes write it in
+   ink today (#97: white on the light red was under AA), so the fade is idle until a theme gives the obi its own ink. */
 @property --on-obi {
   syntax: "<color>";
   inherits: true;
@@ -103,8 +103,8 @@
     --red-text: #c0231a;
     --cyan: #0a6f67;
     --stripe: #ebe8e0;
-    --on-obi: #ffffff;
-    --obi-tag-text: #b31f16;
+    --on-obi: #0c0c12;
+    --obi-tag-text: #ef3326;
     --grain-opacity: 0.04;
     --code-amber: #8a5a00;
     --code-violet: #5b49c9;
@@ -130,8 +130,8 @@
   --red-text: #c0231a;
   --cyan: #0a6f67;
   --stripe: #ebe8e0;
-  --on-obi: #ffffff;
-  --obi-tag-text: #b31f16;
+  --on-obi: #0c0c12;
+  --obi-tag-text: #ef3326;
   --grain-opacity: 0.04;
 
   color-scheme: light;
@@ -1189,7 +1189,7 @@ body.landing .series {
 }
 
 .demo-tag {
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.08em;
   color: var(--text-2);
 }
@@ -1280,9 +1280,11 @@ body.landing .series {
   animation: demo-end 600ms cubic-bezier(0.16, 1, 0.3, 1) 4.7s both;
 }
 
+/* A struck row's title fades to the dim tier, never below it: dimming the whole row with opacity took its faint
+   source and date under AA. */
 @keyframes demo-read {
   to {
-    opacity: 0.5;
+    color: var(--text-2);
   }
 }
 
@@ -1714,7 +1716,7 @@ code {
 .badge {
   padding: 0.25rem 0.375rem;
   border: 1px solid var(--text);
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1944,7 +1946,7 @@ button.switch {
   min-height: 1.75rem;
   padding: 0.25rem 0.625rem;
   background: var(--ground);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 .docs-body pre .copy:hover {
@@ -1958,7 +1960,7 @@ button.switch {
   display: flex;
   align-items: center;
   height: 1.75rem;
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-3);
@@ -2315,7 +2317,7 @@ a.title:hover {
   padding: 0.5rem;
   background: var(--red);
   color: var(--on-red);
-  font: 600 0.625rem/1 var(--mono);
+  font: 600 0.6875rem/1 var(--mono);
 }
 
 .now-text {
@@ -2706,7 +2708,7 @@ body[data-split] .reader-close {
   margin-left: 0.75rem;
   padding: 0.2rem 0.375rem;
   border: 1px solid var(--line-strong);
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-2);
@@ -2967,7 +2969,7 @@ body[data-split][data-list="strip"] .item.clearing .cat {
 
 body[data-split][data-list="strip"] .load-more {
   min-height: 2.25rem;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 /* A video before deck.js has tiled it: a small box above the deck's right end, for that moment only. */
@@ -3537,7 +3539,7 @@ body[data-split][data-list="strip"] .load-more {
   .series-block .series-meta {
     flex: 0 1 auto;
     min-width: 0;
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     line-height: 1.15;
   }
 
