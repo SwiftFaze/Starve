@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.22](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.21...v1.1.0-beta.22) (2026-10-17)
+
+
+### Features
+
+* a styled error page instead of the Whitelabel page ([#122](https://github.com/SwiftFaze/Starve/issues/122)) ([fcb8fe1](https://github.com/SwiftFaze/Starve/commit/fcb8fe1fae8abe419010aeb5ff24d69b7ca8f0f9))
+
 ## [1.1.0-beta.21](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.20...v1.1.0-beta.21) (2026-10-17)
 
 
