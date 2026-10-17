@@ -347,6 +347,37 @@ input[type="file"].field::file-selector-button {
   color: var(--text-2);
 }
 
+/* Present for screen readers, drawn nowhere. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The timeline's first tab stop: out of sight until it has keyboard focus, then a filled square over the bar's
+   top-left corner. */
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 50;
+  padding: 0.625rem 0.875rem;
+  background: var(--text);
+  color: var(--ground);
+  font: 500 0.75rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
 /* ---- The top bar ------------------------------------------------------------------------ */
 
 .bar {
