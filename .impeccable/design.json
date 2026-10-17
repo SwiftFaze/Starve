@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-15T00:00:00Z",
+  "generatedAt": "2026-10-17T00:00:00Z",
   "title": "Design System: Starve",
   "extensions": {
     "colorMeta": {
@@ -581,12 +581,27 @@
       {
         "name": "move",
         "value": "240ms cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Panel swaps (every tile slides), search widening, the phone reader head tucking."
+        "purpose": "Panel swaps (every tile slides), the video box sliding by transform on a pane drop, the phone reader head tucking."
       },
       {
         "name": "fold",
         "value": "280ms cubic-bezier(0.16, 1, 0.3, 1)",
         "purpose": "List folding to and from the STV strip; rows fade in from -0.75rem."
+      },
+      {
+        "name": "search-unfold",
+        "value": "220ms cubic-bezier(0.16, 1, 0.3, 1), clip-path from the icon's width to full",
+        "purpose": "The search field unfolding leftward across the list's title row."
+      },
+      {
+        "name": "phone-dropdown",
+        "value": "unfold 200ms cubic-bezier(0.16, 1, 0.3, 1); fold back 160ms cubic-bezier(0.7, 0, 0.84, 0); group rows row-in 260ms, 30ms apart (max 120ms)",
+        "purpose": "The phone menu and group list unfolding from the bar or obi edge they hang from, and folding back."
+      },
+      {
+        "name": "post-gesture",
+        "value": "out 220ms, back 260ms, in 320ms, cubic-bezier(0.16, 1, 0.3, 1) with ease-out opacity; veil 220ms ease-out",
+        "purpose": "A phone post let go of after a swipe or pull: flying off, easing back short of the mark, the next post sliding in, the veil clearing."
       },
       {
         "name": "mark-read",
@@ -616,7 +631,7 @@
       {
         "name": "reduced-motion",
         "value": "prefers-reduced-motion: reduce",
-        "purpose": "All transitions off; no fold, strike, settle, demo, shutter or ticker animation; finished states shown."
+        "purpose": "All transitions off; no fold, unfold, strike, settle, demo, shutter, ticker or gesture animation (a swipe or pull still acts, at once); finished states shown."
       }
     ],
     "breakpoints": [
@@ -624,7 +639,7 @@
         "name": "narrow",
         "value": "60rem",
         "kind": "media max-width",
-        "purpose": "Phone layout: three-line bar, horizontal obi, two-line deck, one video placement, full-screen reader, 1rem gutter."
+        "purpose": "Phone layout: one-row bar with a menu (scripts on; wrapped lines without), 44px horizontal obi with the group picker, one-line sheet head, two-line deck, one video placement, full-screen reader with swipe and pull-down, 1rem gutter."
       },
       {
         "name": "landing-stack",
@@ -754,9 +769,9 @@
       "name": "Search Field",
       "kind": "input",
       "refersTo": "search-field",
-      "description": "Sunk well in the top bar with a drawn magnifier; 9.5rem idle, 14rem focused or filled.",
-      "html": "<form class=\"ds-search\" role=\"search\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M6.75 1.5a5.25 5.25 0 0 1 4.2 8.4l3.3 3.3-1.06 1.06-3.3-3.3A5.25 5.25 0 1 1 6.75 1.5zm0 1.5a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5z\"/></svg><input type=\"search\" placeholder=\"Search\" aria-label=\"Search items\"></form>",
-      "css": ".ds-search{position:relative;display:inline-flex;align-items:center}.ds-search svg{position:absolute;left:.625rem;width:.875rem;height:.875rem;fill:var(--text-2,#a3a2b3);pointer-events:none}.ds-search input{width:9.5rem;min-height:2.25rem;padding:.375rem .625rem .375rem 2rem;border:1px solid var(--line-strong,#454556);border-radius:0;background:var(--sunk,#08080c);color:var(--text,#f0ece4);caret-color:var(--red,#ff3b2f);font:400 .875rem/1.3 Archivo,system-ui,sans-serif;transition:border-color 150ms cubic-bezier(0.16, 1, 0.3, 1),width 240ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-search input::placeholder{color:var(--text-3,#85849a);font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase}.ds-search input:focus,.ds-search input:not(:placeholder-shown){width:14rem}.ds-search input:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px;border-color:var(--cyan,#2fd2c4)}"
+      "description": "A square magnifier at the right end of the list's title row that unfolds leftward into the sunk well when focused or filled; 2.75rem with 1rem text on phones.",
+      "html": "<form class=\"ds-search\" role=\"search\"><label class=\"ds-search-open\" for=\"ds-q\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M6.75 1.5a5.25 5.25 0 0 1 4.2 8.4l3.3 3.3-1.06 1.06-3.3-3.3A5.25 5.25 0 1 1 6.75 1.5zm0 1.5a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5z\"/></svg></label><input type=\"search\" id=\"ds-q\" placeholder=\"Search\" aria-label=\"Search items\"></form>",
+      "css": ".ds-search{position:relative;display:flex;align-items:center;justify-content:flex-end;width:16rem;height:2.25rem}.ds-search-open{display:inline-flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border:1px solid var(--line-strong,#454556);color:var(--text-2,#a3a2b3);cursor:pointer;transition:background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),color 150ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-search-open:hover{background:var(--text,#f0ece4);color:var(--ground,#0c0c12)}.ds-search svg{width:1rem;height:1rem;fill:currentColor;pointer-events:none}.ds-search input{position:absolute;width:1px;height:1px;padding:0;border:0;opacity:0;pointer-events:none}.ds-search:is(:focus-within,:has(input:not(:placeholder-shown))) .ds-search-open{position:absolute;left:0;border-color:transparent;background:none;pointer-events:none}.ds-search:is(:focus-within,:has(input:not(:placeholder-shown))) input{position:static;flex:1;width:100%;height:2.25rem;padding:.375rem .75rem .375rem 2.25rem;border:1px solid var(--line-strong,#454556);border-radius:0;opacity:1;pointer-events:auto;background:var(--sunk,#08080c);color:var(--text,#f0ece4);caret-color:var(--red,#ff3b2f);font:400 .875rem/1.3 Archivo,system-ui,sans-serif;animation:ds-search-open 220ms cubic-bezier(0.16, 1, 0.3, 1)}.ds-search input::placeholder{color:var(--text-3,#85849a);font:500 .6875rem/1 \"Martian Mono\",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase}.ds-search input:focus-visible{outline:2px solid var(--cyan,#2fd2c4);outline-offset:2px;border-color:var(--cyan,#2fd2c4)}@keyframes ds-search-open{from{clip-path:inset(0 0 0 calc(100% - 2.25rem))}to{clip-path:inset(0)}}"
     },
     {
       "name": "Top Bar Navigation",
@@ -858,7 +873,7 @@
       "**Do** let rows respond to the sheet's container width (64rem fold, 34rem buttons-under-title), not the viewport.",
       "**Do** make a button beside a field, or in a row that contains one, 2.5rem tall.",
       "**Do** draw icons as inline SVG in `currentColor`; show a pressed toggle by inverting it, not by colouring it.",
-      "**Do** keep state changes at 150ms (`cubic-bezier(0.16, 1, 0.3, 1)`), panel swaps, the search widening and the reader head's tuck at 240ms, and the list fold at 280ms. Under `prefers-reduced-motion`, use no transitions, no fold animation, no strike or demo animation and no ticker.",
+      "**Do** keep state changes at 150ms (`cubic-bezier(0.16, 1, 0.3, 1)`), panel swaps and the reader head's tuck at 240ms, the search unfolding at 220ms, and the list fold at 280ms. On phones the menu and the group list unfold from the edge they hang from in 200ms and fold back in 160ms, the group rows following one another in 30ms apart. A post a swipe lets go of leaves in 220ms while the next slides in over 320ms, and one let go short of the mark eases back in 260ms. Under `prefers-reduced-motion`, use no transitions, no fold or unfold animation, no gesture animation (a swipe or pull still acts, at once), no strike or demo animation and no ticker.",
       "**Do** move only the video's box between panels and layouts, never the iframe, so playback never restarts.",
       "**Do** give phones a single video placement: full width above the deck.",
       "**Do** run theme changes and page switches through the shutter, at one speed, and keep the scrollbar gutter reserved (`scrollbar-gutter: stable`) so switching pages never changes the page width."

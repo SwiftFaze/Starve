@@ -149,6 +149,17 @@ templates share:
   `#shell` (a fragment, an `HX-Redirect` after a session ends) is not swapped; the link is followed as a plain load.
 - Pages loaded from a switch need their scripts: `deck.js` on the dock pages and Import, `docs.js` on the public
   pages (it also enhances code blocks after a swap), `htmx.min.js` everywhere.
+- The timeline's search form is the first child of `#sheet`, outside `#sheet-body`. Typing swaps only `#sheet-body`
+  (`hx-target`/`hx-select="#sheet-body"`), so the field keeps focus; a group or view change swaps the whole `#sheet`
+  and so re-renders the form with the hidden origin inputs of the view it now searches.
+
+In the tiled workspace (`deck.js`, `starve.css`), two rules keep the video steady:
+
+- While a title bar is dragged, `body.dragging-pane .player` drops the deck and its video under the panel layer, so
+  the drop target and the lifted bar draw over the video, and the iframe ignores the pointer.
+- When a drop swaps or splits panels, `slideVideo` animates the video box by transform (FLIP): the box takes its new
+  size at once and is drawn from the old rectangle to the new one. Resizing the iframe frame by frame instead makes
+  the YouTube player re-lay out out of step with the slide, and it jitters.
 
 ## Detail view
 
