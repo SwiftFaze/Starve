@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.19](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.18...v1.1.0-beta.19) (2026-10-17)
+
+
+### Bug Fixes
+
+* reopen a playable item's post in its detail view ([#112](https://github.com/SwiftFaze/Starve/issues/112)) ([ef58c32](https://github.com/SwiftFaze/Starve/commit/ef58c32e568d7d83895dfbb796b5b9641f1fe013)), closes [#94](https://github.com/SwiftFaze/Starve/issues/94)
+
 ## [1.1.0-beta.18](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.17...v1.1.0-beta.18) (2026-10-16)
 
 
