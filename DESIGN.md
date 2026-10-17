@@ -305,7 +305,7 @@ Ink, bone and two signals: an obi red that says "this is the series / this is pl
 - **Deck Number** (Akira 800, 1.125rem; 0.875rem below 60rem; Obi Red Text): the playing STV number in the deck.
 - **Title** (Archivo 500, 1rem, 1.35, mixed case): release, source and setting names; underline only on hover; wraps anywhere rather than overflow. The reader's post title is 1.375rem/1.3 (1.25rem on phones).
 - **Deck Title** (Archivo 600, 0.9375rem, 1.25): the playing title, one line, ticker when too long.
-- **Body** (Archivo 400, 0.9375rem, 1.55): page default; notes at 1rem, hints at 0.8125rem/1.45. Sheet notes cap at 40rem. Posts and docs read at 1rem (posts 1.6, docs 1.65), capped at 40rem and 44rem.
+- **Body** (Archivo 400, 0.9375rem, 1.55): page default; notes at 1rem, hints at 0.8125rem/1.45. Sheet notes cap at 40rem. Posts and docs read at 1rem (posts 1.6, docs 1.65), capped at 40rem and 44rem; a post's running text also keeps to 68ch, so lines stay near 70 characters in a wide panel.
 - **Catalogue** (Martian Mono 500, 0.75rem, 0.04em): STV/SRC numbers at the head of each row.
 - **Meta** (Martian Mono 400, 0.75rem, 1.3): source names, dates, URLs, fetch times, elapsed/total.
 - **Nav** (Martian Mono 500, 0.75rem, 0.06em, uppercase): Timeline/Sources tabs, group links, Docs and Sign in.
@@ -402,7 +402,7 @@ Every theme change and every page switch (an in-app navigation link, not a form 
 Every sheet heading sits in one head: Akira headline, actions to the right, a full-weight text-color rule beneath, and registration crosses at its top corners. A second head lower on the Sources sheet (the groups section) keeps the rule but drops the crosses, as do heads inside a tiled list panel and on phones.
 
 ### Release Row
-Its parts are the STV number, the art cell (empty if no art), the title over source, the date and the actions (Play, the icon toggles, Mark read). On hover the row moves to the raised surface. A read row turns its number and title to the faint tier, with the title struck through in a strong hairline. The playing row stays raised, its STV number becomes a red cell, and its Play button fills red.
+Its parts are the STV number, the art cell (the sunk surface in a hairline while its image loads, and if there is none), the title over source, the date and the actions (Play, the icon toggles, Mark read). On a desktop pointer the star and clock wait until the row is hovered or focused, so a row draws Play and Mark read only; a pressed one always shows, and phones and touch always show both. An icon toggle names itself on hover and keyboard focus with a small mono label under it that follows its state (Favourite / Unfavourite, Save for later / Saved). On hover the row moves to the raised surface. A read row turns its number and title to the faint tier, with the title struck through in a strong hairline. The playing row stays raised, its STV number becomes a red cell, and its Play button fills red.
 - **Marking read:** before the server answers, the cleared rows strike through (2px, drawn in over 320ms) and dim to 45%, staggered 22ms per row; the read rows then settle in from 45% over 260ms rather than blinking. Under reduced motion the strike is simply there.
 
 ### Workspace Panel (signature)
