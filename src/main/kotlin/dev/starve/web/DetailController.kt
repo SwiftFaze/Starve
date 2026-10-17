@@ -41,6 +41,7 @@ class DetailController(
      * The detail view fragment of a SoundCloud track or YouTube video; requesting it marks the item read. [query] is
      * the list the item was opened from, which gives its Previous and Next links.
      */
+    @AnnouncesRead
     @GetMapping("/items/{id}/detail")
     fun detail(
         @CurrentUserId owner: Long,

@@ -44,6 +44,7 @@ class ReaderController(
      * The reader fragment of a blog post; requesting it marks the item read. [query] is the list the post was opened
      * from, which gives its Previous and Next links.
      */
+    @AnnouncesRead
     @GetMapping("/items/{id}/reader")
     fun reader(
         @CurrentUserId owner: Long,

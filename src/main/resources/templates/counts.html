@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- The unread counts of the timeline's view, fetched by its "#counts" listener after an item is read and swapped in
+     out of band: the obi's count (when the view has one) and the group links, which carry theirs in brackets. -->
+<th:block th:fragment="counts">
+  <span class="unread" id="series-unread" hx-swap-oob="true" th:if="${series.unread != null}"
+        th:text="|${series.unread} unread|">9 unread</span>
+  <nav id="groups" hx-swap-oob="innerHTML"><th:block th:replace="~{home :: group-links}"></th:block></nav>
+</th:block>
+</body>
+</html>

@@ -4540,7 +4540,7 @@ body.dealing #series .series-meta {
     font-size: 0.6875rem;
   }
 
-  .series-block .series-meta > span {
+  .series-block .series-meta > span:not(.unread) {
     display: none;
   }
 
