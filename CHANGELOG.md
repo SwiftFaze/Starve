@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.23](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.22...v1.1.0-beta.23) (2026-10-17)
+
+
+### Features
+
+* sweep page switches fast, keep the full shutter for themes ([#123](https://github.com/SwiftFaze/Starve/issues/123)) ([4fbeea8](https://github.com/SwiftFaze/Starve/commit/4fbeea8254daebe41ef59fb55b2298d721e7bc48))
+
 ## [1.1.0-beta.22](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.21...v1.1.0-beta.22) (2026-10-17)
 
 
