@@ -14,7 +14,7 @@
 </head>
 <body>
   <header class="bar" id="bar">
-    <h1 class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true" th:text="${appName}">Starve</a></h1>
+    <p class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true" th:text="${appName}">Starve</a></p>
     <nav class="pages" aria-label="Pages">
       <a class="tab" href="/feed" aria-current="page" hx-get="/feed" hx-target="#sheet" data-switch hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
@@ -41,7 +41,7 @@
   <div class="label" id="shell">
     <aside class="sleeve" aria-label="Series, tools and player">
       <div id="series" class="series-block">
-        <h2 class="series" th:text="${series.name}">All</h2>
+        <h1 class="series" th:text="${series.name}">All</h1>
         <button type="button" class="series-pick" aria-expanded="false" aria-controls="groups"
                 aria-label="Choose a group"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
             d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
