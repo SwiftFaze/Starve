@@ -56,7 +56,7 @@ per client address.
 
 Everyone can change their own password on **Account** (top bar): enter the
 current one and a new one. If a friend forgets theirs, open **Settings** as the
-admin and press **Reset password** next to their name: Starve shows a temporary
+admin, press **Reset password** next to their name and confirm: Starve shows a temporary
 password once, which you hand over; they sign in with it and change it on
 **Account**. To remove a friend, press **Delete** in the same list and confirm:
 their sources, groups and items go with them, and any session they still have is
@@ -73,6 +73,8 @@ message asking for the feed URL. Starve fetches the feed once to confirm it is
 valid RSS or Atom before saving, and rejects duplicates (including a page whose
 feed you already follow). Each source shows its title, when it
 was last fetched and its last error, if any; unsubscribe from the same page.
+Removing a source (which deletes its items) and deleting a group both ask first. A
+rejected URL stays in the field with the reason under it.
 
 Subscriptions are polled in the background with conditional GET (ETag /
 Last-Modified), so unchanged feeds cost almost nothing. One failing feed never

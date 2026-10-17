@@ -376,7 +376,10 @@ Outlined mono controls that read as printed spec labels.
 - **Labels:** mono uppercase field labels in the dim text color, and hints in body 0.8125rem.
 
 ### Message
-A status or error line, used on every page that reports one: a 1px box padded 0.875rem by 1rem, medium weight, the text wrapped in mono brackets. A status draws its box and brackets in cyan; an error on an access form draws them in Obi Red Text.
+A status or error line, used on every page that reports one: a 1px box padded 0.875rem by 1rem, medium weight, the text wrapped in mono brackets. A status draws its box and brackets in cyan; an error (`role="alert"`) draws them in Obi Red Text. An error about one field sits directly under that field, which is marked invalid and keeps what was typed, as a rejected source URL does on Sources.
+
+### Confirmation
+What cannot be undone asks first: removing a source, deleting a group, resetting a user's password. The first control is a link to the same page drawn with a dialog open, so it works without scripts; `deck.js` makes it modal. The dialog is a small spec sheet on the raised surface inside a strong hairline (30rem at most), over the ground veiled at 88%: an Akira title (1.25rem) over a full-weight rule, one Archivo sentence naming the thing in bold and what happens to it, then the filled confirm control and an outlined Cancel, both 2.75rem. Focus starts on Cancel; Escape or a click on the veil is Cancel. It rises in over 200ms; on a phone it sits at the foot of the screen above the deck. Deleting a user keeps its own confirmation page.
 
 ### Navigation
 - **Top bar:** sticky on desktop and static on phones. Tabs and group links are mono uppercase in the dim color and turn to the text color on hover. Group links carry their unread count in square brackets ("All [40]"). The current page or group is marked by a 0.5rem square before the label. The build draws it in red, which falls outside the Obi Red Rule; don't copy that use of red.
