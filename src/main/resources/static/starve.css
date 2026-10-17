@@ -2207,6 +2207,23 @@ a.title:hover {
   text-transform: uppercase;
 }
 
+.caught-up-note {
+  margin: 0.875rem 0 0;
+  font: 400 0.75rem/1.3 var(--mono);
+  color: var(--text-2);
+}
+
+/* A list with unread items left ends quietly, on a hairline with its count, so "caught up" keeps its moment. */
+.list-end {
+  margin: 2.5rem 0 0;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--line-strong);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
 /* Narrow sheets (a smaller window, or the video pane beside it) fold the row: art left,
    number and date on top, title full width, actions below. The fixed date and action columns
    need about 37rem, so the fold comes before the title column gets squeezed. */
@@ -2939,6 +2956,8 @@ body[data-split][data-list="strip"] .sheet-title,
 body[data-split][data-list="strip"] .view-actions,
 body[data-split][data-list="strip"] .sheet-note,
 body[data-split][data-list="strip"] .caught-up,
+body[data-split][data-list="strip"] .caught-up-note,
+body[data-split][data-list="strip"] .list-end,
 body[data-split][data-list="strip"] .item .thumb,
 body[data-split][data-list="strip"] .item .site-icon,
 body[data-split][data-list="strip"] .item .blank,

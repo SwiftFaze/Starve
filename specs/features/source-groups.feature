@@ -214,7 +214,7 @@ Feature: Source groups
     Then the timeline lists 120 items
     And the timeline does not list "Elsewhere"
     And the timeline does not offer "Load more"
-    And the page contains "You're all caught up"
+    And the list ends with "End of list · 120 unread"
 
   Scenario Outline: An unknown group returns 404
     When I request "<path>"

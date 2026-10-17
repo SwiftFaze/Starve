@@ -12,6 +12,9 @@ Feature: Chronological feed with read state
   the page render time; the "Show read" toggle (/feed?show=all); paging of 50
   items with "Load more"; the "You're all caught up" end-of-feed state; 404
   for unknown item ids; a nullable read_at column on items.
+  Superseded in part by end-of-list.feature: "You're all caught up" now shows only
+  when the view has nothing unread; a list with unread items left ends with
+  "End of list · N unread".
   Supersedes: the placeholder nature of the home page in project-skeleton.feature.
   Its scenario "Home page shows the app name and an empty state" keeps its
   expectations (status 200, "Starve", "No sources yet" when there are no
@@ -144,7 +147,7 @@ Feature: Chronological feed with read state
     When I load more
     Then the timeline lists 120 items
     And the timeline does not offer "Load more"
-    And the page contains "You're all caught up"
+    And the list ends with "End of list · 120 unread"
 
   Scenario: Pages do not repeat or skip items
     Given the source "Alpha" has 120 unread items published at one-minute intervals
