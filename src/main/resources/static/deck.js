@@ -680,7 +680,8 @@
     var play = stored('starve.open.play');
     // Each request comes from its own target, so neither cancels the other.
     if (post && !postView() && reader()) {
-      window.htmx.ajax('GET', '/items/' + post + '/reader', { source: reader(), target: '#reader', swap: 'innerHTML' });
+      var view = /\/detail$/.test(post) ? post : post + '/reader';
+      window.htmx.ajax('GET', '/items/' + view, { source: reader(), target: '#reader', swap: 'innerHTML' });
     }
     if (play && !player() && dock()) {
       resumeAt = Number(stored('starve.open.at')) || 0;
@@ -993,7 +994,9 @@
   function readerOpened() {
     var view = postView();
     if (!view) return;
-    store('starve.open.post', itemNumber(view.dataset.item));
+    // The stored post names its view: "12" is a post in the reader, "12/detail" a playable item's detail view.
+    var detail = view.classList.contains('detail-view') ? '/detail' : '';
+    store('starve.open.post', itemNumber(view.dataset.item) + detail);
     var pane = reader();
     if (pane) pane.scrollTop = 0;
     body.classList.toggle('reading', phone());
