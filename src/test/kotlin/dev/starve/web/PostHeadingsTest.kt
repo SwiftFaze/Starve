@@ -12,6 +12,11 @@ class PostHeadingsTest {
     }
 
     @Test
+    fun `the highest heading anywhere in the body sets the top level`() {
+        assertEquals("<h5>A</h5><h3>B</h3><h4>C</h4>", PostHeadings.underTitle("<h4>A</h4><h2>B</h2><h3>C</h3>"))
+    }
+
+    @Test
     fun `levels keep their distance and stop at h6`() =
         assertEquals("<h3>A</h3><h6>B</h6><h6>C</h6>", PostHeadings.underTitle("<h1>A</h1><h4>B</h4><h6>C</h6>"))
 
