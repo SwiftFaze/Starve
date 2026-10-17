@@ -630,6 +630,43 @@ button.toggle[aria-pressed="true"]:hover {
   color: var(--text);
 }
 
+/* An icon toggle names itself on hover and on keyboard focus, which a title tooltip never does on focus
+   or touch: a small mono label under it that follows the pressed state ("Favourite" / "Unfavourite"). */
+button.toggle[data-tip] {
+  position: relative;
+}
+
+button.toggle[data-tip]:is(:hover, :focus-visible)::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 50%;
+  z-index: 5;
+  transform: translateX(-50%);
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+  color: var(--text);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* On a desktop pointer, a row's star and clock wait until the row is hovered or holds focus, so each row
+   draws two boxes (Play, Mark read) instead of four. A pressed one stays: it is the row's state. They keep
+   their place (no layout shift) and stay in the tab order; phones and touch always show them. */
+@media (hover: hover) and (pointer: fine) and (min-width: 60.0625rem) {
+  .item .actions :is(.star, .later):has(> button[aria-pressed="false"]) {
+    transition: opacity var(--quick);
+  }
+
+  .item:not(:hover):not(:focus-within) .actions :is(.star, .later):has(> button[aria-pressed="false"]) {
+    opacity: 0;
+  }
+}
+
 /* Clicking the page you are on, already at the top: the marker blinks twice. */
 .tab.here::before {
   animation: here 700ms steps(1, end);
@@ -2110,7 +2147,14 @@ button.switch {
 .thumb {
   object-fit: cover;
   display: block;
-  background: var(--sunk);
+  /* Until the lazy image arrives the cell shows the no-art block: the sunk surface inside a hairline, drawn
+     as background so the image covers it once loaded. */
+  background:
+    linear-gradient(var(--line-strong), var(--line-strong)) top / 100% 1px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) bottom / 100% 1px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) left / 1px 100% no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) right / 1px 100% no-repeat,
+    var(--sunk);
 }
 
 /* A site's icon in the art slot: the same sunken backing, with the icon small and centred. */
@@ -4020,6 +4064,12 @@ body[data-reader-center] .reader-view .reader-head {
 
 .reader-body p {
   margin: 0 0 1em;
+}
+
+/* Running text keeps a readable measure (about 70 characters) however wide the panel is; images, tables
+   and code may still use the full column. */
+.reader-body :is(p, li, dd, blockquote, h3, h4, h5, h6) {
+  max-width: 68ch;
 }
 
 .reader-body img,
