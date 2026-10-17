@@ -69,6 +69,21 @@ class DetailControllerTest {
     }
 
     @Test
+    fun `an artist that only repeats the source title is dropped, ignoring case and surrounding space`() {
+        val same = DetailRef(7, youtube, "Title", "Submarine", published, " SUBMARINE ", null, null, null)
+        val other = DetailRef(8, youtube, "Title", "Submarine", published, "Submarine Music", null, null, null)
+
+        assertEquals(null, artistShown(same))
+        assertEquals("Submarine Music", artistShown(other))
+    }
+
+    private fun artistShown(item: DetailRef): String? {
+        val model = ConcurrentModel()
+        controller(item).detail(OWNER, item.id, model)
+        return (model.getAttribute("detail") as DetailView).artist
+    }
+
+    @Test
     fun `an item that is not playable, or unknown, has no detail view`() {
         val post = DetailRef(7, "https://blog.example/post", "Post", "Blog", published, null, null, null, null)
 

@@ -204,7 +204,8 @@ opens its post (on a desktop too, clicking them does).
 
 Clicking the title of a SoundCloud track or YouTube video opens a detail view in the
 reader pane instead of leaving for the original site: large artwork, title,
-artist or channel, published date and description, with **Open original**, **Close**
+artist or channel (left out when it only repeats the source's name), published date
+and description, with **Open original**, **Close**
 and a **Play** button (it reads **Pause** while that item is playing). Opening the
 view marks the item read; Play loads the item into the player exactly as the row's
 Play does, and a video already playing in the pane stays in the pane. Clicking the
