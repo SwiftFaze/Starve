@@ -1004,6 +1004,35 @@
     if (close && phone()) close.focus({ preventScroll: true });
   }
 
+  // ---- A confirmation the server drew open becomes a modal: focus stays in it, and Escape or a click on the
+  // veil is its Cancel. Without scripts it is simply open on the page. ---------------------------------------
+
+  function openConfirm() {
+    var box = document.querySelector('dialog.confirm[open]');
+    if (!box || box.matches(':modal')) return;
+    box.close();
+    box.showModal();
+  }
+
+  function cancelConfirm(box) {
+    var cancel = box.querySelector('.confirm-cancel');
+    if (cancel) cancel.click();
+  }
+
+  // "cancel" does not bubble, so it is caught on the way down.
+  document.addEventListener('cancel', function (event) {
+    if (!event.target.matches || !event.target.matches('dialog.confirm')) return;
+    event.preventDefault();
+    cancelConfirm(event.target);
+  }, true);
+
+  document.addEventListener('click', function (event) {
+    if (event.target.matches && event.target.matches('dialog.confirm')) cancelConfirm(event.target);
+  });
+
+  document.addEventListener('htmx:afterSettle', openConfirm);
+  openConfirm();
+
   // ---- A post's image, clicked, opens large over the page; a click, Escape or × closes it -------------
 
   function lightbox() {

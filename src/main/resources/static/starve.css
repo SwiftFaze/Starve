@@ -1573,38 +1573,79 @@ button.primary:hover {
   margin: 0.75rem 0 0;
 }
 
-/* A row asking before something it cannot undo: the question across the row, its one filled control, Cancel. */
-.row-confirm {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--line);
+/* A confirmation before something that cannot be undone: a small spec sheet over the veiled page. The
+   dialog itself is only the veil's hit area; the sheet inside carries the drawing, so a click on the veil
+   (and only there) is Cancel. On a phone it sits at the foot of the screen, above the deck, under the thumb. */
+dialog.confirm {
+  position: fixed;
+  inset: 0;
+  width: min(30rem, calc(100vw - 2rem));
+  max-width: none;
+  height: fit-content;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  animation: confirm-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.row-confirm-ask {
-  flex: 1 1 16rem;
+dialog.confirm::backdrop {
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  animation: veil-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.confirm-sheet {
+  padding: 1.5rem 1.5rem 1.375rem;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+}
+
+.confirm-title {
+  margin: 0;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--text);
+  font: 800 1.25rem/1.05 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+}
+
+.confirm-body {
+  margin: 1.125rem 0 1.5rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.confirm .confirm-actions {
+  margin-top: 0;
+}
+
+.confirm .confirm-actions form {
   margin: 0;
 }
 
-.row-confirm form {
-  margin: 0;
+.confirm button.danger,
+.confirm .read-toggle {
+  min-height: 2.75rem;
 }
 
-.row-confirm button.danger {
-  min-height: 2.25rem;
-}
-
-/* On a phone the question takes its own line, with the confirm and Cancel side by side under it. */
-@media (max-width: 60rem) {
-  .row-confirm-ask {
-    flex-basis: 100%;
+@keyframes confirm-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
   }
+}
 
-  .row-confirm button.danger {
-    min-height: 2.75rem;
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 60rem) {
+  dialog.confirm {
+    margin: auto auto calc(var(--deck-h, 0px) + 1rem);
   }
 }
 

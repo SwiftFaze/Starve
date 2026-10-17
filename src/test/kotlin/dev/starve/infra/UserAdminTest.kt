@@ -123,7 +123,7 @@ class UserAdminTest : SecurityTestBase() {
     }
 
     @Test
-    fun `a reset asks first, and only the asked row holds the reset form`() {
+    fun `a reset asks first, and the confirmation holds only the asked user's reset form`() {
         seed()
 
         val page =
@@ -132,9 +132,9 @@ class UserAdminTest : SecurityTestBase() {
                 .andReturn()
                 .response.contentAsString
 
-        val rows = ROW.findAll(page).map { it.value }.toList()
-        assertTrue("action=\"/settings/users/2/reset\"" in rows[1] && "name=\"_csrf\"" in rows[1])
-        assertFalse("action=\"/settings/users/3/reset\"" in rows[2])
+        val dialog = requireNotNull(Regex("<dialog.*?</dialog>", RegexOption.DOT_MATCHES_ALL).find(page)).value
+        assertTrue("action=\"/settings/users/2/reset\"" in dialog && "name=\"_csrf\"" in dialog)
+        assertFalse("/settings/users/3/reset" in page)
     }
 
     @Test

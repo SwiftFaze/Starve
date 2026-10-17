@@ -52,8 +52,8 @@ Feature: The admin manages users on Settings: list, reset a password, delete
   scenario asserts it; the resolver's 401 remains a backstop).
 
   Superseded in part by confirm-destructive-actions.feature: a row's Reset
-  password is now a link to "/settings?reset={id}", whose confirming row holds
-  the reset form.
+  password is now a link to "/settings?reset={id}", whose confirmation dialog
+  holds the reset form.
 
   Supersedes: nothing; no existing scenario changes. The following existing
   descriptions mention work now delivered and may be reworded by the coder
