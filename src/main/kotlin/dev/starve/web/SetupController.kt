@@ -68,6 +68,7 @@ class SetupController(
         message: String,
     ): String {
         model.addAttribute("message", message)
+        model.addAttribute("invalid", invalidFieldOf(message, "password"))
         return "setup"
     }
 }

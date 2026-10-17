@@ -79,6 +79,7 @@ class SignupController(
     ): String {
         model.addAttribute("open", true)
         model.addAttribute("message", message)
+        model.addAttribute("invalid", invalidFieldOf(message, "password"))
         return "signup"
     }
 }
