@@ -300,7 +300,8 @@ Ink, bone and two signals: an obi red that says "this is the series / this is pl
 - **Cover Title** (Akira 800, `clamp(2.75rem, 5.1vw, 6rem)`, 0.92; `clamp(2rem, 9.6vw, 3.75rem)` on phones; uppercase, balanced): the landing's cover line only.
 - **Display** (Akira 800, 2.75rem; 2.125rem for Sources/Import/Docs obi names; `clamp(3rem, 6.2vw, 6rem)` on the landing's obi; `clamp(1.25rem, 7vw, 1.75rem)` on the horizontal phone obi; uppercase, vertical-rl rotated 180deg on desktop, ellipsis at 70% of the band, 78% on the landing): the series name on the obi.
 - **Headline** (Akira 800, 1.75rem, 1; 1.25rem below 60rem; uppercase, balanced): the sheet heading. Docs section heads use the same voice at 1.25rem/1.1 over a full-weight rule.
-- **Closing** (Akira 800, 1.5rem, 1.05; uppercase, under a full-weight rule): "You're all caught up".
+- **Closing** (Akira 800, 1.5rem, 1.05; uppercase, under a full-weight rule): "You're all caught up", shown only when the view has nothing unread, with a mono meta note under it ("Sources are checked every 30 minutes"). An empty list drops the closing's own rule, because the sheet head's rule already closes it.
+- **List end** (Martian Mono 500, 0.6875rem, 0.06em, uppercase, dim, on a strong hairline): "End of list · 12 unread", the quiet bottom of a list that still has unread items. Favourites and Later end on "End of list" alone; search ends with no marker.
 - **Wordmark** (Akira 800, 1.125rem, uppercase, 0.01em): STARVE in the top bar. The landing demo's head uses the same size.
 - **Deck Number** (Akira 800, 1.125rem; 0.875rem below 60rem; Obi Red Text): the playing STV number in the deck.
 - **Title** (Archivo 500, 1rem, 1.35, mixed case): release, source and setting names; underline only on hover; wraps anywhere rather than overflow. The reader's post title is 1.375rem/1.3 (1.25rem on phones).
