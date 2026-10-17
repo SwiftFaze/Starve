@@ -1560,13 +1560,41 @@ button.primary:hover {
   color: var(--cyan);
 }
 
-.access-form .message[role="alert"] {
+.message[role="alert"] {
   border-color: var(--red-text);
 }
 
-.access-form .message[role="alert"]::before,
-.access-form .message[role="alert"]::after {
+.message[role="alert"]::before,
+.message[role="alert"]::after {
   color: var(--red-text);
+}
+
+.add-source .message {
+  margin: 0.75rem 0 0;
+}
+
+/* A row asking before something it cannot undo: the question across the row, its one filled control, Cancel. */
+.row-confirm {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.row-confirm-ask {
+  flex: 1 1 16rem;
+  margin: 0;
+}
+
+.row-confirm form {
+  margin: 0;
+}
+
+.row-confirm button.danger {
+  min-height: 2.25rem;
 }
 
 /* Checkboxes: a square well like a field, a drawn tick when checked. */

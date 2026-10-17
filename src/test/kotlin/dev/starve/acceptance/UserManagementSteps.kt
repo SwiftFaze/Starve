@@ -80,7 +80,8 @@ class UserManagementSteps {
 
     @When("I reset the password of {string} in Settings")
     fun resetPassword(username: String) {
-        World.response = submitRowForm(app.get("/settings").body(), username)
+        // The row's Reset password only asks; its confirming state holds the form.
+        World.response = submitRowForm(app.get("/settings?reset=${app.userId(username)}").body(), username)
         TEMPORARY.find(World.response.body())?.let { World.temporaryPasswords += it.groupValues[1] }
     }
 

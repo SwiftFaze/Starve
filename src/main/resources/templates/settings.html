@@ -62,10 +62,17 @@
             </div>
             <span class="created">Created <time th:datetime="${user.created}" th:text="${user.created}">2026-10-12</time></span>
             <div class="actions" th:unless="${user.you}">
-              <form method="post" th:action="@{/settings/users/{id}/reset(id=${user.id})}">
-                <button type="submit">Reset password</button>
-              </form>
+              <a class="read-toggle" th:unless="${resetting == user.id}" th:href="|/settings?reset=${user.id}|"
+                 th:attr="hx-get=|/settings?reset=${user.id}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Reset password</a>
               <a class="read-toggle" th:href="@{/settings/users/{id}/delete(id=${user.id})}">Delete</a>
+            </div>
+            <!-- A reset replaces the user's password at once, so the row asks first. -->
+            <div class="row-confirm" th:if="${resetting == user.id}">
+              <p class="row-confirm-ask">Reset <strong th:text="${user.username}">friend</strong>'s password? Their current one stops working.</p>
+              <form method="post" th:action="@{/settings/users/{id}/reset(id=${user.id})}">
+                <button type="submit" class="danger" autofocus>Reset password</button>
+              </form>
+              <a class="read-toggle" href="/settings" hx-get="/settings" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Cancel</a>
             </div>
           </li>
         </ul>

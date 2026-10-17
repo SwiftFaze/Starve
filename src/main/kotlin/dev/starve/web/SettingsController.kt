@@ -34,11 +34,14 @@ class SettingsController(
     private val signups: SignupSettings,
     private val users: UserAdminService,
 ) {
+    /** [reset] names a user row to show in its confirming state, which holds the reset form: the first click asks. */
     @GetMapping("/settings")
     fun page(
         @CurrentUserId adminId: Long,
         model: Model,
+        @RequestParam(required = false) reset: Long? = null,
     ): String {
+        model.addAttribute("resetting", reset)
         model.addAttribute("signupsOn", signups.enabled())
         model.addAttribute("users", users.list().map { it.row(adminId) })
         return "settings"

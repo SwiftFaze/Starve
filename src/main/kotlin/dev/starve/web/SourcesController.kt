@@ -31,18 +31,35 @@ class SourcesController(
     private val subscriptions: SubscriptionService,
     private val groups: GroupService,
 ) {
+    /**
+     * The roster. [remove] or [deleteGroup] names a row to show in its confirming state, which holds the form that
+     * really removes it: the first click only asks.
+     */
     @GetMapping("/sources")
     fun sources(
         @CurrentUserId owner: Long,
         model: Model,
-    ): String = render(owner, model, null)
+        @RequestParam(required = false) remove: Long? = null,
+        @RequestParam(name = "delete-group", required = false) deleteGroup: Long? = null,
+    ): String {
+        model.addAttribute("removing", remove)
+        model.addAttribute("deletingGroup", deleteGroup)
+        return render(owner, model, null)
+    }
 
+    /** A rejected [url] comes back in its field, with the reason under it. */
     @PostMapping("/sources")
     fun add(
         @CurrentUserId owner: Long,
         @RequestParam url: String,
         model: Model,
-    ): String = render(owner, model, messageFor(subscriptions.subscribe(owner, url)))
+    ): String {
+        val result = subscriptions.subscribe(owner, url)
+        if (result is SubscribeResult.Subscribed) return render(owner, model, messageFor(result))
+        model.addAttribute("url", url)
+        model.addAttribute("addError", messageFor(result))
+        return render(owner, model, null)
+    }
 
     /** Another user's source is answered like an unknown one: 404. */
     @PostMapping("/sources/{id}/delete")
@@ -98,19 +115,21 @@ class SourcesController(
         when (result) {
             is GroupResult.Saved -> "redirect:/sources"
             GroupResult.Missing -> throw notFound()
-            GroupResult.Blank -> render(owner, model, "group name is required")
-            GroupResult.TooLong -> render(owner, model, "at most ${GroupRules.MAX_NAME_LENGTH} characters")
-            GroupResult.Duplicate -> render(owner, model, "a group with that name already exists")
+            GroupResult.Blank -> render(owner, model, "group name is required", error = true)
+            GroupResult.TooLong -> render(owner, model, TOO_LONG, error = true)
+            GroupResult.Duplicate -> render(owner, model, "a group with that name already exists", error = true)
         }
 
     private fun render(
         owner: Long,
         model: Model,
         message: String?,
+        error: Boolean = false,
     ): String {
         model.addAttribute("sources", subscriptions.list(owner).map { it.toView() })
         model.addAttribute("groups", groups.list(owner))
         model.addAttribute("message", message)
+        model.addAttribute("error", error)
         return "sources"
     }
 
@@ -129,6 +148,8 @@ private val TIME_FORMAT: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'").withZone(ZoneOffset.UTC)
 
 private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
+
+private const val TOO_LONG = "at most ${GroupRules.MAX_NAME_LENGTH} characters"
 
 private fun Source.toView(): SourceView {
     val fetched = lastFetchedAt?.let { TIME_FORMAT.format(it) }

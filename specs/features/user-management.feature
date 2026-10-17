@@ -51,6 +51,10 @@ Feature: The admin manages users on Settings: list, reset a password, delete
   longer logs in. This replaces today's bare 401 for that case (no existing
   scenario asserts it; the resolver's 401 remains a backstop).
 
+  Superseded in part by confirm-destructive-actions.feature: a row's Reset
+  password is now a link to "/settings?reset={id}", whose confirming row holds
+  the reset form.
+
   Supersedes: nothing; no existing scenario changes. The following existing
   descriptions mention work now delivered and may be reworded by the coder
   (no scenario edits): self-signup.feature Out of scope "user list, admin
@@ -129,7 +133,7 @@ Feature: The admin manages users on Settings: list, reset a password, delete
 
   Scenario: Other users have Reset password and Delete, the admin's own row has no actions
     When I request "/settings"
-    Then the user row of "friend" has a "Reset password" form that posts "/settings/users/{id}/reset" with the CSRF token
+    Then the user row of "friend" has a "Reset password" link to "/settings?reset={id}"
     And the user row of "friend" has a "Delete" link to "/settings/users/{id}/delete"
     And the user row of "owner" has no "Reset password" control
     And the user row of "owner" has no "Delete" control
