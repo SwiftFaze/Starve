@@ -70,7 +70,7 @@ class DetailController(
             publishedAt.toString(),
             artist?.takeUnless { it.trim().equals(sourceTitle.trim(), ignoreCase = true) },
             thumbnailUrl,
-            description,
+            description?.let(PostHeadings::underTitle),
             link,
             sourceUrl?.takeIf { FEED_LINK.matches(it) },
             nav.previous,
