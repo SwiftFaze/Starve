@@ -1,6 +1,6 @@
 # Starve
 
-A self-hosted, single-user personal feed aggregator (RSS-first: YouTube,
+A self-hosted, single-owner personal feed aggregator (RSS-first: YouTube,
 SoundCloud, news). Built with Kotlin, Spring Boot, Thymeleaf/htmx and SQLite.
 Feed features are tracked in the GitHub issues. Today you can subscribe to
 RSS/Atom feeds; Starve fetches them in the background and shows their items in
