@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.25](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.24...v1.1.0-beta.25) (2026-10-17)
+
+
+### Features
+
+* name icon toggles, placehold art, cap the reader measure, lighten rows ([#126](https://github.com/SwiftFaze/Starve/issues/126)) ([a84e34f](https://github.com/SwiftFaze/Starve/commit/a84e34f9ceef58ef35a60e5b36bd748c5ea2c513))
+
 ## [1.1.0-beta.24](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.23...v1.1.0-beta.24) (2026-10-17)
 
 
