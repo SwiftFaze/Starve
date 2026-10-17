@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.20](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.19...v1.1.0-beta.20) (2026-10-17)
+
+
+### Bug Fixes
+
+* mark Sources as the current page in the bar on /import ([#115](https://github.com/SwiftFaze/Starve/issues/115)) ([446f923](https://github.com/SwiftFaze/Starve/commit/446f923f1402e8f0a4cff76011f60519bc538aab))
+
 ## [1.1.0-beta.19](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.18...v1.1.0-beta.19) (2026-10-17)
 
 
