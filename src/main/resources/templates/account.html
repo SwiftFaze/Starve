@@ -34,11 +34,11 @@
 
         <label class="field-label" for="current-password">Current password</label>
         <input class="field" id="current-password" type="password" name="currentPassword"
-               autocomplete="current-password" required>
+               autocomplete="current-password" required th:attr="aria-invalid=${invalid == 'current-password'} ? 'true',aria-describedby=${invalid == 'current-password'} ? 'message' : null">
 
         <label class="field-label" for="new-password">New password</label>
         <input class="field" id="new-password" type="password" name="newPassword" autocomplete="new-password"
-               aria-describedby="password-hint" required>
+               minlength="10" required th:attr="aria-invalid=${invalid == 'new-password'} ? 'true',aria-describedby=${invalid == 'new-password'} ? 'message password-hint' : 'password-hint'">
         <p class="hint" id="password-hint">At least 10 characters</p>
 
         <button type="submit" class="primary">Change password</button>
