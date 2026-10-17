@@ -29,7 +29,9 @@ Feature: Bulk import
   OPML import still assigns it to the folder's group if it is ungrouped).
 
   Covers: "/import" and its upload form; CSV and OPML parsing; group mapping of
-  OPML folders; deduplication; the summary; the post-import background poll.
+  OPML folders; deduplication; the summary; the post-import background poll;
+  the bar on "/import" marking Sources as the current page (aria-current, #106),
+  since Import is reached from Sources.
   Supersedes: nothing. Deliberately does not run the smart-add page resolver
   per row (rows already carry channel ids or feed URLs), so no page is fetched
   during import.
@@ -44,6 +46,10 @@ Feature: Bulk import
   Scenario: The sources page links to the import page
     When I request "/sources"
     Then the page contains "/import"
+
+  Scenario: The import page's bar marks Sources as the current page
+    When I request "/import"
+    Then the bar marks only "Sources" as the current page
 
   Scenario: A Takeout CSV adds a subscription per channel with the CSV title
     When I import the file "subscriptions.csv" containing:
