@@ -3,8 +3,8 @@ Feature: Per-source poll interval and Fetch now
   monthly blog cost the same, and a fixed or new source could not be fetched
   before the next poll (#143).
 
-  Covers: an interval selector on every Sources row offering "Default (every 30
-  minutes)" (the configured starve.poll.interval) plus 15 minutes, 30 minutes,
+  Covers: an interval selector on every Sources row offering the default, named
+  by the configured starve.poll.interval in short ("30 mins"), plus 15 minutes, 30 minutes,
   1 hour, 6 hours and Daily, saved at once (an empty choice goes back to the
   default, an unknown one is a 400, another user's source a 404); a scheduler
   tick (starve.poll.tick, every minute) that fetches only the sources whose
@@ -28,8 +28,8 @@ Feature: Per-source poll interval and Fetch now
     Given the feed server serves "/news.xml" as an RSS 2.0 feed titled "Daily News" with 1 entries
     And I have added the feed URL "/news.xml"
     When I request "/sources"
-    Then the interval choices of "Daily News" are "Default (every 30 minutes), 15 minutes, 30 minutes, 1 hour, 6 hours, Daily"
-    And the interval of "Daily News" reads "Default (every 30 minutes)"
+    Then the interval choices of "Daily News" are "30 mins, 15 minutes, 30 minutes, 1 hour, 6 hours, Daily"
+    And the interval of "Daily News" reads "30 mins"
 
   Scenario: Choosing an interval keeps it, and the default can be chosen again
     Given the feed server serves "/news.xml" as an RSS 2.0 feed titled "Daily News" with 1 entries
@@ -37,7 +37,7 @@ Feature: Per-source poll interval and Fetch now
     When I set the interval of "Daily News" to "DAILY"
     Then the interval of "Daily News" reads "Daily"
     When I set the interval of "Daily News" to ""
-    Then the interval of "Daily News" reads "Default (every 30 minutes)"
+    Then the interval of "Daily News" reads "30 mins"
 
   Scenario: An unknown interval is refused and another user's source is not found
     Given the feed server serves "/news.xml" as an RSS 2.0 feed titled "Daily News" with 1 entries

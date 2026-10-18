@@ -3,6 +3,8 @@ package dev.starve.acceptance
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.time.Instant
 
@@ -46,12 +48,11 @@ class SourcesStatusSteps {
     @Then("the add-source field's placeholder is {string}")
     fun placeholder(text: String) = assertTrue(group(body(), ADD_FIELD).contains("placeholder=\"$text\""))
 
-    @Then("the add-source field is described by the hint {string}")
-    fun describedBy(text: String) {
+    @Then("the add-source field has no hint")
+    fun noHint() {
         val field = group(body(), ADD_FIELD)
-        val hintId = requireNotNull(DESCRIBED_BY.find(field)) { "no aria-describedby on $field" }.groupValues[1]
-        val hint = Regex("<p [^>]*id=\"$hintId\"[^>]*>(.*?)</p>", RegexOption.DOT_MATCHES_ALL)
-        assertEquals(text, textOf(group(body(), hint)))
+        assertNull(DESCRIBED_BY.find(field), field)
+        assertFalse(body().contains("id=\"add-url-hint\""))
     }
 
     private fun fetchedLine(title: String): String {

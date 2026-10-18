@@ -51,7 +51,7 @@ class SourceRoster(
         model.addAttribute("sources", rows)
         model.addAttribute("groups", groups.list(owner))
         model.addAttribute("intervals", PollInterval.entries)
-        model.addAttribute("defaultInterval", "Default (${everyPhrase(defaultInterval)})")
+        model.addAttribute("defaultInterval", shortPhrase(defaultInterval))
         return only == null || rows.isNotEmpty()
     }
 

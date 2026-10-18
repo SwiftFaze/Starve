@@ -336,7 +336,9 @@ input[type="file"].field::file-selector-button {
 .regroup button,
 .rename button,
 .roster .actions button,
-.roster > .group > form > button {
+.roster .actions .read-toggle,
+.roster > .group > form > button,
+.roster > .group > .read-toggle {
   min-height: 2.5rem;
 }
 
@@ -3481,36 +3483,63 @@ body[data-split][data-list="strip"] .load-more {
     display: none;
   }
 
-  /* Every Groups row is the same height: one line of name, one line of count, the controls beside them.
-     Long text ends in an ellipsis and shows in full on hover. Source rows grow, below. */
+  /* Subscriptions carry five controls a row, Groups three, so Subscriptions takes the wider share. */
+  .sources-split {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  /* Every row in both columns is the same height, so the two lists line up row for row: one line of name,
+     one line of status or count, the controls beside them. Long text ends in an ellipsis and shows in full
+     on hover. */
   .sources-split .roster > li {
     height: 5.25rem;
     padding-block: 0;
     overflow: hidden;
   }
 
-  /* A source carries more than a group: its name, its status and health lines, and five controls. Its row
-     grows to fit them, with the controls on a line of their own under the text, instead of the controls
-     squeezing the name out of a fixed-height row. */
   .sources-split .subscriptions .roster > .source {
-    height: auto;
-    min-height: 5.25rem;
-    padding-block: 0.875rem;
-    grid-template-columns: 4.5rem minmax(0, 1fr);
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
     column-gap: 1rem;
     grid-template-areas:
-      "cat body"
-      "cat status"
-      "actions actions";
-    grid-template-rows: auto;
-    align-content: center;
-    align-items: start;
+      "cat body actions"
+      "cat status actions";
+    /* Two equal halves: the name sits on the middle line, the status under it, and the controls are
+       centred on the whole row, at the same height as every Groups row's. */
+    grid-template-rows: 1fr 1fr;
+    align-content: stretch;
+    align-items: center;
     row-gap: 0.25rem;
   }
 
-  .subscriptions .source .cat {
+  .sources-split .subscriptions .source .body {
+    align-self: end;
+  }
+
+  .sources-split .subscriptions .source .status {
     align-self: start;
-    padding-top: 0.125rem;
+  }
+
+  .subscriptions .source .cat {
+    align-self: center;
+    padding-top: 0;
+  }
+
+  /* The status is one line: its parts run on, separated by middots, and the line ends in an ellipsis. */
+  .subscriptions .source .status {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font: 400 0.75rem/1.4 var(--mono);
+    color: var(--text-2);
+  }
+
+  .subscriptions .source .status > * {
+    display: inline;
+  }
+
+  .subscriptions .source .status > * + *::before {
+    content: " · ";
+    color: var(--text-2);
   }
 
   .subscriptions .source .body,
@@ -3541,13 +3570,14 @@ body[data-split][data-list="strip"] .load-more {
   }
 
   .sources-split .subscriptions .source .actions {
-    margin: 0.5rem 0 0;
-    flex-wrap: wrap;
-    justify-content: flex-start;
+    align-self: center;
+    margin: 0;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
   }
 
   .subscriptions .regroup .field {
-    width: 9.5rem;
+    width: 8rem;
   }
 
   /* Wide enough for "Default (every 30 minutes)", the longest choice, so the current one is never cut. */
@@ -3555,7 +3585,7 @@ body[data-split][data-list="strip"] .load-more {
     width: auto;
   }
 
-  .subscriptions .source .feed-link {
+  .subscriptions .source :is(.feed-link, .fetch-now .toggle) {
     width: 2.5rem;
     min-height: 2.5rem;
   }
@@ -3578,6 +3608,30 @@ body[data-split][data-list="strip"] .load-more {
   }
 }
 
+/* A Subscriptions column too narrow for the name beside five controls (a small desktop window): the row
+   grows and the controls take a line of their own under the text, so the name is never squeezed out. */
+@media (min-width: 60.0625rem) {
+  @container sheet (max-width: 42rem) {
+    .sources-split .subscriptions .roster > .source {
+      height: auto;
+      min-height: 5.25rem;
+      padding-block: 0.875rem;
+      grid-template-columns: 4.5rem minmax(0, 1fr);
+      grid-template-areas:
+        "cat body"
+        "cat status"
+        "actions actions";
+      grid-template-rows: auto;
+      align-items: start;
+    }
+
+    .sources-split .subscriptions .source .actions {
+      margin-top: 0.5rem;
+      justify-content: flex-start;
+    }
+  }
+}
+
 /* Each column answers to its own width, so its rows fold for the column, not the window. */
 .subscriptions,
 .sources-split .group-sheet {
@@ -3589,7 +3643,7 @@ body[data-split][data-list="strip"] .load-more {
   margin-top: 0;
 }
 
-/* Adding a source opens the list: one field and a filled Add, the import link in the hint. */
+/* Adding a source opens the list: one field, a filled Add and the Import link, on one line. */
 .add-source {
   max-width: 44rem;
   margin: 1.5rem 0 1.25rem;
@@ -4642,12 +4696,12 @@ body.dealing #series .series-meta {
     min-width: 0;
   }
 
-  .sources-split .subscriptions .source .feed-link {
+  .sources-split .subscriptions .source :is(.feed-link, .fetch-now .toggle) {
     width: 2.75rem;
     min-height: 2.75rem;
   }
 
-  .sources-split .subscriptions .source .actions button {
+  .sources-split .subscriptions .source .actions :is(button, .read-toggle) {
     min-height: 2.75rem;
   }
 
@@ -4666,7 +4720,7 @@ body.dealing #series .series-meta {
     padding: 0;
   }
 
-  .sources-split .roster > .group button {
+  .sources-split .roster > .group :is(button, .read-toggle) {
     min-height: 2.75rem;
   }
 

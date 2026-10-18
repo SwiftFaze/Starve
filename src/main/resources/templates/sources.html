@@ -57,12 +57,11 @@
           <input class="field" id="add-url" type="text" name="url" inputmode="url" autocomplete="off"
                  spellcheck="false" placeholder="Paste a feed, channel or site URL" required
                  th:value="${url}" th:autofocus="${addError != null}"
-                 th:attr="aria-invalid=${addError != null} ? 'true',aria-describedby=${addError != null} ? 'add-url-error add-url-hint' : 'add-url-hint'">
+                 th:attr="aria-invalid=${addError != null} ? 'true',aria-describedby=${addError != null} ? 'add-url-error'">
           <button type="submit">Add</button>
           <a class="read-toggle" href="/import" title="Import from YouTube Takeout or an OPML file">Import</a>
         </div>
         <p id="add-url-error" class="message" role="alert" th:if="${addError}" th:text="${addError}">That URL could not be fetched</p>
-        <p class="hint" id="add-url-hint">A feed URL, or the address of a YouTube channel, SoundCloud profile or website.</p>
       </form>
       </div>
       <div class="column-body">
@@ -119,8 +118,9 @@
             </form>
             <form class="fetch-now" method="post" th:action="@{/sources/{id}/fetch(id=${source.id})}"
                   th:attr="hx-post=@{/sources/{id}/fetch(id=${source.id})}" hx-target="closest li" hx-swap="outerHTML">
-              <button type="submit" th:disabled="${source.fetching}"
-                      th:attr="aria-label=|Fetch ${source.title} now|">Fetch now</button>
+              <button type="submit" class="toggle" th:disabled="${source.fetching}" title="Fetch now"
+                      th:attr="aria-label=|Fetch ${source.title} now|"><svg class="icon" viewBox="0 0 16 16"
+                      aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2v3.5H10"/></svg></button>
             </form>
             <a class="read-toggle" th:href="|/sources?remove=${source.id}|"
                th:attr="hx-get=|/sources?remove=${source.id}|,aria-label=|Remove ${source.title}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Remove</a>
