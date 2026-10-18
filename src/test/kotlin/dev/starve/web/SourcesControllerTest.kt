@@ -83,8 +83,9 @@ class SourcesControllerTest {
     fun `an invalid url is reported without subscribing`() {
         val model = ConcurrentModel()
 
-        controller.add(OWNER, "ftp://c.test/feed", model)
+        val view = controller.add(OWNER, "ftp://c.test/feed", model)
 
+        assertEquals("sources", view)
         assertEquals("The feed URL must be an http or https URL", model.getAttribute("addError"))
         assertEquals("ftp://c.test/feed", model.getAttribute("url"))
         assertEquals(null, model.getAttribute("message"))
