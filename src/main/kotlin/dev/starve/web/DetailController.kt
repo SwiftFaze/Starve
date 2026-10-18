@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.server.ResponseStatusException
 
-/** What the detail view shows. [description] is stored, already-sanitised HTML; everything else is plain text. */
+/**
+ * What the detail view shows. [description] is stored, already-sanitised HTML; everything else is plain text. [artist]
+ * is null when it only repeats [sourceTitle], so a source named after its artist reads once.
+ */
 data class DetailView(
     val id: Long,
     val catalogueNumber: String,
@@ -66,9 +69,9 @@ class DetailController(
             sourceTitle,
             DISPLAY_FORMAT.format(publishedAt),
             publishedAt.toString(),
-            artist,
+            artist?.takeUnless { it.trim().equals(sourceTitle.trim(), ignoreCase = true) },
             thumbnailUrl,
-            description,
+            description?.let(PostHeadings::underTitle),
             link,
             sourceUrl?.takeIf { FEED_LINK.matches(it) },
             nav.previous,

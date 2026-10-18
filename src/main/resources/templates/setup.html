@@ -33,17 +33,19 @@
 
         <label class="field-label" for="code">Setup code</label>
         <input class="field field-code" id="code" type="text" name="code" autocomplete="off" autocapitalize="characters"
-               spellcheck="false" aria-describedby="code-hint" required autofocus>
+               spellcheck="false" th:value="${setupForm?.code}" required autofocus
+               th:attr="aria-invalid=${invalid == 'code'} ? 'true',aria-describedby=${invalid == 'code'} ? 'message code-hint' : 'code-hint'">
         <p class="hint" id="code-hint">Printed in the server log at startup: <code>docker logs starve</code> or <code>docker compose logs</code></p>
 
         <label class="field-label" for="username">Admin username</label>
         <input class="field" id="username" type="text" name="username" autocomplete="username"
-               autocapitalize="none" spellcheck="false" aria-describedby="username-hint" required>
+               autocapitalize="none" spellcheck="false" th:value="${setupForm?.username}" required
+               th:attr="aria-invalid=${invalid == 'username'} ? 'true',aria-describedby=${invalid == 'username'} ? 'message username-hint' : 'username-hint'">
         <p class="hint" id="username-hint">3-32 letters, digits, dots, underscores or hyphens</p>
 
         <label class="field-label" for="password">Password</label>
         <input class="field" id="password" type="password" name="password" autocomplete="new-password"
-               aria-describedby="password-hint" required>
+               minlength="10" required th:attr="aria-invalid=${invalid == 'password'} ? 'true',aria-describedby=${invalid == 'password'} ? 'message password-hint' : 'password-hint'">
         <p class="hint" id="password-hint">At least 10 characters</p>
 
         <button type="submit" class="primary">Create admin</button>

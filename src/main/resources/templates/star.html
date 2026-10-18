@@ -6,7 +6,7 @@
   <form method="post" class="star" th:id="${star.domId}" th:action="${star.action}" hx-swap="outerHTML"
         th:attr="hx-post=${star.action},hx-target=${'#' + star.domId},hx-swap-oob=${star.oob} ? 'true' : null,data-favourite=${star.favourite ? 'true' : 'false'}">
     <button type="submit" class="toggle"
-            th:attr="aria-label=${star.favourite} ? 'Remove from favourites' : 'Add to favourites',aria-pressed=${star.favourite ? 'true' : 'false'}"><svg
+            th:attr="aria-label=${star.favourite} ? 'Remove from favourites' : 'Add to favourites',aria-pressed=${star.favourite ? 'true' : 'false'},data-tip=${star.favourite} ? 'Unfavourite' : 'Favourite'"><svg
       class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.2l-4 2.3 1-4.4-3.4-3 4.5-.5z"/></svg></button>
   </form>
 </th:block>

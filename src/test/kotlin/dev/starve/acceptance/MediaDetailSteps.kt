@@ -81,6 +81,12 @@ class MediaDetailSteps {
     @Then("the detail view shows the artist {string}")
     fun showsArtist(artist: String) = assertEquals(Html.escape(artist), group(ARTIST), body())
 
+    @Then("the detail view shows no artist")
+    fun showsNoArtist() = assertFalse(ARTIST.containsMatchIn(body()), body())
+
+    @Then("the detail view shows the source {string}")
+    fun showsSource(source: String) = assertEquals(Html.escape(source), group(SOURCE), body())
+
     @Then("the detail view shows a published date")
     fun showsDate() = assertTrue(DATE.containsMatchIn(body()), body())
 
@@ -191,6 +197,7 @@ class MediaDetailSteps {
     private companion object {
         val TITLE = Regex("<h2 class=\"reader-title\"[^>]*>(.*?)</h2>", RegexOption.DOT_MATCHES_ALL)
         val ARTIST = Regex("<span class=\"detail-artist\"[^>]*>(.*?)</span>", RegexOption.DOT_MATCHES_ALL)
+        val SOURCE = Regex("<span class=\"source\"[^>]*>(.*?)</span>", RegexOption.DOT_MATCHES_ALL)
         val DATE = Regex("<time [^>]*>\\d{4}-\\d{2}-\\d{2}")
         val ARTWORK = Regex("<img class=\"detail-art\"[^>]*src=\"([^\"]*)\"")
         val DESCRIPTION = Regex("<div class=\"reader-body\"[^>]*>(.*)</div>", RegexOption.DOT_MATCHES_ALL)

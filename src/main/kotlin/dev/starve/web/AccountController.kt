@@ -61,6 +61,7 @@ class AccountController(
         model.addAttribute("username", principal.name)
         model.addAttribute("changed", false)
         model.addAttribute("message", message)
+        model.addAttribute("invalid", invalidFieldOf(message, "new-password"))
         return "account"
     }
 }
