@@ -190,8 +190,8 @@ Feature: Keyword tags
 
   Scenario Outline: Invalid tags are rejected with a reason
     Given the tag "AI" exists with the terms "AI"
-    When I create the tag "<name>" with the terms "<terms>"
-    Then the sources page shows the message "<message>"
+    When I create the tag "<name>" with the terms '<terms>'
+    Then the sources page shows the message '<message>'
     And there is 1 tag
 
     Examples:

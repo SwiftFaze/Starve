@@ -185,7 +185,8 @@ class IngestionSteps {
     fun pageLacksSource(title: String) = assertTrue(block(title) == null, "unexpected source '$title'")
 
     @Then("the sources page shows the message {string}")
-    fun pageShowsMessage(message: String) = assertTrue(lastPage.contains(message), "no '$message' in $lastPage")
+    fun pageShowsMessage(message: String) =
+        assertTrue(Html.unescape(lastPage).contains(message), "no '$message' in $lastPage")
 
     @Then("the source {string} shows a last fetched time")
     fun showsLastFetched(title: String) = assertTrue(requireBlock(title).contains("class=\"last-fetched\""))

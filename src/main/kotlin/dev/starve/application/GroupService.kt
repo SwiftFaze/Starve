@@ -4,6 +4,8 @@ import dev.starve.domain.Group
 import dev.starve.domain.GroupRules
 import dev.starve.domain.GroupSummary
 import dev.starve.domain.NameCheck
+import dev.starve.domain.Tag
+import dev.starve.domain.TagSummary
 
 sealed interface GroupResult {
     data class Saved(
@@ -19,15 +21,18 @@ sealed interface GroupResult {
     data object Missing : GroupResult
 }
 
-/** The group navigation: the total unread count and each group (alphabetical) with its own. */
+/** The navigation: the total unread count, then each group and each tag (alphabetical) with its own. */
 data class GroupNavigation(
     val totalUnread: Int,
     val groups: List<GroupSummary>,
+    val tags: List<TagSummary> = emptyList(),
 )
 
+/** Groups, and the navigation of groups and tags that every timeline view is chosen from. */
 class GroupService(
     private val groups: GroupRepository,
     private val sources: SourceRepository,
+    private val tags: TagRepository,
 ) {
     fun list(owner: Long): List<Group> = groups.findAll(owner)
 
@@ -36,9 +41,16 @@ class GroupService(
         id: Long,
     ): Group? = groups.findById(owner, id)
 
+    /** [owner]'s tag [id], or null when [owner] has no such tag. */
+    fun findTag(
+        owner: Long,
+        id: Long,
+    ): Tag? = tags.findById(owner, id)
+
     fun navigation(owner: Long): GroupNavigation {
         val perGroup = groups.unreadCounts(owner)
-        return GroupNavigation(groups.totalUnread(owner), perGroup)
+        val perTag = tags.findAll(owner).map { TagSummary(it, tags.unreadCount(owner, it.narrowing)) }
+        return GroupNavigation(groups.totalUnread(owner), perGroup, perTag)
     }
 
     fun create(

@@ -34,15 +34,16 @@ class TimelineService(
     private val sources: SourceRepository,
     private val clock: Clock,
 ) {
-    /** One page of [owner]'s timeline: unread items, read ones too when [showRead], only [groupId]'s if given. */
+    /** One page of [owner]'s timeline: unread items, read ones too when [showRead], only those [within] covers. */
     fun page(
         owner: Long,
         after: Cursor?,
         showRead: Boolean,
-        groupId: Long? = null,
+        within: Narrowing = Narrowing(),
     ): TimelinePage {
         val renderedAt = clock.instant()
-        val rows = items.timeline(owner, after, TimelineFilter(showRead, groupId), TimelineRules.PAGE_SIZE + 1)
+        val filter = TimelineFilter(showRead, within.groupId, within.match)
+        val rows = items.timeline(owner, after, filter, TimelineRules.PAGE_SIZE + 1)
         return pageOf(owner, rows, renderedAt)
     }
 
@@ -89,12 +90,12 @@ class TimelineService(
     }
 
     /**
-     * Marks read everything of [owner] (in [groupId] if given) first seen at or before [renderedAt];
+     * Marks read everything of [owner] that [within] covers and that was first seen at or before [renderedAt];
      * later arrivals stay unread.
      */
     fun markAllRead(
         owner: Long,
         renderedAt: Instant,
-        groupId: Long? = null,
-    ): Int = items.markAllRead(owner, renderedAt, clock.instant(), groupId)
+        within: Narrowing = Narrowing(),
+    ): Int = items.markAllRead(owner, renderedAt, clock.instant(), within)
 }

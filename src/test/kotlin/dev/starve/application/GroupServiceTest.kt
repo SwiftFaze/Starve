@@ -3,6 +3,8 @@ package dev.starve.application
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
 import dev.starve.domain.Source
+import dev.starve.domain.Tag
+import dev.starve.domain.TagSummary
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -14,7 +16,9 @@ class GroupServiceTest {
     private val music = Group(1, "Music")
     private val groups = MemoryGroups(mutableListOf(music), mapOf(1L to 4), 9)
     private val sources = MemorySources(mutableListOf(Source(5, "http://a.test/f", "A", Validators(), null, null)))
-    private val service = GroupService(groups, sources)
+    private val tagCounts = mutableMapOf<String, Int>()
+    private val tags = MemoryTags(tagCounts)
+    private val service = GroupService(groups, sources, tags)
 
     @Test
     fun `creating stores the trimmed name`() {
@@ -54,6 +58,28 @@ class GroupServiceTest {
 
         assertEquals(9, nav.totalUnread)
         assertEquals(listOf(GroupSummary(music, 4)), nav.groups)
+        assertEquals(emptyList<TagSummary>(), nav.tags)
+    }
+
+    @Test
+    fun `navigation lists the owner's tags alphabetically with the unread count of what each narrows to`() {
+        val rust = tags.insert(OWNER, Tag(0, "rust", listOf("rust")))
+        val ai = tags.insert(OWNER, Tag(0, "AI", listOf("AI"), groupId = 1))
+        tags.insert(OTHER_OWNER, Tag(0, "Other", listOf("x")))
+        tagCounts[ai.match] = 2
+
+        val nav = service.navigation(OWNER)
+
+        assertEquals(listOf(TagSummary(ai, 2), TagSummary(rust, 0)), nav.tags)
+        assertEquals(listOf(ai.narrowing, rust.narrowing), tags.counted)
+    }
+
+    @Test
+    fun `a tag is found only for its owner`() {
+        val ai = tags.insert(OWNER, Tag(0, "AI", listOf("AI")))
+
+        assertEquals(ai, service.findTag(OWNER, ai.id))
+        assertNull(service.findTag(OTHER_OWNER, ai.id))
     }
 
     @Test
@@ -85,7 +111,7 @@ class GroupServiceTest {
     @Test
     fun `a user cannot put their source in a group of another user, nor move another user's source`() {
         val others = MemorySources(mutableListOf(Source(6, "http://b.test/f", "B", Validators(), null, null)))
-        val mixed = GroupService(groups, others)
+        val mixed = GroupService(groups, others, MemoryTags())
 
         assertFalse(mixed.assign(OTHER_OWNER, 6, 1))
         assertTrue(mixed.assign(OWNER, 6, null))

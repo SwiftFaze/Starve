@@ -159,6 +159,58 @@
                th:attr="hx-get=|/sources?delete-group=${group.id}|,aria-label=|Delete the group ${group.name}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Delete</a>
           </li>
         </ul>
+
+        <!-- Tags are keyword views across sources: they add a view to the timeline and never move an item out of its
+             group. Each row is its own edit form. -->
+        <section class="tag-block" aria-labelledby="tags-title">
+          <div class="sheet-head">
+            <h2 class="sheet-title" id="tags-title">Tags</h2>
+          </div>
+          <form class="new-tag tag-form" method="post" th:action="@{/tags}" hx-post="/tags"
+                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+            <label class="field-label" for="new-tag">New tag</label>
+            <input class="field" id="new-tag" type="text" name="name" maxlength="200" autocomplete="off" th:value="${tagName}">
+            <label class="field-label" for="new-tag-terms">Terms</label>
+            <input class="field" id="new-tag-terms" type="text" name="terms" maxlength="2000" autocomplete="off"
+                   placeholder="AI, LLM, GPT*" aria-describedby="new-tag-hint" th:value="${tagTerms}">
+            <p class="hint" id="new-tag-hint">Whole words, comma-separated. End one with * to match every word it
+              starts, as in GPT*.</p>
+            <label class="check"><input type="checkbox" name="body" value="1" th:checked="${tagBody}"> Match the body too</label>
+            <label class="field-label" for="new-tag-group">Only within group</label>
+            <div class="field-row">
+              <select class="field" id="new-tag-group" name="group">
+                <option value="">Any group</option>
+                <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
+                        th:selected="${group.id == tagGroup}">Group</option>
+              </select>
+              <button type="submit">Create tag</button>
+            </div>
+          </form>
+          <p class="sheet-note" th:if="${#lists.isEmpty(tags)}">No tags yet. Create one to see every post on a topic,
+            whichever source it comes from.</p>
+          <ul id="tag-list" class="roster" th:unless="${#lists.isEmpty(tags)}">
+            <li class="tag" th:each="tag : ${tags}" th:attr="data-tag=${tag.name},data-terms=${tag.termsText}">
+              <form class="tag-form" method="post" th:action="@{/tags/{id}(id=${tag.id})}"
+                    th:attr="hx-post=@{/tags/{id}(id=${tag.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+                <input class="field tag-name" type="text" name="name" maxlength="200" th:value="${tag.name}"
+                       th:attr="aria-label=|Name of the tag ${tag.name}|">
+                <input class="field" type="text" name="terms" maxlength="2000" th:value="${tag.termsText}"
+                       th:attr="aria-label=|Terms of the tag ${tag.name}|">
+                <label class="check"><input type="checkbox" name="body" value="1" th:checked="${tag.matchBody}"> Match the body too</label>
+                <div class="field-row">
+                  <select class="field" name="group" th:attr="aria-label=|Group the tag ${tag.name} is limited to|">
+                    <option value="">Any group</option>
+                    <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
+                            th:selected="${group.id == tag.groupId}">Group</option>
+                  </select>
+                  <button type="submit">Save</button>
+                  <a class="read-toggle" th:href="|/sources?delete-tag=${tag.id}|"
+                     th:attr="hx-get=|/sources?delete-tag=${tag.id}|,aria-label=|Delete the tag ${tag.name}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Delete</a>
+                </div>
+              </form>
+            </li>
+          </ul>
+        </section>
         </div>
       </section>
       </div>
@@ -175,6 +227,22 @@
               <form method="post" th:action="@{/sources/{id}/delete(id=${target.id})}"
                     th:attr="hx-post=@{/sources/{id}/delete(id=${target.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
                 <button type="submit" class="danger">Remove source</button>
+              </form>
+              <a class="read-toggle confirm-cancel" href="/sources" hx-get="/sources" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML" autofocus>Cancel</a>
+            </div>
+          </div>
+        </dialog>
+      </th:block>
+      <th:block th:if="${deletingTag != null}" th:with="target=${tags.^[id == __${deletingTag}__]}">
+        <dialog class="confirm" open th:if="${target != null}" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+          <div class="confirm-sheet">
+            <h2 class="confirm-title" id="confirm-title">Delete tag</h2>
+            <p class="confirm-body" id="confirm-body"><strong th:text="${target.name}">AI</strong> will be deleted. The
+              posts it lists stay where they are.</p>
+            <div class="confirm-actions">
+              <form method="post" th:action="@{/tags/{id}/delete(id=${target.id})}"
+                    th:attr="hx-post=@{/tags/{id}/delete(id=${target.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+                <button type="submit" class="danger">Delete tag</button>
               </form>
               <a class="read-toggle confirm-cancel" href="/sources" hx-get="/sources" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML" autofocus>Cancel</a>
             </div>

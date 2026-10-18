@@ -8,11 +8,13 @@ import dev.starve.application.GroupService
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
+import dev.starve.application.MemoryTags
 import dev.starve.application.OTHER_OWNER
 import dev.starve.application.OWNER
 import dev.starve.application.PollService
 import dev.starve.application.SourceHealthService
 import dev.starve.application.SourceScheduleService
+import dev.starve.application.TagService
 import dev.starve.application.quietFavicons
 import dev.starve.domain.PollInterval
 import dev.starve.domain.Source
@@ -54,7 +56,8 @@ class SourceScheduleControllerTest {
     private val roster =
         SourceRoster(
             SourceHealthService(sources, { _, _, _ -> emptyMap() }, Clock.systemUTC()),
-            GroupService(MemoryGroups(), sources),
+            GroupService(MemoryGroups(), sources, MemoryTags()),
+            TagService(MemoryTags(), MemoryGroups()),
             schedule,
             Clock.systemUTC(),
             Duration.ofMinutes(30),

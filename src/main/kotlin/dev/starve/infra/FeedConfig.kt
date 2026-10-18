@@ -12,6 +12,7 @@ import dev.starve.application.PollService
 import dev.starve.application.RetentionService
 import dev.starve.application.SourceRepository
 import dev.starve.application.SubscriptionService
+import dev.starve.application.TagRepository
 import dev.starve.application.TimelineService
 import dev.starve.domain.PlatformSite
 import org.springframework.beans.factory.annotation.Value
@@ -102,7 +103,8 @@ class FeedConfig {
     fun groupService(
         groups: GroupRepository,
         sources: SourceRepository,
-    ) = GroupService(groups, sources)
+        tags: TagRepository,
+    ) = GroupService(groups, sources, tags)
 
     @Bean
     fun retentionService(

@@ -127,7 +127,8 @@ class TimelineSteps {
     fun markAllRead() {
         val before = "before" to renderedAt().toEpochMilli().toString()
         val group = GROUP.find(World.response.body())?.groupValues?.get(1)
-        val fields = listOfNotNull(before, group?.let { "group" to it })
+        val tag = TAG.find(World.response.body())?.groupValues?.get(1)
+        val fields = listOfNotNull(before, group?.let { "group" to it }, tag?.let { "tag" to it })
         World.response = app.postForm("/read-all", *fields.toTypedArray())
     }
 
@@ -271,6 +272,7 @@ class TimelineSteps {
         val TITLE = Regex("<article[^>]*data-title=\"([^\"]*)\"")
         val RENDERED = Regex("name=\"before\"[^>]*value=\"(\\d+)\"")
         val GROUP = Regex("name=\"group\"[^>]*value=\"(\\d+)\"")
+        val TAG = Regex("name=\"tag\"[^>]*value=\"(\\d+)\"")
         val LOAD_MORE = Regex("<a[^>]*class=\"load-more\"[^>]*>")
         val DATE = Regex("<time [^>]*>\\d{4}-\\d{2}-\\d{2}")
         val HREF = Regex("href=\"([^\"]*)\"")

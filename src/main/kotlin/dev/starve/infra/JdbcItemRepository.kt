@@ -5,6 +5,7 @@ import dev.starve.application.ItemRef
 import dev.starve.application.ItemRepository
 import dev.starve.application.ListFilter
 import dev.starve.application.ListPosition
+import dev.starve.application.Narrowing
 import dev.starve.application.Neighbours
 import dev.starve.application.Oembed
 import dev.starve.application.PostRef
@@ -46,13 +47,9 @@ class JdbcItemRepository(
         filter: TimelineFilter,
         limit: Int,
     ): List<TimelineItem> {
-        val conditions = mutableListOf("s.owner_id = ?")
-        val params = mutableListOf<Any>(owner)
+        val params = mutableListOf<Any>()
+        val conditions = narrowed(owner, Narrowing(filter.groupId, filter.match), params)
         if (!filter.showRead) conditions += "i.read_at IS NULL"
-        if (filter.groupId != null) {
-            conditions += "s.group_id = ?"
-            params += filter.groupId
-        }
         return jdbc.pageRows(conditions, params, after, limit)
     }
 
@@ -174,14 +171,17 @@ class JdbcItemRepository(
         owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
-        groupId: Long?,
-    ): Int =
-        jdbc
+        within: Narrowing,
+    ): Int {
+        val params = mutableListOf<Any>(at.toEpochMilli(), firstSeenCutoff.toEpochMilli())
+        val conditions = narrowed(owner, within, params)
+        return jdbc
             .sql(
-                "UPDATE items SET read_at = ? WHERE read_at IS NULL AND first_seen_at <= ? " +
-                    "AND source_id IN (SELECT id FROM sources WHERE owner_id = ? AND (? IS NULL OR group_id = ?))",
-            ).params(at.toEpochMilli(), firstSeenCutoff.toEpochMilli(), owner, groupId, groupId)
+                "UPDATE items SET read_at = ? WHERE id IN (SELECT i.id $TIMELINE_FROM " +
+                    "WHERE i.read_at IS NULL AND i.first_seen_at <= ? AND ${conditions.joinToString(" AND ")})",
+            ).params(params)
             .update()
+    }
 }
 
 /** Restricts an `items` write to the rows of one owner's sources; its parameter is the owner id. */
@@ -266,12 +266,11 @@ private fun listedConditions(
     filter: ListFilter,
     params: MutableList<Any>,
 ): MutableList<String> {
-    val conditions = mutableListOf("s.owner_id = ?")
-    params.add(owner)
     if (filter.favourites) {
-        conditions += "i.favourited_at IS NOT NULL"
-        return conditions
+        params.add(owner)
+        return mutableListOf("s.owner_id = ?", "i.favourited_at IS NOT NULL")
     }
+    val conditions = narrowed(owner, Narrowing(filter.groupId, filter.match), params)
     if (!filter.showRead) {
         val seen = filter.seen
         if (seen == null) {
@@ -280,10 +279,6 @@ private fun listedConditions(
             conditions += "(i.read_at IS NULL OR i.read_at >= ?)"
             params.add(seen)
         }
-    }
-    filter.groupId?.let {
-        conditions += "s.group_id = ?"
-        params.add(it)
     }
     return conditions
 }
