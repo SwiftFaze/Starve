@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.42](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.41...v1.1.0-beta.42) (2026-10-18)
+
+
+### Features
+
+* installable home-screen app with a manifest and Starve icons ([2a51995](https://github.com/SwiftFaze/Starve/commit/2a51995dd0cd2a6920e2be1dfd7e51e91c41528a))
+
 ## [1.1.0-beta.41](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.40...v1.1.0-beta.41) (2026-10-18)
 
 
