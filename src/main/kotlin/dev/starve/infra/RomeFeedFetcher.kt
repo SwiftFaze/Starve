@@ -18,20 +18,34 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.http.HttpResponse
 
-/** Fetches feeds over HTTP with a conditional GET and parses RSS/Atom with ROME. */
+/**
+ * Fetches feeds over HTTP with a conditional GET and parses RSS/Atom with ROME. [http] must not follow redirects:
+ * [FeedRedirects] follows them, so that a permanent move can be reported.
+ */
 class RomeFeedFetcher(
-    private val http: BoundedHttp,
+    http: BoundedHttp,
 ) : FeedFetcher {
+    private val redirects = FeedRedirects(http)
+
     override fun fetch(
         url: String,
         validators: Validators,
     ): FetchResult {
-        val response = http.get(url, ACCEPT, conditionalHeaders(validators))
+        val landing = redirects.get(url, ACCEPT, conditionalHeaders(validators))
+        val response = landing.response
         val status = response.statusCode()
         return when {
-            status == NOT_MODIFIED -> FetchResult.NotModified
-            status in HTTP_OK_RANGE -> FetchResult.Fetched(parse(response.body()), responseValidators(response))
-            else -> throw FeedFetchException("HTTP $status")
+            status == NOT_MODIFIED -> {
+                FetchResult.NotModified(landing.movedTo)
+            }
+
+            status in HTTP_OK_RANGE -> {
+                FetchResult.Fetched(parse(response.body()), responseValidators(response), landing.movedTo)
+            }
+
+            else -> {
+                throw FeedFetchException("HTTP $status")
+            }
         }
     }
 

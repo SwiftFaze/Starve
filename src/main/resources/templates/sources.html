@@ -77,8 +77,14 @@
             <span class="url" th:text="${source.url}" th:title="${source.url}">url</span>
           </div>
           <div class="status">
-            <p class="error" th:if="${source.error}" th:title="${source.error}"><span class="tag">Failed</span>
+            <p class="error" th:if="${source.error != null and source.brokenSince == null}" th:title="${source.error}"><span class="tag">Failed</span>
               <th:block th:text="${source.error}">HTTP 404 Not Found</th:block></p>
+            <p class="error broken" th:if="${source.error != null and source.brokenSince != null}" th:title="${source.error}"><span class="tag">Broken</span>
+              failing since <time th:datetime="${source.brokenSince.iso}" th:title="${source.brokenSince.full}"
+              th:text="${source.brokenSince.short}">yesterday 09:02 UTC</time> ·
+              <th:block th:text="${source.error}">HTTP 404 Not Found</th:block></p>
+            <p class="moved" th:if="${source.movedTo}" th:title="${source.movedTo}">Moved to
+              <th:block th:text="${source.movedTo}">https://example.com/feed.xml</th:block>, already one of your sources</p>
             <span class="last-fetched" th:if="${source.lastFetched}"><th:block th:text="${source.error} ? 'Last tried' : 'Fetched'">Fetched</th:block>
               <time th:datetime="${source.lastFetched.iso}" th:title="${source.lastFetched.full}" th:text="${source.lastFetched.short}">17:13 UTC</time></span>
             <span class="not-fetched" th:unless="${source.lastFetched}">Not fetched yet</span>

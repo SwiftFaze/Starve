@@ -27,6 +27,19 @@ import java.time.Duration
 
 private const val SOUNDCLOUD_FEED_TEMPLATE = "https://feeds.soundcloud.com/users/soundcloud:users:{id}/sounds.rss"
 
+private fun boundedHttp(
+    timeout: Duration,
+    redirects: HttpClient.Redirect,
+) = BoundedHttp(
+    HttpClient
+        .newBuilder()
+        .connectTimeout(timeout)
+        .followRedirects(redirects)
+        .build(),
+    timeout,
+    "Starve/0.1",
+)
+
 /** Wires the framework-free application services to their infrastructure adapters. */
 @Configuration
 class FeedConfig {
@@ -38,18 +51,13 @@ class FeedConfig {
     @Bean
     fun boundedHttp(
         @Value("\${starve.fetch.timeout:PT10S}") timeout: Duration,
-    ) = BoundedHttp(
-        HttpClient
-            .newBuilder()
-            .connectTimeout(timeout)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build(),
-        timeout,
-        "Starve/0.1",
-    )
+    ) = boundedHttp(timeout, HttpClient.Redirect.NORMAL)
 
+    /** Feed polls see every redirect themselves, so that a feed that moved for good gets its new URL stored. */
     @Bean
-    fun feedFetcher(http: BoundedHttp): FeedFetcher = RomeFeedFetcher(http)
+    fun feedFetcher(
+        @Value("\${starve.fetch.timeout:PT10S}") timeout: Duration,
+    ): FeedFetcher = RomeFeedFetcher(boundedHttp(timeout, HttpClient.Redirect.NEVER))
 
     @Bean
     fun feedLocator(

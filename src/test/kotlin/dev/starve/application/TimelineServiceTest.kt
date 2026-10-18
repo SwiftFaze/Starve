@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -50,6 +51,21 @@ class TimelineServiceTest {
 
         assertNull(page.next)
         assertFalse(page.hasSources)
+        assertEquals(0, page.brokenSources)
+    }
+
+    @Test
+    fun `a page counts the owner's sources that have been failing for a day at its render time`() {
+        val day = Duration.ofHours(24)
+        val failing =
+            listOf(now.minus(day), now.minus(day).plusSeconds(1), now.minus(Duration.ofDays(3)), null)
+                .mapIndexed { n, since -> source.copy(id = n + 1L, failingSince = since) }
+        val items = TimelineItems(rows(1))
+        val service = TimelineService(items, items, MemorySources(failing.toMutableList()), clock)
+
+        assertEquals(2, service.page(OWNER, null, false).brokenSources)
+        assertEquals(2, service.favourites(OWNER, null).brokenSources)
+        assertEquals(0, service.page(OTHER_OWNER, null, false).brokenSources)
     }
 
     @Test

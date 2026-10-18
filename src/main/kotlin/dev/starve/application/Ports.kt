@@ -48,13 +48,27 @@ interface FeedLocator {
 }
 
 sealed interface FetchResult {
+    /** Where the leading permanent (301/308) redirects of the fetch led; null when there were none. */
+    val movedTo: String?
+
     data class Fetched(
         val feed: Feed,
         val validators: Validators,
+        override val movedTo: String? = null,
     ) : FetchResult
 
-    data object NotModified : FetchResult
+    data class NotModified(
+        override val movedTo: String? = null,
+    ) : FetchResult
 }
+
+/** What a successful fetch of a source records: its title, cache validators, time, and where it moved, if it did. */
+data class FetchSuccess(
+    val title: String,
+    val validators: Validators,
+    val at: Instant,
+    val movedTo: String? = null,
+)
 
 interface FeedFetcher {
     /** Conditional GET of [url]; throws [FeedFetchException] or [InvalidFeedException] on failure. */
@@ -101,13 +115,16 @@ interface SourceRepository {
         groupId: Long?,
     ): Boolean
 
+    /**
+     * Records a successful fetch, ending any failure streak. A [FetchSuccess.movedTo] becomes the source's URL unless
+     * its owner already follows that URL; the source then keeps its URL and remembers the move instead.
+     */
     fun recordSuccess(
         id: Long,
-        title: String,
-        validators: Validators,
-        at: Instant,
+        success: FetchSuccess,
     )
 
+    /** Records a failed fetch; the failure streak starts at [at] unless one is already running. */
     fun recordFailure(
         id: Long,
         error: String,

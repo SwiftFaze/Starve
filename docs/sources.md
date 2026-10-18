@@ -40,6 +40,23 @@ queued again, and `isFetching` is what renders a row as "Fetching now…". A fet
 `GET /sources/{id}/row` every 2 seconds (`SourceScheduleController`, fragment `sources :: source-row`) until it
 renders without the trigger. `web/SourceRoster` builds the rows for both controllers.
 
+## Broken sources and moved feeds
+
+`recordFailure` stamps `sources.failing_since` (V18) with the first failure of a streak and keeps it
+(`COALESCE`); any success, a 304 included, clears it. `domain/BrokenRules.isBroken` calls a source broken once that
+streak is `BrokenRules.AFTER` (24 hours) old, so the meaning does not change with the poll interval. The Sources row
+then reads "Broken · failing since …" instead of "Failed", and `TimelineService` counts the owner's broken sources
+into `TimelinePage.brokenSources` for the one-line notice above New releases and All releases.
+
+Feed polls use their own `BoundedHttp` with `Redirect.NEVER` (the `feedFetcher` bean); every other client still
+follows redirects. `RomeFeedFetcher` follows them itself, at most five hops: a URL seen twice is a "redirect loop"
+and a sixth hop is "more than 5 redirects", both fetch failures. The leading run of 301/308 hops is reported as
+`FetchResult.movedTo`; once a 302, 303 or 307 hop breaks the run, nothing later counts as a move.
+`JdbcSourceRepository.recordSuccess` rewrites the source's `url` to it (same id, so items and read state stay)
+unless the owner already has a source at that URL (`UNIQUE(owner_id, url)`); then it keeps the URL and stores the
+target in `sources.moved_to`, which the row shows until a success without the move clears it. Smart-add page
+resolution and article fetches do not get this handling.
+
 ## Bulk import
 
 `ImportService` never fetches during the upload, so it applies only the platform rules that need no fetch: a Reddit,

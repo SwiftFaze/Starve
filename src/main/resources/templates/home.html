@@ -92,6 +92,9 @@
         </div>
       </div>
 
+      <p class="broken-note" th:if="${brokenSources > 0 and !(searching or favourites or later)}"><a href="/sources"
+         th:text="${brokenSources == 1} ? '1 source is broken' : |${brokenSources} sources are broken|">2 sources are broken</a></p>
+
       <p class="sheet-note" th:unless="${hasSources or searching}">No sources yet. <a href="/sources">Add a source</a> to start your catalogue.</p>
 
       <div id="timeline" th:if="${hasSources or searching}">

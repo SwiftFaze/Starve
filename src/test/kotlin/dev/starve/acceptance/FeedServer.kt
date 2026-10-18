@@ -70,6 +70,12 @@ sealed interface Route {
         val body: String,
     ) : Route
 
+    /** A redirect with [code] to [location], sent as is (relative or absolute); a null location sends none. */
+    data class Redirect(
+        val code: Int,
+        val location: String?,
+    ) : Route
+
     data object Stall : Route
 
     /** Sends headers and a little body, then stalls. */
@@ -154,12 +160,34 @@ class FeedServer {
         exchange: HttpExchange,
         route: Route,
     ) = when (route) {
-        is Route.Status -> respond(exchange, route.code, "text/plain", "status ${route.code}")
-        is Route.Html -> respond(exchange, 200, "text/html; charset=utf-8", route.body)
-        Route.Icon -> respond(exchange, 200, "image/png", "icon")
-        is Route.Json -> respond(exchange, 200, "application/json", route.body)
-        is Route.Raw -> respond(exchange, 200, route.contentType, resource(route.resource))
-        else -> error("not a fixed route: $route")
+        is Route.Status -> {
+            respond(exchange, route.code, "text/plain", "status ${route.code}")
+        }
+
+        is Route.Redirect -> {
+            route.location?.let { exchange.responseHeaders.add("Location", it) }
+            respond(exchange, route.code, "text/plain", "moved")
+        }
+
+        is Route.Html -> {
+            respond(exchange, 200, "text/html; charset=utf-8", route.body)
+        }
+
+        Route.Icon -> {
+            respond(exchange, 200, "image/png", "icon")
+        }
+
+        is Route.Json -> {
+            respond(exchange, 200, "application/json", route.body)
+        }
+
+        is Route.Raw -> {
+            respond(exchange, 200, route.contentType, resource(route.resource))
+        }
+
+        else -> {
+            error("not a fixed route: $route")
+        }
     }
 
     /** oEmbed queries are routed per video or per SoundCloud track; everything else by path. */

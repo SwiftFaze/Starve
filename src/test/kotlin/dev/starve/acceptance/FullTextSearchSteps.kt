@@ -1,5 +1,6 @@
 package dev.starve.acceptance
 
+import dev.starve.application.FetchSuccess
 import dev.starve.application.GroupRepository
 import dev.starve.application.ItemRepository
 import dev.starve.application.SourceRepository
@@ -67,7 +68,7 @@ class FullTextSearchSteps {
     ) {
         val sources = app.bean(SourceRepository::class.java)
         val source = sources.findAllOf(app.currentUserId()).single { it.title == current }
-        app.bean(SourceRepository::class.java).recordSuccess(source.id, renamed, Validators(), Instant.now())
+        sources.recordSuccess(source.id, FetchSuccess(renamed, Validators(), Instant.now()))
     }
 
     // ---- actions -------------------------------------------------------------------------

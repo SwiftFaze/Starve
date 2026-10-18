@@ -73,7 +73,7 @@ class SubscriptionService(
     ): SubscribeResult =
         try {
             when (val result = fetcher.fetch(url, Validators())) {
-                FetchResult.NotModified -> SubscribeResult.Unreachable
+                is FetchResult.NotModified -> SubscribeResult.Unreachable
                 is FetchResult.Fetched -> SubscribeResult.Subscribed(store(owner, url, result))
             }
         } catch (_: FeedFetchException) {

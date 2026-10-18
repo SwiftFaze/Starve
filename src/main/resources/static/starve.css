@@ -1136,6 +1136,23 @@ button.toggle[data-tip]:is(:hover, :focus-visible)::after {
   color: var(--text-2);
 }
 
+/* Part of the feed is missing: one quiet line above the list, linking to the sources at fault. */
+.broken-note {
+  margin: 0 0 0.75rem;
+  font: 400 0.8125rem/1.4 var(--mono);
+  color: var(--text-2);
+}
+
+.broken-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.broken-note a:hover {
+  color: var(--text);
+}
+
 /* ---- The landing page: the cassette's J-card ------------------------------------------------ */
 
 /* The one filled control on a surface that has no form of its own. */
@@ -3275,6 +3292,14 @@ body[data-split][data-list="strip"] .load-more {
   overflow-wrap: anywhere;
 }
 
+/* A permanent move Starve could not adopt, because the new URL is already a source: said as quietly as the health. */
+.moved {
+  margin: 0.25rem 0 0;
+  font: 400 0.75rem/1.4 var(--mono);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
 /* A mark is advice, not a fault: outlined in the text colour, where a failure is filled red. */
 .tag.mark {
   padding: 0.1875rem 0.3125rem;
@@ -3500,7 +3525,8 @@ body[data-split][data-list="strip"] .load-more {
   .subscriptions .source .error,
   .subscriptions .source .last-fetched,
   .subscriptions .source .not-fetched,
-  .subscriptions .source .stats {
+  .subscriptions .source .stats,
+  .subscriptions .source .moved {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

@@ -4,6 +4,7 @@ import dev.starve.application.GroupService
 import dev.starve.application.SourceHealthService
 import dev.starve.application.SourceScheduleService
 import dev.starve.application.SourceStanding
+import dev.starve.domain.BrokenRules
 import dev.starve.domain.PollInterval
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -24,6 +25,10 @@ data class SourceView(
     val interval: PollInterval?,
     /** True while a Fetch now of it is queued or running. */
     val fetching: Boolean,
+    /** When it started failing, once it has failed long enough to be broken; null otherwise. */
+    val brokenSince: FetchTime? = null,
+    /** Where a permanent redirect moved it, when that URL is already another of the owner's sources. */
+    val movedTo: String? = null,
 )
 
 /** What the Sources roster and each of its rows render from: the rows, the groups and the interval choices. */
@@ -65,6 +70,8 @@ class SourceRoster(
             stats = SourceStatsLine.of(standing.health, now),
             interval = source.pollInterval,
             fetching = schedule.isFetching(source.id),
+            brokenSince = BrokenRules.brokenSince(source, now)?.let { FetchTime.of(it, now) },
+            movedTo = source.movedTo,
         )
     }
 }
