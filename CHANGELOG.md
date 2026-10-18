@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.38](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.37...v1.1.0-beta.38) (2026-10-18)
+
+
+### Bug Fixes
+
+* show the feed entry for GitHub and Bluesky items in the reader ([#171](https://github.com/SwiftFaze/Starve/issues/171)) ([4c1b6b6](https://github.com/SwiftFaze/Starve/commit/4c1b6b6796dbbaf00a98ed6f436a81e08da50398))
+
 ## [1.1.0-beta.37](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.36...v1.1.0-beta.37) (2026-10-18)
 
 
