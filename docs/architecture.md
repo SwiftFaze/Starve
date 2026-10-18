@@ -62,6 +62,8 @@ only items with `first_seen_at` at or before it, so items ingested after the
 page was rendered stay unread. `TimelineService` orchestrates; `HomeController`
 only translates requests and formats views.
 
+Live unread counts (the `starve:read` event and `/feed/counts`): see [`front-end.md`](front-end.md#live-unread-counts).
+
 Favourites: `items.favourited_at` (V9, nullable; the timestamp is the mark) flags a
 favourite. `FavouriteService` (wired by `FavouriteConfig`) stars and unstars through
 `FavouriteRepository.favourite`/`unfavourite`, both idempotent and independent of read state.
@@ -133,22 +135,8 @@ the whole exchange, body included, by one timeout.
 
 ## Page switches
 
-Every in-app navigation link carries `data-switch` plus htmx attributes (and keeps its `href`, so it works without
-JavaScript); `static/theme.js` runs each behind the red shutter. Form posts are plain page loads. The contract the
-templates share:
-
-- Every page that can be swapped to wraps its sleeve and sheet in `.label#shell`. The signed-in top bar is the
-  `#bar` header (`app-bar.html`, `bar-actions.html`; the public pages use `public-bar.html`); a switch swaps
-  `#shell` with `hx-select="#shell"` and `hx-select-oob="#bar"` so the bar's current-page marks follow.
-- Timeline and Sources swap only `#sheet` (plus `#bar,#series,#panel` out of band), which is what lets the player
-  keep playing. The `#dock` sits outside the shell on Timeline, Sources, Account and Settings; a shell swap between
-  two of them keeps the live dock. A page without a dock (Import, delete user, the temporary-password page, the
-  public pages) removes it and so stops playback.
-- Before a shell swap, `theme.js` (`htmx:beforeSwap`) copies the response body's class and `data-*` attributes
-  (carrying `playing` and `video` over when the dock is kept), the dock and the meta description. A response without
-  `#shell` (a fragment, an `HX-Redirect` after a session ends) is not swapped; the link is followed as a plain load.
-- Pages loaded from a switch need their scripts: `deck.js` on the dock pages and Import, `docs.js` on the public
-  pages (it also enhances code blocks after a swap), `htmx.min.js` everywhere.
+The htmx contract every page shares (`data-switch`, the `#shell` and `#sheet` swaps, the dock): see
+[`front-end.md`](front-end.md#page-switches).
 
 ## Detail view
 

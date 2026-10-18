@@ -146,7 +146,18 @@ class HomeController(
         @RequestHeader("HX-Request", required = false) htmx: String?,
     ): Any {
         if (!timeline.markRead(owner, id)) throw notFound()
-        return if (htmx != null) ResponseEntity.ok("") else "redirect:/feed"
+        return if (htmx != null) ResponseEntity.ok().header(HX_TRIGGER, READ_EVENT).body("") else "redirect:/feed"
+    }
+
+    /** The unread counts of the view [query] selects, which the timeline swaps in out of band after a read. */
+    @GetMapping("/feed/counts")
+    fun counts(
+        @CurrentUserId owner: Long,
+        @ModelAttribute query: TimelineQuery,
+        model: Model,
+    ): String {
+        addChrome(model, groups.navigation(owner), scopeOf(groups, owner, query))
+        return "counts :: counts"
     }
 
     @PostMapping("/read-all")
@@ -208,6 +219,7 @@ private fun addPage(
     model.addAttribute("hasSources", page.hasSources)
     model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
     model.addAttribute("moreHref", moreHref(page, scope))
+    model.addAttribute("countsHref", countsHref(scope))
 }
 
 private fun seriesOf(
@@ -246,6 +258,12 @@ private fun moreHref(
         val rest = parts(scope.groupId, show, it.encode(), scope.filter)
         link(listOfNotNull(scope.searchParam) + rest + listOfNotNull(scope.seenParam))
     }
+
+/** Where the view [scope] shows fetches its unread counts: the view without its search, paging or render moment. */
+private fun countsHref(scope: Scope): String {
+    val query = parts(scope.groupId, if (scope.showAll) "all" else null, null, scope.filter)
+    return "/feed/counts" + if (query.isEmpty()) "" else "?" + query.joinToString("&")
+}
 
 private fun href(
     groupId: Long?,

@@ -118,7 +118,8 @@ unread. **Show read** adds already-read items back to the list. Read items are
 kept until the retention age removes them.
 
 Above the list, a navigation shows **All** and each group (alphabetical) with its
-unread count, e.g. `Music [12]`. Choosing a group (`/feed?group=<id>`) shows only its
+unread count, e.g. `Music [12]`; the counts follow as you read, without a reload.
+Choosing a group (`/feed?group=<id>`) shows only its
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.
 
