@@ -37,8 +37,8 @@
   font-display: block;
 }
 
-/* The obi ink is a typed colour so it can transition: when the theme swaps under the shutter,
-   the panel's text and the red band's text fade between ink and white instead of jumping. */
+/* The obi ink is a typed colour so it can transition when the theme swaps under the shutter. Both themes write it in
+   ink today (#97: white on the light red was under AA), so the fade is idle until a theme gives the obi its own ink. */
 @property --on-obi {
   syntax: "<color>";
   inherits: true;
@@ -103,8 +103,8 @@
     --red-text: #c0231a;
     --cyan: #0a6f67;
     --stripe: #ebe8e0;
-    --on-obi: #ffffff;
-    --obi-tag-text: #b31f16;
+    --on-obi: #0c0c12;
+    --obi-tag-text: #ef3326;
     --grain-opacity: 0.04;
     --code-amber: #8a5a00;
     --code-violet: #5b49c9;
@@ -130,8 +130,8 @@
   --red-text: #c0231a;
   --cyan: #0a6f67;
   --stripe: #ebe8e0;
-  --on-obi: #ffffff;
-  --obi-tag-text: #b31f16;
+  --on-obi: #0c0c12;
+  --obi-tag-text: #ef3326;
   --grain-opacity: 0.04;
 
   color-scheme: light;
@@ -345,6 +345,37 @@ input[type="file"].field::file-selector-button {
   font-size: 0.8125rem;
   line-height: 1.45;
   color: var(--text-2);
+}
+
+/* Present for screen readers, drawn nowhere. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The timeline's first tab stop: out of sight until it has keyboard focus, then a filled square over the bar's
+   top-left corner. */
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 50;
+  padding: 0.625rem 0.875rem;
+  background: var(--text);
+  color: var(--ground);
+  font: 500 0.75rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
 }
 
 /* ---- The top bar ------------------------------------------------------------------------ */
@@ -628,6 +659,43 @@ button.toggle[aria-pressed="true"] .icon {
 button.toggle[aria-pressed="true"]:hover {
   background: transparent;
   color: var(--text);
+}
+
+/* An icon toggle names itself on hover and on keyboard focus, which a title tooltip never does on focus
+   or touch: a small mono label under it that follows the pressed state ("Favourite" / "Unfavourite"). */
+button.toggle[data-tip] {
+  position: relative;
+}
+
+button.toggle[data-tip]:is(:hover, :focus-visible)::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 50%;
+  z-index: 5;
+  transform: translateX(-50%);
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+  color: var(--text);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* On a desktop pointer, a row's star and clock wait until the row is hovered or holds focus, so each row
+   draws two boxes (Play, Mark read) instead of four. A pressed one stays: it is the row's state. They keep
+   their place (no layout shift) and stay in the tab order; phones and touch always show them. */
+@media (hover: hover) and (pointer: fine) and (min-width: 60.0625rem) {
+  .item .actions :is(.star, .later):has(> button[aria-pressed="false"]) {
+    transition: opacity var(--quick);
+  }
+
+  .item:not(:hover):not(:focus-within) .actions :is(.star, .later):has(> button[aria-pressed="false"]) {
+    opacity: 0;
+  }
 }
 
 /* Clicking the page you are on, already at the top: the marker blinks twice. */
@@ -1189,7 +1257,7 @@ body.landing .series {
 }
 
 .demo-tag {
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.08em;
   color: var(--text-2);
 }
@@ -1280,9 +1348,11 @@ body.landing .series {
   animation: demo-end 600ms cubic-bezier(0.16, 1, 0.3, 1) 4.7s both;
 }
 
+/* A struck row's title fades to the dim tier, never below it: dimming the whole row with opacity took its faint
+   source and date under AA. */
 @keyframes demo-read {
   to {
-    opacity: 0.5;
+    color: var(--text-2);
   }
 }
 
@@ -1714,7 +1784,7 @@ code {
 .badge {
   padding: 0.25rem 0.375rem;
   border: 1px solid var(--text);
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1944,7 +2014,7 @@ button.switch {
   min-height: 1.75rem;
   padding: 0.25rem 0.625rem;
   background: var(--ground);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 .docs-body pre .copy:hover {
@@ -1958,7 +2028,7 @@ button.switch {
   display: flex;
   align-items: center;
   height: 1.75rem;
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-3);
@@ -2069,6 +2139,54 @@ button.switch {
   }
 }
 
+/* ---- The key list ("?" on the timeline, deck.js) ----------------------------------------- */
+
+.keys {
+  position: fixed;
+  right: 1.5rem;
+  bottom: calc(var(--deck-h, 0px) + 1.5rem);
+  z-index: 60;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+  color: var(--text);
+}
+
+.keys[hidden] {
+  display: none;
+}
+
+.keys-title {
+  margin: 0 0 0.75rem;
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.keys dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.keys dl > div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.keys dt {
+  font: 500 0.75rem/1.35 var(--mono);
+  text-transform: uppercase;
+}
+
+.keys dd {
+  margin: 0;
+  font: 400 0.875rem/1.35 var(--read);
+  color: var(--text-2);
+}
+
 /* ---- Release rows ----------------------------------------------------------------------- */
 
 .item {
@@ -2108,7 +2226,14 @@ button.switch {
 .thumb {
   object-fit: cover;
   display: block;
-  background: var(--sunk);
+  /* Until the lazy image arrives the cell shows the no-art block: the sunk surface inside a hairline, drawn
+     as background so the image covers it once loaded. */
+  background:
+    linear-gradient(var(--line-strong), var(--line-strong)) top / 100% 1px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) bottom / 100% 1px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) left / 1px 100% no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) right / 1px 100% no-repeat,
+    var(--sunk);
 }
 
 /* A site's icon in the art slot: the same sunken backing, with the icon small and centred. */
@@ -2315,7 +2440,7 @@ a.title:hover {
   padding: 0.5rem;
   background: var(--red);
   color: var(--on-red);
-  font: 600 0.625rem/1 var(--mono);
+  font: 600 0.6875rem/1 var(--mono);
 }
 
 .now-text {
@@ -2706,7 +2831,7 @@ body[data-split] .reader-close {
   margin-left: 0.75rem;
   padding: 0.2rem 0.375rem;
   border: 1px solid var(--line-strong);
-  font: 500 0.625rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-2);
@@ -2967,7 +3092,7 @@ body[data-split][data-list="strip"] .item.clearing .cat {
 
 body[data-split][data-list="strip"] .load-more {
   min-height: 2.25rem;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 /* A video before deck.js has tiled it: a small box above the deck's right end, for that moment only. */
@@ -3537,7 +3662,7 @@ body[data-split][data-list="strip"] .load-more {
   .series-block .series-meta {
     flex: 0 1 auto;
     min-width: 0;
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     line-height: 1.15;
   }
 
@@ -3780,6 +3905,62 @@ body[data-split][data-list="strip"] .load-more {
   display: none;
 }
 
+/* ---- Phone touch targets (#98): every control at least 44x44, or a 44x44 hit area around a small drawing */
+
+.list-end {
+  display: none;
+}
+
+@media (max-width: 60rem) {
+  button.toggle,
+  a.toggle {
+    width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  /* The chevrons stay a small drawing; an invisible square around them takes the tap. */
+  .theme-switch {
+    position: relative;
+  }
+
+  .theme-switch::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
+  }
+
+  /* The whole line of the wordmark is the link, not just its letters. */
+  .wordmark a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .sheet form button,
+  button.switch {
+    min-height: 2.75rem;
+  }
+
+  .docs-body pre .copy {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .list-end {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .list-end button {
+    min-width: 50%;
+  }
+}
+
 @media (min-width: 60.0625rem) {
   .to-top {
     display: none;
@@ -4018,6 +4199,12 @@ body[data-reader-center] .reader-view .reader-head {
 
 .reader-body p {
   margin: 0 0 1em;
+}
+
+/* Running text keeps a readable measure (about 70 characters) however wide the panel is; images, tables
+   and code may still use the full column. */
+.reader-body :is(p, li, dd, blockquote, h3, h4, h5, h6) {
+  max-width: 68ch;
 }
 
 .reader-body img,
@@ -4540,7 +4727,7 @@ body.dealing #series .series-meta {
     font-size: 0.6875rem;
   }
 
-  .series-block .series-meta > span {
+  .series-block .series-meta > span:not(.unread) {
     display: none;
   }
 

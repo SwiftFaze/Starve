@@ -1,5 +1,79 @@
 # Changelog
 
+## [1.1.0-beta.28](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.27...v1.1.0-beta.28) (2026-10-18)
+
+
+### Bug Fixes
+
+* refresh unread counts after an item is read ([#113](https://github.com/SwiftFaze/Starve/issues/113)) ([94bc820](https://github.com/SwiftFaze/Starve/commit/94bc8206ab8a834e087361ec677c09170787a574))
+
+## [1.1.0-beta.27](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.26...v1.1.0-beta.27) (2026-10-17)
+
+
+### Features
+
+* 44px phone targets, a back-to-top that steps aside, Mark all read at the end ([#133](https://github.com/SwiftFaze/Starve/issues/133)) ([b3bcf8a](https://github.com/SwiftFaze/Starve/commit/b3bcf8a620b9fb0797ba1d6b88d6c753f945a1cc))
+* keyboard shortcuts on the timeline ([#132](https://github.com/SwiftFaze/Starve/issues/132)) ([7af6f26](https://github.com/SwiftFaze/Starve/commit/7af6f268b6c06b394a7e07a0d79e51b961b728ae))
+
+## [1.1.0-beta.26](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.25...v1.1.0-beta.26) (2026-10-17)
+
+
+### Features
+
+* keyboard and screen-reader paths through the timeline ([#130](https://github.com/SwiftFaze/Starve/issues/130)) ([7f43604](https://github.com/SwiftFaze/Starve/commit/7f43604985f3cb15a3e571fc9d38244a7ac80e73))
+
+## [1.1.0-beta.25](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.24...v1.1.0-beta.25) (2026-10-17)
+
+
+### Features
+
+* name icon toggles, placehold art, cap the reader measure, lighten rows ([#126](https://github.com/SwiftFaze/Starve/issues/126)) ([a84e34f](https://github.com/SwiftFaze/Starve/commit/a84e34f9ceef58ef35a60e5b36bd748c5ea2c513))
+
+## [1.1.0-beta.24](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.23...v1.1.0-beta.24) (2026-10-17)
+
+
+### Features
+
+* one heading outline on every page ([#125](https://github.com/SwiftFaze/Starve/issues/125)) ([bef8c2a](https://github.com/SwiftFaze/Starve/commit/bef8c2a257a6337cf2efd9aebe9763c864153249))
+
+## [1.1.0-beta.23](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.22...v1.1.0-beta.23) (2026-10-17)
+
+
+### Features
+
+* sweep page switches fast, keep the full shutter for themes ([#123](https://github.com/SwiftFaze/Starve/issues/123)) ([4fbeea8](https://github.com/SwiftFaze/Starve/commit/4fbeea8254daebe41ef59fb55b2298d721e7bc48))
+
+## [1.1.0-beta.22](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.21...v1.1.0-beta.22) (2026-10-17)
+
+
+### Features
+
+* a styled error page instead of the Whitelabel page ([#122](https://github.com/SwiftFaze/Starve/issues/122)) ([fcb8fe1](https://github.com/SwiftFaze/Starve/commit/fcb8fe1fae8abe419010aeb5ff24d69b7ca8f0f9))
+
+## [1.1.0-beta.21](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.20...v1.1.0-beta.21) (2026-10-17)
+
+
+### Bug Fixes
+
+* check new passwords early and keep rejected access forms filled ([#119](https://github.com/SwiftFaze/Starve/issues/119)) ([d17e5e5](https://github.com/SwiftFaze/Starve/commit/d17e5e584d92e49ecf4ef524fd0c6c24175d878f))
+* fit Sources fetch times, say No groups, shorten the add placeholder ([#117](https://github.com/SwiftFaze/Starve/issues/117)) ([34b265f](https://github.com/SwiftFaze/Starve/commit/34b265f3a32815bc7ddc2cfd97fb3edd557692ed))
+* show the detail view's name once when artist and source match ([#116](https://github.com/SwiftFaze/Starve/issues/116)) ([9affc6b](https://github.com/SwiftFaze/Starve/commit/9affc6b77e0630b589d4381929f9ac7b1a3a0831))
+* write light-theme obi text in ink and lift all text to 11px ([#121](https://github.com/SwiftFaze/Starve/issues/121)) ([48ce09f](https://github.com/SwiftFaze/Starve/commit/48ce09fd69bcece8753a65a5d8c8060f73261fca))
+
+## [1.1.0-beta.20](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.19...v1.1.0-beta.20) (2026-10-17)
+
+
+### Bug Fixes
+
+* mark Sources as the current page in the bar on /import ([#115](https://github.com/SwiftFaze/Starve/issues/115)) ([446f923](https://github.com/SwiftFaze/Starve/commit/446f923f1402e8f0a4cff76011f60519bc538aab))
+
+## [1.1.0-beta.19](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.18...v1.1.0-beta.19) (2026-10-17)
+
+
+### Bug Fixes
+
+* reopen a playable item's post in its detail view ([#112](https://github.com/SwiftFaze/Starve/issues/112)) ([ef58c32](https://github.com/SwiftFaze/Starve/commit/ef58c32e568d7d83895dfbb796b5b9641f1fe013)), closes [#94](https://github.com/SwiftFaze/Starve/issues/94)
+
 ## [1.1.0-beta.18](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.17...v1.1.0-beta.18) (2026-10-16)
 
 

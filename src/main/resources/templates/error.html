@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="|${copy.heading} - Starve|">Nothing here - Starve</title>
+  <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/starve.css">
+  <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/martian-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/htmx.min.js"></script>
+  <script src="/deck.js" defer th:if="${signedIn}"></script>
+  <script src="/docs.js" defer th:unless="${signedIn}"></script>
+</head>
+<!-- The styled error page (ErrorPages): the bar for the visitor's state, the status on the obi, the problem in plain
+     words and one way back. It names only the kind of failure, never the resource or the exception. -->
+<body th:class="${signedIn} ? null : 'access-page'">
+  <!-- th:replace runs before th:if on one tag, so the condition sits on a block around it. -->
+  <th:block th:if="${signedIn}"><header th:replace="~{app-bar :: app-bar(null)}"></header></th:block>
+  <th:block th:unless="${signedIn}"><header th:replace="~{public-bar :: public-bar(null)}"></header></th:block>
+
+  <div class="label" id="shell">
+    <aside class="sleeve" aria-label="Error">
+      <div class="series-block">
+        <h1 class="series roster-name" th:text="${copy.code}">404</h1>
+        <p class="series-meta">Error</p>
+        <button type="button" class="theme-switch" aria-label="Switch theme"></button>
+      </div>
+    </aside>
+
+    <main class="sheet access" id="sheet">
+      <div class="access-form">
+        <div class="sheet-head">
+          <h2 class="sheet-title" th:text="${copy.heading}">Nothing here</h2>
+        </div>
+        <p class="sheet-note" th:text="${copy.help}">There is no page at this address, or it was removed.</p>
+        <a class="read-toggle filled" th:if="${signedIn}" href="/feed">Timeline</a>
+        <a class="read-toggle filled" th:unless="${signedIn}" href="/">Home</a>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.server.ResponseStatusException
 
 /**
- * What the reader shows. [body] is stored, already-sanitised HTML; everything else is plain text.
+ * What the reader shows. [body] is stored, already-sanitised HTML with its headings nested under the title
+ * ([PostHeadings]); everything else is plain text.
  * [headerImage] is the feed image shown above the body; [siteIcon] is the source's icon, shown small by its name.
  */
 data class ReaderView(
@@ -44,6 +45,7 @@ class ReaderController(
      * The reader fragment of a blog post; requesting it marks the item read. [query] is the list the post was opened
      * from, which gives its Previous and Next links.
      */
+    @AnnouncesRead
     @GetMapping("/items/{id}/reader")
     fun reader(
         @CurrentUserId owner: Long,
@@ -67,7 +69,7 @@ class ReaderController(
             sourceTitle,
             DISPLAY_FORMAT.format(publishedAt),
             publishedAt.toString(),
-            body,
+            body?.let(PostHeadings::underTitle),
             link?.takeIf { WEB_LINK.matches(it) },
             PostImages.headerImage(thumbnailUrl, body),
             faviconUrl,

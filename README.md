@@ -1,6 +1,6 @@
 # Starve
 
-A self-hosted, single-user personal feed aggregator (RSS-first: YouTube,
+A self-hosted, single-owner personal feed aggregator (RSS-first: YouTube,
 SoundCloud, news). Built with Kotlin, Spring Boot, Thymeleaf/htmx and SQLite.
 Feed features are tracked in the GitHub issues. Today you can subscribe to
 RSS/Atom feeds; Starve fetches them in the background and shows their items in
@@ -72,7 +72,9 @@ and subscribes to that feed. A page with no discoverable feed is rejected with a
 message asking for the feed URL. Starve fetches the feed once to confirm it is
 valid RSS or Atom before saving, and rejects duplicates (including a page whose
 feed you already follow). Each source shows its title, when it
-was last fetched and its last error, if any; unsubscribe from the same page.
+was last fetched (in UTC: just the time if it was today, "yesterday" and the time
+the day before, otherwise the date; hover it for the full timestamp) and its last
+error, if any; unsubscribe from the same page.
 
 Subscriptions are polled in the background with conditional GET (ETag /
 Last-Modified), so unchanged feeds cost almost nothing. One failing feed never
@@ -116,7 +118,8 @@ unread. **Show read** adds already-read items back to the list. Read items are
 kept until the retention age removes them.
 
 Above the list, a navigation shows **All** and each group (alphabetical) with its
-unread count, e.g. `Music [12]`. Choosing a group (`/feed?group=<id>`) shows only its
+unread count, e.g. `Music [12]`; the counts follow as you read, without a reload.
+Choosing a group (`/feed?group=<id>`) shows only its
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.
 
@@ -142,6 +145,14 @@ clear it; a cleared row stays on screen until the next reload. The retention pur
 deletes a saved item, though removing a source still deletes its items. If both
 `favourites=1` and `later=1` are given, Favourites wins. Searching from Later still searches
 every item, saved or not, and saved items stay searchable; clearing the search returns to Later.
+
+## Keyboard shortcuts
+
+On the timeline, single keys work whenever you are not typing in a field (and never with Ctrl, Alt or
+Cmd held): **j** / **k** move to the next / previous row, **o** or **Enter** opens it (its post, or
+plays it), **m** marks it read and moves on, **Space** plays or pauses the deck, **n** / **p** step to
+the next / previous post while one is open, **/** jumps to search, and **?** shows the list. Escape
+closes the list. While the YouTube player has focus, its own keys apply.
 
 ## Searching
 
@@ -204,7 +215,8 @@ opens its post (on a desktop too, clicking them does).
 
 Clicking the title of a SoundCloud track or YouTube video opens a detail view in the
 reader pane instead of leaving for the original site: large artwork, title,
-artist or channel, published date and description, with **Open original**, **Close**
+artist or channel (left out when it only repeats the source's name), published date
+and description, with **Open original**, **Close**
 and a **Play** button (it reads **Pause** while that item is playing). Opening the
 view marks the item read; Play loads the item into the player exactly as the row's
 Play does, and a video already playing in the pane stays in the pane. Clicking the
