@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.41](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.40...v1.1.0-beta.41) (2026-10-18)
+
+
+### Features
+
+* title items that have none from the start of their text ([#174](https://github.com/SwiftFaze/Starve/issues/174)) ([bf74370](https://github.com/SwiftFaze/Starve/commit/bf74370a4fa8d56930c35914bf14f9c5951b30e7))
+
 ## [1.1.0-beta.40](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.39...v1.1.0-beta.40) (2026-10-18)
 
 
