@@ -80,7 +80,8 @@ class UserManagementSteps {
 
     @When("I reset the password of {string} in Settings")
     fun resetPassword(username: String) {
-        World.response = submitRowForm(app.get("/settings").body(), username)
+        // The row's Reset password only asks; the confirmation it opens holds the form.
+        World.response = submitForm(app.get("/settings?reset=${app.userId(username)}").body())
         TEMPORARY.find(World.response.body())?.let { World.temporaryPasswords += it.groupValues[1] }
     }
 
@@ -170,11 +171,6 @@ class UserManagementSteps {
         path: String,
         username: String,
     ) = path.replace("{id}", app.userId(username).toString())
-
-    private fun submitRowForm(
-        page: String,
-        username: String,
-    ) = submitForm(rowIn(page, username))
 
     /** Posts the first form in [html] as a browser would, with its hidden fields. */
     private fun submitForm(html: String): java.net.http.HttpResponse<String> {

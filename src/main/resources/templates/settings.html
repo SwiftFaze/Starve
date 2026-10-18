@@ -62,14 +62,30 @@
             </div>
             <span class="created">Created <time th:datetime="${user.created}" th:text="${user.created}">2026-10-12</time></span>
             <div class="actions" th:unless="${user.you}">
-              <form method="post" th:action="@{/settings/users/{id}/reset(id=${user.id})}">
-                <button type="submit">Reset password</button>
-              </form>
+              <a class="read-toggle" th:href="|/settings?reset=${user.id}|"
+                 th:attr="hx-get=|/settings?reset=${user.id}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Reset password</a>
               <a class="read-toggle" th:href="@{/settings/users/{id}/delete(id=${user.id})}">Delete</a>
             </div>
           </li>
         </ul>
       </section>
+
+      <!-- A reset replaces the user's password at once, so it asks first (see the Sources dialogs). -->
+      <th:block th:if="${resetting != null}" th:with="target=${users.^[id == __${resetting}__ and !you]}">
+        <dialog class="confirm" open th:if="${target != null}" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+          <div class="confirm-sheet">
+            <h2 class="confirm-title" id="confirm-title">Reset password</h2>
+            <p class="confirm-body" id="confirm-body"><strong th:text="${target.username}">friend</strong> gets a
+              temporary password, shown to you once, to sign in with. Their current password stops working.</p>
+            <div class="confirm-actions">
+              <form method="post" th:action="@{/settings/users/{id}/reset(id=${target.id})}">
+                <button type="submit" class="danger">Reset password</button>
+              </form>
+              <a class="read-toggle confirm-cancel" href="/settings" hx-get="/settings" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML" autofocus>Cancel</a>
+            </div>
+          </div>
+        </dialog>
+      </th:block>
     </main>
   </div>
   <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>

@@ -114,7 +114,7 @@ class SourcesPlayingSteps {
     @Then("the message is inside the page content a Sources form swaps")
     fun messageInSwappedContent() {
         val swapped = regionIds(formsTo { it == "/sources" || it == "/groups" }.first())
-        assertTrue(swapped.any { region(it, World.sourcesPage).contains("id=\"message\"") }, World.sourcesPage)
+        assertTrue(swapped.any { region(it, World.sourcesPage).contains("class=\"message\"") }, World.sourcesPage)
     }
 
     // ---- helpers -------------------------------------------------------------------------

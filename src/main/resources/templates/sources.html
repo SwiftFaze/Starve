@@ -41,7 +41,7 @@
     </aside>
 
     <main class="sheet sources-sheet" id="sheet" tabindex="-1">
-      <p id="message" class="message" role="status" th:if="${message}" th:text="${message}">Subscribed to Boiler Room</p>
+      <p id="message" class="message" th:if="${message}" th:attr="role=${error} ? 'alert' : 'status'" th:text="${message}">Subscribed to Boiler Room</p>
 
       <div class="sources-split">
       <section class="subscriptions" aria-labelledby="subs-title">
@@ -55,10 +55,13 @@
         <label class="field-label" for="add-url">Add a source</label>
         <div class="field-row">
           <input class="field" id="add-url" type="text" name="url" inputmode="url" autocomplete="off"
-                 spellcheck="false" placeholder="Paste a feed, channel or site URL" aria-describedby="add-url-hint" required>
+                 spellcheck="false" placeholder="Paste a feed, channel or site URL" required
+                 th:value="${url}" th:autofocus="${addError != null}"
+                 th:attr="aria-invalid=${addError != null} ? 'true',aria-describedby=${addError != null} ? 'add-url-error add-url-hint' : 'add-url-hint'">
           <button type="submit">Add</button>
           <a class="read-toggle" href="/import" title="Import from YouTube Takeout or an OPML file">Import</a>
         </div>
+        <p id="add-url-error" class="message" role="alert" th:if="${addError}" th:text="${addError}">That URL could not be fetched</p>
         <p class="hint" id="add-url-hint">A feed URL, or the address of a YouTube channel, SoundCloud profile or website.</p>
       </form>
       </div>
@@ -94,10 +97,8 @@
               </select>
               <button type="submit">Set group</button>
             </form>
-            <form method="post" th:action="@{/sources/{id}/delete(id=${source.id})}"
-                  th:attr="hx-post=@{/sources/{id}/delete(id=${source.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-              <button type="submit" th:attr="aria-label=|Remove ${source.title}|">Remove</button>
-            </form>
+            <a class="read-toggle" th:href="|/sources?remove=${source.id}|"
+               th:attr="hx-get=|/sources?remove=${source.id}|,aria-label=|Remove ${source.title}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Remove</a>
           </div>
         </li>
       </ul>
@@ -129,15 +130,49 @@
             </form>
             <span class="members" th:with="n=${#lists.size(sources.?[groupId == __${group.id}__])}"
                   th:text="${n == 1} ? '1 source' : |${n} sources|">3 sources</span>
-            <form method="post" th:action="@{/groups/{id}/delete(id=${group.id})}"
-                  th:attr="hx-post=@{/groups/{id}/delete(id=${group.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-              <button type="submit">Delete</button>
-            </form>
+            <a class="read-toggle" th:href="|/sources?delete-group=${group.id}|"
+               th:attr="hx-get=|/sources?delete-group=${group.id}|,aria-label=|Delete the group ${group.name}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Delete</a>
           </li>
         </ul>
         </div>
       </section>
       </div>
+
+      <!-- What cannot be undone asks first. The dialog is drawn open, so it works without scripts; deck.js
+           makes it modal, and Escape or a click on the veil is Cancel. Focus starts on Cancel. -->
+      <th:block th:if="${removing != null}" th:with="target=${sources.^[id == __${removing}__]}">
+        <dialog class="confirm" open th:if="${target != null}" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+          <div class="confirm-sheet">
+            <h2 class="confirm-title" id="confirm-title">Remove source</h2>
+            <p class="confirm-body" id="confirm-body"><strong th:text="${target.title}">The Proton Blog</strong> and
+              every item it brought will be deleted. This can't be undone.</p>
+            <div class="confirm-actions">
+              <form method="post" th:action="@{/sources/{id}/delete(id=${target.id})}"
+                    th:attr="hx-post=@{/sources/{id}/delete(id=${target.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+                <button type="submit" class="danger">Remove source</button>
+              </form>
+              <a class="read-toggle confirm-cancel" href="/sources" hx-get="/sources" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML" autofocus>Cancel</a>
+            </div>
+          </div>
+        </dialog>
+      </th:block>
+      <th:block th:if="${deletingGroup != null}"
+                th:with="target=${groups.^[id == __${deletingGroup}__]},n=${#lists.size(sources.?[groupId == __${deletingGroup}__])}">
+        <dialog class="confirm" open th:if="${target != null}" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+          <div class="confirm-sheet">
+            <h2 class="confirm-title" id="confirm-title">Delete group</h2>
+            <p class="confirm-body" id="confirm-body"><strong th:text="${target.name}">Music</strong> will be deleted.
+              <th:block th:text="${n == 0} ? 'It has no sources.' : (${n == 1} ? 'Its 1 source stays, ungrouped.' : |Its ${n} sources stay, ungrouped.|)">Its 2 sources stay, ungrouped.</th:block></p>
+            <div class="confirm-actions">
+              <form method="post" th:action="@{/groups/{id}/delete(id=${target.id})}"
+                    th:attr="hx-post=@{/groups/{id}/delete(id=${target.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+                <button type="submit" class="danger">Delete group</button>
+              </form>
+              <a class="read-toggle confirm-cancel" href="/sources" hx-get="/sources" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML" autofocus>Cancel</a>
+            </div>
+          </div>
+        </dialog>
+      </th:block>
     </main>
     <div class="splitter" role="separator" aria-orientation="vertical" aria-controls="sheet"
          aria-label="Resize list" tabindex="0"></div>

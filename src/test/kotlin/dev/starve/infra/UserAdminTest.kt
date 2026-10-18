@@ -117,9 +117,24 @@ class UserAdminTest : SecurityTestBase() {
         assertFalse("Reset password" in rows[0] || "Delete" in rows[0])
         assertTrue("1970-01-01" in rows[1] && "Created" in rows[1])
         assertFalse("Admin" in rows[1] || "[you]" in rows[1])
-        assertTrue("action=\"/settings/users/2/reset\"" in rows[1] && "name=\"_csrf\"" in rows[1])
+        assertTrue("href=\"/settings?reset=2\"" in rows[1] && "/settings/users/2/reset" !in rows[1])
         assertTrue("href=\"/settings/users/2/delete\"" in rows[1])
         assertTrue("data-username=\"amy\"" in rows[2] && "/settings/users/3/delete" in rows[2])
+    }
+
+    @Test
+    fun `a reset asks first, and the confirmation holds only the asked user's reset form`() {
+        seed()
+
+        val page =
+            mvc
+                .perform(get("/settings").param("reset", "2").session(signedIn(ADMIN)))
+                .andReturn()
+                .response.contentAsString
+
+        val dialog = requireNotNull(Regex("<dialog.*?</dialog>", RegexOption.DOT_MATCHES_ALL).find(page)).value
+        assertTrue("action=\"/settings/users/2/reset\"" in dialog && "name=\"_csrf\"" in dialog)
+        assertFalse("/settings/users/3/reset" in page)
     }
 
     @Test

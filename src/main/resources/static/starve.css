@@ -1630,13 +1630,93 @@ button.primary:hover {
   color: var(--cyan);
 }
 
-.access-form .message[role="alert"] {
+.message[role="alert"] {
   border-color: var(--red-text);
 }
 
-.access-form .message[role="alert"]::before,
-.access-form .message[role="alert"]::after {
+.message[role="alert"]::before,
+.message[role="alert"]::after {
   color: var(--red-text);
+}
+
+.add-source .message {
+  margin: 0.75rem 0 0;
+}
+
+/* A confirmation before something that cannot be undone: a small spec sheet over the veiled page. The
+   dialog itself is only the veil's hit area; the sheet inside carries the drawing, so a click on the veil
+   (and only there) is Cancel. On a phone it sits at the foot of the screen, above the deck, under the thumb. */
+dialog.confirm {
+  position: fixed;
+  inset: 0;
+  width: min(30rem, calc(100vw - 2rem));
+  max-width: none;
+  height: fit-content;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  animation: confirm-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+dialog.confirm::backdrop {
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  animation: veil-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.confirm-sheet {
+  padding: 1.5rem 1.5rem 1.375rem;
+  border: 1px solid var(--line-strong);
+  background: var(--raised);
+}
+
+.confirm-title {
+  margin: 0;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--text);
+  font: 800 1.25rem/1.05 var(--display);
+  font-stretch: var(--display-stretch);
+  text-transform: uppercase;
+}
+
+.confirm-body {
+  margin: 1.125rem 0 1.5rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.confirm .confirm-actions {
+  margin-top: 0;
+}
+
+.confirm .confirm-actions form {
+  margin: 0;
+}
+
+.confirm button.danger,
+.confirm .read-toggle {
+  min-height: 2.75rem;
+}
+
+@keyframes confirm-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 60rem) {
+  dialog.confirm {
+    margin: auto auto calc(var(--deck-h, 0px) + 1rem);
+  }
 }
 
 /* Checkboxes: a square well like a field, a drawn tick when checked. */
