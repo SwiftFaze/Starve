@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.35](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.34...v1.1.0-beta.35) (2026-10-18)
+
+
+### Features
+
+* flag broken sources and follow feeds that moved ([#160](https://github.com/SwiftFaze/Starve/issues/160)) ([a52b033](https://github.com/SwiftFaze/Starve/commit/a52b033c68f371a518a84cfed2f2a3f16d9d111d))
+
 ## [1.1.0-beta.34](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.33...v1.1.0-beta.34) (2026-10-18)
 
 
