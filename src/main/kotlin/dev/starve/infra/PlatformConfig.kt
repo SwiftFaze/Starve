@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Configuration
 
 private const val REDDIT_HOSTS = "reddit.com,www.reddit.com,old.reddit.com"
 private const val REDDIT_FEED = "https://www.reddit.com/r/{key}/.rss"
-private const val VIMEO_HOSTS = "vimeo.com,www.vimeo.com"
-private const val VIMEO_FEED = "https://vimeo.com/{key}/videos/rss"
 private const val GITHUB_HOSTS = "github.com,www.github.com"
 private const val GITHUB_FEED = "https://github.com/{key}.atom"
 private const val APPLE_HOSTS = "podcasts.apple.com"
@@ -23,12 +21,6 @@ class PlatformConfig {
         @Value("\${starve.reddit.hosts:$REDDIT_HOSTS}") hosts: List<String>,
         @Value("\${starve.reddit.feed-url-template:$REDDIT_FEED}") template: String,
     ) = site(Platform.REDDIT, hosts, template)
-
-    @Bean
-    fun vimeoSite(
-        @Value("\${starve.vimeo.hosts:$VIMEO_HOSTS}") hosts: List<String>,
-        @Value("\${starve.vimeo.feed-url-template:$VIMEO_FEED}") template: String,
-    ) = site(Platform.VIMEO, hosts, template)
 
     @Bean
     fun gitHubSite(

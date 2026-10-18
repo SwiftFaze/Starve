@@ -6,10 +6,9 @@ import org.junit.jupiter.api.Test
 
 class PlatformPagesTest {
     private val reddit = PlatformSite(Platform.REDDIT, setOf("reddit.com", "www.reddit.com"), "R/{key}")
-    private val vimeo = PlatformSite(Platform.VIMEO, setOf("vimeo.com"), "V/{key}")
     private val github = PlatformSite(Platform.GITHUB, setOf("github.com"), "G/{key}")
     private val apple = PlatformSite(Platform.APPLE_PODCASTS, setOf("podcasts.apple.com"), "A/{key}")
-    private val sites = listOf(reddit, vimeo, github, apple)
+    private val sites = listOf(reddit, github, apple)
 
     private fun address(url: String) = PlatformPages.match(url, sites)?.address
 
@@ -27,16 +26,6 @@ class PlatformPagesTest {
         assertNull(address("https://www.reddit.com/r/selfhosted/.rss"))
         assertNull(address("https://www.reddit.com/r/a/"))
         assertNull(address("https://www.reddit.com/"))
-    }
-
-    @Test
-    fun `a vimeo channel or user maps to its videos feed, a numeric video does not`() {
-        assertEquals("V/channels/staffpicks", address("https://vimeo.com/channels/staffpicks"))
-        assertEquals("V/someone", address("https://vimeo.com/someone"))
-        assertEquals("V/user123", address("https://vimeo.com/user123"))
-        assertNull(address("https://vimeo.com/76979871"))
-        assertNull(address("https://vimeo.com/channels/staffpicks/76979871"))
-        assertNull(address("https://vimeo.com/channels/a.b"))
     }
 
     @Test
@@ -71,10 +60,10 @@ class PlatformPagesTest {
     @Test
     fun `hosts match ignoring case, and the first site on the host that recognises the page wins`() {
         assertEquals("G/torvalds", address("https://GitHub.com/torvalds"))
-        val shared = listOf(vimeo.copy(hosts = setOf("x.test")), github.copy(hosts = setOf("x.test")))
+        val shared = listOf(github.copy(hosts = setOf("x.test")), reddit.copy(hosts = setOf("x.test")))
         val page = PlatformPages.match("https://x.test/someone", shared)
-        assertEquals(Platform.VIMEO, page?.site?.platform)
+        assertEquals(Platform.GITHUB, page?.site?.platform)
         assertEquals("someone", page?.key)
-        assertEquals(Platform.GITHUB, PlatformPages.match("https://x.test/a-b", shared.reversed())?.site?.platform)
+        assertEquals(Platform.REDDIT, PlatformPages.match("https://x.test/r/kotlin", shared)?.site?.platform)
     }
 }

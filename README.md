@@ -69,8 +69,8 @@ the address of a page: a YouTube channel, a SoundCloud profile or any website th
 advertises its feed (`http` or `https`). Starve fetches the URL, follows the page's
 RSS/Atom `<link rel="alternate">` (or, for a SoundCloud profile, its public feed)
 and subscribes to that feed. A few platforms hide their feeds, so Starve knows where
-they are: a subreddit (`reddit.com/r/selfhosted`), a Vimeo channel or user, a GitHub
-user (`github.com/torvalds`) and an Apple Podcasts show link. Reddit sometimes blocks
+they are: a subreddit (`reddit.com/r/selfhosted`), a GitHub user
+(`github.com/torvalds`) and an Apple Podcasts show link. Reddit sometimes blocks
 servers, so a subreddit may show fetch errors now and then. A page with no discoverable feed is rejected with a
 message asking for the feed URL. Starve fetches the feed once to confirm it is
 valid RSS or Atom before saving, and rejects duplicates (including a page whose
@@ -303,8 +303,6 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | `starve.youtube.feed-url-template` | `https://www.youtube.com/feeds/videos.xml?channel_id={id}` | feed URL for an imported Takeout channel; `{id}` is its channel id |
 | `starve.reddit.hosts` | `reddit.com,www.reddit.com,old.reddit.com` | hosts whose `/r/<name>` pages are subreddits |
 | `starve.reddit.feed-url-template` | `https://www.reddit.com/r/{key}/.rss` | feed URL of a subreddit; `{key}` is its name |
-| `starve.vimeo.hosts` | `vimeo.com,www.vimeo.com` | hosts whose channel and user pages are Vimeo's |
-| `starve.vimeo.feed-url-template` | `https://vimeo.com/{key}/videos/rss` | feed URL of a Vimeo channel (`{key}` is `channels/<name>`) or user (`<name>`) |
 | `starve.github.hosts` | `github.com,www.github.com` | hosts whose one-segment pages are GitHub users |
 | `starve.github.feed-url-template` | `https://github.com/{key}.atom` | feed URL of a GitHub user; `{key}` is the username |
 | `starve.apple-podcasts.hosts` | `podcasts.apple.com` | hosts of Apple Podcasts show links |
