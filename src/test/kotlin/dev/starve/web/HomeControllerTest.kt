@@ -222,6 +222,7 @@ class HomeControllerTest {
 
         assertEquals(HttpStatus.OK, htmx.statusCode)
         assertEquals("", htmx.body)
+        assertEquals(READ_EVENT, htmx.headers.getFirst(HX_TRIGGER))
         assertEquals("redirect:/feed", c.markRead(OWNER, 1, null))
     }
 
@@ -531,5 +532,38 @@ class HomeControllerTest {
         val views = (model.getAttribute("items") as List<*>).map { it as TimelineItemView }
         assertTrue(views[0].later)
         assertFalse(views[1].later)
+    }
+
+    @Test
+    fun `the counts of a group give its series count and the navigation with it current`() {
+        val model = ConcurrentModel()
+
+        val view = controller(TimelineItems()).counts(OWNER, TimelineQuery(show = "all", group = "1"), model)
+
+        assertEquals("counts :: counts", view)
+        assertEquals(SeriesView("music", 3), model.getAttribute("series"))
+        val nav = model.getAttribute("nav") as List<*>
+        assertEquals(NavEntryView("music [3]", "/feed?show=all&group=1", true), nav[1])
+    }
+
+    @Test
+    fun `the counts of Favourites have no series count`() {
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).counts(OWNER, TimelineQuery(favourites = "1"), model)
+
+        assertEquals(SeriesView("Favourites", null), model.getAttribute("series"))
+    }
+
+    @Test
+    fun `a page names where its view fetches its counts, without the search or the paging`() {
+        fun countsOf(query: TimelineQuery) =
+            ConcurrentModel()
+                .also { controller(TimelineItems()).home(OWNER, query, null, it) }
+                .getAttribute("countsHref")
+
+        assertEquals("/feed/counts", countsOf(TimelineQuery(q = "x", seen = "5")))
+        assertEquals("/feed/counts?show=all&group=1", countsOf(TimelineQuery(show = "all", group = "1")))
+        assertEquals("/feed/counts?later=1", countsOf(TimelineQuery(later = "1")))
     }
 }

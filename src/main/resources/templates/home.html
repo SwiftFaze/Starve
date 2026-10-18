@@ -24,18 +24,21 @@
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Sources</a>
     </nav>
     <nav class="groups" id="groups" aria-label="Groups">
-      <a class="group-link" th:each="entry : ${nav}" th:href="${entry.href}" th:text="${entry.label}"
-         th:attr="aria-current=${entry.current} ? 'page',hx-get=${entry.href}"
-         hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
-         hx-push-url="true">All</a>
-      <a class="favourites-link" th:href="${favouritesEntry.href}" th:text="${favouritesEntry.label}"
-         th:attr="aria-current=${favouritesEntry.current} ? 'page',hx-get=${favouritesEntry.href}"
-         hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
-         hx-push-url="true">Favourites</a>
-      <a class="later-link" th:href="${laterEntry.href}" th:text="${laterEntry.label}"
-         th:attr="aria-current=${laterEntry.current} ? 'page',hx-get=${laterEntry.href}"
-         hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
-         hx-push-url="true">Later</a>
+      <!-- The links alone are a fragment too, so the counts refresh (counts.html) can swap them in place. -->
+      <th:block th:fragment="group-links">
+        <a class="group-link" th:each="entry : ${nav}" th:href="${entry.href}" th:text="${entry.label}"
+           th:attr="aria-current=${entry.current} ? 'page',hx-get=${entry.href}"
+           hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
+           hx-push-url="true">All</a>
+        <a class="favourites-link" th:href="${favouritesEntry.href}" th:text="${favouritesEntry.label}"
+           th:attr="aria-current=${favouritesEntry.current} ? 'page',hx-get=${favouritesEntry.href}"
+           hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
+           hx-push-url="true">Favourites</a>
+        <a class="later-link" th:href="${laterEntry.href}" th:text="${laterEntry.label}"
+           th:attr="aria-current=${laterEntry.current} ? 'page',hx-get=${laterEntry.href}"
+           hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML"
+           hx-push-url="true">Later</a>
+      </th:block>
     </nav>
     <th:block th:replace="~{bar-actions :: bar-actions}"></th:block>
   </header>
@@ -48,7 +51,7 @@
                 aria-label="Choose a group"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
             d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
         <p class="series-meta">
-          <th:block th:if="${series.unread != null}" th:text="|${series.unread} unread|">9 unread</th:block>
+          <span class="unread" id="series-unread" th:if="${series.unread != null}" th:text="|${series.unread} unread|">9 unread</span>
           <span th:text="${later} ? 'Earliest saved first' : (${showAll} ? 'Read included, newest first' : 'Newest first')">Newest first</span>
           <span class="range" th:unless="${#lists.isEmpty(items)}" th:with="ids=${#lists.sort(items.![id])}"
                 th:text="|STV ${#numbers.formatInteger(ids[0], 4)}–${#numbers.formatInteger(ids[#lists.size(ids) - 1], 4)}|">STV 0131–0155</span>
@@ -71,6 +74,8 @@
         <input type="hidden" name="group" th:if="${groupId != null}" th:value="${groupId}">
         <input type="hidden" name="show" value="all" th:if="${showAll}">
       </form>
+      <!-- Any response that marks an item read raises "starve:read"; the counts of this view then come back out of band. -->
+      <span id="counts" hidden th:attr="hx-get=${countsHref}" hx-trigger="starve:read from:body" hx-swap="none"></span>
       <div class="sheet-body" id="sheet-body">
       <div class="sheet-head">
         <h2 class="sheet-title" th:text="${searching} ? 'Search results' : (${favourites} ? 'Favourites' : (${later} ? 'Later' : (${showAll} ? 'All releases' : 'New releases')))">New releases</h2>
