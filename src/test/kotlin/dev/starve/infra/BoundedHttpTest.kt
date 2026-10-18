@@ -72,4 +72,12 @@ class BoundedHttpTest {
     fun `a failure without a message reports the exception type`() {
         assertEquals("ExecutionException", failureOf(IOException()).message)
     }
+
+    @Test
+    fun `a timeout is said in seconds when whole, else in milliseconds`() {
+        assertEquals("10 seconds", BoundedHttp.inWords(Duration.ofSeconds(10)))
+        assertEquals("1 second", BoundedHttp.inWords(Duration.ofSeconds(1)))
+        assertEquals("500 ms", BoundedHttp.inWords(Duration.ofMillis(500)))
+        assertEquals("1500 ms", BoundedHttp.inWords(Duration.ofMillis(1500)))
+    }
 }
