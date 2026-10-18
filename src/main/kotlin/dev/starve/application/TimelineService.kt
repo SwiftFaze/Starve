@@ -2,6 +2,7 @@ package dev.starve.application
 
 import dev.starve.domain.Cursor
 import dev.starve.domain.PageCursor
+import dev.starve.domain.ReadMark
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
 import java.time.Clock
@@ -18,7 +19,7 @@ data class TimelinePage(
 sealed interface OpenResult {
     data object Missing : OpenResult
 
-    /** The item was marked read; [link] is where it points, if anywhere. */
+    /** The item was marked read and opened; [link] is where it points, if anywhere. */
     data class Opened(
         val link: String?,
     ) : OpenResult
@@ -67,18 +68,18 @@ class TimelineService(
         return TimelinePage(shown, next, renderedAt, sources.findAllOf(owner).isNotEmpty())
     }
 
-    /** Returns false when [owner] has no such item. */
+    /** Marks the item read without opening it, a skip; returns false when [owner] has no such item. */
     fun markRead(
         owner: Long,
         id: Long,
-    ): Boolean = items.markRead(owner, id, clock.instant())
+    ): Boolean = items.markRead(owner, id, ReadMark.skipped(clock.instant()))
 
     fun open(
         owner: Long,
         id: Long,
     ): OpenResult {
         val target = items.find(owner, id) ?: return OpenResult.Missing
-        items.markRead(owner, id, clock.instant())
+        items.markRead(owner, id, ReadMark.opened(clock.instant()))
         return OpenResult.Opened(target.link)
     }
 

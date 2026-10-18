@@ -158,14 +158,14 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    fun `only a user's own sources are listed and unsubscribed`() {
+    fun `only a user's own sources are unsubscribed`() {
         sources.insert(OWNER, "http://a.test/one", "One")
         sources.insert(OTHER_OWNER, "http://a.test/two", "Two")
         val service = SubscriptionService(sources, FailingLocator, fetcherOf(Feed(null, emptyList())), ingestor)
 
-        assertEquals(listOf("One"), service.list(OWNER).map { it.title })
         assertEquals(false, service.unsubscribe(OWNER, 2))
         assertEquals(true, service.unsubscribe(OWNER, 1))
-        assertEquals(listOf("Two"), service.list(OTHER_OWNER).map { it.title })
+        assertEquals(emptyList<String>(), sources.findAllOf(OWNER).map { it.title })
+        assertEquals(listOf("Two"), sources.findAllOf(OTHER_OWNER).map { it.title })
     }
 }

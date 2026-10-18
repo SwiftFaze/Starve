@@ -3,6 +3,7 @@ package dev.starve.application
 import dev.starve.domain.ArticleRules
 import dev.starve.domain.FeedRules
 import dev.starve.domain.Playable
+import dev.starve.domain.ReadMark
 import java.time.Clock
 import java.time.Instant
 
@@ -14,9 +15,9 @@ class ReaderService(
     private val text: HtmlText,
 ) {
     /**
-     * The post of [owner]'s item to show in the reader, marked read; null for an unknown or another user's item and
-     * for a playable one, which keeps opening through the player. A teaser-only post first has its article page
-     * fetched.
+     * The post of [owner]'s item to show in the reader, marked read and opened; null for an unknown or another user's
+     * item and for a playable one, which keeps opening through the player. A teaser-only post first has its article
+     * page fetched.
      */
     fun open(
         owner: Long,
@@ -26,7 +27,7 @@ class ReaderService(
         if (post == null || Playable.of(post.link) != null) return null
         val now = clock.instant()
         val shown = withArticle(post, now)
-        items.markRead(owner, id, now)
+        items.markRead(owner, id, ReadMark.opened(now))
         return shown
     }
 

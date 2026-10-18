@@ -12,6 +12,7 @@ import dev.starve.application.TimelineFilter
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Playable
+import dev.starve.domain.ReadMark
 import dev.starve.domain.TimelineItem
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
@@ -158,12 +159,16 @@ class JdbcItemRepository(
     override fun markRead(
         owner: Long,
         id: Long,
-        at: Instant,
-    ): Boolean =
-        jdbc
-            .sql("UPDATE items SET read_at = COALESCE(read_at, ?) WHERE id = ? AND $OWNED")
-            .params(at.toEpochMilli(), id, owner)
+        mark: ReadMark,
+    ): Boolean {
+        val at = mark.at.toEpochMilli()
+        return jdbc
+            .sql(
+                "UPDATE items SET read_at = COALESCE(read_at, ?), opened_at = COALESCE(opened_at, ?) " +
+                    "WHERE id = ? AND $OWNED",
+            ).params(at, if (mark.opened) at else null, id, owner)
             .update() > 0
+    }
 
     override fun markAllRead(
         owner: Long,

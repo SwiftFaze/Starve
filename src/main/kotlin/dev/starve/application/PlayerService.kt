@@ -1,6 +1,7 @@
 package dev.starve.application
 
 import dev.starve.domain.Playable
+import dev.starve.domain.ReadMark
 import java.time.Clock
 
 sealed interface PlayerResult {
@@ -24,7 +25,7 @@ class PlayerService(
     private val embeds: EmbedChecker,
     private val clock: Clock,
 ) {
-    /** Resolves the player of [owner]'s item and marks the item read when it is playable. */
+    /** Resolves the player of [owner]'s item and marks the item read and opened when it is playable. */
     fun player(
         owner: Long,
         id: Long,
@@ -32,7 +33,7 @@ class PlayerService(
         val item = items.find(owner, id)
         val playable = Playable.of(item?.link)
         if (item == null || playable == null) return PlayerResult.NotPlayable
-        items.markRead(owner, id, clock.instant())
+        items.markRead(owner, id, ReadMark.opened(clock.instant()))
         return if (playable is Playable.YouTube && !embeds.allowsEmbedding(playable)) {
             PlayerResult.EmbeddingDisabled(playable.watchUrl, item)
         } else {

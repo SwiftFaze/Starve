@@ -1,5 +1,6 @@
 package dev.starve.application
 
+import dev.starve.domain.ReadMark
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -19,7 +20,7 @@ class DetailServiceTest {
     private class Details(
         private val items: Map<Long, DetailRef>,
     ) : MemoryItems() {
-        val read = mutableListOf<Pair<Long, Instant>>()
+        val read = mutableListOf<Pair<Long, ReadMark>>()
         val saved = mutableMapOf<Long, Oembed>()
 
         override fun findDetail(
@@ -30,9 +31,9 @@ class DetailServiceTest {
         override fun markRead(
             owner: Long,
             id: Long,
-            at: Instant,
+            mark: ReadMark,
         ): Boolean {
-            read += id to at
+            read += id to mark
             return true
         }
 
@@ -97,7 +98,7 @@ class DetailServiceTest {
         val (service, items, oembeds) = service(item(1, youtube))
 
         assertEquals(feedDetail(1, youtube), service.open(OWNER, 1))
-        assertEquals(listOf(1L to now), items.read)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.read)
         assertTrue(oembeds.asked.isEmpty())
     }
 
@@ -127,7 +128,7 @@ class DetailServiceTest {
 
         assertEquals(feedDetail(1, track), service.open(OWNER, 1))
         assertTrue(items.saved.isEmpty())
-        assertEquals(listOf(1L to now), items.read)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.read)
     }
 
     @Test

@@ -1,6 +1,7 @@
 package dev.starve.application
 
 import dev.starve.domain.Playable
+import dev.starve.domain.ReadMark
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -54,7 +55,7 @@ class PlayerServiceTest {
         val result = service(items, embeds).player(OWNER, 1)
 
         assertEquals(PlayerResult.Embed(Playable.YouTube("dQw4w9WgXcQ"), ref(1, youtube)), result)
-        assertEquals(listOf(1L to now), items.readCalls)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.readCalls)
         assertEquals(listOf(Playable.YouTube("dQw4w9WgXcQ")), embeds.asked)
     }
 
@@ -66,7 +67,7 @@ class PlayerServiceTest {
 
         val expected = PlayerResult.EmbeddingDisabled("https://www.youtube.com/watch?v=dQw4w9WgXcQ", ref(1, youtube))
         assertEquals(expected, result)
-        assertEquals(listOf(1L to now), items.readCalls)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.readCalls)
     }
 
     @Test
@@ -79,7 +80,7 @@ class PlayerServiceTest {
 
         assertEquals(PlayerResult.Embed(Playable.SoundCloud(track), ref(1, track)), result)
         assertTrue(embeds.asked.isEmpty())
-        assertEquals(listOf(1L to now), items.readCalls)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.readCalls)
     }
 
     @Test

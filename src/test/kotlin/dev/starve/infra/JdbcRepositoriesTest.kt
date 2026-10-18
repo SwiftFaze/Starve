@@ -12,6 +12,7 @@ import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
 import dev.starve.domain.LaterCursor
+import dev.starve.domain.ReadMark
 import dev.starve.domain.Validators
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
@@ -207,7 +208,7 @@ class JdbcRepositoriesTest {
         assertEquals(listOf("a"), afterTie.map { it.title })
         assertEquals(1, items.timeline(OWNER, null, TimelineFilter(false), 1).size)
 
-        assertEquals(true, items.markRead(OWNER, ids[2], seen))
+        assertEquals(true, items.markRead(OWNER, ids[2], ReadMark.skipped(seen)))
         assertEquals(listOf("b", "a"), items.timeline(OWNER, null, TimelineFilter(false), 10).map { it.title })
         assertEquals(listOf("c", "b", "a"), items.timeline(OWNER, null, TimelineFilter(true), 10).map { it.title })
         assertEquals(listOf(true, false, false), items.timeline(OWNER, null, TimelineFilter(true), 10).map { it.read })
@@ -242,8 +243,8 @@ class JdbcRepositoriesTest {
                 .param(title)
                 .query(Long::class.java)
                 .single()
-        items.markRead(OWNER, idOf("older"), Instant.ofEpochMilli(100))
-        items.markRead(OWNER, idOf("newer"), Instant.ofEpochMilli(300))
+        items.markRead(OWNER, idOf("older"), ReadMark.skipped(Instant.ofEpochMilli(100)))
+        items.markRead(OWNER, idOf("newer"), ReadMark.skipped(Instant.ofEpochMilli(300)))
         val current = idOf("current")
         val publishedAt = at.minusSeconds(60)
 
@@ -266,9 +267,9 @@ class JdbcRepositoriesTest {
         items.insertNew(source.id, listOf(item("k", "t")), Instant.EPOCH)
         val id = jdbc.sql("SELECT id FROM items").query(Long::class.java).single()
 
-        assertEquals(true, items.markRead(OWNER, id, Instant.ofEpochMilli(100)))
-        assertEquals(true, items.markRead(OWNER, id, Instant.ofEpochMilli(200)))
-        assertEquals(false, items.markRead(OWNER, id + 1, Instant.ofEpochMilli(300)))
+        assertEquals(true, items.markRead(OWNER, id, ReadMark.skipped(Instant.ofEpochMilli(100))))
+        assertEquals(true, items.markRead(OWNER, id, ReadMark.skipped(Instant.ofEpochMilli(200))))
+        assertEquals(false, items.markRead(OWNER, id + 1, ReadMark.skipped(Instant.ofEpochMilli(300))))
 
         assertEquals(100L, jdbc.sql("SELECT read_at FROM items").query(Long::class.java).single())
     }
@@ -382,7 +383,7 @@ class JdbcRepositoriesTest {
             Instant.EPOCH,
         )
         listOf("old", "mid", "new").forEach { favourites.favourite(OWNER, idOf(it), Instant.EPOCH) }
-        items.markRead(OWNER, idOf("new"), Instant.EPOCH)
+        items.markRead(OWNER, idOf("new"), ReadMark.skipped(Instant.EPOCH))
 
         assertEquals(listOf("new", "mid", "old"), favourites.favourites(OWNER, null, 10).map { it.title })
         assertEquals(listOf(true, false, false), favourites.favourites(OWNER, null, 10).map { it.read })
@@ -456,7 +457,7 @@ class JdbcRepositoriesTest {
         later.save(OWNER, idOf("c"), Instant.ofEpochMilli(200))
         later.save(OWNER, idOf("a"), Instant.ofEpochMilli(100))
         later.save(OWNER, idOf("b"), Instant.ofEpochMilli(200))
-        items.markRead(OWNER, idOf("a"), Instant.EPOCH)
+        items.markRead(OWNER, idOf("a"), ReadMark.skipped(Instant.EPOCH))
 
         val all = later.later(OWNER, null, 10)
         assertEquals(listOf("a", "b", "c"), all.map { it.item.title })
@@ -667,7 +668,7 @@ class JdbcRepositoriesTest {
         assertNull(items.find(OWNER, theirsId))
         assertNull(items.findPost(OWNER, theirsId))
         assertNull(items.findDetail(OWNER, theirsId))
-        assertEquals(false, items.markRead(OWNER, theirsId, Instant.EPOCH))
+        assertEquals(false, items.markRead(OWNER, theirsId, ReadMark.skipped(Instant.EPOCH)))
         assertEquals(false, favourites.favourite(OWNER, theirsId, Instant.EPOCH))
         assertEquals(false, favourites.unfavourite(OWNER, theirsId))
         assertEquals(false, later.save(OWNER, theirsId, Instant.EPOCH))

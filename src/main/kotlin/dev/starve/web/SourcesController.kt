@@ -2,10 +2,12 @@ package dev.starve.web
 
 import dev.starve.application.GroupResult
 import dev.starve.application.GroupService
+import dev.starve.application.SourceHealthService
 import dev.starve.application.SubscribeResult
 import dev.starve.application.SubscriptionService
 import dev.starve.domain.GroupRules
 import dev.starve.domain.Source
+import dev.starve.domain.SourceHealth
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -24,6 +26,7 @@ data class SourceView(
     val lastFetched: FetchTime?,
     val error: String?,
     val groupId: Long?,
+    val stats: SourceStatsLine,
 )
 
 @Controller
@@ -31,6 +34,7 @@ class SourcesController(
     private val subscriptions: SubscriptionService,
     private val groups: GroupService,
     private val clock: Clock,
+    private val health: SourceHealthService,
 ) {
     /**
      * The roster. [remove] or [deleteGroup] names a row to show in its confirming state, which holds the form that
@@ -128,7 +132,7 @@ class SourcesController(
         error: Boolean = false,
     ): String {
         val now = clock.instant()
-        model.addAttribute("sources", subscriptions.list(owner).map { it.toView(now) })
+        model.addAttribute("sources", health.roster(owner).map { it.source.toView(it.health, now) })
         model.addAttribute("groups", groups.list(owner))
         model.addAttribute("message", message)
         model.addAttribute("error", error)
@@ -150,7 +154,10 @@ private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
 
 private const val TOO_LONG = "at most ${GroupRules.MAX_NAME_LENGTH} characters"
 
-private fun Source.toView(now: Instant): SourceView {
+private fun Source.toView(
+    health: SourceHealth,
+    now: Instant,
+): SourceView {
     val fetched = lastFetchedAt?.let { FetchTime.of(it, now) }
-    return SourceView(id, title, url, fetched, lastError, groupId)
+    return SourceView(id, title, url, fetched, lastError, groupId, SourceStatsLine.of(health, now))
 }
