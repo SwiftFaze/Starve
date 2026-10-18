@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.39](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.38...v1.1.0-beta.39) (2026-10-18)
+
+
+### Features
+
+* keyword tags, item-based views alongside source groups ([#173](https://github.com/SwiftFaze/Starve/issues/173)) ([ef1c50e](https://github.com/SwiftFaze/Starve/commit/ef1c50e6a34012d41015ce9a74b9ffacb17c2d31))
+
 ## [1.1.0-beta.38](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.37...v1.1.0-beta.38) (2026-10-18)
 
 
