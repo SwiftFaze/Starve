@@ -117,7 +117,7 @@ class TagControllerTest {
         assertEquals("redirect:/sources", controller.update(OWNER, 1, TagEntry("AI", "LLM"), ConcurrentModel()))
         assertEquals("sources", controller.update(OWNER, 1, TagEntry("AI", ""), model))
 
-        assertEquals(listOf("LLM"), tags.findById(OWNER, 1)?.terms)
+        assertEquals(Tag(1, "AI", listOf("LLM")), tags.findById(OWNER, 1))
         assertNull(model.getAttribute("tagName"))
     }
 

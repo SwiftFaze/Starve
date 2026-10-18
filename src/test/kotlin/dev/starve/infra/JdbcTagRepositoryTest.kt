@@ -34,6 +34,7 @@ class JdbcTagRepositoryTest {
     private lateinit var items: JdbcItemRepository
     private lateinit var groups: JdbcGroupRepository
     private lateinit var tags: JdbcTagRepository
+    private lateinit var favourites: JdbcFavouriteRepository
 
     private val seen = Instant.parse("2026-10-11T12:00:00Z")
 
@@ -52,6 +53,7 @@ class JdbcTagRepositoryTest {
         items = JdbcItemRepository(jdbc, SearchIndex(jdbc))
         groups = JdbcGroupRepository(jdbc)
         tags = JdbcTagRepository(jdbc)
+        favourites = JdbcFavouriteRepository(jdbc)
     }
 
     @AfterEach
@@ -166,5 +168,25 @@ class JdbcTagRepositoryTest {
         assertEquals(1, items.markAllRead(OWNER, seen, seen, within))
         assertEquals(listOf("Rust", "AI music"), titles(TimelineFilter(false)))
         assertEquals(0, items.markAllRead(OTHER, seen, seen, Narrowing(match = ai.match)))
+    }
+
+    @Test
+    fun `neighbours in Favourites are the owner's favourites, read or not, whatever the group and match`() {
+        val tech = groups.insert(OWNER, "Tech")
+        val blog = sources.insert(OWNER, "http://a.test/f", "Blog").id
+        post(blog, "Newer", 1)
+        post(blog, "Middle", 2)
+        post(blog, "Older", 3)
+        val rows = items.timeline(OWNER, null, TimelineFilter(false), 10)
+        val (newer, middle, older) = rows
+        favourites.favourite(OWNER, newer.id, seen)
+        favourites.favourite(OWNER, older.id, seen)
+        items.markRead(OWNER, older.id, ReadMark.opened(seen))
+        val filter = ListFilter(showRead = false, groupId = tech.id, favourites = true, match = "nothing")
+
+        val around = items.neighbours(OWNER, ListPosition(middle.id, middle.publishedAt), filter)
+
+        assertEquals("Newer" to "Older", around.previous?.title to around.next?.title)
+        assertNull(items.neighbours(OTHER, ListPosition(middle.id, middle.publishedAt), filter).next)
     }
 }
