@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.33](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.32...v1.1.0-beta.33) (2026-10-18)
+
+
+### Features
+
+* resolve Reddit, Vimeo, GitHub and Apple Podcasts pages in Smart-add ([#156](https://github.com/SwiftFaze/Starve/issues/156)) ([404ed4f](https://github.com/SwiftFaze/Starve/commit/404ed4fe43136f34612df59c1ce16c9b354c4993))
+
 ## [1.1.0-beta.32](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.31...v1.1.0-beta.32) (2026-10-18)
 
 
