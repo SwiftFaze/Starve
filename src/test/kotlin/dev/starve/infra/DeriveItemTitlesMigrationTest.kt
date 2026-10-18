@@ -3,6 +3,8 @@ package dev.starve.infra
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -87,5 +89,15 @@ class DeriveItemTitlesMigrationTest {
         assertEquals("A title" to "A title", titles(1))
         assertEquals("(untitled)" to "(untitled)", titles(2))
         assertEquals("(untitled)" to "(untitled)", titles(3))
+    }
+
+    @Test
+    fun `it is V21, runs once in a transaction and says what it does`() {
+        val migration = DeriveItemTitlesMigration()
+
+        assertEquals("21", migration.version.version)
+        assertEquals("derive titles of untitled items from their text", migration.description)
+        assertNull(migration.checksum)
+        assertTrue(migration.canExecuteInTransaction())
     }
 }
