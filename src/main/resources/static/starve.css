@@ -1138,7 +1138,7 @@ button.toggle[data-tip]:is(:hover, :focus-visible)::after {
 
 /* Part of the feed is missing: one quiet line above the list, linking to the sources at fault. */
 .broken-note {
-  margin: 0 0 0.75rem;
+  margin: 0.875rem 0 0.25rem;
   font: 400 0.8125rem/1.4 var(--mono);
   color: var(--text-2);
 }
@@ -3481,39 +3481,36 @@ body[data-split][data-list="strip"] .load-more {
     display: none;
   }
 
-  /* Every row in both columns is the same height: one line of name, one line of status or count,
-     the controls beside them. Long text ends in an ellipsis and shows in full on hover. */
+  /* Every Groups row is the same height: one line of name, one line of count, the controls beside them.
+     Long text ends in an ellipsis and shows in full on hover. Source rows grow, below. */
   .sources-split .roster > li {
     height: 5.25rem;
     padding-block: 0;
     overflow: hidden;
   }
 
+  /* A source carries more than a group: its name, its status and health lines, and five controls. Its row
+     grows to fit them, with the controls on a line of their own under the text, instead of the controls
+     squeezing the name out of a fixed-height row. */
   .sources-split .subscriptions .roster > .source {
-    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    height: auto;
+    min-height: 5.25rem;
+    padding-block: 0.875rem;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
     column-gap: 1rem;
     grid-template-areas:
-      "cat body actions"
-      "cat status actions";
-    /* Two equal halves: the name sits on the middle line, the status under it, and the controls are
-       centred on the whole row, at the same height as every Groups row's. */
-    grid-template-rows: 1fr 1fr;
-    align-content: stretch;
-    align-items: center;
+      "cat body"
+      "cat status"
+      "actions actions";
+    grid-template-rows: auto;
+    align-content: center;
+    align-items: start;
     row-gap: 0.25rem;
   }
 
-  .sources-split .subscriptions .source .body {
-    align-self: end;
-  }
-
-  .sources-split .subscriptions .source .status {
-    align-self: start;
-  }
-
   .subscriptions .source .cat {
-    align-self: center;
-    padding-top: 0;
+    align-self: start;
+    padding-top: 0.125rem;
   }
 
   .subscriptions .source .body,
@@ -3544,14 +3541,18 @@ body[data-split][data-list="strip"] .load-more {
   }
 
   .sources-split .subscriptions .source .actions {
-    align-self: center;
-    margin: 0;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
+    margin: 0.5rem 0 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   .subscriptions .regroup .field {
-    width: clamp(7rem, 22cqw, 9.5rem);
+    width: 9.5rem;
+  }
+
+  /* Wide enough for "Default (every 30 minutes)", the longest choice, so the current one is never cut. */
+  .subscriptions .regroup.interval .field {
+    width: auto;
   }
 
   .subscriptions .source .feed-link {
@@ -4622,16 +4623,17 @@ body.dealing #series .series-meta {
     margin: 0;
   }
 
+  /* Two lines on a phone: the feed link and both choosers, then Fetch now and Remove. */
   .sources-split .subscriptions .source .actions {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: flex-start;
     gap: 0.5rem;
     margin-top: 0.5rem;
   }
 
   .sources-split .subscriptions .source .regroup {
-    flex: 1;
+    flex: 1 1 8rem;
     min-width: 0;
   }
 
