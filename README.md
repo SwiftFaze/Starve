@@ -136,6 +136,23 @@ rename and delete them. Each source belongs to at most one group, chosen from th
 selector beside it; "Ungrouped" clears it. Deleting a group ungroups its sources
 and keeps their items.
 
+## Keyword tags
+
+A group gathers sources; a **tag** gathers posts about a topic from any source. Under
+the groups on **Sources**, give a tag a name and its terms, comma-separated, e.g.
+`AI, LLM, OpenAI, GPT*`. Terms match whole words in post titles, so `AI` finds "AI in
+schools" but not "Said". A term of several words is a phrase, and a trailing `*`
+matches every word it starts (`GPT*` finds "GPT4o"). Tick **Match the body too** to
+search post text as well, and pick **Only within group** to keep the tag to one
+group's sources. Terms other than letters, digits and spaces (`C++`, quotes) are
+refused with the reason when you save.
+
+Tags appear in the navigation after the groups, e.g. `#AI [7]`, and `/feed?tag=<id>`
+lists their posts like a group view. A tag only adds a view: a post stays in its
+group, and reading it anywhere marks it read everywhere. Editing a tag's terms
+changes its view at once, old posts included. Deleting a tag, or the group it is
+limited to, deletes no posts.
+
 ## Reading the timeline
 
 The timeline (`/feed`) lists every unread item from all sources, newest first, 50 at
@@ -151,8 +168,9 @@ unread", counting the whole view, not just the page. Only when nothing in the vi
 unread does it say **You're all caught up**, with how often sources are checked
 (`starve.poll.interval`); **Mark all read** is not offered then.
 
-Above the list, a navigation shows **All** and each group (alphabetical) with its
-unread count, e.g. `Music [12]`; the counts follow as you read, without a reload.
+Above the list, a navigation shows **All**, each group and then each tag
+(alphabetical) with its unread count, e.g. `Music [12]` and `#AI [7]`; the counts
+follow as you read, without a reload.
 Choosing a group (`/feed?group=<id>`) shows only its
 sources' items with the same order, paging and read state; **Mark all read** and
 **Load more** stay within the group. Unknown group ids give a 404.

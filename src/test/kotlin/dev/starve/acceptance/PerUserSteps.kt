@@ -113,17 +113,30 @@ class PerUserSteps {
         name: String,
     ): Long =
         when (kind) {
-            "item" -> app.itemId(name)
-            "user" -> app.userId(name)
-            "source" -> app.sourceId(name)
-            "tag" ->
+            "item" -> {
+                app.itemId(name)
+            }
+
+            "user" -> {
+                app.userId(name)
+            }
+
+            "source" -> {
+                app.sourceId(name)
+            }
+
+            "tag" -> {
                 app
                     .jdbc()
                     .sql("SELECT id FROM tags WHERE name = ?")
                     .param(name)
                     .query(Long::class.java)
                     .single()
-            else -> app.groupId(name)
+            }
+
+            else -> {
+                app.groupId(name)
+            }
         }
 
     private fun send(

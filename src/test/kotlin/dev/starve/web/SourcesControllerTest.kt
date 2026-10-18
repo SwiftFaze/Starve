@@ -79,7 +79,6 @@ class SourcesControllerTest {
             SubscriptionService(sources, locator, fetcher, ingestor),
             GroupService(groups, sources, MemoryTags()),
             roster,
-            TagService(tags, groups),
         )
 
     @Test

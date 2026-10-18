@@ -368,7 +368,8 @@ class HomeControllerTest {
 
         val labels = (model.getAttribute("nav") as List<*>).map { (it as NavEntryView).label }
         assertEquals(listOf("All [5]", "music [3]", "News [0]", "#AI [0]"), labels)
-        assertEquals(NavEntryView("#AI [0]", "/feed?tag=${ai.id}", false), (model.getAttribute("nav") as List<*>).last())
+        val last = (model.getAttribute("nav") as List<*>).last()
+        assertEquals(NavEntryView("#AI [0]", "/feed?tag=${ai.id}", false), last)
     }
 
     @Test

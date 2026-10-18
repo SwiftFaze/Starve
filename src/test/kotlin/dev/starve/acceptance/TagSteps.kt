@@ -23,26 +23,26 @@ class TagSteps {
     fun createTag(
         name: String,
         terms: String,
-    ) = postTag("/tags", name, terms)
+    ) = postTag("/tags", "name" to name, "terms" to terms)
 
     @When("I create the tag {string} with the terms {string} limited to the group {string}")
     fun createLimitedTag(
         name: String,
         terms: String,
         group: String,
-    ) = postTag("/tags", name, terms, group = app.groupId(group).toString())
+    ) = postTag("/tags", "name" to name, "terms" to terms, "group" to app.groupId(group).toString())
 
     @When("I create the tag {string} with the terms {string} matching the body too")
     fun createBodyTag(
         name: String,
         terms: String,
-    ) = postTag("/tags", name, terms, body = true)
+    ) = postTag("/tags", "name" to name, "terms" to terms, "body" to "1")
 
     @When("I edit the tag {string} to the terms {string}")
     fun editTerms(
         name: String,
         terms: String,
-    ) = postTag("/tags/${tagId(name)}", name, terms)
+    ) = postTag("/tags/${tagId(name)}", "name" to name, "terms" to terms)
 
     @When("I ask to delete the tag {string}")
     fun askToDelete(name: String) {
@@ -92,7 +92,8 @@ class TagSteps {
         terms: String,
     ) {
         val form = requireNotNull(NEW_TAG_FORM.find(World.sourcesPage)) { "no new tag form" }.value
-        assertTrue(form.contains("name=\"name\" maxlength=\"200\" autocomplete=\"off\" value=\"${Html.escape(name)}\""), form)
+        assertTrue(form.contains("id=\"new-tag\" type=\"text\" name=\"name\" maxlength=\"200\""), form)
+        assertTrue(form.contains("value=\"${Html.escape(name)}\""), form)
         assertTrue(form.contains("value=\"${Html.escape(terms)}\""), form)
     }
 
@@ -100,13 +101,9 @@ class TagSteps {
 
     private fun postTag(
         path: String,
-        name: String,
-        terms: String,
-        group: String = "",
-        body: Boolean = false,
+        vararg fields: Pair<String, String>,
     ) {
-        val fields = listOfNotNull("name" to name, "terms" to terms, "group" to group, ("body" to "1").takeIf { body })
-        World.sourcesPage = app.postForm(path, *fields.toTypedArray()).body()
+        World.sourcesPage = app.postForm(path, *fields).body()
     }
 
     private fun fetch(path: String) {

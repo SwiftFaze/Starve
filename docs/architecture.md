@@ -114,9 +114,11 @@ work (ingestion, favicon and article fetches) is owner-agnostic and keeps using
 Groups live in the `groups` table with a nullable `sources.group_id`
 (`ON DELETE SET NULL`, migration V4), so a source has at most one group and
 deleting a group ungroups it. Group names are unique per owner. `GroupService` owns the name rules, case-insensitive
-uniqueness and the navigation counts. The group filter is an optional group id
-passed through `TimelineService` to `ItemRepository.timeline` and `markAllRead`,
-which restrict by `sources.group_id` within the owner's sources; the render-timestamp cutoff still applies.
+uniqueness and the navigation counts of groups and tags. A view's `Narrowing` (group id and FTS5 match, both optional)
+goes through `TimelineService` to `ItemRepository.timeline` and `markAllRead`, and `infra/narrowed` turns it into
+`sources.group_id` and `item_search MATCH` conditions within the owner's sources; the render-timestamp cutoff still applies.
+Keyword tags (`domain/Tag.kt`, `tags` table, V20) store only terms, so `TagRules.matchExpression` builds a quoted,
+column-filtered match at query time (`{title}` or `{title body}`) and nothing is written per item.
 
 ## Bulk import
 

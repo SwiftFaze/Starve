@@ -74,20 +74,43 @@ class TagService(
         id: Long?,
         form: TagForm,
         save: (Tag) -> Tag,
-    ): TagResult {
-        if (form.groupId != null && groups.findById(owner, form.groupId) == null) return TagResult.Missing
-        val name =
-            when (val check = GroupRules.checkName(form.name)) {
-                NameCheck.Blank -> return TagResult.Blank
-                NameCheck.TooLong -> return TagResult.TooLong
-                is NameCheck.Valid -> check.name
+    ): TagResult =
+        rejectionOf(owner, id, form)
+            ?: when (val check = TagRules.checkTerms(form.terms)) {
+                TermsCheck.Empty -> {
+                    TagResult.NoTerms
+                }
+
+                TermsCheck.TooMany -> {
+                    TagResult.TooManyTerms
+                }
+
+                is TermsCheck.Invalid -> {
+                    TagResult.BadTerm(check.term)
+                }
+
+                is TermsCheck.Valid -> {
+                    TagResult.Saved(save(Tag(id ?: 0, form.name.trim(), check.terms, form.matchBody, form.groupId)))
+                }
             }
-        if (tags.findByName(owner, name)?.let { it.id != id } == true) return TagResult.Duplicate
-        return when (val check = TagRules.checkTerms(form.terms)) {
-            TermsCheck.Empty -> TagResult.NoTerms
-            TermsCheck.TooMany -> TagResult.TooManyTerms
-            is TermsCheck.Invalid -> TagResult.BadTerm(check.term)
-            is TermsCheck.Valid -> TagResult.Saved(save(Tag(id ?: 0, name, check.terms, form.matchBody, form.groupId)))
+
+    /** Why [form]'s group or name cannot be saved for tag [id] (null for a new one), or null when they can. */
+    private fun rejectionOf(
+        owner: Long,
+        id: Long?,
+        form: TagForm,
+    ): TagResult? {
+        if (form.groupId != null && groups.findById(owner, form.groupId) == null) return TagResult.Missing
+        return when (GroupRules.checkName(form.name)) {
+            NameCheck.Blank -> TagResult.Blank
+            NameCheck.TooLong -> TagResult.TooLong
+            is NameCheck.Valid -> TagResult.Duplicate.takeIf { clashes(owner, id, form.name.trim()) }
         }
     }
+
+    private fun clashes(
+        owner: Long,
+        id: Long?,
+        name: String,
+    ): Boolean = tags.findByName(owner, name)?.let { it.id != id } == true
 }

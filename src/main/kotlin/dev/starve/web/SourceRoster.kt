@@ -58,6 +58,19 @@ class SourceRoster(
         return only == null || rows.isNotEmpty()
     }
 
+    /** The Sources page for [owner], with [message] above it ([error] when it is a rejection). */
+    fun page(
+        model: Model,
+        owner: Long,
+        message: String?,
+        error: Boolean = false,
+    ): String {
+        addTo(model, owner)
+        model.addAttribute("message", message)
+        model.addAttribute("error", error)
+        return "sources"
+    }
+
     private fun view(
         standing: SourceStanding,
         now: Instant,

@@ -78,7 +78,8 @@ class JdbcTagRepositoryTest {
         tags.insert(OTHER, Tag(0, "Other", listOf("x")))
 
         assertEquals(listOf(ai, rust), tags.findAll(OWNER))
-        assertEquals(Tag(ai.id, "AI", listOf("AI", "machine learning", "GPT*"), true, tech.id), tags.findById(OWNER, ai.id))
+        val stored = Tag(ai.id, "AI", listOf("AI", "machine learning", "GPT*"), true, tech.id)
+        assertEquals(stored, tags.findById(OWNER, ai.id))
         assertNull(tags.findById(OTHER, ai.id))
         assertEquals(ai, tags.findByName(OWNER, "ai"))
         assertNull(tags.findByName(OTHER, "ai"))
@@ -133,7 +134,8 @@ class JdbcTagRepositoryTest {
         post(one, "Weekly notes", 1, "<p>This week: AI everywhere.</p>")
 
         assertEquals(emptyList<String>(), titles(TimelineFilter(false, match = Tag(0, "t", listOf("AI")).match)))
-        assertEquals(listOf("Weekly notes"), titles(TimelineFilter(false, match = Tag(0, "t", listOf("AI"), true).match)))
+        val anywhere = Tag(0, "t", listOf("AI"), matchBody = true)
+        assertEquals(listOf("Weekly notes"), titles(TimelineFilter(false, match = anywhere.match)))
     }
 
     @Test
@@ -152,7 +154,8 @@ class JdbcTagRepositoryTest {
         assertEquals(listOf("AI first", "AI second"), titles(TimelineFilter(false, tech.id, ai.match)))
         assertEquals(2, tags.unreadCount(OWNER, within))
         val first = items.timeline(OWNER, null, TimelineFilter(false, tech.id, ai.match), 1).single()
-        val around = items.neighbours(OWNER, ListPosition(first.id, first.publishedAt), ListFilter(false, tech.id, match = ai.match))
+        val filter = ListFilter(false, tech.id, match = ai.match)
+        val around = items.neighbours(OWNER, ListPosition(first.id, first.publishedAt), filter)
         assertNull(around.previous)
         assertEquals("AI second", around.next?.title)
 
