@@ -373,7 +373,8 @@ class RomeFeedFetcherTest {
     @Test
     fun `a relative enclosure resolves against the entry's link, else the site's`() {
         val linked = feedOf(FeedSpec(audioEnclosure = "ep.mp3", entryLink = "https://show.example/eps/1"))
-        val linkless = feedOf(FeedSpec(audioEnclosure = "ep.mp3", linkless = true, siteLink = "https://site.example/a/"))
+        val site = "https://site.example/a/"
+        val linkless = feedOf(FeedSpec(audioEnclosure = "ep.mp3", linkless = true, siteLink = site))
 
         assertEquals(
             "https://show.example/eps/ep.mp3",
