@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.30](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.29...v1.1.0-beta.30) (2026-10-18)
+
+
+### Bug Fixes
+
+* return a login only to a page the browser was opening ([#137](https://github.com/SwiftFaze/Starve/issues/137)) ([ce4cf00](https://github.com/SwiftFaze/Starve/commit/ce4cf00065a928c04c2371299b85509f2c86d8d4))
+
 ## [1.1.0-beta.29](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.28...v1.1.0-beta.29) (2026-10-18)
 
 
