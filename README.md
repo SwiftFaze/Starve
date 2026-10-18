@@ -83,7 +83,11 @@ rejected URL stays in the field with the reason under it.
 
 Subscriptions are polled in the background with conditional GET (ETag /
 Last-Modified), so unchanged feeds cost almost nothing. One failing feed never
-stops the others. Items older than the retention age (measured from when Starve
+stops the others. Each source row has an interval selector: the default
+(`starve.poll.interval`, 30 minutes), 15 minutes, 30 minutes, 1 hour, 6 hours or
+daily, counted from its last attempt. **Fetch now** fetches a source in the
+background at once; its row says "Fetching now…" and shows the outcome when the
+fetch is over. Items older than the retention age (measured from when Starve
 first saw them) are deleted daily.
 
 ## Which sources to prune
@@ -281,7 +285,8 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | Property | Default | Meaning |
 |---|---|---|
 | `starve.db.path` | `./data/starve.db` | SQLite file |
-| `starve.poll.interval` | `PT30M` | delay between polls of all sources |
+| `starve.poll.interval` | `PT30M` | how often a source on the default interval is fetched |
+| `starve.poll.tick` | `PT1M` | how often the background poll looks for sources that are due |
 | `starve.fetch.timeout` | `PT10S` | limit for one whole feed fetch, body included |
 | `starve.soundcloud.hosts` | `soundcloud.com,m.soundcloud.com` | hosts whose single-segment URLs are treated as SoundCloud profiles |
 | `starve.soundcloud.feed-url-template` | `https://feeds.soundcloud.com/users/soundcloud:users:{id}/sounds.rss` | feed URL for a profile; `{id}` is its numeric user id |

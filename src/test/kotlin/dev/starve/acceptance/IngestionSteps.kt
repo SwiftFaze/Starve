@@ -139,8 +139,9 @@ class IngestionSteps {
     @When("I add the raw feed URL {string}")
     fun addRawFeedUrl(url: String) = addRaw(url)
 
+    /** A background pass in which every source on the default interval is due, whenever it was last fetched. */
     @When("the poller runs")
-    fun pollerRuns() = app.bean(PollService::class.java).pollAll()
+    fun pollerRuns() = app.bean(PollService::class.java).pollDue(app.clock.instant(), Duration.ZERO)
 
     @When("the retention job runs")
     fun retentionRuns() {

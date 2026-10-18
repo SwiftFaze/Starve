@@ -104,19 +104,24 @@ class FeedConfig {
     ) = RetentionService(items, clock, maxAge)
 }
 
-/** Runs polling and retention in the background; switched off in acceptance tests. */
+/**
+ * Runs polling and retention in the background; switched off in acceptance tests. Every tick polls the sources that
+ * are due, each on its own interval or `starve.poll.interval`.
+ */
 @Configuration
 @EnableScheduling
 @ConditionalOnProperty("starve.scheduling.enabled", matchIfMissing = true)
 class SchedulingConfig(
     private val pollService: PollService,
     private val retentionService: RetentionService,
+    private val clock: Clock,
+    @Value("\${starve.poll.interval:PT30M}") private val defaultInterval: Duration,
 ) {
     @Scheduled(
-        initialDelayString = "\${starve.poll.interval:PT30M}",
-        fixedDelayString = "\${starve.poll.interval:PT30M}",
+        initialDelayString = "\${starve.poll.tick:PT1M}",
+        fixedDelayString = "\${starve.poll.tick:PT1M}",
     )
-    fun poll() = pollService.pollAll()
+    fun poll() = pollService.pollDue(clock.instant(), defaultInterval)
 
     @Scheduled(
         initialDelayString = "PT1M",

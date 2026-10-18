@@ -69,7 +69,8 @@
       <p class="sheet-note" th:if="${#lists.isEmpty(sources)}">No subscriptions yet. Paste a URL under Add a source to start the roster.</p>
 
       <ul id="source-list" class="roster" th:unless="${#lists.isEmpty(sources)}">
-        <li class="source" th:each="source : ${sources}" th:attr="data-title=${source.title}">
+        <li class="source" th:each="source : ${sources}" th:fragment="source-row"
+            th:attr="data-title=${source.title},hx-get=${source.fetching} ? |/sources/${source.id}/row|,hx-trigger=${source.fetching} ? 'every 2s',hx-swap=${source.fetching} ? 'outerHTML'">
           <span class="cat" th:text="|SRC ${#numbers.formatInteger(source.id, 4)}|">SRC 0007</span>
           <div class="body" th:title="${source.url}">
             <strong class="title" th:text="${source.title}">Title</strong>
@@ -81,6 +82,7 @@
             <span class="last-fetched" th:if="${source.lastFetched}"><th:block th:text="${source.error} ? 'Last tried' : 'Fetched'">Fetched</th:block>
               <time th:datetime="${source.lastFetched.iso}" th:title="${source.lastFetched.full}" th:text="${source.lastFetched.short}">17:13 UTC</time></span>
             <span class="not-fetched" th:unless="${source.lastFetched}">Not fetched yet</span>
+            <span class="fetching" role="status" th:if="${source.fetching}">Fetching now…</span>
             <p class="stats" th:title="${source.stats.text}"><span class="tag mark" th:each="mark : ${source.stats.marks}"
               th:text="${mark}">Quiet</span><th:block th:text="${source.stats.text}">Last post 3 days ago · 2/week · 10 unread</th:block></p>
           </div>
@@ -98,6 +100,21 @@
                         th:selected="${group.id == source.groupId}">Group</option>
               </select>
               <button type="submit">Set group</button>
+            </form>
+            <form class="regroup interval" method="post" th:action="@{/sources/{id}/interval(id=${source.id})}"
+                  th:attr="hx-post=@{/sources/{id}/interval(id=${source.id})}"
+                  hx-trigger="change, submit" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+              <select class="field" name="interval" th:attr="aria-label=|How often to fetch ${source.title}|">
+                <option value="" th:text="${defaultInterval}">Default (every 30 minutes)</option>
+                <option th:each="choice : ${intervals}" th:value="${choice.name()}" th:text="${choice.label}"
+                        th:selected="${choice == source.interval}">Daily</option>
+              </select>
+              <button type="submit">Set interval</button>
+            </form>
+            <form class="fetch-now" method="post" th:action="@{/sources/{id}/fetch(id=${source.id})}"
+                  th:attr="hx-post=@{/sources/{id}/fetch(id=${source.id})}" hx-target="closest li" hx-swap="outerHTML">
+              <button type="submit" th:disabled="${source.fetching}"
+                      th:attr="aria-label=|Fetch ${source.title} now|">Fetch now</button>
             </form>
             <a class="read-toggle" th:href="|/sources?remove=${source.id}|"
                th:attr="hx-get=|/sources?remove=${source.id}|,aria-label=|Remove ${source.title}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Remove</a>

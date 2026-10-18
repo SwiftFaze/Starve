@@ -28,6 +28,18 @@ The URL and HTML rules are pure and live in `domain` (`PlatformPages`, `FeedDisc
 to both `HttpFeedLocator` and `ImportService`. Keys only ever hold letters, digits, `_`, `-` and one `/`, so a template
 cannot be steered elsewhere by the pasted URL.
 
+## Polling
+
+`SchedulingConfig` ticks every `starve.poll.tick` (one minute) and calls `PollService.pollDue`, which fetches the
+sources `domain/PollRules.isDue` says are due: never tried, or their interval passed since their last attempt
+(`last_fetched_at`, stamped on success and failure alike). The interval is the source's own `PollInterval`
+(`sources.poll_interval_minutes`, V17, one of a fixed set; null or an unknown value means the default) or
+`starve.poll.interval`. `SourceScheduleService` sets it (`SourceScheduleRepository`, owner-checked) and starts a
+Fetch now through `BackgroundPoller`, which keeps an in-flight set: a source already queued or running is never
+queued again, and `isFetching` is what renders a row as "Fetching now…". A fetching row polls
+`GET /sources/{id}/row` every 2 seconds (`SourceScheduleController`, fragment `sources :: source-row`) until it
+renders without the trigger. `web/SourceRoster` builds the rows for both controllers.
+
 ## Bulk import
 
 `ImportService` never fetches during the upload, so it applies only the platform rules that need no fetch: a Reddit,

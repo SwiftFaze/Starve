@@ -15,6 +15,8 @@ data class Source(
     val faviconUrl: String? = null,
     /** When the icon was last looked up, found or not; null when never. */
     val faviconCheckedAt: Instant? = null,
+    /** How often it is fetched; null for the global default. */
+    val pollInterval: PollInterval? = null,
 )
 
 /** HTTP cache validators remembered from the last successful fetch, for conditional GET. */

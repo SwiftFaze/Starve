@@ -57,7 +57,7 @@ class RomeFeedFetcherTest {
         val items = MemoryItems()
         val ingestor = FeedIngestor(repo, items, Clock.systemUTC(), quietFavicons(repo))
 
-        PollService(repo, fetcherWithTimeout(Duration.ofSeconds(3)), ingestor).pollAll()
+        PollService(repo, fetcherWithTimeout(Duration.ofSeconds(3)), ingestor).pollDue(Instant.now(), Duration.ZERO)
 
         assertTrue(repo.errors[1L]?.isNotBlank() == true)
         assertEquals(null, repo.errors[2L])

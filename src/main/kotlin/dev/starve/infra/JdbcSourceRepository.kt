@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.application.SourceRepository
+import dev.starve.domain.PollInterval
 import dev.starve.domain.Source
 import dev.starve.domain.Validators
 import org.springframework.jdbc.core.simple.JdbcClient
@@ -138,4 +139,5 @@ private fun ResultSet.toSource() =
         groupId = getLong("group_id").takeUnless { wasNull() },
         faviconUrl = getString("favicon_url"),
         faviconCheckedAt = getString("favicon_checked_at")?.let { Instant.ofEpochMilli(it.toLong()) },
+        pollInterval = PollInterval.ofMinutes(getLong("poll_interval_minutes").takeUnless { wasNull() }),
     )
