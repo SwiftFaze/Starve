@@ -12,7 +12,7 @@ class BackgroundRunnerTest {
         val done = CountDownLatch(1)
         val ran = arrayOfNulls<Thread>(1)
 
-        ImportConfig("").backgroundRunner().run {
+        ImportConfig("", emptyList()).backgroundRunner().run {
             ran[0] = Thread.currentThread()
             done.countDown()
         }

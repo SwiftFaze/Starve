@@ -42,14 +42,7 @@ title through `TitleEntities` (decimal, hex and named references, single pass; b
 and unknown references are kept), then trims, so storage and templates see plain text.
 `DecodeItemTitlesMigration` (V5) applied the same decoding to titles stored earlier.
 
-Subscribing first resolves the pasted URL through the `FeedLocator` port
-(`HttpFeedLocator`, sharing `BoundedHttp` with `RomeFeedFetcher`). Resolution
-order: a non-HTML response is the feed itself; for HTML, the first RSS/Atom
-`<link rel="alternate">` (YouTube pages carry one); else, on a configured
-SoundCloud host with a one-segment path, the numeric user id in the page is
-substituted into the feed URL template; else `NoFeedFound`. The HTML rules are
-pure and live in `domain/FeedDiscovery`. The resolved URL is then fetched and
-validated as before.
+Subscribing first resolves the pasted URL through the `FeedLocator` port: see [`sources.md`](sources.md#resolving-a-pasted-url).
 
 ## Timeline and read state
 

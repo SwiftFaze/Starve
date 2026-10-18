@@ -4,15 +4,29 @@ import dev.starve.application.FeedFetchException
 import dev.starve.application.FeedLocator
 import dev.starve.application.LocateResult
 import dev.starve.domain.FeedDiscovery
+import dev.starve.domain.Platform
+import dev.starve.domain.PlatformPage
+import dev.starve.domain.PlatformPages
+import dev.starve.domain.PlatformSite
 import java.net.http.HttpResponse
 
-/** Resolves a URL by fetching it: a feed stands for itself, an HTML page for its alternate link or SoundCloud feed. */
+/**
+ * Resolves a URL. A page of one of [platforms] maps straight to its feed without being fetched (an Apple Podcasts
+ * show through the lookup API); otherwise the URL is fetched: a feed stands for itself, an HTML page for its alternate
+ * link or SoundCloud feed.
+ */
 class HttpFeedLocator(
     private val http: BoundedHttp,
     private val soundCloudHosts: Set<String>,
     private val soundCloudFeedTemplate: String,
+    private val platforms: List<PlatformSite>,
 ) : FeedLocator {
     override fun locate(url: String): LocateResult {
+        val page = PlatformPages.match(url, platforms)
+        return if (page != null) fromPlatform(page) else fromPage(url)
+    }
+
+    private fun fromPage(url: String): LocateResult {
         val response = fetch(url) ?: return LocateResult.Unreachable
         val body = String(response.body(), Charsets.UTF_8)
         val contentType = response.headers().firstValue("Content-Type").orElse(null)
@@ -25,6 +39,18 @@ class HttpFeedLocator(
         } catch (_: FeedFetchException) {
             null
         }
+
+    private fun fromPlatform(page: PlatformPage): LocateResult =
+        when (page.site.platform) {
+            Platform.APPLE_PODCASTS -> fromLookup(page.address)
+            else -> LocateResult.Found(page.address)
+        }
+
+    private fun fromLookup(lookupUrl: String): LocateResult {
+        val response = fetch(lookupUrl) ?: return LocateResult.Unreachable
+        val feedUrl = ApplePodcastLookup.feedUrl(String(response.body(), Charsets.UTF_8))
+        return feedUrl?.let { LocateResult.Found(it) } ?: LocateResult.NoFeed
+    }
 
     private fun fromHtml(
         url: String,

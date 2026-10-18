@@ -5,6 +5,8 @@ import dev.starve.acceptance.FeedSpec
 import dev.starve.acceptance.Route
 import dev.starve.application.FeedLocator
 import dev.starve.application.LocateResult
+import dev.starve.domain.Platform
+import dev.starve.domain.PlatformSite
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -21,7 +23,12 @@ class HttpFeedLocatorTest {
         server = FeedServer()
         val template = "${server.baseUrl}/sc/{id}.rss"
         val http = BoundedHttp(HttpClient.newHttpClient(), Duration.ofSeconds(10), "test")
-        locator = HttpFeedLocator(http, setOf("localhost"), template)
+        val platforms =
+            listOf(
+                PlatformSite(Platform.GITHUB, setOf("127.0.0.1"), "${server.baseUrl}/gh/{key}.atom"),
+                PlatformSite(Platform.APPLE_PODCASTS, setOf("127.0.0.1"), "${server.baseUrl}/lookup/{key}"),
+            )
+        locator = HttpFeedLocator(http, setOf("localhost"), template, platforms)
     }
 
     @AfterEach
@@ -71,6 +78,26 @@ class HttpFeedLocatorTest {
     fun `the highest success status is still located`() {
         server.route("/edge", Route.Status(299))
         assertEquals(LocateResult.Found(server.baseUrl + "/edge"), locate("/edge"))
+    }
+
+    @Test
+    fun `a platform page maps to its feed without being fetched`() {
+        val page = server.baseUrl.replace("localhost", "127.0.0.1") + "/torvalds"
+
+        assertEquals(LocateResult.Found(server.baseUrl + "/gh/torvalds.atom"), locator.locate(page))
+        assertEquals(emptyList<String>(), server.requests.map { it.path })
+    }
+
+    @Test
+    fun `an apple podcasts show is located through the feed its lookup names`() {
+        val show = server.baseUrl.replace("localhost", "127.0.0.1") + "/us/podcast/x/id"
+        server.route("/lookup/7", Route.Json("""{"results":[{"feedUrl":"https://feeds.test/x.xml"}]}"""))
+        server.route("/lookup/8", Route.Json("""{"results":[]}"""))
+        server.route("/lookup/9", Route.Status(500))
+
+        assertEquals(LocateResult.Found("https://feeds.test/x.xml"), locator.locate(show + "7"))
+        assertEquals(LocateResult.NoFeed, locator.locate(show + "8"))
+        assertEquals(LocateResult.Unreachable, locator.locate(show + "9"))
     }
 
     @Test

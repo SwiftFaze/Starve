@@ -4,6 +4,8 @@ import dev.starve.domain.Feed
 import dev.starve.domain.Group
 import dev.starve.domain.ImportEntry
 import dev.starve.domain.ParsedImport
+import dev.starve.domain.Platform
+import dev.starve.domain.PlatformSite
 import dev.starve.domain.Source
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -39,6 +41,10 @@ class ImportServiceTest {
             { _ -> opmlResult },
             BackgroundPoller(sources, PollService(sources, fetcher, ingestor)) { queued += it },
             "https://yt.test/{id}",
+            listOf(
+                PlatformSite(Platform.REDDIT, setOf("www.reddit.com"), "https://feeds.test/r/{key}"),
+                PlatformSite(Platform.APPLE_PODCASTS, setOf("podcasts.apple.com"), "https://lookup.test/{key}"),
+            ),
         )
 
     private fun import(text: String) = service.importFile(OWNER, text.toByteArray())
@@ -166,6 +172,28 @@ class ImportServiceTest {
         opml()
 
         assertEquals(listOf("outline 'x': not an http(s) URL"), summary(import("<opml/>")).failures)
+    }
+
+    @Test
+    fun `a platform page is stored as its feed, and an apple podcasts show is reported without a fetch`() {
+        opmlResult =
+            ParsedImport(
+                listOf(
+                    ImportEntry("https://www.reddit.com/r/selfhosted/", "Self", null),
+                    ImportEntry("https://podcasts.apple.com/us/podcast/x/id1", "Show", null),
+                    ImportEntry("https://feeds.test/r/selfhosted", "Again", null),
+                ),
+                listOf("outline 'x': not an http(s) URL"),
+            )
+
+        val summary = summary(import("<opml/>"))
+
+        assertEquals(1, summary.added)
+        assertEquals(1, summary.alreadySubscribed)
+        val failures = listOf("outline 'x': not an http(s) URL", "'Show': an Apple Podcasts link, add it on Sources")
+        assertEquals(failures, summary.failures)
+        assertEquals(listOf("https://feeds.test/r/selfhosted"), stored.map { it.url })
+        assertTrue(fetched.isEmpty())
     }
 
     /** The memory store, but able to look sources up by id as the real store does. */

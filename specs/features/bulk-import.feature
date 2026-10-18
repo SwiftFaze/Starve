@@ -34,7 +34,8 @@ Feature: Bulk import
   since Import is reached from Sources.
   Supersedes: nothing. Deliberately does not run the smart-add page resolver
   per row (rows already carry channel ids or feed URLs), so no page is fetched
-  during import.
+  during import; only smart-add-platforms.feature's fetch-free URL rules apply
+  to an entry (covered there).
   Out of scope: OPML export; SoundCloud/X/Instagram follow lists.
 
   Background:
