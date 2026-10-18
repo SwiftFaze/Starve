@@ -375,8 +375,20 @@ class RomeFeedFetcherTest {
         val linked = feedOf(FeedSpec(audioEnclosure = "ep.mp3", entryLink = "https://show.example/eps/1"))
         val linkless = feedOf(FeedSpec(audioEnclosure = "ep.mp3", linkless = true, siteLink = "https://site.example/a/"))
 
-        assertEquals("https://show.example/eps/ep.mp3", linked.items.single().audio?.url)
-        assertEquals("https://site.example/a/ep.mp3", linkless.items.single().audio?.url)
+        assertEquals(
+            "https://show.example/eps/ep.mp3",
+            linked.items
+                .single()
+                .audio
+                ?.url,
+        )
+        assertEquals(
+            "https://site.example/a/ep.mp3",
+            linkless.items
+                .single()
+                .audio
+                ?.url,
+        )
     }
 
     @Test
