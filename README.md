@@ -78,6 +78,11 @@ feed you already follow). Each source shows its title, when it
 was last fetched (in UTC: just the time if it was today, "yesterday" and the time
 the day before, otherwise the date; hover it for the full timestamp) and its last
 error, if any; unsubscribe from the same page.
+
+Some feeds, such as Bluesky and Mastodon accounts, give their posts no title. Such a
+post is listed under the start of its text instead, up to about a line (64
+characters, cut between words, with "…"), leaving out placeholders in square brackets
+like "[contains quote post or other embedded content]".
 Removing a source (which deletes its items) and deleting a group both ask first. A
 rejected URL stays in the field with the reason under it.
 
