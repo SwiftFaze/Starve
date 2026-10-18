@@ -8,6 +8,7 @@ import dev.starve.domain.GroupSummary
 import dev.starve.domain.LaterCursor
 import dev.starve.domain.ParsedImport
 import dev.starve.domain.Playable
+import dev.starve.domain.PollInterval
 import dev.starve.domain.ReadMark
 import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
@@ -119,6 +120,16 @@ interface SourceRepository {
         url: String?,
         at: Instant,
     )
+}
+
+/** Persistence of how often each source is fetched. */
+fun interface SourceScheduleRepository {
+    /** Sets how often [owner]'s source [id] is fetched, null for the default; false when [owner] has no such source. */
+    fun setInterval(
+        owner: Long,
+        id: Long,
+        interval: PollInterval?,
+    ): Boolean
 }
 
 /** Finds a site's icon; throws [FeedFetchException] when the site cannot be reached in time. */

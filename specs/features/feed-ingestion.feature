@@ -19,7 +19,8 @@ Feature: Feed ingestion
   Out of scope: timeline UI and read state (#3; so "never delete unread items
   from the last 7 days" holds trivially, as nothing under 90 days is deleted);
   smart-add of non-feed URLs such as YouTube channel pages (#4); groups (#5);
-  bulk import (#6); playback (#7); per-source poll intervals.
+  bulk import (#6); playback (#7); per-source poll intervals (per-source-interval.feature,
+  which also makes "the poller runs" a tick in which every default-interval source is due).
 
   Background:
     Given a fresh SQLite database file

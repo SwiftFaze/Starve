@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.springframework.boot.convert.ApplicationConversionService
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import java.time.Clock
 import java.time.Duration
@@ -22,15 +23,17 @@ class SchedulingConfigTest {
 
     private val runner =
         ApplicationContextRunner()
+            .withInitializer { it.beanFactory.conversionService = ApplicationConversionService.getSharedInstance() }
             .withBean(SchedulingConfig::class.java)
+            .withBean(Clock::class.java, { Clock.systemUTC() })
             .withBean(PollService::class.java, { pollService() })
             .withBean(
                 RetentionService::class.java,
                 { RetentionService(mock(ItemRepository::class.java), Clock.systemUTC(), Duration.ofDays(1)) },
-            ).withPropertyValues("starve.poll.interval=PT0.05S")
+            ).withPropertyValues("starve.poll.tick=PT0.05S")
 
     @Test
-    fun `polls on the configured interval when scheduling is enabled`() {
+    fun `ticks on the configured tick when scheduling is enabled`() {
         runner.run {
             await().atMost(Duration.ofSeconds(5)).until { polls.get() >= 2 }
         }

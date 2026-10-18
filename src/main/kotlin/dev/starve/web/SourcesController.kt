@@ -2,12 +2,9 @@ package dev.starve.web
 
 import dev.starve.application.GroupResult
 import dev.starve.application.GroupService
-import dev.starve.application.SourceHealthService
 import dev.starve.application.SubscribeResult
 import dev.starve.application.SubscriptionService
 import dev.starve.domain.GroupRules
-import dev.starve.domain.Source
-import dev.starve.domain.SourceHealth
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -16,25 +13,12 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.server.ResponseStatusException
-import java.time.Clock
-import java.time.Instant
-
-data class SourceView(
-    val id: Long,
-    val title: String,
-    val url: String,
-    val lastFetched: FetchTime?,
-    val error: String?,
-    val groupId: Long?,
-    val stats: SourceStatsLine,
-)
 
 @Controller
 class SourcesController(
     private val subscriptions: SubscriptionService,
     private val groups: GroupService,
-    private val clock: Clock,
-    private val health: SourceHealthService,
+    private val roster: SourceRoster,
 ) {
     /**
      * The roster. [remove] or [deleteGroup] names a row to show in its confirming state, which holds the form that
@@ -131,9 +115,7 @@ class SourcesController(
         message: String?,
         error: Boolean = false,
     ): String {
-        val now = clock.instant()
-        model.addAttribute("sources", health.roster(owner).map { it.source.toView(it.health, now) })
-        model.addAttribute("groups", groups.list(owner))
+        roster.addTo(model, owner)
         model.addAttribute("message", message)
         model.addAttribute("error", error)
         return "sources"
@@ -153,11 +135,3 @@ class SourcesController(
 private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
 
 private const val TOO_LONG = "at most ${GroupRules.MAX_NAME_LENGTH} characters"
-
-private fun Source.toView(
-    health: SourceHealth,
-    now: Instant,
-): SourceView {
-    val fetched = lastFetchedAt?.let { FetchTime.of(it, now) }
-    return SourceView(id, title, url, fetched, lastError, groupId, SourceStatsLine.of(health, now))
-}

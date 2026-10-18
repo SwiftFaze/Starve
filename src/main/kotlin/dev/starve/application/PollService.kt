@@ -1,14 +1,23 @@
 package dev.starve.application
 
+import dev.starve.domain.PollRules
 import dev.starve.domain.Source
+import java.time.Duration
+import java.time.Instant
 
 class PollService(
     private val sources: SourceRepository,
     private val fetcher: FeedFetcher,
     private val ingestor: FeedIngestor,
 ) {
-    /** Polls every subscription; one source failing never stops the others. */
-    fun pollAll() = sources.findAll().forEach { pollOne(it) }
+    /**
+     * Polls the subscriptions due at [now], each on its own interval or [default]; one source failing never stops the
+     * others.
+     */
+    fun pollDue(
+        now: Instant,
+        default: Duration,
+    ) = sources.findAll().filter { PollRules.isDue(it, now, default) }.forEach { pollOne(it) }
 
     fun pollOne(source: Source) {
         try {

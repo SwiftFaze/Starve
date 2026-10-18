@@ -4556,9 +4556,16 @@ body.dealing #series .series-meta {
   }
 }
 
-/* With scripts, choosing a group files the source at once; Set group is for pages without them. */
+/* With scripts, choosing a group or an interval applies it at once; their buttons are for pages without them. */
 .js .regroup button {
   display: none;
+}
+
+/* A Fetch now in progress, in the status column until the row refreshes with its outcome. */
+.fetching {
+  display: block;
+  font: 400 0.75rem/1.4 var(--mono);
+  color: var(--text);
 }
 
 /* ---- Sources on a phone: stacked rows, one line of controls -------------------------------------- */

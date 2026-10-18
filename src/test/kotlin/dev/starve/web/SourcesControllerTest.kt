@@ -1,5 +1,6 @@
 package dev.starve.web
 
+import dev.starve.application.BackgroundPoller
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FeedLocator
@@ -11,12 +12,15 @@ import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
 import dev.starve.application.OTHER_OWNER
 import dev.starve.application.OWNER
+import dev.starve.application.PollService
 import dev.starve.application.SourceHealthService
+import dev.starve.application.SourceScheduleService
 import dev.starve.application.SourceStatsRepository
 import dev.starve.application.SubscriptionService
 import dev.starve.application.quietFavicons
 import dev.starve.domain.Feed
 import dev.starve.domain.Group
+import dev.starve.domain.PollInterval
 import dev.starve.domain.Source
 import dev.starve.domain.SourceActivity
 import dev.starve.domain.Validators
@@ -27,6 +31,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.ui.ConcurrentModel
 import org.springframework.web.server.ResponseStatusException
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 
 class SourcesControllerTest {
@@ -51,12 +56,25 @@ class SourcesControllerTest {
     private val stats =
         SourceStatsRepository { _, _, now -> mapOf(4L to SourceActivity(now, 8, 3, 20, 19)) }
     private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC(), quietFavicons(sources))
+    private val schedule =
+        SourceScheduleService(
+            { _, _, _ -> true },
+            sources,
+            BackgroundPoller(sources, PollService(sources, fetcher, ingestor)) { },
+        )
+    private val roster =
+        SourceRoster(
+            SourceHealthService(sources, stats, Clock.systemUTC()),
+            GroupService(groups, sources),
+            schedule,
+            Clock.systemUTC(),
+            Duration.ofHours(1),
+        )
     private val controller =
         SourcesController(
             SubscriptionService(sources, locator, fetcher, ingestor),
             GroupService(groups, sources),
-            Clock.systemUTC(),
-            SourceHealthService(sources, stats, Clock.systemUTC()),
+            roster,
         )
 
     @Test
@@ -77,6 +95,8 @@ class SourcesControllerTest {
             views.map { it.stats.text },
         )
         assertEquals(listOf(listOf("Mostly skipped"), emptyList()), views.map { it.stats.marks })
+        assertEquals("Default (every hour)", model.getAttribute("defaultInterval"))
+        assertEquals(PollInterval.entries, model.getAttribute("intervals"))
         assertEquals(null, model.getAttribute("message"))
     }
 
