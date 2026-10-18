@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0-beta.40](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.39...v1.1.0-beta.40) (2026-10-18)
+
+
+### Bug Fixes
+
+* fit every Sources subscription on one line, level with Groups ([4c6028d](https://github.com/SwiftFaze/Starve/commit/4c6028dd9a9a596f94053fdb23e25fdcf65f97b0)), closes [#166](https://github.com/SwiftFaze/Starve/issues/166)
+* forget a stored post or player whose item is gone ([a7a502d](https://github.com/SwiftFaze/Starve/commit/a7a502d55e20ee25c44344859a7c1a9d19e45513))
+* one-line Sources rows level with Groups, and forget a stored post that is gone ([b0ef1c2](https://github.com/SwiftFaze/Starve/commit/b0ef1c2eeeaa63da25a21cfa5a8d9e88196bf3dd))
+
 ## [1.1.0-beta.39](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.38...v1.1.0-beta.39) (2026-10-18)
 
 
