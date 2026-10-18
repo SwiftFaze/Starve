@@ -13,6 +13,7 @@ import dev.starve.application.RetentionService
 import dev.starve.application.SourceRepository
 import dev.starve.application.SubscriptionService
 import dev.starve.application.TimelineService
+import dev.starve.domain.PlatformSite
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -55,7 +56,8 @@ class FeedConfig {
         http: BoundedHttp,
         @Value("\${starve.soundcloud.hosts:soundcloud.com,m.soundcloud.com}") hosts: List<String>,
         @Value("\${starve.soundcloud.feed-url-template:$SOUNDCLOUD_FEED_TEMPLATE}") template: String,
-    ): FeedLocator = HttpFeedLocator(http, hosts.map { it.trim().lowercase() }.toSet(), template)
+        platforms: List<PlatformSite>,
+    ): FeedLocator = HttpFeedLocator(http, hosts.map { it.trim().lowercase() }.toSet(), template, platforms)
 
     @Bean
     fun feedIngestor(

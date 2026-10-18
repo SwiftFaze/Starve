@@ -7,6 +7,7 @@ import dev.starve.application.ImportService
 import dev.starve.application.OpmlReader
 import dev.starve.application.PollService
 import dev.starve.application.SourceRepository
+import dev.starve.domain.PlatformSite
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -19,6 +20,7 @@ private const val YOUTUBE_FEED_TEMPLATE = "https://www.youtube.com/feeds/videos.
 @Configuration
 class ImportConfig(
     @Value("\${starve.youtube.feed-url-template:$YOUTUBE_FEED_TEMPLATE}") private val youtubeFeedUrlTemplate: String,
+    private val platforms: List<PlatformSite>,
 ) {
     @Bean
     fun opmlReader(): OpmlReader = XmlOpmlReader()
@@ -44,5 +46,5 @@ class ImportConfig(
         groups: GroupRepository,
         opml: OpmlReader,
         background: BackgroundPoller,
-    ) = ImportService(sources, groups, opml, background, youtubeFeedUrlTemplate)
+    ) = ImportService(sources, groups, opml, background, youtubeFeedUrlTemplate, platforms)
 }

@@ -43,6 +43,7 @@ class ImportControllerTest {
                 ),
             ) { it.run() },
             "https://yt.test/{id}",
+            emptyList(),
         )
     private val controller = ImportController(service)
 

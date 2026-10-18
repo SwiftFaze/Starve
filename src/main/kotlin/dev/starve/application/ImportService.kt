@@ -3,6 +3,9 @@ package dev.starve.application
 import dev.starve.domain.GroupRules
 import dev.starve.domain.ImportEntry
 import dev.starve.domain.ParsedImport
+import dev.starve.domain.Platform
+import dev.starve.domain.PlatformPages
+import dev.starve.domain.PlatformSite
 import dev.starve.domain.Source
 import dev.starve.domain.TakeoutCsv
 
@@ -23,13 +26,18 @@ sealed interface ImportOutcome {
     data object Unrecognised : ImportOutcome
 }
 
-/** Imports many subscriptions from a YouTube Takeout CSV or an OPML file, without fetching during the call. */
+/**
+ * Imports many subscriptions from a YouTube Takeout CSV or an OPML file, without fetching during the call. An entry
+ * that is a page of one of [platforms] is stored as that page's feed; an Apple Podcasts show needs a lookup, which
+ * would be a fetch, so it is reported as failed instead.
+ */
 class ImportService(
     private val sources: SourceRepository,
     private val groups: GroupRepository,
     private val opml: OpmlReader,
     private val background: BackgroundPoller,
     private val youtubeFeedUrlTemplate: String,
+    private val platforms: List<PlatformSite>,
 ) {
     /** Detects the type of [content], stores its subscriptions for [owner] and polls the new ones in the background. */
     fun importFile(
@@ -41,7 +49,8 @@ class ImportService(
         val session = Run(owner)
         parsed.entries.forEach { session.apply(it) }
         if (session.addedIds.isNotEmpty()) background.poll(session.addedIds.toList())
-        return ImportOutcome.Done(ImportSummary(session.addedIds.size, session.alreadySubscribed, parsed.failures))
+        val failures = parsed.failures + session.failures
+        return ImportOutcome.Done(ImportSummary(session.addedIds.size, session.alreadySubscribed, failures))
     }
 
     private fun parse(text: String): ParsedImport? =
@@ -53,9 +62,19 @@ class ImportService(
         private val known: MutableMap<String, Source> = sources.findAllOf(owner).associateBy { it.url }.toMutableMap()
         private val groupIds = mutableMapOf<String, Long>()
         val addedIds = mutableListOf<Long>()
+        val failures = mutableListOf<String>()
         var alreadySubscribed = 0
 
         fun apply(entry: ImportEntry) {
+            val page = PlatformPages.match(entry.url, platforms)
+            when {
+                page == null -> store(entry)
+                page.site.platform == Platform.APPLE_PODCASTS -> failures += "'${entry.title}': $APPLE_PODCASTS_FAILURE"
+                else -> store(entry.copy(url = page.address))
+            }
+        }
+
+        private fun store(entry: ImportEntry) {
             val existing = known[entry.url]
             val source = existing ?: sources.insert(owner, entry.url, entry.title).also { addedIds += it.id }
             if (existing != null) alreadySubscribed++
@@ -79,3 +98,5 @@ class ImportService(
         }
     }
 }
+
+private const val APPLE_PODCASTS_FAILURE = "an Apple Podcasts link, add it on Sources"
