@@ -9,8 +9,8 @@ Feature: Sources roster copy that fits
   datetime is the exact instant and whose title is the full timestamp with
   seconds; the obi meta saying "No groups" when there are none ("In 1 group",
   "In 3 groups" otherwise); the add-source field's short placeholder "Paste a
-  feed, channel or site URL", with the full list of accepted addresses in a
-  hint under the field that the field is described by.
+  feed, channel or site URL", with no hint under the field, so the Add a source
+  and New group fields start level and the two lists line up row for row.
   Supersedes: the "yyyy-MM-dd HH:mm:ss UTC" fetch time of feed-ingestion.feature
   (it still asserts only that a fetch time is shown).
   Out of scope: the two-column Sources layout; time zones other than UTC; the
@@ -36,7 +36,7 @@ Feature: Sources roster copy that fits
     When I request "/sources"
     Then the Sources meta reads "0 sources In 1 group"
 
-  Scenario: The add-source field has a short placeholder and a hint with the full list
+  Scenario: The add-source field has a short placeholder and no hint under it
     When I request "/sources"
     Then the add-source field's placeholder is "Paste a feed, channel or site URL"
-    And the add-source field is described by the hint "A feed URL, or the address of a YouTube channel, SoundCloud profile or website."
+    And the add-source field has no hint

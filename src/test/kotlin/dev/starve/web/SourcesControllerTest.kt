@@ -99,7 +99,7 @@ class SourcesControllerTest {
             views.map { it.stats.text },
         )
         assertEquals(listOf(listOf("Mostly skipped"), emptyList()), views.map { it.stats.marks })
-        assertEquals("Default (every hour)", model.getAttribute("defaultInterval"))
+        assertEquals("1 hr", model.getAttribute("defaultInterval"))
         assertEquals(PollInterval.entries, model.getAttribute("intervals"))
         assertEquals(null, model.getAttribute("message"))
     }

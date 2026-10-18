@@ -31,4 +31,13 @@ class ListEndTest {
         assertEquals("every hour", everyPhrase(Duration.ofHours(1)))
         assertEquals("every 2 hours", everyPhrase(Duration.ofHours(2)))
     }
+
+    @Test
+    fun `the default interval reads abbreviated, in minutes or whole hours`() {
+        assertEquals("30 mins", shortPhrase(Duration.ofMinutes(30)))
+        assertEquals("1 min", shortPhrase(Duration.ofSeconds(20)))
+        assertEquals("90 mins", shortPhrase(Duration.ofMinutes(90)))
+        assertEquals("1 hr", shortPhrase(Duration.ofHours(1)))
+        assertEquals("2 hrs", shortPhrase(Duration.ofHours(2)))
+    }
 }
