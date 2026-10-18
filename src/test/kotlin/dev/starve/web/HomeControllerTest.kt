@@ -566,4 +566,27 @@ class HomeControllerTest {
         assertEquals("/feed/counts?show=all&group=1", countsOf(TimelineQuery(show = "all", group = "1")))
         assertEquals("/feed/counts?later=1", countsOf(TimelineQuery(later = "1")))
     }
+
+    @Test
+    fun `a page ends with the unread count of its view, polled every half hour by default`() {
+        fun endOf(query: TimelineQuery) =
+            ConcurrentModel()
+                .also { controller(TimelineItems()).home(OWNER, query, null, it) }
+                .getAttribute("end")
+
+        assertEquals(ListEnd(5, "every 30 minutes", "/feed/end"), endOf(TimelineQuery()))
+        assertEquals(ListEnd(0, "every 30 minutes", "/feed/end?group=2"), endOf(TimelineQuery(group = "2")))
+        val favourites = endOf(TimelineQuery(favourites = "1"))
+        assertEquals(ListEnd(null, "every 30 minutes", "/feed/end?favourites=1"), favourites)
+    }
+
+    @Test
+    fun `the end of a view comes back as its own fragment`() {
+        val model = ConcurrentModel()
+
+        val view = controller(TimelineItems()).end(OWNER, TimelineQuery(show = "all", group = "1"), model)
+
+        assertEquals("home :: end", view)
+        assertEquals(ListEnd(3, "every 30 minutes", "/feed/end?show=all&group=1"), model.getAttribute("end"))
+    }
 }
