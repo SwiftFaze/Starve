@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.29](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.28...v1.1.0-beta.29) (2026-10-18)
+
+
+### Features
+
+* confirm destructive actions and keep a rejected source URL ([#136](https://github.com/SwiftFaze/Starve/issues/136)) ([424775e](https://github.com/SwiftFaze/Starve/commit/424775efac22e41cb49a2196ee34bc1f2a2a4f56))
+
 ## [1.1.0-beta.28](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.27...v1.1.0-beta.28) (2026-10-18)
 
 
