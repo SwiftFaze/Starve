@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.36](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.35...v1.1.0-beta.36) (2026-10-18)
+
+
+### Features
+
+* remove the Vimeo Smart-add rule ([#165](https://github.com/SwiftFaze/Starve/issues/165)) ([65c1020](https://github.com/SwiftFaze/Starve/commit/65c1020eb8f260c14df7e53ec92565775ed7c63e))
+
 ## [1.1.0-beta.35](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.34...v1.1.0-beta.35) (2026-10-18)
 
 
