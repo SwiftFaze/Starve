@@ -12,6 +12,7 @@ import dev.starve.application.InvalidFeedException
 import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
 import dev.starve.domain.FeedRules
+import dev.starve.domain.ItemTitles
 import dev.starve.domain.Validators
 import org.jdom2.Element
 import java.io.ByteArrayInputStream
@@ -88,14 +89,16 @@ class RomeFeedFetcher(
         val link = entry.link?.takeIf { it.isNotBlank() }
         val published = entry.publishedDate ?: entry.updatedDate
         val body = rawBody(entry)
+        val sanitized = BodySanitizer.sanitize(body, link)
+        val title = TitleEntities.decode(entry.title.orEmpty()).trim()
         return FeedItem(
             key = key,
-            title = decodedTitle(entry),
+            title = ItemTitles.of(title, sanitized?.let(JsoupText::plainText)),
             link = link,
             publishedAt = published?.toInstant(),
             author = entry.author?.takeIf { it.isNotBlank() },
             thumbnailUrl = thumbnail(entry, link ?: siteLink, body),
-            body = BodySanitizer.sanitize(body, link),
+            body = sanitized,
         )
     }
 
@@ -103,11 +106,6 @@ class RomeFeedFetcher(
     private fun rawBody(entry: SyndEntry): String? =
         entry.contents.firstNotNullOfOrNull { it.value?.takeIf(String::isNotBlank) }
             ?: entry.description?.value
-
-    private fun decodedTitle(entry: SyndEntry): String {
-        val decoded = TitleEntities.decode(entry.title.orEmpty()).trim()
-        return decoded.ifEmpty { "(untitled)" }
-    }
 
     /**
      * The first usable image of the entry, in order: media:thumbnail, a media:content that is an image, an image

@@ -21,6 +21,16 @@ class TitleSteps {
         itemTitle: String,
     ) = World.feedServer().route(path, Route.Feed(FeedSpec(title = title, itemTitle = itemTitle)))
 
+    @Given(
+        "the feed server serves {string} as an RSS 2.0 feed titled {string} " +
+            "whose item has no title and the description {string}",
+    )
+    fun serveUntitledItem(
+        path: String,
+        title: String,
+        description: String,
+    ) = World.feedServer().route(path, Route.Feed(FeedSpec(title = title, itemTitle = "", description = description)))
+
     @Given("the database is migrated only up to before the title fix")
     fun migratedBeforeTitleFix() = legacy.migrateOnlyTo("4")
 
