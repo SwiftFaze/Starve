@@ -15,7 +15,6 @@ class PlatformConfigTest {
         val expected = { platform: Platform -> PlatformSite(platform, trimmed, "t/{key}") }
 
         assertEquals(expected(Platform.REDDIT), config.redditSite(hosts, "t/{key}"))
-        assertEquals(expected(Platform.VIMEO), config.vimeoSite(hosts, "t/{key}"))
         assertEquals(expected(Platform.GITHUB), config.gitHubSite(hosts, "t/{key}"))
         assertEquals(expected(Platform.APPLE_PODCASTS), config.applePodcastsSite(hosts, "t/{key}"))
     }

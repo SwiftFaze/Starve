@@ -10,10 +10,9 @@ sharing `BoundedHttp` with `RomeFeedFetcher`), checks the resolved URL for a dup
 as a feed before storing anything. Resolution order:
 
 1. **Platform rules**, before anything is fetched. `domain/PlatformPages.match` recognises a page of a `PlatformSite`
-   from its URL alone: a subreddit (`/r/<name>`), a Vimeo channel (`/channels/<name>`) or user (`/<name>`, never a
-   numeric video id), a GitHub user (`/<user>`), an Apple Podcasts show (a path with `podcast`, ending in
-   `id<digits>`). The match's key fills the site's template (`{key}`). For Apple Podcasts the template is the iTunes
-   lookup API, which `HttpFeedLocator` fetches and `infra/ApplePodcastLookup` reads (`results[].feedUrl`); a lookup
+   from its URL alone: a subreddit (`/r/<name>`), a GitHub user (`/<user>`), an Apple Podcasts show (a path with
+   `podcast`, ending in `id<digits>`). The match's key fills the site's template (`{key}`). For Apple Podcasts the
+   template is the iTunes lookup API, which `HttpFeedLocator` fetches and `infra/ApplePodcastLookup` reads (`results[].feedUrl`); a lookup
    without one is `NoFeed`. Reddit pages are never fetched, which matters because Reddit often refuses non-browser
    clients: its feed's failures then show as ordinary source errors.
 2. A non-HTML response is the feed itself.
@@ -59,6 +58,6 @@ resolution and article fetches do not get this handling.
 
 ## Bulk import
 
-`ImportService` never fetches during the upload, so it applies only the platform rules that need no fetch: a Reddit,
-Vimeo or GitHub page entry is stored as its feed URL (and deduplicated as that URL). An Apple Podcasts entry would need
+`ImportService` never fetches during the upload, so it applies only the platform rules that need no fetch: a Reddit
+or GitHub page entry is stored as its feed URL (and deduplicated as that URL). An Apple Podcasts entry would need
 the lookup, so it is reported as a failed row asking for Smart-add instead.

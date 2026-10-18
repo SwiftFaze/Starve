@@ -41,7 +41,6 @@ class PlatformSteps {
         val PLATFORMS =
             linkedMapOf(
                 "Reddit" to ("reddit" to "/reddit/r/{key}/.rss"),
-                "Vimeo" to ("vimeo" to "/vimeo/{key}/videos/rss"),
                 "GitHub" to ("github" to "/github/{key}.atom"),
                 "Apple Podcasts" to ("apple-podcasts" to "/lookup/{key}"),
             )

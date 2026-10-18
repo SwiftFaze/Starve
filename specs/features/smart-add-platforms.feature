@@ -1,27 +1,26 @@
 Feature: Smart-add for platforms without a feed link
-  Reddit, Vimeo, GitHub users and Apple Podcasts publish feeds their pages do
-  not advertise, so pasting one of their pages used to be rejected with "no
-  feed found" (#145). Smart-add now recognises their pages by URL, before
-  fetching anything, and subscribes to the feed at the platform's known
-  address.
+  Reddit, GitHub users and Apple Podcasts publish feeds their pages do not
+  advertise, so pasting one of their pages used to be rejected with "no feed
+  found" (#145). Smart-add now recognises their pages by URL, before fetching
+  anything, and subscribes to the feed at the platform's known address.
 
-  Covers: a subreddit page (/r/<name>) subscribing to /r/<name>/.rss; a Vimeo
-  channel (/channels/<name>) or user (/<name>, not a numeric video id) to its
-  /videos/rss; a GitHub user (/<user>) to /<user>.atom; an Apple Podcasts show
-  link (ending in id<digits>) to the feedUrl the iTunes lookup API names for
-  that id; the usual duplicate checks and validation of the resolved feed (one
-  that does not answer is "could not be fetched", a lookup without a feedUrl is
-  "no feed found at this address"); pages that already advertise their feed
-  (Bluesky and Mastodon profiles, GitHub release pages, Substack) still
-  resolving through it; bulk import storing a Reddit, Vimeo or GitHub page entry
-  as its feed, and reporting an Apple Podcasts entry as failed, since its lookup
-  would be a fetch during the upload. Hosts and feed addresses are configurable
-  per platform (starve.reddit.*, starve.vimeo.*, starve.github.*,
-  starve.apple-podcasts.*); these scenarios point them at the feed server.
+  Covers: a subreddit page (/r/<name>) subscribing to /r/<name>/.rss; a GitHub
+  user (/<user>) to /<user>.atom; an Apple Podcasts show link (ending in
+  id<digits>) to the feedUrl the iTunes lookup API names for that id; the usual
+  duplicate checks and validation of the resolved feed (one that does not answer
+  is "could not be fetched", a lookup without a feedUrl is "no feed found at
+  this address"); pages that already advertise their feed (Bluesky and Mastodon
+  profiles, GitHub release pages, Substack) still resolving through it; bulk
+  import storing a Reddit or GitHub page entry as its feed, and reporting an
+  Apple Podcasts entry as failed, since its lookup would be a fetch during the
+  upload. Hosts and feed addresses are configurable per platform
+  (starve.reddit.*, starve.github.*, starve.apple-podcasts.*); these scenarios
+  point them at the feed server.
   Supersedes: nothing; the rules run before smart-add.feature's resolution
-  order, only for URLs on a configured host.
-  Out of scope: inline Vimeo playback (#149); podcast audio playback (#148);
-  Bandcamp; Reddit user pages, multireddits and search feeds.
+  order, only for URLs on a configured host. #145 also had a Vimeo rule; #162
+  removed it, so a Vimeo page resolves like any other page.
+  Out of scope: podcast audio playback (#148); Bandcamp; Reddit user pages,
+  multireddits and search feeds.
 
   Background:
     Given a fresh SQLite database file
@@ -36,18 +35,6 @@ Feature: Smart-add for platforms without a feed link
     Then the sources page lists a source titled "r/selfhosted"
     And the source "r/selfhosted" is subscribed at the feed URL "/reddit/r/selfhosted/.rss"
     And the feed server received no request for "/r/selfhosted/"
-
-  Scenario: A Vimeo channel subscribes to the channel's videos feed
-    Given the "Vimeo" rule uses the feed server
-    And the feed server serves "/vimeo/channels/staffpicks/videos/rss" as an RSS 2.0 feed titled "Staff Picks" with 2 entries
-    When I add the feed URL "/channels/staffpicks"
-    Then the source "Staff Picks" is subscribed at the feed URL "/vimeo/channels/staffpicks/videos/rss"
-
-  Scenario: A Vimeo user subscribes to the user's videos feed
-    Given the "Vimeo" rule uses the feed server
-    And the feed server serves "/vimeo/someone/videos/rss" as an RSS 2.0 feed titled "Someone" with 1 entries
-    When I add the feed URL "/someone"
-    Then the source "Someone" is subscribed at the feed URL "/vimeo/someone/videos/rss"
 
   Scenario: A GitHub user subscribes to the user's activity feed
     Given the "GitHub" rule uses the feed server
