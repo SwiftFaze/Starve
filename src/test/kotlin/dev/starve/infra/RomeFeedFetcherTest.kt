@@ -114,6 +114,25 @@ class RomeFeedFetcherTest {
     }
 
     @Test
+    fun `an untitled entry is titled from the start of its body text`() {
+        val description = "<p>Happy <b>opening</b> day! [contains quote post or other embedded content]</p>"
+        server.route("/t.xml", Route.Feed(FeedSpec(title = "Ok", itemTitle = "", description = description)))
+
+        val item = (fetcher.fetch("${server.baseUrl}/t.xml", Validators()) as FetchResult.Fetched).feed.items.single()
+
+        assertEquals("Happy opening day!", item.title)
+    }
+
+    @Test
+    fun `a titled entry keeps its title whatever its body`() {
+        server.route("/t.xml", Route.Feed(FeedSpec(title = "Ok", itemTitle = "Real", description = "<p>Body</p>")))
+
+        val item = (fetcher.fetch("${server.baseUrl}/t.xml", Validators()) as FetchResult.Fetched).feed.items.single()
+
+        assertEquals("Real", item.title)
+    }
+
+    @Test
     fun `a permanent redirect is followed and reported as the move`() {
         server.route("/new.xml", Route.Feed(FeedSpec(title = "New", entries = 1)))
         for (code in listOf(301, 308)) {
