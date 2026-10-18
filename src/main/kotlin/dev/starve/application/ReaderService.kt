@@ -1,6 +1,7 @@
 package dev.starve.application
 
 import dev.starve.domain.ArticleRules
+import dev.starve.domain.FeedOnlyHosts
 import dev.starve.domain.FeedRules
 import dev.starve.domain.Playable
 import dev.starve.domain.ReadMark
@@ -12,12 +13,13 @@ class ReaderService(
     private val checks: ArticleRepository,
     private val clock: Clock,
     private val articles: ArticleFetcher,
+    private val feedOnly: FeedOnlyHosts,
     private val text: HtmlText,
 ) {
     /**
      * The post of [owner]'s item to show in the reader, marked read and opened; null for an unknown or another user's
      * item and for a playable one, which keeps opening through the player. A teaser-only post first has its article
-     * page fetched.
+     * page fetched, unless its link is on a feed-only host.
      */
     fun open(
         owner: Long,
@@ -46,6 +48,7 @@ class ReaderService(
         now: Instant,
     ): Boolean =
         FeedRules.isHttpUrl(link) &&
+            !feedOnly.covers(link) &&
             ArticleRules.isDue(post.articleCheckedAt, now) &&
             ArticleRules.isTeaser(textLength(post.body))
 

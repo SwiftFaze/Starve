@@ -15,6 +15,7 @@ import dev.starve.application.PostRef
 import dev.starve.application.ReaderService
 import dev.starve.application.TimelineItems
 import dev.starve.application.TimelineService
+import dev.starve.domain.FeedOnlyHosts
 import dev.starve.domain.TimelineItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -49,7 +50,7 @@ class ReaderControllerTest {
                 ) = canned
             }
         return ReaderController(
-            ReaderService(items, MemoryArticles(), clock, ArticleFetcher { null }, HtmlText { it }),
+            ReaderService(items, MemoryArticles(), clock, ArticleFetcher { null }, FeedOnlyHosts(emptyList()), HtmlText { it }),
             TimelineService(items, TimelineItems(), MemorySources(), clock),
             GroupService(MemoryGroups(), MemorySources()),
         )
