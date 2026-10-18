@@ -70,10 +70,7 @@ class SourceRoster(
             stats = SourceStatsLine.of(standing.health, now),
             interval = source.pollInterval,
             fetching = schedule.isFetching(source.id),
-            brokenSince =
-                source.failingSince
-                    ?.takeIf { BrokenRules.isBroken(source, now) }
-                    ?.let { FetchTime.of(it, now) },
+            brokenSince = BrokenRules.brokenSince(source, now)?.let { FetchTime.of(it, now) },
             movedTo = source.movedTo,
         )
     }

@@ -33,10 +33,13 @@ object BrokenRules {
     fun isBroken(
         source: Source,
         now: Instant,
-    ): Boolean {
-        val since = source.failingSince ?: return false
-        return !now.isBefore(since.plus(AFTER))
-    }
+    ): Boolean = brokenSince(source, now) != null
+
+    /** When [source] started failing, if it is broken at [now]; null when it is not. */
+    fun brokenSince(
+        source: Source,
+        now: Instant,
+    ): Instant? = source.failingSince?.takeUnless { now.isBefore(it.plus(AFTER)) }
 }
 
 /** HTTP cache validators remembered from the last successful fetch, for conditional GET. */
