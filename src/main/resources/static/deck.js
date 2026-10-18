@@ -689,6 +689,21 @@
     }
   }
 
+  // A stored post or player whose item is gone (pruned by retention, or another account's) is forgotten, so it
+  // is not asked for again, and refused again, on every load.
+  document.addEventListener('htmx:responseError', function (event) {
+    var status = event.detail.xhr.status;
+    if (status < 400 || status >= 500) return;
+    var path = event.detail.pathInfo.requestPath;
+    var post = stored('starve.open.post');
+    var play = stored('starve.open.play');
+    if (post && path === '/items/' + (/\/detail$/.test(post) ? post : post + '/reader')) forget('starve.open.post');
+    if (play && path === '/items/' + play + '/player') {
+      forget('starve.open.play');
+      forget('starve.open.at');
+    }
+  });
+
   function restoreView() {
     if (!window.htmx || !onTimeline() || phone()) return;
     pendingTop = Number(stored('starve.list.top')) || 0;
