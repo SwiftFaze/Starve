@@ -1,6 +1,7 @@
 package dev.starve.infra
 
 import dev.starve.application.DetailRef
+import dev.starve.application.FetchSuccess
 import dev.starve.application.ItemRef
 import dev.starve.application.ListFilter
 import dev.starve.application.ListPosition
@@ -66,7 +67,7 @@ class JdbcRepositoriesTest {
         val source = sources.insert(OWNER, "http://a.test/f", "T")
         val at = Instant.parse("2026-10-11T12:00:00Z")
 
-        sources.recordSuccess(source.id, "New", Validators("etag", "modified"), at)
+        sources.recordSuccess(source.id, FetchSuccess("New", Validators("etag", "modified"), at))
 
         val stored = sources.findById(source.id)!!
         assertEquals(Validators("etag", "modified"), stored.validators)
@@ -97,7 +98,7 @@ class JdbcRepositoriesTest {
         sources.recordFailure(source.id, "bad", Instant.EPOCH)
         assertEquals("bad", sources.findById(source.id)!!.lastError)
 
-        sources.recordSuccess(source.id, "T", Validators(), Instant.EPOCH)
+        sources.recordSuccess(source.id, FetchSuccess("T", Validators(), Instant.EPOCH))
         assertNull(sources.findById(source.id)!!.lastError)
     }
 

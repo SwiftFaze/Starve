@@ -20,7 +20,7 @@ class FeedIngestorTest {
 
     @Test
     fun `not modified records success keeping the stored title and validators`() {
-        ingestor.apply(source, FetchResult.NotModified)
+        ingestor.apply(source, FetchResult.NotModified())
 
         assertEquals(listOf(MemorySources.Success(7, "Stored", Validators("e", "m"), now)), sources.successes)
     }
@@ -30,6 +30,14 @@ class FeedIngestorTest {
         ingestor.apply(source, FetchResult.Fetched(Feed("Fresh", emptyList()), Validators("e2", null)))
 
         assertEquals(listOf(MemorySources.Success(7, "Fresh", Validators("e2", null), now)), sources.successes)
+    }
+
+    @Test
+    fun `a move reported by the fetch is recorded with the success, fetched or not modified`() {
+        ingestor.apply(source, FetchResult.Fetched(Feed("F", emptyList()), Validators(), "http://b.test/feed"))
+        ingestor.apply(source, FetchResult.NotModified("http://c.test/feed"))
+
+        assertEquals(listOf("http://b.test/feed", "http://c.test/feed"), sources.successes.map { it.movedTo })
     }
 
     @Test
@@ -70,7 +78,7 @@ class FeedIngestorTest {
     fun `a not-modified poll looks up the icon from the feed origin`() {
         val finder = RecordingFinder(null)
 
-        FeedIngestor(sources, items, clock, FaviconService(sources, finder)).apply(source, FetchResult.NotModified)
+        FeedIngestor(sources, items, clock, FaviconService(sources, finder)).apply(source, FetchResult.NotModified())
 
         assertEquals(listOf("http://a.test/"), finder.asked)
         assertEquals(listOf(Triple(7L, null, now)), sources.favicons)

@@ -8,6 +8,7 @@ import dev.starve.application.FeedFetchException
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
 import dev.starve.application.FetchResult
+import dev.starve.application.FetchSuccess
 import dev.starve.application.InvalidFeedException
 import dev.starve.application.PollService
 import dev.starve.application.SourceRepository
@@ -111,6 +112,97 @@ class RomeFeedFetcherTest {
     fun `a title that decodes to whitespace is untitled`() {
         assertEquals("(untitled)", titleFetchedFrom("&amp;#32;"))
     }
+
+    @Test
+    fun `a permanent redirect is followed and reported as the move`() {
+        server.route("/new.xml", Route.Feed(FeedSpec(title = "New", entries = 1)))
+        for (code in listOf(301, 308)) {
+            server.route("/old.xml", Route.Redirect(code, "${server.baseUrl}/new.xml"))
+            val result = fetcher.fetch("${server.baseUrl}/old.xml", Validators()) as FetchResult.Fetched
+            assertEquals("New", result.feed.title)
+            assertEquals("${server.baseUrl}/new.xml", result.movedTo, "HTTP $code")
+        }
+    }
+
+    @Test
+    fun `a temporary redirect is followed without a move`() {
+        server.route("/new.xml", Route.Feed(FeedSpec(title = "New", entries = 1)))
+        for (code in listOf(302, 303, 307)) {
+            server.route("/old.xml", Route.Redirect(code, "/new.xml"))
+            val result = fetcher.fetch("${server.baseUrl}/old.xml", Validators()) as FetchResult.Fetched
+            assertEquals("New", result.feed.title)
+            assertEquals(null, result.movedTo, "HTTP $code")
+        }
+    }
+
+    @Test
+    fun `a plain fetch reports no move`() {
+        server.route("/ok.xml", Route.Feed(FeedSpec(title = "Ok", entries = 1)))
+        assertEquals(null, fetcher.fetch("${server.baseUrl}/ok.xml", Validators()).movedTo)
+    }
+
+    @Test
+    fun `only the leading run of permanent redirects is the move, resolved against the URL that answered`() {
+        server.route("/a.xml", Route.Redirect(301, "/b.xml"))
+        server.route("/b.xml", Route.Redirect(308, "c.xml"))
+        server.route("/c.xml", Route.Redirect(302, "/d.xml"))
+        server.route("/d.xml", Route.Redirect(301, "/e.xml"))
+        server.route("/e.xml", Route.Feed(FeedSpec(title = "End", entries = 1)))
+        assertEquals("${server.baseUrl}/c.xml", fetcher.fetch("${server.baseUrl}/a.xml", Validators()).movedTo)
+
+        server.route("/t.xml", Route.Redirect(307, "/d.xml"))
+        assertEquals(null, fetcher.fetch("${server.baseUrl}/t.xml", Validators()).movedTo)
+    }
+
+    @Test
+    fun `a moved feed that is not modified reports the move with the conditional answer`() {
+        server.route("/new.xml", Route.Feed(FeedSpec(title = "New", entries = 1, etag = true)))
+        server.route("/old.xml", Route.Redirect(301, "/new.xml"))
+        val result = fetcher.fetch("${server.baseUrl}/old.xml", Validators(etag = FeedServer.ETAG))
+        assertEquals(FetchResult.NotModified("${server.baseUrl}/new.xml"), result)
+        assertTrue(server.requests.all { it.ifNoneMatch == FeedServer.ETAG })
+    }
+
+    @Test
+    fun `a redirect loop is a fetch failure`() {
+        server.route("/a.xml", Route.Redirect(301, "/b.xml"))
+        server.route("/b.xml", Route.Redirect(302, "/a.xml"))
+        assertEquals("redirect loop", failureOf("/a.xml"))
+    }
+
+    @Test
+    fun `five redirects are followed and a sixth is a fetch failure`() {
+        (0 until 6).forEach { server.route("/r$it.xml", Route.Redirect(302, "/r${it + 1}.xml")) }
+        server.route("/r6.xml", Route.Feed(FeedSpec(title = "Far", entries = 1)))
+        val far = fetcher.fetch("${server.baseUrl}/r1.xml", Validators()) as FetchResult.Fetched
+        assertEquals("Far", far.feed.title)
+
+        assertEquals("more than 5 redirects", failureOf("/r0.xml"))
+    }
+
+    @Test
+    fun `a redirect without a location is an HTTP failure`() {
+        server.route("/a.xml", Route.Redirect(301, null))
+        assertEquals("HTTP 301", failureOf("/a.xml"))
+    }
+
+    @Test
+    fun `a redirect to an unusable address is a fetch failure`() {
+        server.route("/ftp.xml", Route.Redirect(301, "ftp://files.test/feed.xml"))
+        server.route("/bad.xml", Route.Redirect(301, "http://bad host/feed.xml"))
+        assertEquals("redirect to a non-HTTP address", failureOf("/ftp.xml"))
+        assertEquals("redirect to an invalid address", failureOf("/bad.xml"))
+    }
+
+    @Test
+    fun `a redirect to a page that is not a feed is a parse failure`() {
+        server.route("/old.xml", Route.Redirect(301, "/page.html"))
+        server.route("/page.html", Route.Raw("page.html", "text/html"))
+        assertThrows(InvalidFeedException::class.java) { fetcher.fetch("${server.baseUrl}/old.xml", Validators()) }
+    }
+
+    private fun failureOf(path: String): String? =
+        assertThrows(FeedFetchException::class.java) { fetcher.fetch("${server.baseUrl}$path", Validators()) }.message
 
     // Only the stall tests need a short timeout; a short one elsewhere fails on a loaded machine.
     private fun fetcherWithTimeout(timeout: Duration): FeedFetcher =
@@ -320,9 +412,7 @@ class RomeFeedFetcherTest {
 
         override fun recordSuccess(
             id: Long,
-            title: String,
-            validators: Validators,
-            at: Instant,
+            success: FetchSuccess,
         ) {
             errors[id] = null
         }

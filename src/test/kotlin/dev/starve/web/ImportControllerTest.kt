@@ -27,7 +27,7 @@ class ImportControllerTest {
             override fun fetch(
                 url: String,
                 validators: Validators,
-            ): FetchResult = FetchResult.NotModified
+            ): FetchResult = FetchResult.NotModified()
         }
     private val service =
         ImportService(

@@ -42,7 +42,7 @@ class SourceScheduleControllerTest {
             override fun fetch(
                 url: String,
                 validators: Validators,
-            ) = FetchResult.NotModified
+            ) = FetchResult.NotModified()
         }
     private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC(), quietFavicons(sources))
     private val schedule =

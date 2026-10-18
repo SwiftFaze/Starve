@@ -1,5 +1,6 @@
 package dev.starve.infra
 
+import dev.starve.application.FetchSuccess
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.SearchRules
@@ -119,7 +120,7 @@ class JdbcSearchIndexTest {
         val source = sources.insert(OWNER, "http://a.test/f", "Old Name")
         items.insertNew(source.id, listOf(feedItem("k1", "Episode")), now)
 
-        sources.recordSuccess(source.id, "Brand New", Validators(), now)
+        sources.recordSuccess(source.id, FetchSuccess("Brand New", Validators(), now))
 
         assertEquals(listOf("Episode"), search("brand"))
         assertEquals(emptyList<String>(), search("old"))

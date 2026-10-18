@@ -18,8 +18,8 @@ class FeedIngestor(
         val now = clock.instant()
         val siteLink =
             when (result) {
-                FetchResult.NotModified -> {
-                    sources.recordSuccess(source.id, source.title, source.validators, now)
+                is FetchResult.NotModified -> {
+                    sources.recordSuccess(source.id, FetchSuccess(source.title, source.validators, now, result.movedTo))
                     null
                 }
 
@@ -44,6 +44,6 @@ class FeedIngestor(
         val stamped = result.feed.items.map { it.copy(publishedAt = it.publishedAt ?: now) }
         items.insertNew(source.id, stamped, now)
         val title = result.feed.title?.takeIf { it.isNotBlank() } ?: source.title
-        sources.recordSuccess(source.id, title, result.validators, now)
+        sources.recordSuccess(source.id, FetchSuccess(title, result.validators, now, result.movedTo))
     }
 }

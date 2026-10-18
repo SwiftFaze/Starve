@@ -28,6 +28,7 @@ class MemorySources(
         val title: String,
         val validators: Validators,
         val at: Instant,
+        val movedTo: String? = null,
     )
 
     val successes = mutableListOf<Success>()
@@ -79,11 +80,9 @@ class MemorySources(
 
     override fun recordSuccess(
         id: Long,
-        title: String,
-        validators: Validators,
-        at: Instant,
+        success: FetchSuccess,
     ) {
-        successes += Success(id, title, validators, at)
+        successes += Success(id, success.title, success.validators, success.at, success.movedTo)
     }
 
     override fun recordFailure(

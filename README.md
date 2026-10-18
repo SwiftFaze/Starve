@@ -90,6 +90,14 @@ background at once; its row says "Fetching now…" and shows the outcome when th
 fetch is over. Items older than the retention age (measured from when Starve
 first saw them) are deleted daily.
 
+A source that has kept failing for 24 hours is **Broken**: its row says since
+when, with the last error, and the timeline shows one quiet line ("2 sources are
+broken") linking to Sources until it recovers or you remove it. Its next
+successful fetch clears it. A feed that has moved for good (HTTP 301 or 308) gets
+its new URL stored, keeping its items and read state. If you already follow the
+new URL, Starve keeps the old one and the row says the feed moved. Temporary
+redirects are followed without being saved.
+
 ## Which sources to prune
 
 Each source on **Sources** also says how alive it is and how much of it you read:

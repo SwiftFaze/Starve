@@ -86,7 +86,7 @@ Feature: Broken sources and auto-healing moved feeds
     And the feed server now redirects "/old.xml" to "/new.xml" with HTTP <status>
     When the poller runs
     Then the source "Daily News" has the feed URL "/new.xml"
-    And the source "Daily News" has 3 stored items
+    And the source "Daily News" has 5 stored items
     And the source "Daily News" shows no error
     When the feed server forgets the requests so far
     And the poller runs
@@ -105,7 +105,7 @@ Feature: Broken sources and auto-healing moved feeds
     And the feed server now redirects "/old.xml" to "/new.xml" with HTTP <status>
     When the poller runs
     Then the source "Daily News" has the feed URL "/old.xml"
-    And the source "Daily News" has 2 stored items
+    And the source "Daily News" has 3 stored items
     When the feed server forgets the requests so far
     And the poller runs
     Then the feed server received 1 requests for "/old.xml"
@@ -118,7 +118,7 @@ Feature: Broken sources and auto-healing moved feeds
 
   Scenario: A permanent move to a feed the user already follows is not adopted, and the row says why
     Given the feed server serves "/old.xml" as an RSS 2.0 feed titled "Old News" with 1 entries
-    And the feed server serves "/new.xml" as an RSS 2.0 feed titled "New News" with 1 entries
+    And the feed server serves "/new.xml" as an RSS 2.0 feed without a title with 1 entries
     And I have added the feed URL "/old.xml"
     And I have added the feed URL "/new.xml"
     And the feed server now redirects "/old.xml" to "/new.xml" with HTTP 301

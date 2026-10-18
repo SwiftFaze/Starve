@@ -1,5 +1,6 @@
 package dev.starve.application
 
+import dev.starve.domain.BrokenRules
 import dev.starve.domain.Cursor
 import dev.starve.domain.PageCursor
 import dev.starve.domain.ReadMark
@@ -14,6 +15,8 @@ data class TimelinePage(
     val next: PageCursor?,
     val renderedAt: Instant,
     val hasSources: Boolean,
+    /** How many of the owner's sources are broken. */
+    val brokenSources: Int = 0,
 )
 
 sealed interface OpenResult {
@@ -65,7 +68,9 @@ class TimelineService(
         renderedAt: Instant,
     ): TimelinePage {
         val (shown, next) = TimelineRules.paginate(rows)
-        return TimelinePage(shown, next, renderedAt, sources.findAllOf(owner).isNotEmpty())
+        val owned = sources.findAllOf(owner)
+        val broken = owned.count { BrokenRules.isBroken(it, renderedAt) }
+        return TimelinePage(shown, next, renderedAt, owned.isNotEmpty(), broken)
     }
 
     /** Marks the item read without opening it, a skip; returns false when [owner] has no such item. */

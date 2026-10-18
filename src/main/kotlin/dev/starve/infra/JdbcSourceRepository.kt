@@ -1,5 +1,6 @@
 package dev.starve.infra
 
+import dev.starve.application.FetchSuccess
 import dev.starve.application.SourceRepository
 import dev.starve.domain.PollInterval
 import dev.starve.domain.Source
@@ -86,9 +87,7 @@ class JdbcSourceRepository(
     @Transactional
     override fun recordSuccess(
         id: Long,
-        title: String,
-        validators: Validators,
-        at: Instant,
+        success: FetchSuccess,
     ) {
         val previous =
             jdbc
@@ -96,12 +95,14 @@ class JdbcSourceRepository(
                 .param(id)
                 .query(String::class.java)
                 .single()
+        val (title, validators, at) = success
         jdbc
             .sql(
                 "UPDATE sources SET title = ?, etag = ?, last_modified = ?, " +
-                    "last_fetched_at = ?, last_error = NULL WHERE id = ?",
+                    "last_fetched_at = ?, last_error = NULL, failing_since = NULL, moved_to = NULL WHERE id = ?",
             ).params(listOf(title, validators.etag, validators.lastModified, at.toEpochMilli(), id))
             .update()
+        success.movedTo?.let { jdbc.moveSource(id, it) }
         if (previous != title) search.renameSource(id, title)
     }
 
@@ -111,8 +112,10 @@ class JdbcSourceRepository(
         at: Instant,
     ) {
         jdbc
-            .sql("UPDATE sources SET last_fetched_at = ?, last_error = ? WHERE id = ?")
-            .params(at.toEpochMilli(), error, id)
+            .sql(
+                "UPDATE sources SET last_fetched_at = ?, last_error = ?, " +
+                    "failing_since = COALESCE(failing_since, ?) WHERE id = ?",
+            ).params(at.toEpochMilli(), error, at.toEpochMilli(), id)
             .update()
     }
 
@@ -124,6 +127,24 @@ class JdbcSourceRepository(
         jdbc
             .sql("UPDATE sources SET favicon_url = ?, favicon_checked_at = ? WHERE id = ?")
             .params(listOf(url, at.toEpochMilli(), id))
+            .update()
+    }
+}
+
+/** Adopts [url] as source [id]'s address, or only remembers it when the owner already follows [url]. */
+private fun JdbcClient.moveSource(
+    id: Long,
+    url: String,
+) {
+    val adopted =
+        sql(
+            "UPDATE sources SET url = ? WHERE id = ? AND NOT EXISTS " +
+                "(SELECT 1 FROM sources other WHERE other.owner_id = sources.owner_id AND other.url = ?)",
+        ).params(url, id, url)
+            .update() > 0
+    if (!adopted) {
+        sql("UPDATE sources SET moved_to = ? WHERE id = ?")
+            .params(url, id)
             .update()
     }
 }
@@ -140,4 +161,6 @@ private fun ResultSet.toSource() =
         faviconUrl = getString("favicon_url"),
         faviconCheckedAt = getString("favicon_checked_at")?.let { Instant.ofEpochMilli(it.toLong()) },
         pollInterval = PollInterval.ofMinutes(getLong("poll_interval_minutes").takeUnless { wasNull() }),
+        failingSince = getString("failing_since")?.let { Instant.ofEpochMilli(it.toLong()) },
+        movedTo = getString("moved_to"),
     )

@@ -238,6 +238,7 @@ private fun addPage(
     model.addAttribute("emptyFavourites", scope.favourites && !scope.searching && page.items.isEmpty())
     model.addAttribute("emptyLater", scope.later && !scope.searching && page.items.isEmpty())
     model.addAttribute("hasSources", page.hasSources)
+    model.addAttribute("brokenSources", page.brokenSources)
     model.addAttribute("renderedAt", page.renderedAt.toEpochMilli())
     model.addAttribute("moreHref", moreHref(page, scope))
     model.addAttribute("countsHref", viewHref("/feed/counts", scope))
