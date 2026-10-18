@@ -66,7 +66,8 @@ class ReaderServiceTest {
     ): Triple<ReaderService, Posts, Pages> {
         val items = Posts(posts.associateBy { it.id })
         val pages = Pages(page)
-        return Triple(ReaderService(items, items.articles, Clock.fixed(now, ZoneOffset.UTC), pages, feedOnly, tags), items, pages)
+        val clock = Clock.fixed(now, ZoneOffset.UTC)
+        return Triple(ReaderService(items, items.articles, clock, pages, feedOnly, tags), items, pages)
     }
 
     @Test

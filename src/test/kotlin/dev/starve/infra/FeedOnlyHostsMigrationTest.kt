@@ -44,8 +44,9 @@ class FeedOnlyHostsMigrationTest {
     ) {
         jdbc
             .sql(
-                "INSERT INTO items (id, source_id, item_key, title, link, body, thumbnail_url, article_checked_at, " +
-                    "published_at, first_seen_at) VALUES (?, 1, ?, 'Post', ?, '<p>Permalink</p>', 'avatar.jpg', ?, 0, 0)",
+                "INSERT INTO items (id, source_id, item_key, title, link, body, thumbnail_url, " +
+                    "article_checked_at, published_at, first_seen_at) " +
+                    "VALUES (?, 1, ?, 'Post', ?, '<p>Permalink</p>', 'avatar.jpg', ?, 0, 0)",
             ).params(id, "k$id", link, checkedAt)
             .update()
         jdbc

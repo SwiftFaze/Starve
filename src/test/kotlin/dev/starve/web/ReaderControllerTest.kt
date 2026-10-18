@@ -50,7 +50,14 @@ class ReaderControllerTest {
                 ) = canned
             }
         return ReaderController(
-            ReaderService(items, MemoryArticles(), clock, ArticleFetcher { null }, FeedOnlyHosts(emptyList()), HtmlText { it }),
+            ReaderService(
+                items,
+                MemoryArticles(),
+                clock,
+                ArticleFetcher { null },
+                FeedOnlyHosts(emptyList()),
+                HtmlText { it },
+            ),
             TimelineService(items, TimelineItems(), MemorySources(), clock),
             GroupService(MemoryGroups(), MemorySources()),
         )
