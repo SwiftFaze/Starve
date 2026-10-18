@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.32](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.31...v1.1.0-beta.32) (2026-10-18)
+
+
+### Features
+
+* show source health and pruning stats on Sources ([#154](https://github.com/SwiftFaze/Starve/issues/154)) ([def1220](https://github.com/SwiftFaze/Starve/commit/def1220619bc48980e7819eae01c279a528b6f53))
+
 ## [1.1.0-beta.31](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.30...v1.1.0-beta.31) (2026-10-18)
 
 
