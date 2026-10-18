@@ -3654,6 +3654,55 @@ body[data-split][data-list="strip"] .load-more {
   margin: 1.5rem 0 1.25rem;
 }
 
+/* Tags sit under the groups in the same column: a heading, the form that makes one, then one edit form per tag,
+   whose rows grow to hold it instead of keeping the groups' fixed height. */
+.tag-block {
+  margin-top: 3rem;
+}
+
+.tag-form {
+  max-width: 36rem;
+}
+
+.new-tag {
+  margin: 1.5rem 0 1.25rem;
+}
+
+.tag-form .field-label {
+  margin-top: 1rem;
+}
+
+.tag-form .field-label:first-child {
+  margin-top: 0;
+}
+
+.tag-form .check {
+  margin-top: 0.5rem;
+}
+
+.tag-form .field-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.roster > .tag {
+  display: block;
+}
+
+.sources-split .roster > .tag {
+  height: auto;
+  padding-block: 1rem;
+}
+
+.roster > .tag .field + .field {
+  margin-top: 0.5rem;
+}
+
+.tag-name {
+  font-weight: 500;
+}
+
 /* A subscription in a column too narrow for its controls beside it: they go under its details. */
 @container sheet (max-width: 56rem) {
   .subscriptions .roster > .source {

@@ -8,6 +8,7 @@ import dev.starve.domain.LaterCursor
 import dev.starve.domain.ReadMark
 import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
+import dev.starve.domain.Tag
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.Validators
 import java.time.Instant
@@ -200,7 +201,7 @@ open class MemoryItems(
         owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
-        groupId: Long?,
+        within: Narrowing,
     ) = 0
 }
 
@@ -217,7 +218,8 @@ class TimelineItems(
     LaterRepository {
     var requested: Triple<Cursor?, Boolean, Int>? = null
     var requestedGroup: Long? = null
-    var markAllGroup: Long? = null
+    var requestedMatch: String? = null
+    var markAllWithin: Narrowing? = null
     val readCalls = mutableListOf<Pair<Long, ReadMark>>()
     var markAllCall: Pair<Instant, Instant>? = null
     var favouritesRequested: Pair<Cursor?, Int>? = null
@@ -268,6 +270,7 @@ class TimelineItems(
         calledFor += owner
         requested = Triple(after, filter.showRead, limit)
         requestedGroup = filter.groupId
+        requestedMatch = filter.match
         return rows
     }
 
@@ -333,11 +336,11 @@ class TimelineItems(
         owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
-        groupId: Long?,
+        within: Narrowing,
     ): Int {
         calledFor += owner
         markAllCall = firstSeenCutoff to at
-        markAllGroup = groupId
+        markAllWithin = within
         return markedAllCount
     }
 }
@@ -408,3 +411,53 @@ fun ref(
     id: Long,
     link: String?,
 ) = ItemRef(id, link, "Item $id", "Source", null)
+
+/**
+ * An in-memory tag store; names are matched ignoring case. Tags belong to [OWNER] unless inserted for another owner,
+ * and [unread] gives the unread count each match expression answers with.
+ */
+class MemoryTags(
+    private val unread: Map<String, Int> = emptyMap(),
+) : TagRepository {
+    private val stored = mutableListOf<Pair<Long, Tag>>()
+    val counted = mutableListOf<Narrowing>()
+
+    private fun of(owner: Long) = stored.filter { it.first == owner }.map { it.second }
+
+    override fun findAll(owner: Long): List<Tag> = of(owner).sortedBy { it.name.lowercase() }
+
+    override fun findById(
+        owner: Long,
+        id: Long,
+    ): Tag? = of(owner).firstOrNull { it.id == id }
+
+    override fun findByName(
+        owner: Long,
+        name: String,
+    ): Tag? = of(owner).firstOrNull { it.name.equals(name, ignoreCase = true) }
+
+    override fun insert(
+        owner: Long,
+        tag: Tag,
+    ): Tag = tag.copy(id = stored.size + 1L).also { stored += owner to it }
+
+    override fun update(
+        owner: Long,
+        tag: Tag,
+    ) {
+        stored.replaceAll { if (it.first == owner && it.second.id == tag.id) owner to tag else it }
+    }
+
+    override fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean = stored.removeIf { it.first == owner && it.second.id == id }
+
+    override fun unreadCount(
+        owner: Long,
+        within: Narrowing,
+    ): Int {
+        counted += within
+        return unread[within.match] ?: 0
+    }
+}

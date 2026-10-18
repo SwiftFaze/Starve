@@ -6,6 +6,7 @@ import dev.starve.application.GroupService
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
+import dev.starve.application.MemoryTags
 import dev.starve.application.OWNER
 import dev.starve.application.SoundCloudOembed
 import dev.starve.application.TimelineItems
@@ -36,7 +37,7 @@ class DetailControllerTest {
         return DetailController(
             DetailService(repository, SoundCloudOembed { null }, clock),
             TimelineService(repository, TimelineItems(), MemorySources(), clock),
-            GroupService(MemoryGroups(), MemorySources()),
+            GroupService(MemoryGroups(), MemorySources(), MemoryTags()),
         )
     }
 

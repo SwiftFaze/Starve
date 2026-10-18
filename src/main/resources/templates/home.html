@@ -72,6 +72,7 @@
         <input type="hidden" name="favourites" value="1" th:if="${favourites}">
         <input type="hidden" name="later" value="1" th:if="${later}">
         <input type="hidden" name="group" th:if="${groupId != null}" th:value="${groupId}">
+        <input type="hidden" name="tag" th:if="${tagId != null}" th:value="${tagId}">
         <input type="hidden" name="show" value="all" th:if="${showAll}">
       </form>
       <!-- Any response that marks an item read raises "starve:read"; the counts of this view then come back out of band. -->
@@ -87,6 +88,7 @@
                 hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML swap:420ms">
             <input type="hidden" name="before" th:value="${renderedAt}">
             <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
+            <input type="hidden" name="tag" th:if="${tagId}" th:value="${tagId}">
             <button type="submit">Mark all read</button>
           </form>
         </div>
@@ -149,6 +151,7 @@
                 hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML swap:420ms">
             <input type="hidden" name="before" th:value="${renderedAt}">
             <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
+            <input type="hidden" name="tag" th:if="${tagId}" th:value="${tagId}">
             <button type="submit">Mark all read</button>
           </form>
         </th:block>

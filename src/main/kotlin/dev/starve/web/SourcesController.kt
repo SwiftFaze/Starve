@@ -22,7 +22,7 @@ class SourcesController(
 ) {
     /**
      * The roster. [remove] or [deleteGroup] names a row to show in its confirming state, which holds the form that
-     * really removes it: the first click only asks.
+     * really removes it: the first click only asks. A tag's is [TagController]'s.
      */
     @GetMapping("/sources")
     fun sources(
@@ -114,12 +114,7 @@ class SourcesController(
         model: Model,
         message: String?,
         error: Boolean = false,
-    ): String {
-        roster.addTo(model, owner)
-        model.addAttribute("message", message)
-        model.addAttribute("error", error)
-        return "sources"
-    }
+    ): String = roster.page(model, owner, message, error)
 
     private fun messageFor(result: SubscribeResult): String =
         when (result) {

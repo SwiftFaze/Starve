@@ -3,10 +3,12 @@ package dev.starve.web
 import dev.starve.application.GroupNavigation
 import dev.starve.application.GroupService
 import dev.starve.application.LaterService
+import dev.starve.application.Narrowing
 import dev.starve.application.OpenResult
 import dev.starve.application.SearchService
 import dev.starve.application.TimelinePage
 import dev.starve.application.TimelineService
+import dev.starve.application.narrowing
 import dev.starve.domain.Catalogue
 import dev.starve.domain.Cursor
 import dev.starve.domain.LaterCursor
@@ -74,7 +76,8 @@ data class NavEntryView(
 )
 
 /**
- * The series the timeline is showing: "All", one group with its unread count, or Favourites or Later (no count).
+ * The series the timeline is showing: "All", one group or tag ("#AI") with its unread count, or Favourites or Later
+ * (no count).
  */
 data class SeriesView(
     val name: String,
@@ -94,9 +97,9 @@ data class SeriesView(
 }
 
 /**
- * The timeline's query parameters; a malformed or unknown [group] is answered with 404. [favourites] "1" selects
- * the Favourites view and [later] "1" the Later view; both ignore [show] and [group], and Favourites wins when
- * both are given.
+ * The timeline's query parameters; a malformed or unknown [group] or [tag] is answered with 404, and a tag wins over
+ * a group. [favourites] "1" selects the Favourites view and [later] "1" the Later view; both ignore [show], [group]
+ * and [tag], and Favourites wins when both are given.
  */
 data class TimelineQuery(
     val show: String? = null,
@@ -106,6 +109,7 @@ data class TimelineQuery(
     val later: String? = null,
     val q: String? = null,
     val seen: String? = null,
+    val tag: String? = null,
 )
 
 @Controller
@@ -176,14 +180,18 @@ class HomeController(
         return "counts :: counts"
     }
 
+    /** Marks read the view's items shown at [before]: a [tag]'s (which wins), a [group]'s, or every item. */
     @PostMapping("/read-all")
     fun markAllRead(
         @CurrentUserId owner: Long,
         @RequestParam before: Long,
         @RequestParam(required = false) group: Long?,
+        @RequestParam(required = false) tag: Long?,
     ): String {
-        timeline.markAllRead(owner, Instant.ofEpochMilli(before), group)
-        return "redirect:" + href(group, null, null)
+        val tagged = tag?.let { groups.findTag(owner, it) ?: throw notFound() }
+        val within = tagged?.narrowing ?: Narrowing(group)
+        timeline.markAllRead(owner, Instant.ofEpochMilli(before), within)
+        return "redirect:" + if (tagged != null) href(null, null, null, "tag=${tagged.id}") else href(group, null, null)
     }
 
     private fun pageFor(
@@ -195,7 +203,7 @@ class HomeController(
             scope.searching -> search.search(owner, scope.text, Cursor.parse(after))
             scope.favourites -> timeline.favourites(owner, Cursor.parse(after))
             scope.later -> laterService.page(owner, LaterCursor.parse(after))
-            else -> timeline.page(owner, Cursor.parse(after), scope.showAll, scope.groupId)
+            else -> timeline.page(owner, Cursor.parse(after), scope.showAll, scope.narrowing)
         }
 
     private fun notFound() = ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -212,13 +220,14 @@ class HomeController(
         scope: Scope,
     ) {
         model.addAttribute("groupId", scope.groupId)
+        model.addAttribute("tagId", scope.tag?.id)
         model.addAttribute("nav", navigation(nav, scope))
         val favouritesEntry = NavEntryView("Favourites", href(null, null, null, FAVOURITES_FILTER), scope.favourites)
         model.addAttribute("favouritesEntry", favouritesEntry)
         val laterEntry = NavEntryView("Later", href(null, null, null, LATER_FILTER), scope.later)
         model.addAttribute("laterEntry", laterEntry)
         model.addAttribute("series", seriesOf(nav, scope))
-        model.addAttribute("toggleHref", href(scope.groupId, if (scope.showAll) null else "all", null))
+        model.addAttribute("toggleHref", href(scope.groupId, if (scope.showAll) null else "all", null, scope.filter))
     }
 }
 
@@ -249,9 +258,21 @@ private fun seriesOf(
     scope: Scope,
 ): SeriesView =
     when {
-        scope.favourites -> SeriesView("Favourites", null)
-        scope.later -> SeriesView("Later", null)
-        else -> SeriesView.of(nav, scope.groupId)
+        scope.favourites -> {
+            SeriesView("Favourites", null)
+        }
+
+        scope.later -> {
+            SeriesView("Later", null)
+        }
+
+        scope.tag != null -> {
+            SeriesView("#${scope.tag.name}", nav.tags.firstOrNull { it.tag.id == scope.tag.id }?.unread ?: 0)
+        }
+
+        else -> {
+            SeriesView.of(nav, scope.groupId)
+        }
     }
 
 private fun navigation(
@@ -261,14 +282,16 @@ private fun navigation(
     val show = if (scope.showAll) "all" else null
     val current = scope.groupId == null && scope.filter == null
     val all = NavEntryView("All [${nav.totalUnread}]", href(null, show, null), current)
-    return listOf(all) +
+    val groups =
         nav.groups.map {
-            NavEntryView(
-                "${it.group.name} [${it.unread}]",
-                href(it.group.id, show, null),
-                it.group.id == scope.groupId,
-            )
+            NavEntryView("${it.group.name} [${it.unread}]", href(it.group.id, show, null), it.group.id == scope.groupId)
         }
+    val tags =
+        nav.tags.map {
+            val tagHref = href(null, show, null, "tag=${it.tag.id}")
+            NavEntryView("#${it.tag.name} [${it.unread}]", tagHref, it.tag.id == scope.tag?.id)
+        }
+    return listOf(all) + groups + tags
 }
 
 private fun moreHref(

@@ -4,6 +4,7 @@ import dev.starve.application.GroupService
 import dev.starve.application.SourceHealthService
 import dev.starve.application.SourceScheduleService
 import dev.starve.application.SourceStanding
+import dev.starve.application.TagService
 import dev.starve.domain.BrokenRules
 import dev.starve.domain.PollInterval
 import org.springframework.beans.factory.annotation.Value
@@ -31,11 +32,12 @@ data class SourceView(
     val movedTo: String? = null,
 )
 
-/** What the Sources roster and each of its rows render from: the rows, the groups and the interval choices. */
+/** What the Sources roster and each of its rows render from: the rows, the groups, the tags and the intervals. */
 @Component
 class SourceRoster(
     private val health: SourceHealthService,
     private val groups: GroupService,
+    private val tags: TagService,
     private val schedule: SourceScheduleService,
     private val clock: Clock,
     @Value("\${starve.poll.interval:PT30M}") private val defaultInterval: Duration,
@@ -50,9 +52,23 @@ class SourceRoster(
         val rows = health.roster(owner).filter { only == null || it.source.id == only }.map { view(it, now) }
         model.addAttribute("sources", rows)
         model.addAttribute("groups", groups.list(owner))
+        model.addAttribute("tags", tags.list(owner))
         model.addAttribute("intervals", PollInterval.entries)
         model.addAttribute("defaultInterval", "Default (${everyPhrase(defaultInterval)})")
         return only == null || rows.isNotEmpty()
+    }
+
+    /** The Sources page for [owner], with [message] above it ([error] when it is a rejection). */
+    fun page(
+        model: Model,
+        owner: Long,
+        message: String?,
+        error: Boolean = false,
+    ): String {
+        addTo(model, owner)
+        model.addAttribute("message", message)
+        model.addAttribute("error", error)
+        return "sources"
     }
 
     private fun view(

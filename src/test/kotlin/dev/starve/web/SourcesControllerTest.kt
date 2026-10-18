@@ -10,6 +10,7 @@ import dev.starve.application.LocateResult
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
+import dev.starve.application.MemoryTags
 import dev.starve.application.OTHER_OWNER
 import dev.starve.application.OWNER
 import dev.starve.application.PollService
@@ -17,6 +18,7 @@ import dev.starve.application.SourceHealthService
 import dev.starve.application.SourceScheduleService
 import dev.starve.application.SourceStatsRepository
 import dev.starve.application.SubscriptionService
+import dev.starve.application.TagService
 import dev.starve.application.quietFavicons
 import dev.starve.domain.Feed
 import dev.starve.domain.Group
@@ -62,10 +64,12 @@ class SourcesControllerTest {
             sources,
             BackgroundPoller(sources, PollService(sources, fetcher, ingestor)) { },
         )
+    private val tags = MemoryTags()
     private val roster =
         SourceRoster(
             SourceHealthService(sources, stats, Clock.systemUTC()),
-            GroupService(groups, sources),
+            GroupService(groups, sources, MemoryTags()),
+            TagService(tags, groups),
             schedule,
             Clock.systemUTC(),
             Duration.ofHours(1),
@@ -73,7 +77,7 @@ class SourcesControllerTest {
     private val controller =
         SourcesController(
             SubscriptionService(sources, locator, fetcher, ingestor),
-            GroupService(groups, sources),
+            GroupService(groups, sources, MemoryTags()),
             roster,
         )
 

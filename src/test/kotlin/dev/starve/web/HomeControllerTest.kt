@@ -4,6 +4,8 @@ import dev.starve.application.GroupService
 import dev.starve.application.LaterService
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemorySources
+import dev.starve.application.MemoryTags
+import dev.starve.application.Narrowing
 import dev.starve.application.OWNER
 import dev.starve.application.SearchService
 import dev.starve.application.TimelineItems
@@ -12,6 +14,7 @@ import dev.starve.domain.Cursor
 import dev.starve.domain.Group
 import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
+import dev.starve.domain.Tag
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
 import dev.starve.domain.Validators
@@ -37,13 +40,15 @@ class HomeControllerTest {
     private val source = Source(1, "http://a.test/f", "A", Validators(), null, null)
 
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
+    private val tagCounts = mutableMapOf<String, Int>()
+    private val tags = MemoryTags(tagCounts)
 
     private fun controller(items: TimelineItems) =
         HomeController(
             TimelineService(items, items, MemorySources(mutableListOf(source)), clock),
             SearchService(items, MemorySources(mutableListOf(source)), clock),
             LaterService(items, MemorySources(mutableListOf(source)), clock),
-            GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources()),
+            GroupService(MemoryGroups(mutableListOf(music, news), mapOf(1L to 3, 2L to 0), 5), MemorySources(), tags),
             clock,
         )
 
@@ -238,7 +243,7 @@ class HomeControllerTest {
     fun `mark all read hands the render time to the service and redirects home`() {
         val items = TimelineItems()
 
-        val view = controller(items).markAllRead(OWNER, published.toEpochMilli(), null)
+        val view = controller(items).markAllRead(OWNER, published.toEpochMilli(), null, null)
 
         assertEquals("redirect:/feed", view)
         assertEquals(published to now, items.markAllCall)
@@ -307,10 +312,77 @@ class HomeControllerTest {
     fun `mark all read inside a group is scoped and redirects back to the group`() {
         val items = TimelineItems()
 
-        val view = controller(items).markAllRead(OWNER, published.toEpochMilli(), 2)
+        val view = controller(items).markAllRead(OWNER, published.toEpochMilli(), 2, null)
 
         assertEquals("redirect:/feed?group=2", view)
-        assertEquals(2L, items.markAllGroup)
+        assertEquals(Narrowing(2), items.markAllWithin)
+    }
+
+    @Test
+    fun `mark all read inside a tag is scoped to its group and terms and redirects back to the tag`() {
+        val items = TimelineItems()
+        val ai = tags.insert(OWNER, Tag(0, "AI", listOf("AI"), groupId = 1))
+
+        val view = controller(items).markAllRead(OWNER, published.toEpochMilli(), 2, ai.id)
+
+        assertEquals("redirect:/feed?tag=${ai.id}", view)
+        assertEquals(Narrowing(1, ai.match), items.markAllWithin)
+    }
+
+    @Test
+    fun `mark all read of an unknown tag is not found and marks nothing`() {
+        val items = TimelineItems()
+
+        val e = assertThrows(ResponseStatusException::class.java) { controller(items).markAllRead(OWNER, 1, null, 9) }
+
+        assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
+        assertNull(items.markAllWithin)
+    }
+
+    @Test
+    fun `a tag view lists its group's matches, names the series and is current in the navigation`() {
+        val items = TimelineItems(listOf(row(1)))
+        val ai = tags.insert(OWNER, Tag(0, "AI", listOf("AI"), groupId = 1))
+        tagCounts[ai.match] = 4
+        val model = ConcurrentModel()
+
+        controller(items).home(OWNER, TimelineQuery(tag = ai.id.toString(), group = "2", show = "all"), null, model)
+
+        assertEquals(1L, items.requestedGroup)
+        assertEquals(ai.match, items.requestedMatch)
+        assertEquals(SeriesView("#AI", 4), model.getAttribute("series"))
+        assertEquals(ai.id, model.getAttribute("tagId"))
+        assertNull(model.getAttribute("groupId"))
+        assertEquals("/feed?tag=${ai.id}", model.getAttribute("toggleHref"))
+        val nav = model.getAttribute("nav") as List<*>
+        assertEquals(NavEntryView("#AI [4]", "/feed?show=all&tag=${ai.id}", true), nav.last())
+        assertEquals(listOf(false, false, false), nav.dropLast(1).map { (it as NavEntryView).current })
+    }
+
+    @Test
+    fun `tags follow the groups in the navigation`() {
+        val ai = tags.insert(OWNER, Tag(0, "AI", listOf("AI")))
+        val model = ConcurrentModel()
+
+        controller(TimelineItems()).home(OWNER, TimelineQuery(), null, model)
+
+        val labels = (model.getAttribute("nav") as List<*>).map { (it as NavEntryView).label }
+        assertEquals(listOf("All [5]", "music [3]", "News [0]", "#AI [0]"), labels)
+        val last = (model.getAttribute("nav") as List<*>).last()
+        assertEquals(NavEntryView("#AI [0]", "/feed?tag=${ai.id}", false), last)
+    }
+
+    @Test
+    fun `an unknown tag is not found, and dropped while searching`() {
+        val e =
+            assertThrows(ResponseStatusException::class.java) {
+                controller(TimelineItems()).home(OWNER, TimelineQuery(tag = "9"), null, ConcurrentModel())
+            }
+        assertEquals(HttpStatus.NOT_FOUND, e.statusCode)
+
+        val model = ConcurrentModel()
+        controller(TimelineItems()).home(OWNER, TimelineQuery(tag = "9", q = "x"), null, model)
+        assertEquals(SeriesView("All", 5), model.getAttribute("series"))
     }
 
     @Test

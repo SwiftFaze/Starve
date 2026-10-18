@@ -5,6 +5,7 @@ import dev.starve.application.FetchSuccess
 import dev.starve.application.ItemRef
 import dev.starve.application.ListFilter
 import dev.starve.application.ListPosition
+import dev.starve.application.Narrowing
 import dev.starve.application.Oembed
 import dev.starve.application.PostRef
 import dev.starve.application.TimelineFilter
@@ -298,8 +299,8 @@ class JdbcRepositoriesTest {
         items.insertNew(source.id, listOf(item("edge", "edge")), cutoff)
         items.insertNew(source.id, listOf(item("late", "late")), cutoff.plusSeconds(1))
 
-        assertEquals(2, items.markAllRead(OWNER, cutoff, cutoff.plusSeconds(5), null))
-        assertEquals(0, items.markAllRead(OWNER, cutoff, cutoff.plusSeconds(9), null))
+        assertEquals(2, items.markAllRead(OWNER, cutoff, cutoff.plusSeconds(5), Narrowing()))
+        assertEquals(0, items.markAllRead(OWNER, cutoff, cutoff.plusSeconds(9), Narrowing()))
 
         assertEquals(listOf("late"), items.timeline(OWNER, null, TimelineFilter(false), 10).map { it.title })
     }
@@ -333,7 +334,7 @@ class JdbcRepositoriesTest {
         assertEquals(listOf("a"), items.timeline(OWNER, null, TimelineFilter(false, music.id), 10).map { it.title })
         assertEquals(listOf(GroupSummary(music, 1)), groups.unreadCounts(OWNER))
         assertEquals(2, groups.totalUnread(OWNER))
-        assertEquals(1, items.markAllRead(OWNER, seen, seen, music.id))
+        assertEquals(1, items.markAllRead(OWNER, seen, seen, Narrowing(music.id)))
         assertEquals(listOf("b"), items.timeline(OWNER, null, TimelineFilter(false), 10).map { it.title })
         assertEquals(listOf(GroupSummary(music, 0)), groups.unreadCounts(OWNER))
 
@@ -674,7 +675,7 @@ class JdbcRepositoriesTest {
         assertEquals(false, favourites.unfavourite(OWNER, theirsId))
         assertEquals(false, later.save(OWNER, theirsId, Instant.EPOCH))
         assertEquals(false, later.clear(OWNER, theirsId))
-        assertEquals(1, items.markAllRead(OWNER, Instant.EPOCH, Instant.EPOCH, null))
+        assertEquals(1, items.markAllRead(OWNER, Instant.EPOCH, Instant.EPOCH, Narrowing()))
         assertEquals(listOf(theirsId), items.timeline(OTHER, null, TimelineFilter(false), 10).map { it.id })
     }
 

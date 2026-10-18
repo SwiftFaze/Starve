@@ -9,6 +9,7 @@ import dev.starve.application.MemoryArticles
 import dev.starve.application.MemoryGroups
 import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
+import dev.starve.application.MemoryTags
 import dev.starve.application.Neighbours
 import dev.starve.application.OWNER
 import dev.starve.application.PostRef
@@ -59,7 +60,7 @@ class ReaderControllerTest {
                 HtmlText { it },
             ),
             TimelineService(items, TimelineItems(), MemorySources(), clock),
-            GroupService(MemoryGroups(), MemorySources()),
+            GroupService(MemoryGroups(), MemorySources(), MemoryTags()),
         )
     }
 

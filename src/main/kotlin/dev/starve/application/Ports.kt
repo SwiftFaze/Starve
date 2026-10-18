@@ -13,6 +13,7 @@ import dev.starve.domain.ReadMark
 import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
 import dev.starve.domain.SourceActivity
+import dev.starve.domain.Tag
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.User
 import dev.starve.domain.UserAccount
@@ -195,6 +196,48 @@ interface GroupRepository {
     fun totalUnread(owner: Long): Int
 }
 
+/** Persistence of each user's keyword tags. */
+interface TagRepository {
+    /** [owner]'s tags, alphabetical ignoring case. */
+    fun findAll(owner: Long): List<Tag>
+
+    /** [owner]'s tag [id], or null when [owner] has no such tag. */
+    fun findById(
+        owner: Long,
+        id: Long,
+    ): Tag?
+
+    /** [owner]'s tag with this name, ignoring case. */
+    fun findByName(
+        owner: Long,
+        name: String,
+    ): Tag?
+
+    /** Stores a new tag of [owner] from [tag], whose id is ignored; returns it with its id. */
+    fun insert(
+        owner: Long,
+        tag: Tag,
+    ): Tag
+
+    /** Replaces the name, terms, body setting and group of [owner]'s tag [Tag.id]. */
+    fun update(
+        owner: Long,
+        tag: Tag,
+    )
+
+    /** Deletes [owner]'s tag; its items stay. False when [owner] has no such tag. */
+    fun delete(
+        owner: Long,
+        id: Long,
+    ): Boolean
+
+    /** How many of [owner]'s unread items [within] narrows to. */
+    fun unreadCount(
+        owner: Long,
+        within: Narrowing,
+    ): Int
+}
+
 /** Persistence of the favourite mark and the Favourites view. */
 interface FavouriteRepository {
     /** [owner]'s newest-first favourites older than [after] (all when null), read or not; at most [limit]. */
@@ -346,33 +389,45 @@ interface ItemRepository {
     ): Boolean
 
     /**
-     * Marks every unread item of [owner] first seen at or before [firstSeenCutoff] as read at [at], within
-     * [groupId] if given.
+     * Marks every unread item of [owner] first seen at or before [firstSeenCutoff] as read at [at], among the items
+     * [within] narrows to.
      */
     fun markAllRead(
         owner: Long,
         firstSeenCutoff: Instant,
         at: Instant,
-        groupId: Long?,
+        within: Narrowing,
     ): Int
 }
 
-/** Narrows a timeline: read items are listed only when [showRead]; only group [groupId] when it is given. */
-data class TimelineFilter(
-    val showRead: Boolean,
+/** The items a view covers: only [groupId]'s sources' if given, and only those the FTS5 [match] selects if given. */
+data class Narrowing(
     val groupId: Long? = null,
+    val match: String? = null,
 )
 
 /**
- * Narrows a list around an item: the timeline (read items only when [showRead], only [groupId]'s if given), or the
- * Favourites view when [favourites], which ignores read state and group. A hidden read item still counts as listed
- * when it was read at or after [seen], the moment the list was rendered; without [seen] only unread items count.
+ * Narrows a timeline: read items are listed only when [showRead]; only group [groupId] when it is given; only the
+ * items the FTS5 [match] selects (a tag's) when it is given.
+ */
+data class TimelineFilter(
+    val showRead: Boolean,
+    val groupId: Long? = null,
+    val match: String? = null,
+)
+
+/**
+ * Narrows a list around an item: the timeline (read items only when [showRead], only [groupId]'s and the FTS5
+ * [match]'s if given), or the Favourites view when [favourites], which ignores read state, group and match. A hidden
+ * read item still counts as listed when it was read at or after [seen], the moment the list was rendered; without
+ * [seen] only unread items count.
  */
 data class ListFilter(
     val showRead: Boolean,
     val groupId: Long? = null,
     val favourites: Boolean = false,
     val seen: Long? = null,
+    val match: String? = null,
 )
 
 /** Where an item sits in every list: its id and published date. */
