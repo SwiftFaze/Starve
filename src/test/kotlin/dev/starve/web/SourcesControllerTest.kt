@@ -83,9 +83,12 @@ class SourcesControllerTest {
     fun `an invalid url is reported without subscribing`() {
         val model = ConcurrentModel()
 
-        controller.add(OWNER, "ftp://c.test/feed", model)
+        val view = controller.add(OWNER, "ftp://c.test/feed", model)
 
-        assertEquals("The feed URL must be an http or https URL", model.getAttribute("message"))
+        assertEquals("sources", view)
+        assertEquals("The feed URL must be an http or https URL", model.getAttribute("addError"))
+        assertEquals("ftp://c.test/feed", model.getAttribute("url"))
+        assertEquals(null, model.getAttribute("message"))
     }
 
     @Test
@@ -94,7 +97,20 @@ class SourcesControllerTest {
 
         controller.add(OWNER, "http://a.test/feed", model)
 
-        assertEquals("You are already subscribed to that feed", model.getAttribute("message"))
+        assertEquals("You are already subscribed to that feed", model.getAttribute("addError"))
+    }
+
+    @Test
+    fun `a subscription is a status, and the roster names the row it is confirming`() {
+        val added = ConcurrentModel().also { controller.add(OWNER, "http://c.test/feed", it) }
+        assertEquals(false, added.getAttribute("error"))
+        assertEquals(null, added.getAttribute("addError"))
+
+        val model = ConcurrentModel()
+        controller.sources(OWNER, model, remove = 4, deleteGroup = 1)
+
+        assertEquals(4L, model.getAttribute("removing"))
+        assertEquals(1L, model.getAttribute("deletingGroup"))
     }
 
     @Test
@@ -117,6 +133,7 @@ class SourcesControllerTest {
             listOf("group name is required", "at most 50 characters", "a group with that name already exists"),
             messages.map { it.getAttribute("message") },
         )
+        assertEquals(listOf(true, true, true), messages.map { it.getAttribute("error") })
         assertEquals(listOf("Music", "News"), groups.findAll(OWNER).map { it.name })
     }
 
