@@ -52,7 +52,10 @@ class DeriveItemTitlesMigrationTest {
                     "VALUES (?, 1, ?, ?, ?, 0, 0)",
             ).params(id, "k$id", title, body)
             .update()
-        jdbc.sql("INSERT INTO item_search (rowid, title, source, body) VALUES (?, ?, 'F', '')").params(id, title).update()
+        jdbc
+            .sql("INSERT INTO item_search (rowid, title, source, body) VALUES (?, ?, 'F', '')")
+            .params(id, title)
+            .update()
     }
 
     private fun titles(id: Int): Pair<String, String> =
