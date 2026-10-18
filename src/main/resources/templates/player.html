@@ -48,7 +48,7 @@
           height="166" scrolling="no" allow="autoplay"></iframe>
   <div class="player-off" th:if="${kind == 'disabled'}">
     <p>This video can't be played here</p>
-    <a th:href="${watchUrl}" rel="noopener noreferrer">Watch on YouTube</a>
+    <a th:href="${watchUrl}" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
   </div>
 
   <button type="button" class="stop" hx-on:click="stopPlayer(this)" title="Stop and close the deck"><svg

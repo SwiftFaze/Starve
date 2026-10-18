@@ -311,6 +311,9 @@ class ApplicationHarness(
         headers: Map<String, String> = emptyMap(),
     ): HttpResponse<String> = browser.get(path, headers)
 
+    /** Where the running application answers, e.g. "http://localhost:51234", for requests made outside a browser. */
+    fun baseUrl(): String = "http://localhost:" + running().environment.getProperty("local.server.port")
+
     fun postForm(
         path: String,
         vararg fields: Pair<String, String>,
