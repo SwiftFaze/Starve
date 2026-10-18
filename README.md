@@ -223,7 +223,9 @@ fetches the original article page once, and the reader shows the article's text 
 a missing image. The fetch gives up after 5 seconds, ignores non-HTML pages and pages
 over 1 MB, and keeps the teaser if the page has no longer text. A failed or empty attempt
 is retried at most once a day, so reopening a post does not hammer its site. A fetched
-article is searchable like any other post body.
+article is searchable like any other post body. Posts from GitHub and Bluesky are never
+fetched this way: their feed entry is the whole post, and their pages render with
+JavaScript, so the reader shows the feed's own text and images.
 
 On a desktop the list, an open post and a playing video are tiled like tmux panels,
 each scrolling on its own under a small title bar (see **Video layouts** below). Drag
@@ -307,6 +309,7 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | `starve.github.feed-url-template` | `https://github.com/{key}.atom` | feed URL of a GitHub user; `{key}` is the username |
 | `starve.apple-podcasts.hosts` | `podcasts.apple.com` | hosts of Apple Podcasts show links |
 | `starve.apple-podcasts.lookup-url-template` | `https://itunes.apple.com/lookup?id={key}` | lookup naming a show's feed; `{key}` is its numeric id |
+| `starve.reader.feed-only-hosts` | `github.com,www.github.com,bsky.app` | hosts whose short posts are shown from the feed, never by fetching their page |
 | `starve.retention.max-age` | `P90D` | items first seen longer ago are purged |
 | `starve.retention.interval` | `PT24H` | delay between retention purges |
 | `starve.scheduling.enabled` | `true` | `false` turns off background polling and purging |

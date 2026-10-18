@@ -182,7 +182,8 @@ playable neighbour links to its detail view, never its player.
 
 Teaser-only posts get their article page fetched on open (V11, `items.article_checked_at`).
 `ReaderService` does so when `ArticleRules` says the stored body is under 500 plain-text
-characters (`HtmlText`, implemented by `infra/JsoupText`) and the last check is missing or
+characters (`HtmlText`, implemented by `infra/JsoupText`), the link is not on a
+`FeedOnlyHosts` host (`starve.reader.feed-only-hosts`) and the last check is missing or
 over a day old. The `ArticleFetcher` port is implemented by `infra/HttpArticleFetcher`
 (through `BoundedHttp`, HTML only, at most 1,000,000 bytes), and `infra/ArticleExtractor`
 picks the `<article>`, else `<main>`, else the densest paragraph block, sanitised by

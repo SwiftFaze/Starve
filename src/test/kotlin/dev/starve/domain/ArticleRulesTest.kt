@@ -24,4 +24,25 @@ class ArticleRulesTest {
         assertFalse(ArticleRules.isDue(now.minus(ArticleRules.RECHECK_AFTER), now))
         assertTrue(ArticleRules.isDue(now.minus(ArticleRules.RECHECK_AFTER).minusMillis(1), now))
     }
+
+    @Test
+    fun `a feed-only host covers its links exactly, ignoring case and spaces in the list`() {
+        val hosts = FeedOnlyHosts(listOf(" GitHub.com ", "bsky.app", ""))
+
+        assertTrue(hosts.covers("https://github.com/torvalds/linux/commit/abc"))
+        assertTrue(hosts.covers("https://BSKY.app/profile/x/post/1"))
+        assertTrue(hosts.covers(" https://github.com/a "))
+        assertFalse(hosts.covers("https://gist.github.com/a"))
+        assertFalse(hosts.covers("https://notgithub.com/a"))
+        assertFalse(hosts.covers("https://blog.example/github.com"))
+    }
+
+    @Test
+    fun `a link without a host or that does not parse is not covered`() {
+        val hosts = FeedOnlyHosts(listOf("github.com"))
+
+        assertFalse(hosts.covers("not a url"))
+        assertFalse(hosts.covers("mailto:a@github.com"))
+        assertFalse(hosts.covers("https://github.com/a b"))
+    }
 }

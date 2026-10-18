@@ -1,6 +1,7 @@
 package dev.starve.application
 
 import dev.starve.domain.ArticleRules
+import dev.starve.domain.FeedOnlyHosts
 import dev.starve.domain.ReadMark
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -47,6 +48,8 @@ class ReaderServiceTest {
         }
     }
 
+    private val feedOnly = FeedOnlyHosts(listOf("github.com"))
+
     private val tags = HtmlText { it.replace(Regex("<[^>]*>"), "") }
 
     private fun post(
@@ -63,7 +66,8 @@ class ReaderServiceTest {
     ): Triple<ReaderService, Posts, Pages> {
         val items = Posts(posts.associateBy { it.id })
         val pages = Pages(page)
-        return Triple(ReaderService(items, items.articles, Clock.fixed(now, ZoneOffset.UTC), pages, tags), items, pages)
+        val clock = Clock.fixed(now, ZoneOffset.UTC)
+        return Triple(ReaderService(items, items.articles, clock, pages, feedOnly, tags), items, pages)
     }
 
     @Test
@@ -185,6 +189,17 @@ class ReaderServiceTest {
 
         assertNull(service.open(OWNER, 1)?.body)
         assertTrue(pages.requested.isEmpty())
+    }
+
+    @Test
+    fun `a teaser on a feed-only host is shown as stored, never fetched and never checked`() {
+        val (service, items, pages) =
+            service(FetchedArticle(article(800), "https://img.example/og.jpg"), post(1, "https://github.com/a/b", null))
+
+        assertEquals(post(1, "https://github.com/a/b", null), service.open(OWNER, 1))
+        assertTrue(pages.requested.isEmpty())
+        assertTrue(items.articles.articleChecks.isEmpty())
+        assertEquals(1, items.read.size)
     }
 
     @Test
