@@ -13,8 +13,10 @@
   <script src="/deck.js" defer></script>
 </head>
 <body>
+  <!-- The first stop for the keyboard: straight past the bar, the obi and the tools to the list. -->
+  <a class="skip-link" href="#sheet">Skip to list</a>
   <header class="bar" id="bar">
-    <h1 class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true" th:text="${appName}">Starve</a></h1>
+    <p class="wordmark"><a href="/feed" hx-get="/feed" data-switch hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true" th:text="${appName}">Starve</a></p>
     <nav class="pages" aria-label="Pages">
       <a class="tab" href="/feed" aria-current="page" hx-get="/feed" hx-target="#sheet" data-switch hx-select="#sheet"
          hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML" hx-push-url="true">Timeline</a>
@@ -41,7 +43,7 @@
   <div class="label" id="shell">
     <aside class="sleeve" aria-label="Series, tools and player">
       <div id="series" class="series-block">
-        <h2 class="series" th:text="${series.name}">All</h2>
+        <h1 class="series" th:text="${series.name}">All</h1>
         <button type="button" class="series-pick" aria-expanded="false" aria-controls="groups"
                 aria-label="Choose a group"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path
             d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
@@ -90,14 +92,14 @@
       <div id="timeline" th:if="${hasSources or searching}">
         <th:block th:fragment="more">
           <article th:each="item : ${items}" th:class="${item.read} ? 'item read' : 'item'"
-                   th:attr="data-title=${item.title},data-item=${item.catalogueNumber}">
+                   th:attr="data-title=${item.title},data-item=${item.catalogueNumber},aria-labelledby=|title-${item.id}|">
             <span class="cat" th:text="${item.catalogueNumber}" th:title="${item.title}">STV 0132</span>
             <img class="thumb" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="" loading="lazy">
             <img class="site-icon" th:if="${item.thumbnailUrl == null and item.faviconUrl != null}"
                  th:src="${item.faviconUrl}" alt="" loading="lazy">
             <span class="blank" th:unless="${item.thumbnailUrl != null or item.faviconUrl != null}"></span>
             <div class="body">
-              <a class="title" th:href="@{/items/{id}/open(id=${item.id})}" th:text="${item.title}"
+              <a class="title" th:id="|title-${item.id}|" th:href="@{/items/{id}/open(id=${item.id})}" th:text="${item.title}"
                  th:attr="hx-get=${item.playable} ? @{/items/{id}/player(id=${item.id})} : ${item.readerHref},hx-target=${item.playable} ? '#dock' : '#reader'"
                  hx-trigger="click[!target.closest('.playing')]" hx-swap="innerHTML">Title</a>
               <span class="source" th:text="${item.sourceTitle}">Source</span>
@@ -120,13 +122,23 @@
              th:attr="hx-get=${moreHref}" hx-swap="outerHTML">Load more</a>
           <p th:if="${searching and #lists.isEmpty(items)}" class="sheet-note">No matches</p>
           <p th:if="${moreHref == null and !emptyFavourites and !emptyLater and !searching}" class="caught-up">You're all caught up</p>
+          <!-- At the end of a long list on a phone, what comes next is within thumb reach: the bar's actions are far
+               above by now. Shown only where unread rows are left on this page (CSS: phones only). -->
+          <form th:if="${moreHref == null and !searching and !favourites and !later and !#lists.isEmpty(items.?[!read])}"
+                class="read-all list-end" method="post" th:action="@{/read-all}" hx-post="/read-all"
+                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series" hx-swap="outerHTML swap:420ms">
+            <input type="hidden" name="before" th:value="${renderedAt}">
+            <input type="hidden" name="group" th:if="${groupId}" th:value="${groupId}">
+            <button type="submit">Mark all read</button>
+          </form>
         </th:block>
         <p class="sheet-note" th:if="${emptyFavourites}">No favourites yet. Star an item on the timeline to keep it here.</p>
         <p class="sheet-note" th:if="${emptyLater}">Nothing saved for later. Use the clock on an item to keep it here.</p>
       </div>
       </div>
     </main>
-    <aside id="reader" class="reader" aria-label="Reader" aria-live="polite"></aside>
+    <!-- No live region: opening a post moves focus to its title instead of reading the whole post out. -->
+    <aside id="reader" class="reader" aria-label="Reader"></aside>
     <div class="video-splitter" role="separator" aria-orientation="horizontal" aria-controls="reader"
          aria-label="Resize panels" tabindex="0"></div>
     <div class="splitter" role="separator" aria-orientation="vertical" aria-controls="sheet"
@@ -135,5 +147,7 @@
          aria-label="Resize the middle panel" tabindex="0"></div>
   </div>
   <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>
+  <!-- Short confirmations for assistive tech (deck.js, "Announcements"): "Marked read · 21 unread", "12 results". -->
+  <p id="announce" class="visually-hidden" role="status"></p>
 </body>
 </html>

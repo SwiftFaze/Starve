@@ -153,7 +153,16 @@ class ImportSteps {
     private fun count(id: String): Int =
         requireNotNull(Regex("id=\"$id\">(\\d+)<").find(importPage)) { "no $id in $importPage" }.groupValues[1].toInt()
 
+    @Then("the bar marks only {string} as the current page")
+    fun barMarksOnlyCurrent(label: String) {
+        val bar = requireNotNull(BAR.find(World.response.body())) { "no bar" }.value
+        val current = BAR_LINK.findAll(bar).filter { it.groupValues[1].contains("aria-current=\"page\"") }
+        assertEquals(listOf(label), current.map { it.groupValues[2] }.toList(), bar)
+    }
+
     private companion object {
+        val BAR = Regex("<header class=\"bar\".*?</header>", RegexOption.DOT_MATCHES_ALL)
+        val BAR_LINK = Regex("(<a [^>]*>)([^<]*)</a>")
         const val YOUTUBE_PATH = "/youtube/feeds/videos.xml"
         const val BYTES_PER_MB = 1024 * 1024
         const val FEED_SERVER = "{feedserver}"

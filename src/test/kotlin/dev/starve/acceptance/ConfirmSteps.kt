@@ -76,7 +76,8 @@ class ConfirmSteps {
         assertEquals(message, Html.unescape(error.groupValues[1]))
         val field = addField(page)
         assertTrue(field.contains("aria-invalid=\"true\""), field)
-        assertTrue(field.contains("aria-describedby=\"add-url-error\""), field)
+        val describedBy = requireNotNull(DESCRIBED_BY.find(field)) { "no aria-describedby on $field" }.groupValues[1]
+        assertTrue(describedBy.split(" ").contains("add-url-error"), field)
     }
 
     @Then("the add-source field keeps {string}")
@@ -144,6 +145,7 @@ class ConfirmSteps {
         val FORM = Regex("<form[^>]*>.*?</form>", RegexOption.DOT_MATCHES_ALL)
         val ADD_ERROR = Regex("<p[^>]*id=\"add-url-error\"[^>]*>([^<]*)</p>")
         val ADD_FIELD = Regex("<input[^>]*id=\"add-url\"[^>]*>")
+        val DESCRIBED_BY = Regex("aria-describedby=\"([^\"]+)\"")
         val MESSAGE = Regex("<p[^>]*id=\"message\"[^>]*>[^<]*</p>")
         val TAG = Regex("<[^>]+>")
         val SPACE = Regex("\\s+")

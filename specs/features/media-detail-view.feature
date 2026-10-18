@@ -16,7 +16,9 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
   not on every render; oEmbed failing (error status or unreadable body)
   falling back to the feed data; a Play control that loads the item into the
   deck exactly as the row's Play does; the view keyed to its item so the deck
-  can show Pause while it plays; an "Open original" link (new tab,
+  can show Pause while it plays; the artist shown only when it differs from the
+  source title (case-insensitive, ignoring surrounding whitespace), so a source
+  named after its artist reads once (#103); an "Open original" link (new tab,
   rel="noopener noreferrer"); a link to the source's own RSS/Atom feed (new
   tab); opening the view marking the item read; the view
   never asking a video in the pane to step down; a Close control; 404 for an
@@ -130,6 +132,12 @@ Feature: Detail view for SoundCloud and YouTube items in the pane
     And the detail view description contains "<p>About the clip</p>"
     And the detail view has a Play control
     And no SoundCloud oEmbed request was made
+
+  Scenario: An artist that only repeats the source title is shown once
+    Given the source "Submarine" has an item "Dive" by " submarine " with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ", a thumbnail and the stored body "<p>Deep</p>" published 1 days ago
+    When I request the detail view of the item "Dive" via htmx
+    Then the detail view shows no artist
+    And the detail view shows the source "Submarine"
 
   Scenario: The detail view links to the source's own feed
     Given the source "Tube" has an item "Clip" by "Some Channel" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ", a thumbnail and the stored body "<p>About the clip</p>" published 1 days ago

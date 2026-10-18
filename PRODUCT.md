@@ -8,11 +8,17 @@ web
 
 ## Users
 
-One person: the owner, who self-hosts Starve and is its only user. They read it in
-a browser on desktop and on phone, and neither one is the main device. On phone it
+The owner, who self-hosts Starve and administers it. They read it in a browser on
+desktop and on phone, and neither one is the main device. On phone it
 is short catch-ups; on desktop it is longer sessions, often watching or listening
 inline. The job is to see everything new from the sources they chose, and nothing
 else, then be done.
+
+The owner may also let in a few people they know (a partner, a friend) with their
+own accounts. Each account is a separate, private Starve: its own sources, groups,
+read state, favourites and Later. Nobody sees anyone else's data, and only the
+owner (the admin) manages the instance. Starve is still designed for one reader at
+a time and one owner per instance, not for a community.
 
 ## Product Purpose
 
@@ -35,8 +41,18 @@ recommends the next thing.
 
 ## Operating Context
 
-- Runs on a home server and is reached on the home LAN only. It is never exposed
-  publicly and has no authentication, by design.
+- Runs on a home server, LAN-first; it may sit behind a reverse proxy, so every
+  page except the landing, `/docs` and the access pages needs a signed-in account.
+- **Access model:** on a fresh database every page leads to `/setup`, where the
+  first person claims the instance as admin with a one-time setup code printed to
+  the application log. Sign-ups are off by default; the admin turns them on in
+  Settings for as long as a friend needs to create an account, then off again.
+  The admin can reset another user's password (a temporary one, shown once) or
+  delete the user with all their data; everyone changes their own password on
+  Account. Failed sign-in, setup and sign-up attempts are throttled per client
+  address.
+- Signed out, `/` is a public landing page that explains Starve with a short demo,
+  and `/docs` serves the install and setup guide.
 - One Docker image or one jar. Data lives in a single SQLite file.
 - A background scheduler polls every source (every 30 minutes by default) using
   conditional GET.
@@ -47,11 +63,11 @@ recommends the next thing.
 
 ## Capabilities and Constraints
 
-- **Timeline** (`/`): unread items from all sources, newest first, 50 per page
+- **Timeline** (`/feed`): unread items from all sources, newest first, 50 per page
   with keyset paging ("Load more"). Show/hide read, mark one read, mark all read
   (only items rendered on the page, so new arrivals stay unread).
 - **Groups:** each source belongs to at most one group. A group nav shows unread
-  counts and filters the timeline (`/?group=<id>`).
+  counts and filters the timeline (`/feed?group=<id>`).
 - **Smart-add** (`/sources`): paste a feed URL or a YouTube, SoundCloud or website
   URL and Starve resolves its feed, or rejects it with a reason. Each source shows
   its last fetch time and last error, because failures must never be silent.
@@ -67,10 +83,16 @@ recommends the next thing.
 - **Bulk import** (`/import`): a YouTube Takeout subscriptions CSV or an OPML file
   subscribes to every source in it, with a summary of what was added, already
   subscribed and failed.
+- **Accounts:** sign in (`/login`), first-run setup claim (`/setup`), optional
+  self sign-up (`/signup`, admin-toggled), own password change (`/account`), and
+  admin user management in Settings (`/settings`: sign-up switch, reset password,
+  delete user). Every account's data is private to it.
 - **Theme:** dark and light, following the OS; a switch on the obi overrides it
   and is remembered in that browser.
 - **Out of scope:** X/Twitter and Instagram, keyword mute or filter rules, any
-  ranking or weighting, authentication or multiple users, native mobile apps.
+  ranking or weighting, native mobile apps, public or open registration (sign-ups
+  stay an admin's deliberate, temporary choice), shared or social features between
+  accounts.
 - **Stack:** Kotlin, Spring Boot, server-rendered Thymeleaf with htmx (vendored, no
   CDN), SQLite. Pages must work as plain HTML forms and links, with htmx as an
   enhancement.

@@ -680,7 +680,8 @@
     var play = stored('starve.open.play');
     // Each request comes from its own target, so neither cancels the other.
     if (post && !postView() && reader()) {
-      window.htmx.ajax('GET', '/items/' + post + '/reader', { source: reader(), target: '#reader', swap: 'innerHTML' });
+      var view = /\/detail$/.test(post) ? post : post + '/reader';
+      window.htmx.ajax('GET', '/items/' + view, { source: reader(), target: '#reader', swap: 'innerHTML' });
     }
     if (play && !player() && dock()) {
       resumeAt = Number(stored('starve.open.at')) || 0;
@@ -968,10 +969,21 @@
 
   function reader() { return document.getElementById('reader'); }
 
+  // While a post covers a phone's screen, everything behind it is inert: Tab and a screen reader stay in the
+  // post (and the deck, which sits above it), and closing the post gives the page back.
+  function behindReader(inert) {
+    ['bar', 'sheet'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.inert = inert;
+    });
+    document.querySelectorAll('.sleeve').forEach(function (el) { el.inert = inert; });
+  }
+
   function emptyReader() {
     var pane = reader();
     if (pane) pane.replaceChildren();
     body.classList.remove('reading');
+    behindReader(false);
     layout();
   }
 
@@ -989,19 +1001,33 @@
     }
   };
 
-  // Opening a post marks its row read (the server already did) and makes the reader the active panel.
-  function readerOpened() {
+  // Opening a post marks its row read (the server already did) and makes the reader the active panel. Opened
+  // by the visitor (not restored on load), focus moves to the post's title, so a screen reader starts there
+  // rather than having the whole post read out.
+  function readerOpened(byVisitor) {
     var view = postView();
     if (!view) return;
-    store('starve.open.post', itemNumber(view.dataset.item));
+    // The stored post names its view: "12" is a post in the reader, "12/detail" a playable item's detail view.
+    var detail = view.classList.contains('detail-view') ? '/detail' : '';
+    store('starve.open.post', itemNumber(view.dataset.item) + detail);
     var pane = reader();
     if (pane) pane.scrollTop = 0;
     body.classList.toggle('reading', phone());
+    behindReader(phone());
     layout();
     activate('post');
     markRowRead(view.dataset.item);
-    var close = view.querySelector('.reader-close');
-    if (close && phone()) close.focus({ preventScroll: true });
+    // On a phone Previous and Next are drawn nowhere (swipes do their job); they stay for screen readers but
+    // leave the tab order, so Tab never lands on something invisible.
+    view.querySelectorAll('.post-nav a').forEach(function (link) {
+      if (phone()) link.setAttribute('tabindex', '-1');
+      else link.removeAttribute('tabindex');
+    });
+    var title = view.querySelector('.reader-title');
+    if (title && byVisitor) {
+      title.setAttribute('tabindex', '-1');
+      title.focus({ preventScroll: true });
+    }
   }
 
   // ---- A confirmation the server drew open becomes a modal: focus stays in it, and Escape or a click on the
@@ -1366,11 +1392,26 @@
     return button;
   }
 
+  // Whether a control the reader may want sits under the button: a row's actions or a post's head. The
+  // button then steps aside rather than cover them.
+  function overControls(button) {
+    var box = button.getBoundingClientRect();
+    var points = [[box.left + 2, box.top + 2], [box.right - 2, box.top + 2], [box.left + 2, box.bottom - 2],
+      [box.right - 2, box.bottom - 2], [(box.left + box.right) / 2, (box.top + box.bottom) / 2]];
+    return points.some(function (point) {
+      return document.elementsFromPoint(point[0], point[1]).some(function (el) {
+        return el !== button && !!el.closest && !!el.closest('.item .actions, .reader-head');
+      });
+    });
+  }
+
   function syncTop() {
     if (!phone()) { var old = document.getElementById('to-top'); if (old) old.hidden = true; return; }
     var pane = scroller();
     var top = pane ? pane.scrollTop : window.scrollY;
-    topButton().hidden = top < window.innerHeight * 0.8;
+    var button = topButton();
+    button.hidden = top < window.innerHeight * 0.8;
+    if (!button.hidden && document.elementsFromPoint) button.hidden = overControls(button);
   }
 
   document.addEventListener('click', function (event) {
@@ -1498,9 +1539,48 @@
 
   document.addEventListener('htmx:afterSwap', function (event) {
     if (event.detail && event.detail.target === dock()) start();
-    if (event.detail && event.detail.target === reader()) readerOpened();
+    if (event.detail && event.detail.target === reader()) {
+      var config = event.detail.requestConfig;
+      readerOpened(Boolean(config && config.triggeringEvent));
+    }
   });
   document.addEventListener('htmx:afterSettle', markPlaying);
+
+  // ---- Announcements: one polite status line for what would otherwise change silently ------------
+
+  var announced = null;
+
+  function announce(text) {
+    var line = document.getElementById('announce');
+    if (!line) return;
+    // Emptied first, so the same words twice in a row are still read out.
+    line.textContent = '';
+    setTimeout(function () { line.textContent = text; }, 60);
+  }
+
+  function unreadNote() {
+    var meta = document.querySelector('#series .series-meta');
+    var count = meta && /([0-9]+) unread/.exec(meta.textContent);
+    return count ? ' \u00b7 ' + count[1] + ' unread' : '';
+  }
+
+  function resultsNote() {
+    var rows = document.querySelectorAll('#sheet-body .item').length;
+    var more = document.querySelector('#sheet-body .load-more') ? ' shown, more below' : '';
+    if (rows === 0) return 'No results';
+    return rows + (rows === 1 ? ' result' : ' results') + more;
+  }
+
+  document.addEventListener('htmx:afterSettle', function (event) {
+    var config = event.detail.requestConfig;
+    var elt = config && config.elt;
+    if (!elt || !elt.matches || config === announced) return;
+    if (elt.matches('.read-all')) announce('All marked read');
+    else if (elt.matches('form[hx-post$="/read"]')) announce('Marked read' + unreadNote());
+    else if (elt.id === 'search-q') announce(resultsNote());
+    else return;
+    announced = config;
+  });
 
   // ---- Swaps between pages (theme.js swaps the shell for non-deck pages) ---------------------
 
@@ -1667,6 +1747,152 @@
     placePostActions();
   });
   window.matchMedia(PHONE).addEventListener('change', placePostActions);
+
+  // ---- Keyboard shortcuts on the timeline (#101) --------------------------------------------------
+  // Single keys, on the timeline only, never while typing in a field or with Ctrl, Alt or Meta held. The row
+  // cursor is the focused row's title, drawn by the usual cyan focus outline (the Scanline Rule). While the
+  // YouTube player has focus its own keys apply: the page never hears them.
+
+  var KEYS = [
+    ['j / k', 'Next / previous row'],
+    ['o or Enter', 'Open the row: its post, or play it'],
+    ['m', 'Mark read, then the next row'],
+    ['Space', 'Play / pause'],
+    ['n / p', 'Next / previous post'],
+    ['/', 'Search'],
+    ['?', 'Show these keys']
+  ];
+
+  function typing(target) {
+    return !!target.closest && !!target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+  }
+
+  function rows() { return Array.prototype.slice.call(document.querySelectorAll('#sheet .item')); }
+
+  function currentRow() {
+    var active = document.activeElement;
+    return active && active.closest ? active.closest('#sheet .item') : null;
+  }
+
+  function goToRow(row) {
+    var title = row && row.querySelector('.title');
+    if (!title) return;
+    title.focus({ preventScroll: true });
+    title.scrollIntoView({ block: 'nearest' });
+  }
+
+  function stepRow(by) {
+    var all = rows();
+    if (!all.length) return;
+    var at = all.indexOf(currentRow());
+    var next = at < 0 ? (by > 0 ? 0 : all.length - 1) : Math.min(all.length - 1, Math.max(0, at + by));
+    goToRow(all[next]);
+  }
+
+  function openCurrent() {
+    var row = currentRow();
+    var title = row && row.querySelector('.title');
+    if (!title) return false;
+    title.click();
+  }
+
+  // The cursor moves on before the row leaves, so it lands on what was below it (or above, at the end).
+  function markCurrentRead() {
+    var row = currentRow();
+    var button = row && row.querySelector('form[hx-post$="/read"] button');
+    if (!button) return false;
+    var all = rows();
+    var at = all.indexOf(row);
+    var next = all[at + 1] || all[at - 1];
+    button.click();
+    goToRow(next);
+  }
+
+  function playPause(event) {
+    if (event.target.closest && event.target.closest('button') || !state) return false;
+    if (state.playing) state.pause(); else state.play();
+  }
+
+  function clickIn(selector) {
+    var control = document.querySelector(selector);
+    if (!control) return false;
+    control.click();
+  }
+
+  function focusSearch() {
+    var field = document.getElementById('search-q');
+    if (!field) return false;
+    field.focus();
+  }
+
+  // The key list: a square on the raised surface inside a strong hairline, mono keys over dim words.
+  function keysPanel() {
+    var panel = document.getElementById('keys');
+    if (panel) return panel;
+    panel = document.createElement('div');
+    panel.id = 'keys';
+    panel.className = 'keys';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'Keyboard shortcuts');
+    panel.tabIndex = -1;
+    panel.hidden = true;
+    var title = document.createElement('p');
+    title.className = 'keys-title';
+    title.textContent = 'Keys';
+    panel.appendChild(title);
+    var list = document.createElement('dl');
+    KEYS.forEach(function (pair) {
+      var entry = document.createElement('div');
+      var key = document.createElement('dt');
+      key.textContent = pair[0];
+      var what = document.createElement('dd');
+      what.textContent = pair[1];
+      entry.appendChild(key);
+      entry.appendChild(what);
+      list.appendChild(entry);
+    });
+    panel.appendChild(list);
+    body.appendChild(panel);
+    return panel;
+  }
+
+  var keysReturn = null;
+
+  function showKeys(open) {
+    var panel = keysPanel();
+    if (open === !panel.hidden) return;
+    panel.hidden = !open;
+    if (open) {
+      keysReturn = document.activeElement;
+      panel.focus();
+    } else if (keysReturn && keysReturn.focus) {
+      keysReturn.focus();
+    }
+  }
+
+  var SHORTCUTS = {
+    j: function () { stepRow(1); },
+    k: function () { stepRow(-1); },
+    o: openCurrent,
+    m: markCurrentRead,
+    ' ': playPause,
+    n: function () { return clickIn('#reader .post-next'); },
+    p: function () { return clickIn('#reader .post-prev'); },
+    '/': focusSearch,
+    '?': function () { showKeys(keysPanel().hidden); }
+  };
+
+  document.addEventListener('keydown', function (event) {
+    if (event.ctrlKey || event.altKey || event.metaKey || event.defaultPrevented) return;
+    if (!document.querySelector('#sheet[data-page="timeline"]')) return;
+    if (event.key === 'Escape') {
+      showKeys(false);
+      return;
+    }
+    var shortcut = SHORTCUTS[event.key];
+    if (!shortcut || typing(event.target)) return;
+    if (shortcut(event) !== false) event.preventDefault();
+  });
 
   markPlaying();
   syncTop();

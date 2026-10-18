@@ -50,6 +50,7 @@ class SourcesControllerTest {
         SourcesController(
             SubscriptionService(sources, locator, fetcher, ingestor),
             GroupService(groups, sources),
+            Clock.systemUTC(),
         )
 
     @Test
@@ -63,7 +64,7 @@ class SourcesControllerTest {
         assertEquals(listOf(4L, 5L), views.map { it.id })
         assertEquals(listOf("Title", "Other"), views.map { it.title })
         assertEquals(listOf("http://a.test/feed", "http://b.test/feed"), views.map { it.url })
-        assertEquals(listOf("2026-10-11 12:30:45 UTC", null), views.map { it.lastFetched })
+        assertEquals(listOf("2026-10-11 12:30:45 UTC", null), views.map { it.lastFetched?.full })
         assertEquals(listOf("oops", null), views.map { it.error })
         assertEquals(null, model.getAttribute("message"))
     }
