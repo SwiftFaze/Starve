@@ -5,6 +5,7 @@ import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
 import dev.starve.domain.GroupSummary
 import dev.starve.domain.LaterCursor
+import dev.starve.domain.ReadMark
 import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
@@ -193,7 +194,7 @@ open class MemoryItems(
     override fun markRead(
         owner: Long,
         id: Long,
-        at: Instant,
+        mark: ReadMark,
     ) = false
 
     override fun markAllRead(
@@ -218,7 +219,7 @@ class TimelineItems(
     var requested: Triple<Cursor?, Boolean, Int>? = null
     var requestedGroup: Long? = null
     var markAllGroup: Long? = null
-    val readCalls = mutableListOf<Pair<Long, Instant>>()
+    val readCalls = mutableListOf<Pair<Long, ReadMark>>()
     var markAllCall: Pair<Instant, Instant>? = null
     var favouritesRequested: Pair<Cursor?, Int>? = null
     var laterRequested: Pair<LaterCursor?, Int>? = null
@@ -322,10 +323,10 @@ class TimelineItems(
     override fun markRead(
         owner: Long,
         id: Long,
-        at: Instant,
+        mark: ReadMark,
     ): Boolean {
         calledFor += owner
-        readCalls += id to at
+        readCalls += id to mark
         return links.containsKey(id)
     }
 

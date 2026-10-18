@@ -6,6 +6,7 @@ import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.MigrationVersion
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.jdbc.datasource.SimpleDriverDataSource
+import java.time.Duration
 import java.time.Instant
 import javax.sql.DataSource
 
@@ -72,5 +73,35 @@ class LegacyDatabase(
                     "VALUES (?, ?, ?, ?, ?, ?)",
             ).params(sourceId, "item-0", title, body, seen, seen)
             .update()
+    }
+
+    /** Inserts source [source] holding [count] items published now and read a day ago, bypassing the application. */
+    fun holdRead(
+        source: String,
+        count: Int,
+    ) {
+        val jdbc = JdbcClient.create(dataSource())
+        val sourceId =
+            jdbc
+                .sql("INSERT INTO sources (url, title) VALUES (?, ?) RETURNING id")
+                .params("http://blog.test/feed", source)
+                .query(Long::class.java)
+                .single()
+        val now = Instant.now()
+        val yesterday = now.minus(Duration.ofDays(1)).toEpochMilli()
+        repeat(count) {
+            jdbc
+                .sql(
+                    "INSERT INTO items (source_id, item_key, title, published_at, first_seen_at, read_at) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                ).params(
+                    sourceId,
+                    "item-$it",
+                    "Read $it",
+                    now.toEpochMilli(),
+                    now.toEpochMilli(),
+                    yesterday,
+                ).update()
+        }
     }
 }

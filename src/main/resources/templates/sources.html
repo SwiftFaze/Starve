@@ -81,6 +81,8 @@
             <span class="last-fetched" th:if="${source.lastFetched}"><th:block th:text="${source.error} ? 'Last tried' : 'Fetched'">Fetched</th:block>
               <time th:datetime="${source.lastFetched.iso}" th:title="${source.lastFetched.full}" th:text="${source.lastFetched.short}">17:13 UTC</time></span>
             <span class="not-fetched" th:unless="${source.lastFetched}">Not fetched yet</span>
+            <p class="stats" th:title="${source.stats.text}"><span class="tag mark" th:each="mark : ${source.stats.marks}"
+              th:text="${mark}">Quiet</span><th:block th:text="${source.stats.text}">Last post 3 days ago · 2/week · 10 unread</th:block></p>
           </div>
           <div class="actions">
             <a class="toggle feed-link" th:href="${source.url}" target="_blank" rel="noopener noreferrer"

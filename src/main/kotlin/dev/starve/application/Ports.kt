@@ -8,8 +8,10 @@ import dev.starve.domain.GroupSummary
 import dev.starve.domain.LaterCursor
 import dev.starve.domain.ParsedImport
 import dev.starve.domain.Playable
+import dev.starve.domain.ReadMark
 import dev.starve.domain.SavedItem
 import dev.starve.domain.Source
+import dev.starve.domain.SourceActivity
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.User
 import dev.starve.domain.UserAccount
@@ -216,6 +218,16 @@ interface ArticleRepository {
     )
 }
 
+/** The per-source counts behind the statistics on Sources. */
+fun interface SourceStatsRepository {
+    /** The activity of each of [owner]'s sources by source id, counting posts published since [windowStart]. */
+    fun activity(
+        owner: Long,
+        windowStart: Instant,
+        now: Instant,
+    ): Map<Long, SourceActivity>
+}
+
 /** Persistence of the read-later mark and the Later view. */
 interface LaterRepository {
     /** [owner]'s saved items earliest-saved first (ties by id ascending), after [after] (from the start when null). */
@@ -295,11 +307,14 @@ interface ItemRepository {
         oembed: Oembed,
     )
 
-    /** Marks [owner]'s item read at [at] unless already read; returns false when [owner] has no such item. */
+    /**
+     * Marks [owner]'s item read at [mark]'s time unless already read, and opened then too when [mark] says it was
+     * opened and it never was before; returns false when [owner] has no such item.
+     */
     fun markRead(
         owner: Long,
         id: Long,
-        at: Instant,
+        mark: ReadMark,
     ): Boolean
 
     /**

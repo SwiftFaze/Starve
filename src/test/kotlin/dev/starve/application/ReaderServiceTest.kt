@@ -1,6 +1,7 @@
 package dev.starve.application
 
 import dev.starve.domain.ArticleRules
+import dev.starve.domain.ReadMark
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -16,7 +17,7 @@ class ReaderServiceTest {
     private class Posts(
         private val posts: Map<Long, PostRef>,
     ) : MemoryItems() {
-        val read = mutableListOf<Pair<Long, Instant>>()
+        val read = mutableListOf<Pair<Long, ReadMark>>()
         val articles = MemoryArticles()
 
         override fun findPost(
@@ -27,9 +28,9 @@ class ReaderServiceTest {
         override fun markRead(
             owner: Long,
             id: Long,
-            at: Instant,
+            mark: ReadMark,
         ): Boolean {
-            read += id to at
+            read += id to mark
             return true
         }
     }
@@ -70,7 +71,7 @@ class ReaderServiceTest {
         val (service, items, _) = service(null, post(1, "https://blog.example/a", body = article(800)))
 
         assertEquals(post(1, "https://blog.example/a", body = article(800)), service.open(OWNER, 1))
-        assertEquals(listOf(1L to now), items.read)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.read)
     }
 
     @Test
@@ -78,7 +79,7 @@ class ReaderServiceTest {
         val (service, items, pages) = service(null, post(1, null, body = null))
 
         assertEquals(post(1, null, body = null), service.open(OWNER, 1))
-        assertEquals(listOf(1L to now), items.read)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.read)
         assertTrue(pages.requested.isEmpty())
     }
 
@@ -143,7 +144,7 @@ class ReaderServiceTest {
 
         assertEquals("<p>Teaser</p>", service.open(OWNER, 1)?.body)
         assertEquals(listOf(ArticleCheck(1, null, null, now)), items.articles.articleChecks)
-        assertEquals(listOf(1L to now), items.read)
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.read)
     }
 
     @Test

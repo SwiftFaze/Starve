@@ -83,6 +83,18 @@ Last-Modified), so unchanged feeds cost almost nothing. One failing feed never
 stops the others. Items older than the retention age (measured from when Starve
 first saw them) are deleted daily.
 
+## Which sources to prune
+
+Each source on **Sources** also says how alive it is and how much of it you read:
+"Last post 3 days ago · 2/week · 10 unread · skipped 95%". The rate counts posts
+published in the last four weeks. The skip rate is the share of items you marked
+read (one by one or with **Mark all read**) without opening them; opening means the
+title link, the reader, the detail view or the player. It appears once 20 items of
+that source have been read; until then the row says how many it has so far. Items
+read before this tracking existed never count. A source with no post in 60 days is
+marked **Quiet**, and one skipped 80% of the time or more is marked **Mostly
+skipped**: both are candidates to unsubscribe.
+
 ## Importing subscriptions
 
 **Sources** also has an **Import** page (`/import`) that takes a YouTube Google

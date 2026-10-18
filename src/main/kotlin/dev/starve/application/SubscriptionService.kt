@@ -26,8 +26,6 @@ class SubscriptionService(
     private val fetcher: FeedFetcher,
     private val ingestor: FeedIngestor,
 ) {
-    fun list(owner: Long): List<Source> = sources.findAllOf(owner)
-
     /** Removes [owner]'s source; false when [owner] has no such source. */
     fun unsubscribe(
         owner: Long,

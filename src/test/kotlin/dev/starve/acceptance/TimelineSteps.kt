@@ -3,6 +3,7 @@ package dev.starve.acceptance
 import dev.starve.application.ItemRepository
 import dev.starve.application.SourceRepository
 import dev.starve.domain.FeedItem
+import dev.starve.domain.ReadMark
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -47,7 +48,8 @@ class TimelineSteps {
         days: Int,
     ) {
         seed(source, title, daysAgo(days))
-        app.bean(ItemRepository::class.java).markRead(app.ownerOfItem(itemId(title)), itemId(title), Instant.now())
+        val id = itemId(title)
+        app.bean(ItemRepository::class.java).markRead(app.ownerOfItem(id), id, ReadMark.skipped(Instant.now()))
     }
 
     @Given(

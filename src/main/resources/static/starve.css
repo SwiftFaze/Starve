@@ -3267,6 +3267,22 @@ body[data-split][data-list="strip"] .load-more {
   margin-top: 0.25rem;
 }
 
+/* A source's health: last post, rate, backlog and skip rate, with its marks as quiet tags. */
+.stats {
+  margin: 0.25rem 0 0;
+  font: 400 0.75rem/1.4 var(--mono);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+/* A mark is advice, not a fault: outlined in the text colour, where a failure is filled red. */
+.tag.mark {
+  padding: 0.1875rem 0.3125rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+}
+
 .error {
   margin: 0 0 0.375rem;
   font-size: 0.8125rem;
@@ -3483,7 +3499,8 @@ body[data-split][data-list="strip"] .load-more {
   .subscriptions .source .title,
   .subscriptions .source .error,
   .subscriptions .source .last-fetched,
-  .subscriptions .source .not-fetched {
+  .subscriptions .source .not-fetched,
+  .subscriptions .source .stats {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

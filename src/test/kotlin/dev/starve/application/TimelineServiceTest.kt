@@ -1,6 +1,7 @@
 package dev.starve.application
 
 import dev.starve.domain.Cursor
+import dev.starve.domain.ReadMark
 import dev.starve.domain.Source
 import dev.starve.domain.TimelineItem
 import dev.starve.domain.TimelineRules
@@ -52,23 +53,23 @@ class TimelineServiceTest {
     }
 
     @Test
-    fun `marking read stamps the current time and reports whether the item exists`() {
+    fun `marking read stamps the current time as a skip and reports whether the item exists`() {
         val items = TimelineItems(links = mapOf(5L to null))
         val service = TimelineService(items, items, MemorySources(), clock)
 
         assertTrue(service.markRead(OWNER, 5))
         assertFalse(service.markRead(OWNER, 6))
-        assertEquals(listOf(5L to now, 6L to now), items.readCalls)
+        assertEquals(listOf(5L to ReadMark.skipped(now), 6L to ReadMark.skipped(now)), items.readCalls)
     }
 
     @Test
-    fun `opening marks the item read and yields its link`() {
+    fun `opening marks the item read and opened and yields its link`() {
         val items = TimelineItems(links = mapOf(5L to "http://x.test/a", 6L to null))
         val service = TimelineService(items, items, MemorySources(), clock)
 
         assertEquals(OpenResult.Opened("http://x.test/a"), service.open(OWNER, 5))
         assertEquals(OpenResult.Opened(null), service.open(OWNER, 6))
-        assertEquals(listOf(5L to now, 6L to now), items.readCalls)
+        assertEquals(listOf(5L to ReadMark.opened(now), 6L to ReadMark.opened(now)), items.readCalls)
     }
 
     @Test

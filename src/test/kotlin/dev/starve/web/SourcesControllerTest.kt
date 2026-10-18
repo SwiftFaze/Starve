@@ -11,11 +11,14 @@ import dev.starve.application.MemoryItems
 import dev.starve.application.MemorySources
 import dev.starve.application.OTHER_OWNER
 import dev.starve.application.OWNER
+import dev.starve.application.SourceHealthService
+import dev.starve.application.SourceStatsRepository
 import dev.starve.application.SubscriptionService
 import dev.starve.application.quietFavicons
 import dev.starve.domain.Feed
 import dev.starve.domain.Group
 import dev.starve.domain.Source
+import dev.starve.domain.SourceActivity
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -45,12 +48,15 @@ class SourcesControllerTest {
         object : FeedLocator {
             override fun locate(url: String) = LocateResult.Found(url)
         }
+    private val stats =
+        SourceStatsRepository { _, _, now -> mapOf(4L to SourceActivity(now, 8, 3, 20, 19)) }
     private val ingestor = FeedIngestor(sources, MemoryItems(), Clock.systemUTC(), quietFavicons(sources))
     private val controller =
         SourcesController(
             SubscriptionService(sources, locator, fetcher, ingestor),
             GroupService(groups, sources),
             Clock.systemUTC(),
+            SourceHealthService(sources, stats, Clock.systemUTC()),
         )
 
     @Test
@@ -66,6 +72,11 @@ class SourcesControllerTest {
         assertEquals(listOf("http://a.test/feed", "http://b.test/feed"), views.map { it.url })
         assertEquals(listOf("2026-10-11 12:30:45 UTC", null), views.map { it.lastFetched?.full })
         assertEquals(listOf("oops", null), views.map { it.error })
+        assertEquals(
+            listOf("Last post today · 2/week · 3 unread · skipped 95%", "No recent posts · 0/week · 0 unread"),
+            views.map { it.stats.text },
+        )
+        assertEquals(listOf(listOf("Mostly skipped"), emptyList()), views.map { it.stats.marks })
         assertEquals(null, model.getAttribute("message"))
     }
 
