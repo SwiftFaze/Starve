@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.31](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.30...v1.1.0-beta.31) (2026-10-18)
+
+
+### Features
+
+* separate the end of the list from the caught-up state ([#140](https://github.com/SwiftFaze/Starve/issues/140)) ([c0ba3d6](https://github.com/SwiftFaze/Starve/commit/c0ba3d646dfe7ab43fc291beb5763c1fce01d9a6))
+
 ## [1.1.0-beta.30](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.29...v1.1.0-beta.30) (2026-10-18)
 
 
