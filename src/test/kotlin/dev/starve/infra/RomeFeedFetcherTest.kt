@@ -371,6 +371,15 @@ class RomeFeedFetcherTest {
     }
 
     @Test
+    fun `a relative enclosure resolves against the entry's link, else the site's`() {
+        val linked = feedOf(FeedSpec(audioEnclosure = "ep.mp3", entryLink = "https://show.example/eps/1"))
+        val linkless = feedOf(FeedSpec(audioEnclosure = "ep.mp3", linkless = true, siteLink = "https://site.example/a/"))
+
+        assertEquals("https://show.example/eps/ep.mp3", linked.items.single().audio?.url)
+        assertEquals("https://site.example/a/ep.mp3", linkless.items.single().audio?.url)
+    }
+
+    @Test
     fun `an image enclosure or image media content is no audio`() {
         assertNull(feedOf(FeedSpec(enclosure = "https://cdn.example/a.jpg")).items.single().audio)
         val image = MediaContent("https://cdn.example/a.jpg", type = "image/jpeg")

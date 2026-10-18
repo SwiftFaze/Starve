@@ -521,8 +521,6 @@ data class ItemDetail(
     /** The source's own feed URL. */
     val sourceUrl: String? = null,
     val favourite: Boolean = false,
-    /** The episode's audio file URL, when the item is a podcast episode. */
-    val audioUrl: String? = null,
 )
 
 fun interface SoundCloudOembed {

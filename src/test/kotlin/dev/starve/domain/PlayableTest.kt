@@ -101,6 +101,7 @@ class PlayableTest {
         assertEquals(Playable.Audio(audio), Playable.of("https://show.example/ep1", audio))
         assertEquals(Playable.Audio(audio), Playable.of(null, audio))
         assertEquals(audio, Playable.Audio(audio).embedUrl)
+        assertEquals(audio, Playable.Audio(audio).url)
     }
 
     @Test
