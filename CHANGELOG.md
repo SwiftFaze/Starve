@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.37](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.36...v1.1.0-beta.37) (2026-10-18)
+
+
+### Bug Fixes
+
+* give every Sources row room for its name and controls ([#169](https://github.com/SwiftFaze/Starve/issues/169)) ([50c352f](https://github.com/SwiftFaze/Starve/commit/50c352fc608b2146e36ec6a4fbb02e65c7a8edbc))
+
 ## [1.1.0-beta.36](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.35...v1.1.0-beta.36) (2026-10-18)
 
 
