@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.28](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.27...v1.1.0-beta.28) (2026-10-18)
+
+
+### Bug Fixes
+
+* refresh unread counts after an item is read ([#113](https://github.com/SwiftFaze/Starve/issues/113)) ([94bc820](https://github.com/SwiftFaze/Starve/commit/94bc8206ab8a834e087361ec677c09170787a574))
+
 ## [1.1.0-beta.27](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.26...v1.1.0-beta.27) (2026-10-17)
 
 
