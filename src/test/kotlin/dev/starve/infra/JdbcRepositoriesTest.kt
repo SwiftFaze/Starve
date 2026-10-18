@@ -9,6 +9,7 @@ import dev.starve.application.Narrowing
 import dev.starve.application.Oembed
 import dev.starve.application.PostRef
 import dev.starve.application.TimelineFilter
+import dev.starve.domain.AudioEnclosure
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
@@ -519,6 +520,30 @@ class JdbcRepositoriesTest {
             .single()
 
     private fun keys(): List<String> = jdbc.sql("SELECT item_key FROM items").query(String::class.java).list()
+
+    @Test
+    fun `an episode's audio is stored and makes it playable, and a known item does not gain one`() {
+        val source = sources.insert(OWNER, "http://a.test/f", "Pod")
+        val at = Instant.parse("2026-10-11T12:00:00Z")
+        val episode = AudioEnclosure("https://cdn.example/ep.mp3", 3723)
+        val old = FeedItem("old", "Old", "https://show.example/o", at, null, null)
+        val fresh = FeedItem("e", "Ep", "https://show.example/e", at, null, null, null, episode)
+        items.insertNew(source.id, listOf(fresh), at)
+        items.insertNew(source.id, listOf(old), at)
+        items.insertNew(source.id, listOf(old.copy(audio = episode)), at)
+        val (ep, known) = items.timeline(OWNER, null, TimelineFilter(false), 10).sortedBy { it.title }
+
+        assertEquals(true, ep.playable)
+        assertEquals(false, known.playable)
+        assertEquals(episode, items.find(OWNER, ep.id)?.audio)
+        assertNull(items.find(OWNER, known.id)?.audio)
+        assertEquals(episode.url, items.findPost(OWNER, ep.id)?.audioUrl)
+        assertEquals(episode.url, items.findDetail(OWNER, ep.id)?.audioUrl)
+        val unmeasured = FeedItem("n", "N", null, at, null, null, null, AudioEnclosure("https://cdn.example/n.mp3"))
+        items.insertNew(source.id, listOf(unmeasured), at)
+        val n = items.timeline(OWNER, null, TimelineFilter(false), 10).single { it.title == "N" }
+        assertEquals(AudioEnclosure("https://cdn.example/n.mp3"), items.find(OWNER, n.id)?.audio)
+    }
 
     private fun dated(
         key: String,

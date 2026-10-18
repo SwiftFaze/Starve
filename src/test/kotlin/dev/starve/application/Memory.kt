@@ -1,5 +1,6 @@
 package dev.starve.application
 
+import dev.starve.domain.AudioEnclosure
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Group
@@ -212,6 +213,7 @@ class TimelineItems(
     private val markedAllCount: Int = 0,
     private val favouriteRows: List<TimelineItem> = emptyList(),
     private val savedRows: List<SavedItem> = emptyList(),
+    private val audio: Map<Long, AudioEnclosure> = emptyMap(),
 ) : MemoryItems(),
     FavouriteRepository,
     SearchRepository,
@@ -319,7 +321,7 @@ class TimelineItems(
         id: Long,
     ): ItemRef? {
         calledFor += owner
-        return if (links.containsKey(id)) ref(id, links[id]) else null
+        return if (links.containsKey(id)) ref(id, links[id]).copy(audio = audio[id]) else null
     }
 
     override fun markRead(

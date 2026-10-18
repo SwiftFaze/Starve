@@ -13,6 +13,7 @@ import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
 import dev.starve.domain.FeedRules
 import dev.starve.domain.ItemTitles
+import dev.starve.domain.Playable
 import dev.starve.domain.Validators
 import org.jdom2.Element
 import java.io.ByteArrayInputStream
@@ -65,9 +66,10 @@ class RomeFeedFetcher(
     private fun parse(body: ByteArray): Feed {
         val syndFeed = readFeed(body)
         val siteLink = syndFeed.link?.trim()?.takeIf { it.isNotEmpty() }
+        val showArt = EpisodeAudio.showArt(syndFeed)
         return Feed(
             title = syndFeed.title?.trim()?.takeIf { it.isNotEmpty() },
-            items = syndFeed.entries.mapNotNull { toItem(it, siteLink) },
+            items = syndFeed.entries.mapNotNull { toItem(it, siteLink, showArt) },
             siteLink = siteLink,
         )
     }
@@ -81,9 +83,11 @@ class RomeFeedFetcher(
             throw InvalidFeedException(e.message ?: "unreadable feed", e)
         }
 
+    /** One entry; a podcast episode without art of its own shows [showArt], its show's. */
     private fun toItem(
         entry: SyndEntry,
         siteLink: String?,
+        showArt: String?,
     ): FeedItem? {
         val key = FeedRules.itemKey(entry.uri, entry.link) ?: return null
         val link = entry.link?.takeIf { it.isNotBlank() }
@@ -91,14 +95,17 @@ class RomeFeedFetcher(
         val body = rawBody(entry)
         val sanitized = BodySanitizer.sanitize(body, link)
         val title = TitleEntities.decode(entry.title.orEmpty()).trim()
+        val audio = EpisodeAudio.of(entry, link ?: siteLink)
+        val episode = audio != null && Playable.of(link) == null
         return FeedItem(
             key = key,
             title = ItemTitles.of(title, sanitized?.let(JsoupText::plainText)),
             link = link,
             publishedAt = published?.toInstant(),
             author = entry.author?.takeIf { it.isNotBlank() },
-            thumbnailUrl = thumbnail(entry, link ?: siteLink, body),
+            thumbnailUrl = thumbnail(entry, link ?: siteLink, body) ?: showArt?.takeIf { episode },
             body = sanitized,
+            audio = audio,
         )
     }
 

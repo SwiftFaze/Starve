@@ -1,5 +1,6 @@
 package dev.starve.application
 
+import dev.starve.domain.AudioEnclosure
 import dev.starve.domain.Playable
 import dev.starve.domain.ReadMark
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -79,6 +80,20 @@ class PlayerServiceTest {
         val result = service(items, embeds).player(OWNER, 1)
 
         assertEquals(PlayerResult.Embed(Playable.SoundCloud(track), ref(1, track)), result)
+        assertTrue(embeds.asked.isEmpty())
+        assertEquals(listOf(1L to ReadMark.opened(now)), items.readCalls)
+    }
+
+    @Test
+    fun `an episode plays its audio file and is marked read`() {
+        val episode = AudioEnclosure("https://cdn.example/ep.mp3", 60)
+        val items = TimelineItems(links = mapOf(1L to "https://show.example/ep"), audio = mapOf(1L to episode))
+        val embeds = Embeds(false)
+
+        val result = service(items, embeds).player(OWNER, 1)
+
+        val expected = ref(1, "https://show.example/ep").copy(audio = episode)
+        assertEquals(PlayerResult.Embed(Playable.Audio(episode.url), expected), result)
         assertTrue(embeds.asked.isEmpty())
         assertEquals(listOf(1L to ReadMark.opened(now)), items.readCalls)
     }

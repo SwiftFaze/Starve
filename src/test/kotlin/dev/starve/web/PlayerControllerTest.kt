@@ -6,6 +6,7 @@ import dev.starve.application.MemoryItems
 import dev.starve.application.OWNER
 import dev.starve.application.PlayerService
 import dev.starve.application.TimelineItems
+import dev.starve.domain.AudioEnclosure
 import dev.starve.domain.Playable
 import dev.starve.domain.Waveform
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,9 +24,10 @@ class PlayerControllerTest {
     private fun controller(
         links: Map<Long, String?>,
         allowed: Boolean = true,
+        audio: Map<Long, AudioEnclosure> = emptyMap(),
     ) = PlayerController(
         PlayerService(
-            TimelineItems(links = links),
+            TimelineItems(links = links, audio = audio),
             object : EmbedChecker {
                 override fun allowsEmbedding(video: Playable.YouTube) = allowed
             },
@@ -46,6 +48,42 @@ class PlayerControllerTest {
                 "?autoplay=1&enablejsapi=1&controls=1&rel=0&iv_load_policy=3&playsinline=1",
             model.getAttribute("embedUrl"),
         )
+    }
+
+    @Test
+    fun `an episode renders the audio player with its length and the page to listen on`() {
+        val model = ConcurrentModel()
+        val episode = AudioEnclosure("https://cdn.example/ep.mp3", 3723)
+
+        controller(mapOf(1L to "https://show.example/ep"), audio = mapOf(1L to episode)).player(OWNER, 1, model)
+
+        assertEquals("audio", model.getAttribute("kind"))
+        assertEquals("https://cdn.example/ep.mp3", model.getAttribute("embedUrl"))
+        assertEquals("https://show.example/ep", model.getAttribute("listenUrl"))
+        assertEquals(3723L, model.getAttribute("duration"))
+        assertEquals("1:02:03", model.getAttribute("total"))
+    }
+
+    @Test
+    fun `an episode without a link or a length offers its file and no total`() {
+        val model = ConcurrentModel()
+        val episode = AudioEnclosure("https://cdn.example/ep.mp3")
+
+        controller(mapOf(1L to null), audio = mapOf(1L to episode)).player(OWNER, 1, model)
+
+        assertEquals("https://cdn.example/ep.mp3", model.getAttribute("listenUrl"))
+        assertNull(model.getAttribute("duration"))
+        assertNull(model.getAttribute("total"))
+    }
+
+    @Test
+    fun `play times show minutes and seconds, and hours once there are any`() {
+        assertEquals("0:00", playTime(0))
+        assertEquals("0:59", playTime(59))
+        assertEquals("41:12", playTime(2472))
+        assertEquals("59:59", playTime(3599))
+        assertEquals("1:00:00", playTime(3600))
+        assertEquals("10:02:03", playTime(36123))
     }
 
     @Test

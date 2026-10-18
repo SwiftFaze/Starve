@@ -10,6 +10,7 @@ import dev.starve.application.Neighbours
 import dev.starve.application.Oembed
 import dev.starve.application.PostRef
 import dev.starve.application.TimelineFilter
+import dev.starve.domain.AudioEnclosure
 import dev.starve.domain.Cursor
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Playable
@@ -70,7 +71,7 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.thumbnail_url, " +
-                    "i.favourited_at IS NOT NULL AS is_favourite " +
+                    "i.favourited_at IS NOT NULL AS is_favourite, i.audio_url, i.audio_duration " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
             ).params(id, owner)
             .query { rs, _ ->
@@ -81,6 +82,7 @@ class JdbcItemRepository(
                     rs.getString("source_title"),
                     rs.getString("thumbnail_url"),
                     favourite = rs.getInt("is_favourite") == 1,
+                    audio = rs.audio(),
                 )
             }.optional()
             .orElse(null)
@@ -93,7 +95,7 @@ class JdbcItemRepository(
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.body, " +
                     "i.thumbnail_url, s.favicon_url, i.favourited_at IS NOT NULL AS is_favourite, " +
-                    "i.article_checked_at, i.later_at IS NOT NULL AS is_later, s.url AS source_url " +
+                    "i.article_checked_at, i.later_at IS NOT NULL AS is_later, s.url AS source_url, i.audio_url " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
             ).params(id, owner)
             .query { rs, _ ->
@@ -110,6 +112,7 @@ class JdbcItemRepository(
                     rs.getLong("article_checked_at").takeUnless { rs.wasNull() }?.let(Instant::ofEpochMilli),
                     rs.getInt("is_later") == 1,
                     rs.getString("source_url"),
+                    rs.getString("audio_url"),
                 )
             }.optional()
             .orElse(null)
@@ -122,7 +125,7 @@ class JdbcItemRepository(
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.published_at, i.author, " +
                     "i.thumbnail_url, i.body, i.oembed_json, i.later_at IS NOT NULL AS is_later, " +
-                    "i.favourited_at IS NOT NULL AS is_favourite, s.url AS source_url " +
+                    "i.favourited_at IS NOT NULL AS is_favourite, s.url AS source_url, i.audio_url " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
             ).params(id, owner)
             .query { rs, _ ->
@@ -139,6 +142,7 @@ class JdbcItemRepository(
                     rs.getInt("is_later") == 1,
                     rs.getString("source_url"),
                     favourite = rs.getInt("is_favourite") == 1,
+                    audioUrl = rs.getString("audio_url"),
                 )
             }.optional()
             .orElse(null)
@@ -210,7 +214,7 @@ internal fun JdbcClient.pageRows(
 internal const val TIMELINE_COLUMNS =
     "i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, s.favicon_url, " +
         "i.read_at IS NOT NULL AS is_read, i.favourited_at IS NOT NULL AS is_favourite, " +
-        "i.later_at IS NOT NULL AS is_later"
+        "i.later_at IS NOT NULL AS is_later, i.audio_url"
 
 /** The tables a timeline row query reads, with the source join. */
 internal const val TIMELINE_FROM = "FROM items i JOIN sources s ON s.id = i.source_id"
@@ -224,7 +228,7 @@ internal fun ResultSet.toTimelineItem() =
         Instant.ofEpochMilli(getLong("published_at")),
         getString("thumbnail_url"),
         getInt("is_read") == 1,
-        Playable.of(getString("link")) != null,
+        Playable.of(getString("link"), getString("audio_url")) != null,
         getString("favicon_url"),
         getInt("is_favourite") == 1,
         getInt("is_later") == 1,
@@ -284,8 +288,8 @@ private fun listedConditions(
 }
 
 private const val UPSERT_SQL =
-    "INSERT INTO items (source_id, item_key, title, link, published_at, " +
-        "author, thumbnail_url, body, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+    "INSERT INTO items (source_id, item_key, title, link, published_at, author, thumbnail_url, body, first_seen_at, " +
+        "audio_url, audio_duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
         "ON CONFLICT (source_id, item_key) DO UPDATE " +
         "SET thumbnail_url = COALESCE(items.thumbnail_url, excluded.thumbnail_url), " +
         "body = COALESCE(items.body, excluded.body) RETURNING id"
@@ -309,21 +313,34 @@ private fun JdbcClient.upsertItem(
     val id =
         this
             .sql(UPSERT_SQL)
-            .params(
-                listOf(
-                    sourceId,
-                    item.key,
-                    item.title,
-                    item.link,
-                    (item.publishedAt ?: firstSeenAt).toEpochMilli(),
-                    item.author,
-                    item.thumbnailUrl,
-                    item.body,
-                    firstSeenAt.toEpochMilli(),
-                ),
-            ).query(Long::class.java)
+            .params(upsertParams(sourceId, item, firstSeenAt))
+            .query(Long::class.java)
             .single()
     val isNew = storedBodies.isEmpty()
     val bodyFilledIn = storedBodies.singleOrNull() == null && item.body != null
     if (isNew || bodyFilledIn) search.index(id)
 }
+
+/** The values of [UPSERT_SQL]'s placeholders, in order. */
+private fun upsertParams(
+    sourceId: Long,
+    item: FeedItem,
+    firstSeenAt: Instant,
+): List<Any?> =
+    listOf(
+        sourceId,
+        item.key,
+        item.title,
+        item.link,
+        (item.publishedAt ?: firstSeenAt).toEpochMilli(),
+        item.author,
+        item.thumbnailUrl,
+        item.body,
+        firstSeenAt.toEpochMilli(),
+        item.audio?.url,
+        item.audio?.durationSeconds,
+    )
+
+/** The audio enclosure of an item row that selected `audio_url` and `audio_duration`; null when it has none. */
+private fun ResultSet.audio(): AudioEnclosure? =
+    getString("audio_url")?.let { AudioEnclosure(it, getLong("audio_duration").takeUnless { wasNull() }) }

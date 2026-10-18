@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="content">
-<div class="player" th:attr="data-item=${item.catalogueNumber},data-kind=${kind}">
+<div class="player" th:attr="data-item=${item.catalogueNumber},data-kind=${kind},data-duration=${duration}">
   <div class="now">
     <img class="now-art" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="">
     <span class="now-art now-blank" th:unless="${item.thumbnailUrl}" aria-hidden="true"
@@ -34,7 +34,7 @@
       </svg>
       <input class="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek" disabled>
     </div>
-    <time class="total">--:--</time>
+    <time class="total" th:text="${total} ?: '--:--'">--:--</time>
     <label class="volume">
       <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6 6 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
       <input class="level" type="range" min="0" max="100" value="80" step="1" aria-label="Volume">
@@ -46,6 +46,12 @@
             allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
   <iframe class="sc-frame" th:if="${kind == 'soundcloud'}" th:src="${embedUrl}" title="SoundCloud player"
           height="166" scrolling="no" allow="autoplay"></iframe>
+  <!-- An episode streams from its publisher; deck.js drives the element and, if it will not load, shows the notice. -->
+  <audio class="audio-src" th:if="${kind == 'audio'}" th:src="${embedUrl}" preload="metadata"></audio>
+  <div class="player-off audio-failed" th:if="${kind == 'audio'}" hidden>
+    <p>This episode can't be played here</p>
+    <a th:href="${listenUrl}" target="_blank" rel="noopener noreferrer">Listen on its site</a>
+  </div>
   <div class="player-off" th:if="${kind == 'disabled'}">
     <p>This video can't be played here</p>
     <a th:href="${watchUrl}" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>

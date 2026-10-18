@@ -31,7 +31,7 @@ class PlayerService(
         id: Long,
     ): PlayerResult {
         val item = items.find(owner, id)
-        val playable = Playable.of(item?.link)
+        val playable = Playable.of(item?.link, item?.audio?.url)
         if (item == null || playable == null) return PlayerResult.NotPlayable
         items.markRead(owner, id, ReadMark.opened(clock.instant()))
         return if (playable is Playable.YouTube && !embeds.allowsEmbedding(playable)) {

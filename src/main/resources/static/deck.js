@@ -923,6 +923,52 @@
     return player;
   }
 
+  // A podcast episode plays in an <audio> element streamed from its publisher. Its own events drive the deck. One
+  // that will not load shows the notice and its link out instead of stopping without a word.
+  function audioPlayer(element) {
+    var deck = element.closest('.player');
+    var player = {
+      origin: null, frame: null, playing: false, position: 0,
+      duration: Number(deck.dataset.duration) || 0,
+      play: function () {
+        var started = element.play();
+        // Autoplay can be refused until the listener taps: the deck stays paused, and its Play plays.
+        if (started && started.catch) started.catch(function () { player.playing = false; render(); });
+      },
+      pause: function () { element.pause(); },
+      seek: function (seconds) { element.currentTime = seconds; },
+      volume: function (level) {
+        element.volume = level / 100;
+        element.muted = level === 0;
+      }
+    };
+    function update() {
+      if (state !== player) return;
+      if (isFinite(element.duration) && element.duration > 0) player.duration = element.duration;
+      if (!seeking) player.position = element.currentTime;
+      player.playing = !element.paused && !element.ended;
+      render();
+    }
+    ['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'playing', 'pause', 'ended'].forEach(function (name) {
+      element.addEventListener(name, update);
+    });
+    element.addEventListener('loadedmetadata', function () {
+      if (state !== player) return;
+      enable();
+      resume(player);
+    });
+    element.addEventListener('error', function () {
+      if (state !== player) return;
+      player.playing = false;
+      deck.classList.add('failed');
+      var notice = deck.querySelector('.audio-failed');
+      if (notice) notice.hidden = false;
+    });
+    enable();
+    player.play();
+    return player;
+  }
+
   // SoundCloud publishes each track's peaks; draw them over the stand-in when the browser may.
   function realWaveform(url) {
     fetch(url.replace(/\.png(\?.*)?$/, '.json'))
@@ -948,7 +994,7 @@
 
   // The embeds answer their parent window, this page.
   function receiveMessage(event) {
-    if (!state || event.origin !== state.origin || event.source !== state.frame.contentWindow) return;
+    if (!state || !state.frame || event.origin !== state.origin || event.source !== state.frame.contentWindow) return;
     var data = event.data;
     if (typeof data === 'string') {
       try { data = JSON.parse(data); } catch (e) { return; }
@@ -1536,6 +1582,7 @@
     body.dataset.playing = current.dataset.kind;
     var video = current.querySelector('.ratio-16x9 iframe');
     var audio = current.querySelector('.sc-frame');
+    var episode = current.querySelector('.audio-src');
     trackDeck();
     if (video) {
       body.dataset.video = 'on';
@@ -1547,6 +1594,7 @@
       delete body.dataset.video;
       layout();
       if (audio) state = soundcloud(audio);
+      if (episode) state = audioPlayer(episode);
     }
     applyVolume(savedVolume());
     tickTitle();
