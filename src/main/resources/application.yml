@@ -1,5 +1,7 @@
 server:
   forward-headers-strategy: native
+  mime-mappings:
+    webmanifest: application/manifest+json
 
 starve:
   db:

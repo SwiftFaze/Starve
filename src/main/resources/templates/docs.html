@@ -6,6 +6,14 @@
   <title>Docs - Starve</title>
   <meta name="description" content="How to install Starve with Docker Compose or from source, create the admin account and add your first sources.">
   <link rel="icon" id="favicon" type="image/svg+xml" href="/favicon-dark.svg">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0c12" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ebe8e0" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Starve">
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/starve.css">
   <link rel="preload" href="/fonts/akira-expanded.ttf" as="font" type="font/ttf" crossorigin>
@@ -38,6 +46,7 @@
           <ol>
             <li><a href="#install">Install</a></li>
             <li><a href="#first-run">First run</a></li>
+            <li><a href="#home-screen">On your phone</a></li>
             <li><a href="#data">Your data</a></li>
             <li><a href="#config">Configuration</a></li>
             <li><a href="#update">Update</a></li>
@@ -94,6 +103,20 @@ java -jar target/starve-*.jar</code></pre>
             </ol>
             <p>You are signed in and land on the timeline. From then on <code>/setup</code> is closed and the
               code stops working. Everything after that happens inside Starve itself.</p>
+          </section>
+
+          <section id="home-screen" aria-labelledby="home-screen-title">
+            <h3 id="home-screen-title">On your phone</h3>
+            <p>Starve can live on your home screen like an app: it opens on the timeline, full screen, without
+              the browser's address bar, in the colours of your theme.</p>
+            <ul>
+              <li>iPhone and iPad: open Starve in Safari, tap Share, then <strong>Add to Home Screen</strong>.</li>
+              <li>Android: open Starve in Chrome, open the menu, then <strong>Install app</strong> (or
+                <strong>Add to Home screen</strong>).</li>
+              <li>Desktop Chrome or Edge: click the install icon at the end of the address bar.</li>
+            </ul>
+            <p>It is the same Starve you use in the browser: you stay signed in, the player keeps playing, and
+              links out to a post's site open in your browser. Nothing is kept offline.</p>
           </section>
 
           <section id="data" aria-labelledby="data-title">

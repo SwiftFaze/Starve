@@ -17,6 +17,15 @@ docker build -t starve https://github.com/SwiftFaze/Starve.git#master && docker 
 
 The full install and setup guide is also served by Starve itself at `/docs`.
 
+## On your phone
+
+Starve installs as a home-screen app. On iPhone or iPad open it in Safari, tap
+Share, then **Add to Home Screen**; on Android, **Install app** from Chrome's menu;
+on desktop Chrome or Edge, the install icon in the address bar. It opens on the
+timeline, full screen, in your theme's colours, with the Starve icon. It is the same
+app as in the browser: you stay signed in, the player plays, and links out open in
+your browser. Nothing is cached for offline use.
+
 ## Run locally
 
 Needs JDK 21+.

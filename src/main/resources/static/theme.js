@@ -22,10 +22,13 @@
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
 
-  // The favicon is the obi tile in the active theme's colours, so it follows the switch too.
+  // The favicon is the obi tile in the active theme's colours, so it follows the switch too, and so does the
+  // theme-color the browser's or installed app's own chrome is drawn in.
   function icon() {
     var link = document.getElementById('favicon');
     if (link) link.href = '/favicon-' + current() + '.svg';
+    var colour = current() === 'light' ? '#ebe8e0' : '#0c0c12';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function (meta) { meta.content = colour; });
   }
 
   icon();

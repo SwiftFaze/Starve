@@ -76,6 +76,23 @@ Each template's `<head>` has `<link rel="icon" id="favicon">` ahead of `theme.js
 current theme. It runs on load, when the OS theme changes and when the obi switch is
 pressed, so the tab icon flips with the shutter. With scripts off, it stays dark.
 
+The same `icon()` sets the two `theme-color` metas (ink `#0c0c12` for dark, paper
+`#ebe8e0` for light, each for its `prefers-color-scheme`) to the theme in use, so the
+browser's and the installed app's own chrome follow the obi switch too.
+
+## The app icons
+
+`manifest.webmanifest` (served as `application/manifest+json`, public like the icons)
+installs Starve as a home-screen app that opens `/feed` standalone. Its icons are the
+dark mark, full-bleed tile, cut from the master geometry above:
+
+- `icon-192.png`, `icon-512.png`: the mark as drawn.
+- `icon-maskable-512.png`: the tile stays full bleed and the squares shrink to 80% about
+  the centre, so their corners sit inside the maskable safe circle (radius 40%).
+- `apple-touch-icon.png`, 180px: iOS rounds the corners itself, so it is the plain mark.
+
+Every page's head links the manifest and the touch icon after the favicon.
+
 ## Exporting a PNG
 
 Any SVG renderer will do. With Chrome, which is already on the dev machine:

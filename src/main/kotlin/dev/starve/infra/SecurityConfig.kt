@@ -46,6 +46,8 @@ private val PUBLIC_PATHS =
         "/*.css",
         "/*.js",
         "/*.svg",
+        "/*.png",
+        "/manifest.webmanifest",
         "/fonts/**",
         "/favicon.ico",
         // Browsers probe these on their own (Chrome's DevTools asks for one); an unknown one is a plain 404.
