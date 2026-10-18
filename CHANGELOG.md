@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.34](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.33...v1.1.0-beta.34) (2026-10-18)
+
+
+### Features
+
+* per-source poll interval and Fetch now ([#158](https://github.com/SwiftFaze/Starve/issues/158)) ([3f8539f](https://github.com/SwiftFaze/Starve/commit/3f8539fa173b575dab7b7022c9260bc8ea174885))
+
 ## [1.1.0-beta.33](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.32...v1.1.0-beta.33) (2026-10-18)
 
 
