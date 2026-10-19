@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.45](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.44...v1.1.0-beta.45) (2026-10-19)
+
+
+### Features
+
+* resume media where it was left, on any device ([#186](https://github.com/SwiftFaze/Starve/issues/186)) ([01f3e31](https://github.com/SwiftFaze/Starve/commit/01f3e31f03d421ba6b30f22bc16a02d14ecc6a6f))
+
 ## [1.1.0-beta.44](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.43...v1.1.0-beta.44) (2026-10-19)
 
 
