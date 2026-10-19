@@ -60,7 +60,7 @@ class DockSteps {
 
     @Then("the response contains the thumbnail of {string}")
     fun hasThumbnail(title: String) {
-        val page = body()
+        val page = Html.unproxied(body())
         assertTrue(page.contains("<img ") && page.contains(thumbnailOf(title)), page)
     }
 
