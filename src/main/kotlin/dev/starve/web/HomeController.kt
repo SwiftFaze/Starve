@@ -58,7 +58,12 @@ data class TimelineItemView(
     val later: Boolean = false,
     /** The query string of the list the row is in, which its reader link keeps (empty for the plain timeline). */
     val listQuery: String = "",
+    /** Where its playback last stopped, as the deck's clock shows it ("41:12"); null to start from the beginning. */
+    val resume: String? = null,
 ) {
+    /** The Play control's words: "Resume 41:12" when it stopped part way, else "Play". */
+    val playLabel: String get() = resume?.let { "Resume $it" } ?: "Play"
+
     val catalogueNumber: String get() = Catalogue.number(id)
 
     val star: StarView get() = StarView("star-$id", id, favourite)
@@ -349,4 +354,5 @@ private fun TimelineItem.toView(listQuery: String) =
         favourite,
         later,
         listQuery,
+        position?.let(::playTime),
     )

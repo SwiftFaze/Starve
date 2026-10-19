@@ -453,6 +453,8 @@ data class ItemRef(
     val favourite: Boolean = false,
     /** The episode's audio file, when the item is a podcast episode. */
     val audio: AudioEnclosure? = null,
+    /** Where its playback last stopped, in seconds; null to start from the beginning. */
+    val position: Long? = null,
 )
 
 /**

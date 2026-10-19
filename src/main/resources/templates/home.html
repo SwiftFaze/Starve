@@ -124,8 +124,8 @@
             </div>
             <time class="date" th:datetime="${item.publishedIso}" th:text="${item.published}">date</time>
             <div class="actions">
-              <button type="button" class="play" th:if="${item.playable}"
-                      th:attr="hx-get=@{/items/{id}/player(id=${item.id})}"
+              <button type="button" class="play" th:if="${item.playable}" th:text="${item.playLabel}"
+                      th:attr="hx-get=@{/items/{id}/player(id=${item.id})},data-label=${item.playLabel}"
                       hx-target="#dock" hx-swap="innerHTML"
                       hx-trigger="click[!target.closest('.playing')]" aria-pressed="false">Play</button>
               <th:block th:with="star=${item.star}"><th:block th:replace="~{star :: star}"></th:block></th:block>

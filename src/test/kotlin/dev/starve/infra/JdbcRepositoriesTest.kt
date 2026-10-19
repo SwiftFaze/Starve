@@ -545,6 +545,24 @@ class JdbcRepositoriesTest {
         assertEquals(AudioEnclosure("https://cdn.example/n.mp3"), items.find(OWNER, n.id)?.audio)
     }
 
+    @Test
+    fun `a play position is the owner's to set and forget, and shows on the item and the timeline`() {
+        val source = sources.insert(OWNER, "http://a.test/f", "Pod")
+        val at = Instant.parse("2026-10-11T12:00:00Z")
+        items.insertNew(source.id, listOf(FeedItem("e", "Ep", "https://soundcloud.com/a/b", at, null, null)), at)
+        val id = items.timeline(OWNER, null, TimelineFilter(false), 10).single().id
+        val positions = JdbcPositionRepository(jdbc)
+
+        assertEquals(false, positions.save(OTHER, id, 60))
+        assertNull(items.find(OWNER, id)?.position)
+        assertEquals(true, positions.save(OWNER, id, 2472))
+        assertEquals(2472L, items.find(OWNER, id)?.position)
+        assertEquals(2472L, items.timeline(OWNER, null, TimelineFilter(false), 10).single().position)
+        positions.save(OWNER, id, null)
+        assertNull(items.find(OWNER, id)?.position)
+        assertNull(items.timeline(OWNER, null, TimelineFilter(false), 10).single().position)
+    }
+
     private fun dated(
         key: String,
         at: Instant,

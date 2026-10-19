@@ -19,6 +19,8 @@ data class TimelineItem(
     val faviconUrl: String? = null,
     val favourite: Boolean = false,
     val later: Boolean = false,
+    /** Where its playback last stopped, in seconds; null when it would start from the beginning. */
+    val position: Long? = null,
 )
 
 /** The position a page continues from; encoded into the "after" parameter of the next page's link. */
