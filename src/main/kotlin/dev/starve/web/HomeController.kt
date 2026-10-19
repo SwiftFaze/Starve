@@ -13,6 +13,7 @@ import dev.starve.domain.Catalogue
 import dev.starve.domain.Cursor
 import dev.starve.domain.LaterCursor
 import dev.starve.domain.TimelineItem
+import dev.starve.domain.TrackingParams
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -161,7 +162,7 @@ class HomeController(
     ): String =
         when (val result = timeline.open(owner, id)) {
             OpenResult.Missing -> throw notFound()
-            is OpenResult.Opened -> "redirect:" + (result.link ?: "/feed")
+            is OpenResult.Opened -> "redirect:" + (result.link?.let(TrackingParams::strip) ?: "/feed")
         }
 
     @PostMapping("/items/{id}/read")

@@ -112,9 +112,10 @@
           <article th:each="item : ${items}" th:class="${item.read} ? 'item read' : 'item'"
                    th:attr="data-title=${item.title},data-item=${item.catalogueNumber},aria-labelledby=|title-${item.id}|">
             <span class="cat" th:text="${item.catalogueNumber}" th:title="${item.title}">STV 0132</span>
-            <img class="thumb" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="" loading="lazy">
+            <img class="thumb" th:if="${item.thumbnailUrl}" th:src="${images.src(item.thumbnailUrl)}"
+                 th:attr="data-icon=${images.src(item.faviconUrl)}" alt="" loading="lazy">
             <img class="site-icon" th:if="${item.thumbnailUrl == null and item.faviconUrl != null}"
-                 th:src="${item.faviconUrl}" alt="" loading="lazy">
+                 th:src="${images.src(item.faviconUrl)}" alt="" loading="lazy">
             <span class="blank" th:unless="${item.thumbnailUrl != null or item.faviconUrl != null}"></span>
             <div class="body">
               <a class="title" th:id="|title-${item.id}|" th:href="@{/items/{id}/open(id=${item.id})}" th:text="${item.title}"

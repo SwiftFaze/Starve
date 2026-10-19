@@ -21,14 +21,14 @@
       <span class="source" th:text="${detail.sourceTitle}">Source</span>
       <time class="date" th:datetime="${detail.publishedIso}" th:text="${detail.published}">date</time>
     </p>
-    <a class="reader-original" th:if="${detail.link}" th:href="${detail.link}" target="_blank"
+    <a class="reader-original" th:if="${detail.link}" th:href="${images.link(detail.link)}" target="_blank"
        rel="noopener noreferrer">Open original</a>
   </header>
-  <img class="detail-art" th:if="${detail.thumbnailUrl}" th:src="${detail.thumbnailUrl}" alt="">
+  <img class="detail-art" th:if="${detail.thumbnailUrl}" th:src="${images.src(detail.thumbnailUrl)}" alt="">
   <button type="button" class="detail-play" hx-target="#dock" hx-swap="innerHTML" aria-pressed="false"
           th:attr="hx-get=@{/items/{id}/player(id=${detail.id})}"
           hx-trigger="click[!target.closest('.current')]">Play</button>
-  <div class="reader-body" th:if="${detail.description}" th:utext="${detail.description}"></div>
+  <div class="reader-body" th:if="${detail.description}" th:utext="${images.body(detail.description)}"></div>
 </article>
 </th:block>
 </body>

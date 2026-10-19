@@ -125,7 +125,12 @@ class PostImageSteps {
     fun hasFavicon(
         source: String,
         url: String,
-    ) = updateSource(source, "favicon_url = ?, favicon_checked_at = ?", url, Instant.now().toEpochMilli())
+    ) = updateSource(
+        source,
+        "favicon_url = ?, favicon_checked_at = ?",
+        World.expandFeedServer(url),
+        Instant.now().toEpochMilli(),
+    )
 
     @Given("the favicon of the source {string} was last checked {int} days ago")
     fun checkedDaysAgo(
@@ -144,7 +149,7 @@ class PostImageSteps {
         title: String,
         thumbnail: String,
         days: Int,
-    ) = seed(source, FeedItem(title, title, link(title), daysAgo(days), null, thumbnail))
+    ) = seed(source, FeedItem(title, title, link(title), daysAgo(days), null, World.expandFeedServer(thumbnail)))
 
     @Given("the source {string} has an unread item {string} with no stored thumbnail published {int} days ago")
     fun unreadWithoutThumbnail(
@@ -225,7 +230,7 @@ class PostImageSteps {
 
     // ---- helpers -------------------------------------------------------------------------
 
-    private fun body(): String = World.response.body()
+    private fun body(): String = Html.unproxied(World.response.body())
 
     private fun imgs(html: String): List<String> = IMG.findAll(html).map { it.value }.toList()
 

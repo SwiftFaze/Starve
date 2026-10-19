@@ -1,5 +1,6 @@
 package dev.starve.acceptance
 
+import java.net.URLDecoder
 import java.net.http.HttpResponse
 
 /** Per-run state shared by step-definition classes (Cucumber builds a fresh instance of each per scenario). */
@@ -44,8 +45,8 @@ object World {
 
     /** The `<article>` markup of the timeline entry titled [title] among [pages]. */
     fun entry(title: String): String =
-        pages
-            .joinToString("")
+        Html
+            .unproxied(pages.joinToString(""))
             .split("<article")
             .drop(1)
             .firstOrNull { it.contains("data-title=\"$title\"") }
@@ -79,6 +80,17 @@ object Html {
     fun escape(text: String): String = entities.fold(text) { acc, (raw, entity) -> acc.replace(raw, entity) }
 
     fun unescape(html: String): String = entities.reversed().fold(html) { text, (raw, ent) -> text.replace(ent, raw) }
+
+    /**
+     * [html] with every image Starve proxies (`/images?src=…&sig=…`) pointing at its own address again, escaped as an
+     * attribute is, so steps can name the image a feed gave.
+     */
+    fun unproxied(html: String): String =
+        PROXIED.replace(html) { match ->
+            "src=\"" + URLDecoder.decode(match.groupValues[1], Charsets.UTF_8).replace("&", "&amp;") + "\""
+        }
+
+    private val PROXIED = Regex("src=\"/images\\?src=([^\"&]*)&amp;sig=[^\"]*\"")
 
     /** The `<a>` markup whose text is [label], or null when the page has none. */
     fun anchor(

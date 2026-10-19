@@ -1045,6 +1045,36 @@
 
   window.addEventListener('message', receiveMessage);
 
+  // ---- An image the proxy cannot fetch falls back as a missing one does ------------------
+  //
+  // A row's thumbnail gives way to its source's icon, then to the blank; any other image steps aside. Errors do not
+  // bubble, so the listener catches them on the way down.
+
+  function blank(img, className, text) {
+    var span = document.createElement('span');
+    span.className = className;
+    span.setAttribute('aria-hidden', 'true');
+    if (text) span.textContent = text;
+    img.replaceWith(span);
+  }
+
+  document.addEventListener('error', function (event) {
+    var img = event.target;
+    if (!(img instanceof HTMLImageElement)) return;
+    if (img.matches('.item .thumb') && img.dataset.icon) {
+      img.className = 'site-icon';
+      img.src = img.dataset.icon;
+      delete img.dataset.icon;
+    } else if (img.matches('.item .thumb, .item .site-icon')) {
+      blank(img, 'blank');
+    } else if (img.matches('.now-art')) {
+      var number = img.closest('.player') ? img.closest('.player').dataset.item : '';
+      blank(img, 'now-art now-blank', number);
+    } else {
+      img.hidden = true;
+    }
+  }, true);
+
   // ---- A title too long for the deck scrolls as a ticker ------------------------------
 
   function tickTitle() {

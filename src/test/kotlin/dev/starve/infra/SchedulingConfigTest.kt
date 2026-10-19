@@ -2,6 +2,8 @@ package dev.starve.infra
 
 import dev.starve.application.FeedFetcher
 import dev.starve.application.FeedIngestor
+import dev.starve.application.ImageCache
+import dev.starve.application.ImageCacheService
 import dev.starve.application.ItemRepository
 import dev.starve.application.PollService
 import dev.starve.application.RetentionService
@@ -30,6 +32,9 @@ class SchedulingConfigTest {
             .withBean(
                 RetentionService::class.java,
                 { RetentionService(mock(ItemRepository::class.java), Clock.systemUTC(), Duration.ofDays(1)) },
+            ).withBean(
+                ImageCacheService::class.java,
+                { ImageCacheService(mock(ImageCache::class.java), { emptySet() }, 0) },
             ).withPropertyValues("starve.poll.tick=PT0.05S")
 
     @Test

@@ -350,7 +350,7 @@ class FullArticleSteps {
 
     private fun expand(text: String) = World.expandFeedServer(text)
 
-    private fun readerBody() = Jsoup.parse(World.response.body())
+    private fun readerBody() = Jsoup.parse(Html.unproxied(World.response.body()))
 
     /** The timeline entry of [title] on the all-items view, which still lists a post once it is read. */
     private fun timelineEntry(title: String): String {

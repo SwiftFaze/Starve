@@ -4,7 +4,7 @@
 <th:block th:fragment="content">
 <div class="player" th:attr="data-item=${item.catalogueNumber},data-kind=${kind},data-duration=${duration},data-resume=${resume}">
   <div class="now">
-    <img class="now-art" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="">
+    <img class="now-art" th:if="${item.thumbnailUrl}" th:src="${images.src(item.thumbnailUrl)}" alt="">
     <span class="now-art now-blank" th:unless="${item.thumbnailUrl}" aria-hidden="true"
           th:text="${item.catalogueNumber}">STV 0132</span>
     <div class="now-text">

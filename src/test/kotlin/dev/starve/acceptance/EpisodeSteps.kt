@@ -84,7 +84,7 @@ class EpisodeSteps {
 
     @Then("the player shows the art {string}")
     fun showsArt(url: String) {
-        val body = World.response.body()
+        val body = Html.unproxied(World.response.body())
         assertTrue(body.contains("class=\"now-art\" src=\"$url\""), body)
     }
 
