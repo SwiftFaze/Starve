@@ -34,6 +34,12 @@ data class FeedSpec(
     val mediaContent: MediaContent? = null,
     /** URL of an image enclosure on each RSS item; `null` omits it. */
     val enclosure: String? = null,
+    /** URL of an audio/mpeg enclosure on each RSS item, as a podcast has; `null` omits it. */
+    val audioEnclosure: String? = null,
+    /** Each RSS item's itunes:duration; `null` omits it. */
+    val itunesDuration: String? = null,
+    /** The channel's itunes:image, the show's art; `null` omits it. */
+    val showArt: String? = null,
 )
 
 /** A media:content element; [type] and [medium] are set only when given. */

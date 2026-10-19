@@ -2813,6 +2813,30 @@ a.title:hover {
   border: 1px solid var(--red);
 }
 
+/* An episode has no waveform to draw: a plain line, lit as far as it has played. Its <audio> is never seen. */
+.player[data-kind="audio"] .bars {
+  display: none;
+}
+
+.player[data-kind="audio"] .wave {
+  background:
+    linear-gradient(var(--red), var(--red)) left center / calc(var(--progress) * 100%) 3px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) center / 100% 3px no-repeat;
+}
+
+.audio-src {
+  display: none;
+}
+
+/* An episode that will not load: its notice and link out take the transport's place. */
+.player.failed .transport {
+  display: none;
+}
+
+.player-off[hidden] {
+  display: none;
+}
+
 .player-off {
   grid-column: 3 / span 2;
   display: flex;

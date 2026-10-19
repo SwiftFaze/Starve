@@ -13,11 +13,13 @@ import dev.starve.application.InvalidFeedException
 import dev.starve.application.PollService
 import dev.starve.application.SourceRepository
 import dev.starve.application.quietFavicons
+import dev.starve.domain.AudioEnclosure
 import dev.starve.domain.FeedItem
 import dev.starve.domain.Source
 import dev.starve.domain.Validators
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -349,6 +351,65 @@ class RomeFeedFetcherTest {
     }
 
     private fun thumbnailOf(spec: FeedSpec): String? = feedOf(spec).items.single().thumbnailUrl
+
+    @Test
+    fun `an audio enclosure is the episode's audio, with its itunes duration`() {
+        val spec = FeedSpec(audioEnclosure = "https://cdn.example/ep.mp3", itunesDuration = "1:02:03")
+        val item = feedOf(spec).items.single()
+
+        assertEquals(AudioEnclosure("https://cdn.example/ep.mp3", 3723), item.audio)
+    }
+
+    @Test
+    fun `an audio media content is the episode's audio too, by type or by medium`() {
+        val typed = MediaContent("https://cdn.example/ep.m4a", type = "audio/mp4")
+        val medium = MediaContent("https://cdn.example/ep.ogg", medium = "audio")
+
+        val audioOf = { content: MediaContent -> feedOf(FeedSpec(mediaContent = content)).items.single().audio }
+        assertEquals(AudioEnclosure("https://cdn.example/ep.m4a"), audioOf(typed))
+        assertEquals(AudioEnclosure("https://cdn.example/ep.ogg"), audioOf(medium))
+    }
+
+    @Test
+    fun `a relative enclosure resolves against the entry's link, else the site's`() {
+        val linked = feedOf(FeedSpec(audioEnclosure = "ep.mp3", entryLink = "https://show.example/eps/1"))
+        val site = "https://site.example/a/"
+        val linkless = feedOf(FeedSpec(audioEnclosure = "ep.mp3", linkless = true, siteLink = site))
+
+        assertEquals(
+            "https://show.example/eps/ep.mp3",
+            linked.items
+                .single()
+                .audio
+                ?.url,
+        )
+        assertEquals(
+            "https://site.example/a/ep.mp3",
+            linkless.items
+                .single()
+                .audio
+                ?.url,
+        )
+    }
+
+    @Test
+    fun `an image enclosure or image media content is no audio`() {
+        assertNull(feedOf(FeedSpec(enclosure = "https://cdn.example/a.jpg")).items.single().audio)
+        val image = MediaContent("https://cdn.example/a.jpg", type = "image/jpeg")
+        assertNull(feedOf(FeedSpec(mediaContent = image)).items.single().audio)
+    }
+
+    @Test
+    fun `an episode without its own art takes the show's, and other entries never do`() {
+        val art = "https://cdn.example/show.jpg"
+
+        assertEquals(art, thumbnailOf(FeedSpec(audioEnclosure = "https://cdn.example/ep.mp3", showArt = art)))
+        assertNull(thumbnailOf(FeedSpec(showArt = art)))
+        val episode = FeedSpec(audioEnclosure = "https://cdn.example/ep.mp3", showArt = art)
+        assertNull(thumbnailOf(episode.copy(entryLink = "https://soundcloud.com/a/b")))
+        val own = "https://cdn.example/own.jpg"
+        assertEquals(own, thumbnailOf(episode.copy(mediaThumbnail = own)))
+    }
 
     @Test
     fun `blank titles and authors are treated as absent`() {

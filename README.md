@@ -306,6 +306,14 @@ disabled embedding, a message and a link to watch it on YouTube replace the
 player. If YouTube cannot be asked, Starve assumes embedding is allowed. Other
 items keep the open-link behavior only.
 
+Podcast episodes play too. An episode fetched with an audio file (an `audio/*`
+enclosure or `media:content`) shows the same **Play** control, and plays in the deck
+with its play and pause, a seekable progress line, elapsed and total time (from the
+feed's `itunes:duration` until the file reports its own), volume and **Eject**. The
+audio streams straight from the publisher. An episode without art of its own shows
+the show's. If the file will not load, the deck says so and links to the episode's
+page. Episodes stored before this release keep their link out.
+
 On a desktop a playing YouTube video gets a panel of its own beside the list and any open
 post. Drag a panel's title bar onto another panel to split it on that side (left, right,
 top or bottom), onto its middle to swap the two, or onto an edge of the window to give it

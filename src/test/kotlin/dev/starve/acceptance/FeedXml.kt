@@ -15,9 +15,10 @@ object FeedXml {
     ): String {
         val title = spec.title?.let { "<title>$it</title>" } ?: ""
         val site = spec.siteLink?.let { "<link>$it</link>" } ?: ""
+        val art = spec.showArt?.let { "<itunes:image href=\"$it\"/>" } ?: ""
         val items = (1..spec.entries).joinToString("") { rssItem(baseUrl, path, spec, it) }
         return """<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:itunes="$ITUNES" xmlns:content="$CONTENT" xmlns:media="$MEDIA"><channel>$title$site""" +
+<rss version="2.0" xmlns:itunes="$ITUNES" xmlns:content="$CONTENT" xmlns:media="$MEDIA"><channel>$title$site$art""" +
             """<description>fixture</description>$items</channel></rss>"""
     }
 
@@ -62,7 +63,9 @@ object FeedXml {
     }
 
     private fun enclosure(spec: FeedSpec): String =
-        spec.enclosure?.let { "<enclosure url=\"$it\" type=\"image/jpeg\" length=\"0\"/>" }.orEmpty()
+        spec.enclosure?.let { "<enclosure url=\"$it\" type=\"image/jpeg\" length=\"0\"/>" }.orEmpty() +
+            spec.audioEnclosure?.let { "<enclosure url=\"$it\" type=\"audio/mpeg\" length=\"1234\"/>" }.orEmpty() +
+            spec.itunesDuration?.let { "<itunes:duration>$it</itunes:duration>" }.orEmpty()
 
     private fun bodies(spec: FeedSpec): String {
         val description = spec.description?.let { "<description><![CDATA[$it]]></description>" } ?: ""

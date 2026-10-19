@@ -11,15 +11,15 @@ class DetailService(
 ) {
     /**
      * The detail view of [owner]'s playable item, marked read and opened; null for an unknown or another user's item
-     * and for one that is not a YouTube video or SoundCloud track. SoundCloud's oEmbed is fetched once: a successful
-     * answer is stored with the item, a failed one is not, so the next open asks again.
+     * and for one that is not a YouTube video, SoundCloud track or podcast episode. SoundCloud's oEmbed is fetched
+     * once: a successful answer is stored with the item, a failed one is not, so the next open asks again.
      */
     fun open(
         owner: Long,
         id: Long,
     ): ItemDetail? {
         val item = items.findDetail(owner, id)
-        val playable = Playable.of(item?.link)
+        val playable = Playable.of(item?.link, item?.audioUrl)
         if (item == null || playable == null) return null
         items.markRead(owner, id, ReadMark.opened(clock.instant()))
         val oembed = if (playable is Playable.SoundCloud) soundCloudOembed(item, playable.trackUrl) else null

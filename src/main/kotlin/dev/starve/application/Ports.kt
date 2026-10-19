@@ -1,5 +1,6 @@
 package dev.starve.application
 
+import dev.starve.domain.AudioEnclosure
 import dev.starve.domain.Cursor
 import dev.starve.domain.Feed
 import dev.starve.domain.FeedItem
@@ -450,6 +451,8 @@ data class ItemRef(
     val sourceTitle: String,
     val thumbnailUrl: String?,
     val favourite: Boolean = false,
+    /** The episode's audio file, when the item is a podcast episode. */
+    val audio: AudioEnclosure? = null,
 )
 
 /**
@@ -471,6 +474,8 @@ data class PostRef(
     val later: Boolean = false,
     /** The source's own feed URL. */
     val sourceUrl: String? = null,
+    /** The episode's audio file URL, when the item is a podcast episode. */
+    val audioUrl: String? = null,
 )
 
 /** SoundCloud's public oEmbed details of a track; a field is null when oEmbed did not give it. */
@@ -498,6 +503,8 @@ data class DetailRef(
     /** The source's own feed URL. */
     val sourceUrl: String? = null,
     val favourite: Boolean = false,
+    /** The episode's audio file URL, when the item is a podcast episode. */
+    val audioUrl: String? = null,
 )
 
 /** What the detail view shows: the feed data with SoundCloud's oEmbed details laid over it. */

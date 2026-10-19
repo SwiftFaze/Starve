@@ -4,9 +4,9 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLEncoder
 
-/** What an item's link can play inline: a YouTube video or a SoundCloud track. */
+/** What an item can play inline: its link's YouTube video or SoundCloud track, or its audio enclosure. */
 sealed interface Playable {
-    /** The iframe source that plays it. */
+    /** The source that plays it: the iframe's, or the audio element's. */
     val embedUrl: String
 
     data class YouTube(
@@ -29,13 +29,28 @@ sealed interface Playable {
                 "https://w.soundcloud.com/player/?url=${URLEncoder.encode(trackUrl, Charsets.UTF_8)}&auto_play=true"
     }
 
+    /** A podcast episode's audio file, streamed from its publisher by an `<audio>` element. */
+    data class Audio(
+        val url: String,
+    ) : Playable {
+        override val embedUrl: String get() = url
+    }
+
     companion object {
         private val VIDEO_ID = Regex("[A-Za-z0-9_-]{11}")
         private val YOUTUBE_HOSTS = setOf("youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com")
         private val SOUNDCLOUD_HOSTS = setOf("soundcloud.com", "www.soundcloud.com")
 
-        /** The player for [link], or null when it is not a YouTube video or SoundCloud track link. */
-        fun of(link: String?): Playable? {
+        /**
+         * The player of an item with [link] and [audioUrl]: its link's video or track when the link is one, else its
+         * http or https audio enclosure; null when it has neither.
+         */
+        fun of(
+            link: String?,
+            audioUrl: String? = null,
+        ): Playable? = ofLink(link) ?: audioUrl?.takeIf { FeedRules.isHttpUrl(it) }?.let(::Audio)
+
+        private fun ofLink(link: String?): Playable? {
             val uri = link?.let(::parse) ?: return null
             val host = uri.host?.lowercase()
             return when {

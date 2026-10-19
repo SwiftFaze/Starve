@@ -93,4 +93,25 @@ class PlayableTest {
             track.embedUrl,
         )
     }
+
+    @Test
+    fun `an audio enclosure plays when the link does not`() {
+        val audio = "https://cdn.example/ep1.mp3"
+
+        assertEquals(Playable.Audio(audio), Playable.of("https://show.example/ep1", audio))
+        assertEquals(Playable.Audio(audio), Playable.of(null, audio))
+        assertEquals(audio, Playable.Audio(audio).embedUrl)
+        assertEquals(audio, Playable.Audio(audio).url)
+    }
+
+    @Test
+    fun `a playable link wins over an audio enclosure`() =
+        assertEquals(Playable.YouTube(id), Playable.of("https://youtu.be/$id", "https://cdn.example/a.mp3"))
+
+    @Test
+    fun `an audio enclosure that is not http or https does not play`() {
+        assertNull(Playable.of("https://show.example/ep1", "ftp://cdn.example/a.mp3"))
+        assertNull(Playable.of("https://show.example/ep1", "not a url"))
+        assertNull(Playable.of("https://show.example/ep1", null))
+    }
 }

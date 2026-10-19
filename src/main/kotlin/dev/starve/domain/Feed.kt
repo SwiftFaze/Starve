@@ -12,6 +12,8 @@ data class FeedItem(
     val thumbnailUrl: String?,
     /** Sanitised HTML of the post, or null when the entry had none worth showing. */
     val body: String? = null,
+    /** The episode's audio file, for a podcast entry; null otherwise. */
+    val audio: AudioEnclosure? = null,
 )
 
 /** A parsed feed: its own title, when it has one, its site link, when it has one, and its entries. */

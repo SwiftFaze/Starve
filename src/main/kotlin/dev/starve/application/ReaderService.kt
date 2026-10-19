@@ -26,7 +26,7 @@ class ReaderService(
         id: Long,
     ): PostRef? {
         val post = items.findPost(owner, id)
-        if (post == null || Playable.of(post.link) != null) return null
+        if (post == null || Playable.of(post.link, post.audioUrl) != null) return null
         val now = clock.instant()
         val shown = withArticle(post, now)
         items.markRead(owner, id, ReadMark.opened(now))
