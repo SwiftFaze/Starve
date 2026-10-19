@@ -228,6 +228,8 @@ class ApplicationHarness(
                     "--starve.db.path=$dbFile",
                     "--starve.scheduling.enabled=false",
                     "--starve.fetch.timeout=PT1S",
+                    // The feed server is on localhost, which the image proxy refuses unless it is trusted.
+                    "--starve.images.trusted-hosts=localhost",
                     "--starve.youtube.oembed-url=${oembedUrl()}",
                     "--starve.soundcloud.oembed-url=${soundCloudOembedUrl()}",
                     *extraArgs.toTypedArray(),

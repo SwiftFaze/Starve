@@ -7,6 +7,7 @@ import dev.starve.application.FeedIngestor
 import dev.starve.application.FeedLocator
 import dev.starve.application.GroupRepository
 import dev.starve.application.GroupService
+import dev.starve.application.ImageCacheService
 import dev.starve.application.ItemRepository
 import dev.starve.application.PollService
 import dev.starve.application.RetentionService
@@ -115,8 +116,8 @@ class FeedConfig {
 }
 
 /**
- * Runs polling and retention in the background; switched off in acceptance tests. Every tick polls the sources that
- * are due, each on its own interval or `starve.poll.interval`.
+ * Runs polling, retention and the image cache's prune in the background; switched off in acceptance tests. Every
+ * tick polls the sources that are due, each on its own interval or `starve.poll.interval`.
  */
 @Configuration
 @EnableScheduling
@@ -124,6 +125,7 @@ class FeedConfig {
 class SchedulingConfig(
     private val pollService: PollService,
     private val retentionService: RetentionService,
+    private val imageCacheService: ImageCacheService,
     private val clock: Clock,
     @Value("\${starve.poll.interval:PT30M}") private val defaultInterval: Duration,
 ) {
@@ -139,5 +141,6 @@ class SchedulingConfig(
     )
     fun purge() {
         retentionService.purgeOld()
+        imageCacheService.prune()
     }
 }

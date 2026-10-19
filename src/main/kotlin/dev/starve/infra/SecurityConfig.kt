@@ -25,6 +25,7 @@ import org.springframework.security.web.authentication.rememberme.RememberMeAuth
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.security.web.csrf.CsrfFilter
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy
 
 /** A remembered login lasts 30 days. */
 private const val REMEMBER_ME_SECONDS = 30 * 24 * 60 * 60
@@ -113,6 +114,8 @@ class SecurityConfig {
             .logout { configureLogout(it) }
             .requestCache { it.requestCache(pageOnlyRequestCache()) }
             .exceptionHandling { it.authenticationEntryPoint(loginEntryPoint()) }
+            // No page, image or link out tells another site that it was reached from Starve.
+            .headers { headers -> headers.referrerPolicy { it.policy(ReferrerPolicy.NO_REFERRER) } }
         return http.build()
     }
 
