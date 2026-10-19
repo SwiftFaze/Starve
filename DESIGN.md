@@ -31,33 +31,33 @@ colors:
   stripe-light: "#ebe8e0"
 typography:
   wordmark:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontFamily: "Archivo, system-ui, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 800
     lineHeight: 1
     letterSpacing: "0.01em"
   cover-title:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontFamily: "Archivo, system-ui, sans-serif"
     fontSize: "clamp(2.75rem, 5.1vw, 6rem)"
     fontWeight: 800
     lineHeight: 0.92
   display:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontFamily: "Archivo, system-ui, sans-serif"
     fontSize: "2.75rem"
     fontWeight: 800
     lineHeight: 1
   headline:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontFamily: "Archivo, system-ui, sans-serif"
     fontSize: "1.75rem"
     fontWeight: 800
     lineHeight: 1
   closing:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontFamily: "Archivo, system-ui, sans-serif"
     fontSize: "1.5rem"
     fontWeight: 800
     lineHeight: 1.05
   deck-number:
-    fontFamily: "Akira Expanded, Archivo, system-ui, sans-serif"
+    fontFamily: "Archivo, system-ui, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 800
     lineHeight: 1
@@ -241,7 +241,7 @@ components:
 
 **Creative North Star: "The Obi Deck"**
 
-Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Akira caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. On a desktop the list, a playing video and an open post are tiled beside the obi like terminal panels, each with a mono title bar, split by draggable rules, and dragging one title bar onto another splits or swaps them.
+Starve is drawn as a 90s OVA cassette cover. A red obi strip runs down the left edge and names the series (the current group) in vertical Archivo Expanded caps, closed at the foot by caution chevrons. The release list beside it is the cover's spec panel: hairline-ruled rows keyed by STV catalogue numbers, with registration crosses at the sheet head's corners. Along the bottom, while something plays, a tape-transport deck shows the art, the STV number in red, the title, and a waveform that fills red as it plays and is also the seek bar. On a desktop the list, a playing video and an open post are tiled beside the obi like terminal panels, each with a mono title bar, split by draggable rules, and dragging one title bar onto another splits or swaps them.
 
 The same drawing exists twice. Dark is the cover on ink and light is the cover on bone paper, chosen by `prefers-color-scheme` unless the obi's switch has chosen. Both keep square corners, outlined mono controls, and a fine film grain over everything. Display type is loud and expanded, but reading text stays in mixed-case Archivo at reading sizes. The poster attitude belongs to the frame. The list itself is for reading. Signed out, the same world plays at full volume: the landing is the cassette's J-card, with a wider obi and a cover title at poster size.
 
@@ -252,7 +252,7 @@ The world rejects the reader/music-app default of a grey sidebar, rounded cards 
 - A spec-panel list: STV number, art cell, title over source, date, actions, all on hairline rules.
 - A tiled desktop workspace: list, video and post as panels with title bars, hairline frames and splitters; the active panel outlined in red.
 - A fixed player deck with a red top rule and a waveform seek bar.
-- Three type voices with strict jobs: Akira for display, Archivo for reading, Martian Mono for numbers, controls and code.
+- Three type voices with strict jobs: Archivo Expanded for display, Archivo for reading, Martian Mono for numbers, controls and code.
 - Square corners everywhere, with no shadows. Depth comes from tone, rules and grain.
 - Red means obi, live, or the active panel. Cyan means focus, the chosen layout, a drop target or an active splitter.
 
@@ -290,20 +290,20 @@ Ink, bone and two signals: an obi red that says "this is the series / this is pl
 
 ## Typography
 
-**Display Font:** Akira Expanded (800, `font-stretch: 125%` so the Archivo fallback widens too), with Archivo, system-ui fallback. The font is user-supplied and personal-use only. It is gitignored and never committed.
+**Display Font:** Archivo Expanded: Archivo 800 at `font-stretch: 125%`, the reading face widened to its widest cut, with a system-ui fallback. One self-hosted OFL family carries both display and reading, so nothing in the drawing depends on a font the public repo cannot ship.
 **Body Font:** Archivo (variable 100–900, width 62–125%), self-hosted OFL WOFF2, latin + latin-ext.
 **Label/Mono Font:** Martian Mono (variable 100–800), self-hosted OFL WOFF2.
 
 **Character:** A loud expanded poster face used only for names and headings, a plain grotesque that carries every word you actually read, and a technical mono that turns catalogue numbers, dates, controls and code into spec-sheet data. Tabular figures are on globally.
 
 ### Hierarchy
-- **Cover Title** (Akira 800, `clamp(2.75rem, 5.1vw, 6rem)`, 0.92; `clamp(2rem, 9.6vw, 3.75rem)` on phones; uppercase, balanced): the landing's cover line only.
-- **Display** (Akira 800, 2.75rem; 2.125rem for Sources/Import/Docs obi names; `clamp(3rem, 6.2vw, 6rem)` on the landing's obi; `clamp(1.25rem, 7vw, 1.75rem)` on the horizontal phone obi; uppercase, vertical-rl rotated 180deg on desktop, ellipsis at 70% of the band, 78% on the landing): the series name on the obi.
-- **Headline** (Akira 800, 1.75rem, 1; 1.25rem below 60rem; uppercase, balanced): the sheet heading. Docs section heads use the same voice at 1.25rem/1.1 over a full-weight rule.
-- **Closing** (Akira 800, 1.5rem, 1.05; uppercase, under a full-weight rule): "You're all caught up", shown only when the view has nothing unread, with a mono meta note under it ("Sources are checked every 30 minutes"). An empty list drops the closing's own rule, because the sheet head's rule already closes it.
+- **Cover Title** (Archivo Expanded 800, `clamp(2.75rem, 5.1vw, 6rem)`, 0.92; `clamp(2rem, 9.6vw, 3.75rem)` on phones; uppercase, balanced): the landing's cover line only.
+- **Display** (Archivo Expanded 800, 2.75rem; 2.125rem for Sources/Import/Docs obi names; `clamp(3rem, 6.2vw, 6rem)` on the landing's obi; `clamp(1.25rem, 7vw, 1.75rem)` on the horizontal phone obi; uppercase, vertical-rl rotated 180deg on desktop, ellipsis at 70% of the band, 78% on the landing): the series name on the obi.
+- **Headline** (Archivo Expanded 800, 1.75rem, 1; 1.25rem below 60rem; uppercase, balanced): the sheet heading. Docs section heads use the same voice at 1.25rem/1.1 over a full-weight rule.
+- **Closing** (Archivo Expanded 800, 1.5rem, 1.05; uppercase, under a full-weight rule): "You're all caught up", shown only when the view has nothing unread, with a mono meta note under it ("Sources are checked every 30 minutes"). An empty list drops the closing's own rule, because the sheet head's rule already closes it.
 - **List end** (Martian Mono 500, 0.6875rem, 0.06em, uppercase, dim, on a strong hairline): "End of list · 12 unread", the quiet bottom of a list that still has unread items. Favourites and Later end on "End of list" alone; search ends with no marker.
-- **Wordmark** (Akira 800, 1.125rem, uppercase, 0.01em): STARVE in the top bar. The landing demo's head uses the same size.
-- **Deck Number** (Akira 800, 1.125rem; 0.875rem below 60rem; Obi Red Text): the playing STV number in the deck.
+- **Wordmark** (Archivo Expanded 800, 1.125rem, uppercase, 0.01em): STARVE in the top bar. The landing demo's head uses the same size.
+- **Deck Number** (Archivo Expanded 800, 1.125rem; 0.875rem below 60rem; Obi Red Text): the playing STV number in the deck.
 - **Title** (Archivo 500, 1rem, 1.35, mixed case): release, source and setting names; underline only on hover; wraps anywhere rather than overflow. The reader's post title is 1.375rem/1.3 (1.25rem on phones).
 - **Deck Title** (Archivo 600, 0.9375rem, 1.25): the playing title, one line, ticker when too long.
 - **Body** (Archivo 400, 0.9375rem, 1.55): page default; notes at 1rem, hints at 0.8125rem/1.45. Sheet notes cap at 40rem. Posts and docs read at 1rem (posts 1.6, docs 1.65), capped at 40rem and 44rem; a post's running text also keeps to 68ch, so lines stay near 70 characters in a wide panel.
@@ -314,7 +314,7 @@ Ink, bone and two signals: an obi red that says "this is the series / this is pl
 - **Code** (Martian Mono 400, 0.8125rem, 1.6): code blocks. Inline code is mono 500 at 0.8125em.
 
 ### Named Rules
-**The Three Voices Rule.** Akira is for display only: the wordmark, the obi series name, the landing's cover title, sheet and docs headings, the deck STV number and "caught up". Archivo, in mixed case, carries every title and all body text. Martian Mono carries STV/SRC numbers, dates, sources, control labels and code. Never set reading text in Akira, and never set reading text in all caps.
+**The Three Voices Rule.** Archivo Expanded is for display only: the wordmark, the obi series name, the landing's cover title, sheet and docs headings, the deck STV number and "caught up". Archivo, in mixed case, carries every title and all body text. Martian Mono carries STV/SRC numbers, dates, sources, control labels and code. Never set reading text in Archivo Expanded, and never set reading text in all caps.
 
 ## Layout
 
@@ -380,7 +380,7 @@ Outlined mono controls that read as printed spec labels.
 A status or error line, used on every page that reports one: a 1px box padded 0.875rem by 1rem, medium weight, the text wrapped in mono brackets. A status draws its box and brackets in cyan; an error (`role="alert"`) draws them in Obi Red Text. An error about one field sits directly under that field, which is marked invalid and keeps what was typed, as a rejected source URL does on Sources.
 
 ### Confirmation
-What cannot be undone asks first: removing a source, deleting a group, resetting a user's password. The first control is a link to the same page drawn with a dialog open, so it works without scripts; `deck.js` makes it modal. The dialog is a small spec sheet on the raised surface inside a strong hairline (30rem at most), over the ground veiled at 88%: an Akira title (1.25rem) over a full-weight rule, one Archivo sentence naming the thing in bold and what happens to it, then the filled confirm control and an outlined Cancel, both 2.75rem. Focus starts on Cancel; Escape or a click on the veil is Cancel. It rises in over 200ms; on a phone it sits at the foot of the screen above the deck. Deleting a user keeps its own confirmation page.
+What cannot be undone asks first: removing a source, deleting a group, resetting a user's password. The first control is a link to the same page drawn with a dialog open, so it works without scripts; `deck.js` makes it modal. The dialog is a small spec sheet on the raised surface inside a strong hairline (30rem at most), over the ground veiled at 88%: an Archivo Expanded title (1.25rem) over a full-weight rule, one Archivo sentence naming the thing in bold and what happens to it, then the filled confirm control and an outlined Cancel, both 2.75rem. Focus starts on Cancel; Escape or a click on the veil is Cancel. It rises in over 200ms; on a phone it sits at the foot of the screen above the deck. Deleting a user keeps its own confirmation page.
 
 ### Navigation
 - **Top bar:** sticky on desktop and static on phones. Tabs and group links are mono uppercase in the dim color and turn to the text color on hover. Group links carry their unread count in square brackets ("All [40]"). The current page or group is marked by a 0.5rem square before the label. The build draws it in red, which falls outside the Obi Red Rule; don't copy that use of red.
@@ -389,21 +389,21 @@ What cannot be undone asks first: removing a source, deleting a group, resetting
 - **Docs contents:** a list of mono uppercase links on hairlines, under a strong hairline, sticky beside the column.
 
 ### The Obi (signature)
-The red spine. It holds the series name, set vertically in Akira and reading bottom to top. The series name is the page's one h1 on every page, the timeline included, where the wordmark is a plain link; a sheet title never just repeats it. An open post's title is an h2 that owns its body: the body's headings are re-levelled for display to start at h3 (the stored body is untouched). Mono meta below it gives "n unread", the sort order and the STV range, semibold. The unread count, like the group tabs' bracketed counts, follows each item read without a reload. Its text is the obi ink (`--on-obi`): ink on red in both themes, since white on the light red measured about 4.1:1, under AA for the 11px meta. On Sources it carries a failing count as a block inverted in that ink: red text on an ink block. It is full height between bar and deck and never scrolls with the list. On the landing it is the cover's own spine: wider and carrying STARVE at poster size.
+The red spine. It holds the series name, set vertically in Archivo Expanded and reading bottom to top. The series name is the page's one h1 on every page, the timeline included, where the wordmark is a plain link; a sheet title never just repeats it. An open post's title is an h2 that owns its body: the body's headings are re-levelled for display to start at h3 (the stored body is untouched). Mono meta below it gives "n unread", the sort order and the STV range, semibold. The unread count, like the group tabs' bracketed counts, follows each item read without a reload. Its text is the obi ink (`--on-obi`): ink on red in both themes, since white on the light red measured about 4.1:1, under AA for the 11px meta. On Sources it carries a failing count as a block inverted in that ink: red text on an ink block. It is full height between bar and deck and never scrolls with the list. On the landing it is the cover's own spine: wider and carrying STARVE at poster size.
 - **Theme switch:** the caution chevrons at its foot are a button that flips dark and light. The choice is stored in localStorage (`starve.theme`) and applied from `<head>` before the first paint; with nothing stored, the OS decides. The stripes sit on a 1rem square tile (`--stripe`: ink in dark, bone in light) and march sideways on hover. On phones the chevrons end the horizontal band.
 
 ### The Mark (signature)
 The logo: the obi tile carrying two overlapping squares in obi ink, one solid and one outlined, with the overlap showing the tile red. The favicon is its own icon: the feed in frame, three shortening rows inside corner brackets with a small red live square, on the ground colour, pixel-fitted at 16px. Both follow the theme like the obi does. Its construction, colours and rules live in `docs/brand.md`.
 
 ### The Shutter (signature)
-Every theme change and every page switch (an in-app navigation link, not a form submission) runs behind one red panel that sweeps across the whole viewport, all `cubic-bezier(0.65, 0, 0.35, 1)`, at two paces. A theme change, rare and deliberate, takes the full sweep: 1.25s in, a 0.4s hold while covered, 1.25s out. A page switch, made many times a session, is fast: 250ms in, no hold, 250ms out, so a Timeline → Sources → Timeline trip no longer costs about 6 seconds. Either way the swap happens under full cover, and a slow response holds the cover rather than revealing a half-swapped page. Chevron bands lead and trail it. It is dressed as an obi spec sheet: an inset hairline frame with registration crosses, mono corner captions (STARVE, NO ALGORITHM, `[ THEME ]` or `[ PAGE ]`), a barcode with a code derived from the label, a chevron strip, the destination in Akira over a thin rule and a mono caption, and a faint scanline. On a theme change it wears the destination theme's obi ink from the start, so it never flips colour mid-cover.
+Every theme change and every page switch (an in-app navigation link, not a form submission) runs behind one red panel that sweeps across the whole viewport, all `cubic-bezier(0.65, 0, 0.35, 1)`, at two paces. A theme change, rare and deliberate, takes the full sweep: 1.25s in, a 0.4s hold while covered, 1.25s out. A page switch, made many times a session, is fast: 250ms in, no hold, 250ms out, so a Timeline → Sources → Timeline trip no longer costs about 6 seconds. Either way the swap happens under full cover, and a slow response holds the cover rather than revealing a half-swapped page. Chevron bands lead and trail it. It is dressed as an obi spec sheet: an inset hairline frame with registration crosses, mono corner captions (STARVE, NO ALGORITHM, `[ THEME ]` or `[ PAGE ]`), a barcode with a code derived from the label, a chevron strip, the destination in Archivo Expanded over a thin rule and a mono caption, and a faint scanline. On a theme change it wears the destination theme's obi ink from the start, so it never flips colour mid-cover.
 - **Page switches never reload:** a link between pages (the top bar's links, the wordmark, the public cross-links, Cancel and Back to Settings) is marked `data-switch`. The next page is fetched while the panel sweeps in, swapped in place under it, the URL pushed, and the same panel sweeps out, so nothing blinks. The player dock sits outside the shell, and the Timeline, Sources, Account and Settings pages all carry it, so moving between them by the bar's links keeps whatever plays. The Timeline and Sources tabs swap only the sheet; the other switches swap the shell (`#shell`: sleeve, sheet, body class), dock kept. A move to a page without a dock (Import, delete user, the temporary-password page, the public pages) removes it and stops playback, as a page load does. Modified clicks, back/forward and a failed fetch fall back to an ordinary page load.
 - **Form submissions are plain:** sign in, sign up, setup, sign out, change password and confirm delete are ordinary form posts with no shutter, because they change who the visitor is.
 - **The page you are on:** clicking its tab glides back to the top (of the list panel when tiled), or, already at the top, blinks the tab's red marker twice. No reload.
 - Under reduced motion there is no panel: the theme or page changes at once.
 
 ### Sheet Head
-Every sheet heading sits in one head: Akira headline, actions to the right, a full-weight text-color rule beneath, and registration crosses at its top corners. A second head lower on the Sources sheet (the groups section) keeps the rule but drops the crosses, as do heads inside a tiled list panel and on phones.
+Every sheet heading sits in one head: Archivo Expanded headline, actions to the right, a full-weight text-color rule beneath, and registration crosses at its top corners. A second head lower on the Sources sheet (the groups section) keeps the rule but drops the crosses, as do heads inside a tiled list panel and on phones.
 
 ### Release Row
 Its parts are the STV number, the art cell (the sunk surface in a hairline while its image loads, and if there is none), the title over source, the date and the actions (Play, the icon toggles, Mark read). On a desktop pointer the star and clock wait until the row is hovered or focused, so a row draws Play and Mark read only; a pressed one always shows, and phones and touch always show both. An icon toggle names itself on hover and keyboard focus with a small mono label under it that follows its state (Favourite / Unfavourite, Save for later / Saved). On hover the row moves to the raised surface. A read row turns its number and title to the faint tier, with the title struck through in a strong hairline. The playing row stays raised, its STV number becomes a red cell, and its Play button fills red.
@@ -413,7 +413,7 @@ Its parts are the STV number, the art cell (the sunk surface in a hairline while
 The tmux-like tile. A 1.75rem title bar on the raised surface carries a 0.375rem square marker and the panel name (List, Video, Post) in mono uppercase, dim, then a small borderless × that closes the post or ejects the video (the list has none). The bar is the drag handle (grab cursor); lifted, it follows the pointer with a cyan border at 92% opacity, and the panel under it shows the cyan drop frame. A hairline frame outlines each panel. The active panel, the last one clicked or focused, gets a red frame and red bar border, its name in the text color and its marker red.
 
 ### Player Deck (signature)
-A fixed bottom bar with a minimum height of 5.5rem, on the raised surface with a 1px red top rule. From left to right it holds the art (5.5rem square, or a red block with the STV number in mono when there is no art), the text stack (red Akira STV number, Archivo title and mono source), the favourite star, the transport, the layout switch for YouTube only, and Eject.
+A fixed bottom bar with a minimum height of 5.5rem, on the raised surface with a 1px red top rule. From left to right it holds the art (5.5rem square, or a red block with the STV number in mono when there is no art), the text stack (red Archivo Expanded STV number, Archivo title and mono source), the favourite star, the transport, the layout switch for YouTube only, and Eject.
 - **Star:** the item's favourite star (an icon toggle) sits in its own grid cell right after the text stack, centred on the deck, at the same size as the play/pause (2.5rem; 2.75rem on phones, where it takes the cell between the text and Eject). It follows the item's other stars.
 - **Open post:** a control lying over the art and the title, so clicking or tapping what is playing opens its post in the post panel. It keeps its name for screen readers, never fills on hover, and underlines the title instead.
 - **Transport:** a 2.5rem square play/pause, the elapsed time, the waveform and the total time.
@@ -430,7 +430,7 @@ The box takes whatever rectangle its panel gives it, on the ground color; the pi
 A picture in a post, or a detail view's artwork, opens in a full-screen modal over a near-black backdrop (92%), fitted to the screen inside a strong hairline on the sunk surface, with a 2.75rem square × fixed at the top right; a click anywhere closes it (zoom-out cursor). A picture linking to a larger image file shows that file. Feed artwork arrives as a thumbnail, so the lightbox asks its host for the largest size it serves (SoundCloud's 500px, YouTube's maxres) and falls back to the picture as shown when there is none.
 
 ### Landing J-Card
-The signed-out cover. A cover title in Akira, an Archivo pitch (up to 34rem, dim) and the actions (filled Sign in, outline Sign up when signups are open, both 3rem tall). Beside it, a demo release list on the raised surface inside a strong hairline with registration crosses: an Akira head with a mono "Demo" tag, six rows built from the app's own row parts with abstract hairline art blocks, which strike themselves read one by one (520ms each, 0.55s apart), each title fading to the dim tier as it strikes (never the whole row's opacity, which took its faint source and date under AA) and end on "You're all caught up". Below: an A/B-side tracklist (mono track numbers A1–B3, Archivo 600 names over dim descriptions), a specifications list (mono terms, Archivo values, hairline rows), and a colophon of mono captions with a barcode. Under reduced motion the demo shows its finished state.
+The signed-out cover. A cover title in Archivo Expanded, an Archivo pitch (up to 34rem, dim) and the actions (filled Sign in, outline Sign up when signups are open, both 3rem tall). Beside it, a demo release list on the raised surface inside a strong hairline with registration crosses: an Archivo Expanded head with a mono "Demo" tag, six rows built from the app's own row parts with abstract hairline art blocks, which strike themselves read one by one (520ms each, 0.55s apart), each title fading to the dim tier as it strikes (never the whole row's opacity, which took its faint source and date under AA) and end on "You're all caught up". Below: an A/B-side tracklist (mono track numbers A1–B3, Archivo 600 names over dim descriptions), a specifications list (mono terms, Archivo values, hairline rows), and a colophon of mono captions with a barcode. Under reduced motion the demo shows its finished state.
 
 ### Access Form
 Sign in, sign up and set up share one shape: a sheet head, mono field labels over fields, a checkbox row where needed, the full-width primary button, and an Archivo line linking to the other form. A new-password field carries `minlength` so the browser checks the length first; a rejected form comes back with every non-secret field still filled (never a password), and the field the error is about is marked `aria-invalid` and described by the error line as well as its hint. Beside it, a notes list: mono uppercase terms over dim Archivo text on hairlines, under a strong hairline.
@@ -450,7 +450,7 @@ On the docs page a code block is a sunk well with a strong hairline, mono 0.8125
 ## Do's and Don'ts
 
 ### Do:
-- **Do** set the wordmark, obi series name, cover title, sheet and docs headings, the deck STV number and "caught up" in Akira Expanded 800, uppercase, at `font-stretch: 125%`.
+- **Do** set the wordmark, obi series name, cover title, sheet and docs headings, the deck STV number and "caught up" in Archivo 800, uppercase, at `font-stretch: 125%` (Archivo Expanded).
 - **Do** set every title and all body text in Archivo, mixed case. Set STV/SRC numbers, dates, sources, control labels and code in Martian Mono.
 - **Do** ship every color in both themes, following `prefers-color-scheme` unless the obi switch has set `data-theme` on the root.
 - **Do** keep row dates aligned with the fixed 18.5rem actions column, and keep an empty art cell when a row has no art.
@@ -463,12 +463,11 @@ On the docs page a code block is a sunk well with a strong hairline, mono 0.8125
 - **Do** run theme changes and page switches through the shutter, the full sweep for a theme change and the fast one for a page switch, and keep the scrollbar gutter reserved (`scrollbar-gutter: stable`) so switching pages never changes the page width.
 
 ### Don't:
-- **Don't** use Akira for reading text, and don't set reading text in all caps.
+- **Don't** use Archivo Expanded for reading text, and don't set reading text in all caps.
 - **Don't** use red for anything but the obi, live/playing state and the active workspace panel.
 - **Don't** use cyan for anything but focus, the chosen layout, a drop target or the active splitter.
 - **Don't** use the code hues (amber, violet) outside code blocks.
 - **Don't** round corners, use pill buttons or cards, or add shadows.
 - **Don't** use unicode glyphs as icons.
 - **Don't** use the faint text tier (`bone-faint` / `ink-faint`) as the main voice: it clears 4.5:1 on every ground (≥4.68:1) but exists to recede, for read rows and placeholders.
-- **Don't** commit the Akira font files. They are personal-use and gitignored.
 - **Don't** colour the page scrollbar: it stays the strong hairline on the ground (tried in red and rejected).

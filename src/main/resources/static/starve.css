@@ -30,13 +30,6 @@
   font-display: block;
 }
 
-@font-face {
-  font-family: "Akira Expanded";
-  src: url("/fonts/akira-expanded.ttf") format("truetype");
-  font-weight: 800;
-  font-display: block;
-}
-
 /* The obi ink is a typed colour so it can transition when the theme swaps under the shutter. Both themes write it in
    ink today (#97: white on the light red was under AA), so the fade is idle until a theme gives the obi its own ink. */
 @property --on-obi {
@@ -69,7 +62,7 @@
   --code-amber: #e8b04a;
   --code-violet: #b3a6ff;
 
-  --display: "Akira Expanded", "Archivo", system-ui, sans-serif;
+  --display: "Archivo", system-ui, sans-serif;
   --display-stretch: 125%;
   --read: "Archivo", system-ui, sans-serif;
   --mono: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
