@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.46](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.45...v1.1.0-beta.46) (2026-10-19)
+
+
+### Features
+
+* serve every image through Starve and strip tracking from links out ([#189](https://github.com/SwiftFaze/Starve/issues/189)) ([cd41646](https://github.com/SwiftFaze/Starve/commit/cd4164675cfec94fe7b18d0972d238d1d53499ee))
+
 ## [1.1.0-beta.45](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.44...v1.1.0-beta.45) (2026-10-19)
 
 
