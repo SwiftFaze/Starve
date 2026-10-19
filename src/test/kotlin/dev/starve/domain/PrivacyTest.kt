@@ -12,12 +12,13 @@ import java.net.InetAddress
 class PrivacyTest {
     @Test
     fun `utm parameters and click ids are stripped, everything else keeps its place`() {
-        assertEquals("https://example.com/post?id=7", TrackingParams.strip("https://example.com/post?utm_source=rss&id=7"))
+        val post = "https://example.com/post"
+        assertEquals("$post?id=7", TrackingParams.strip("$post?utm_source=rss&id=7"))
         assertEquals(
             "https://example.com/p?a=1&b=2#top",
             TrackingParams.strip("https://example.com/p?a=1&fbclid=x&UTM_Medium=y&b=2&gclid=z#top"),
         )
-        assertEquals("https://example.com/p#top", TrackingParams.strip("https://example.com/p?utm_campaign=c&mc_eid=e#top"))
+        assertEquals("$post#top", TrackingParams.strip("$post?utm_campaign=c&mc_eid=e#top"))
     }
 
     @Test
@@ -51,7 +52,9 @@ class PrivacyTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["93.184.216.34", "8.8.8.8", "100.63.255.255", "100.128.0.1", "172.32.0.1", "2606:4700::1"])
-    fun `other addresses are public`(address: String) = assertTrue(AddressRules.isPublic(InetAddress.getByName(address)), address)
+    fun `other addresses are public`(address: String) {
+        assertTrue(AddressRules.isPublic(InetAddress.getByName(address)), address)
+    }
 
     @Test
     fun `image types are accepted by their bare media type, ignoring case and parameters`() {

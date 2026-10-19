@@ -26,7 +26,7 @@ class ImageConfig(
     @Value("\${starve.images.trusted-hosts:}") private val trustedHosts: List<String>,
 ) {
     @Bean
-    fun imageSigner(metadata: AppMetadata) = ImageSigner.stored(metadata)
+    fun imageSigner(metadata: AppMetadata): ImageSigner = HmacImageSigner.stored(metadata)
 
     @Bean
     fun imageCache(): ImageCache =

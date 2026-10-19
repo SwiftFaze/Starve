@@ -5,6 +5,7 @@ import dev.starve.application.ImageProxyService
 import dev.starve.application.ImageSigner
 import dev.starve.domain.FeedRules
 import dev.starve.domain.TrackingParams
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.http.CacheControl
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -35,8 +36,9 @@ class ImageLinks(
 ) {
     /** The proxied address of the http or https image [url]; null for none, another scheme or no viewer. */
     fun src(url: String?): String? {
-        val username = viewer() ?: return null
-        val image = url?.takeIf { FeedRules.isHttpUrl(it) } ?: return null
+        val username = viewer()
+        val image = url?.takeIf { FeedRules.isHttpUrl(it) }
+        if (username == null || image == null) return null
         return "/images?src=" + URLEncoder.encode(image, Charsets.UTF_8) + "&sig=" + signer.sign(username, image)
     }
 
@@ -44,16 +46,19 @@ class ImageLinks(
     fun link(url: String?): String? = url?.let(TrackingParams::strip)
 
     /** Stored post HTML with its images proxied and its links cleaned; an image that cannot be proxied stays as is. */
-    fun body(post: String?): String? = post?.let { body -> html.rewrite(body, { src(it) ?: it }, TrackingParams::strip) }
+    fun body(post: String?): String? =
+        post?.let { body ->
+            html.rewrite(body, { src(it) ?: it }, TrackingParams::strip)
+        }
 }
 
-/** Puts [ImageLinks] in every page's model as `images`, for the templates. */
+/** Puts [ImageLinks] in every page's model as `images`, for the templates; absent where it is not wired. */
 @ControllerAdvice
 class ImageLinksModel(
-    private val links: ImageLinks,
+    private val links: ObjectProvider<ImageLinks>,
 ) {
     @ModelAttribute("images")
-    fun images(): ImageLinks = links
+    fun images(): ImageLinks? = links.ifAvailable
 }
 
 /** The image proxy: an image Starve signed for this viewer, from its cache or fetched once from its site. */
@@ -66,10 +71,11 @@ class ImageController(
     @GetMapping("/images")
     fun image(
         @RequestParam src: String,
-        @RequestParam sig: String,
+        @RequestParam(required = false) sig: String?,
     ): ResponseEntity<ByteArray> {
         val username = viewer()
-        if (username == null || !signer.verifies(username, src, sig)) throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val signed = username != null && sig != null && signer.verifies(username, src, sig)
+        if (!signed) throw ResponseStatusException(HttpStatus.NOT_FOUND)
         val image = proxy.image(src) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         return ResponseEntity
             .ok()

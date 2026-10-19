@@ -183,7 +183,7 @@ class MediaDetailSteps {
                 .filterValues { it != null },
         )
 
-    private fun body(): String = World.response.body()
+    private fun body(): String = Html.unproxied(World.response.body())
 
     private fun group(pattern: Regex): String {
         val page = body()

@@ -1,11 +1,5 @@
 package dev.starve.application
 
-import java.security.MessageDigest
-import java.security.SecureRandom
-import java.util.Base64
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
-
 /** An image as the proxy serves it: its bytes and their media type. */
 class ProxiedImage(
     val bytes: ByteArray,
@@ -56,48 +50,20 @@ fun interface HtmlLinks {
 }
 
 /**
- * Signs image URLs for one viewer, so the proxy only ever fetches what Starve itself put on that viewer's page: an
- * HMAC of the username and the URL under a key generated once and kept in app_metadata.
+ * Signs image URLs for one viewer, so the proxy only ever fetches what Starve itself put on that viewer's page.
  */
-class ImageSigner(
-    private val key: ByteArray,
-) {
+interface ImageSigner {
     fun sign(
         username: String,
         url: String,
-    ): String {
-        val mac = Mac.getInstance(ALGORITHM).apply { init(SecretKeySpec(key, ALGORITHM)) }
-        val digest = mac.doFinal("$username\n$url".toByteArray(Charsets.UTF_8)).copyOf(SIGNATURE_BYTES)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
-    }
+    ): String
 
-    /** Whether [signature] is [url]'s for [username], compared in constant time. */
+    /** Whether [signature] is [url]'s for [username]. */
     fun verifies(
         username: String,
         url: String,
         signature: String,
-    ): Boolean = MessageDigest.isEqual(sign(username, url).toByteArray(Charsets.UTF_8), signature.toByteArray(Charsets.UTF_8))
-
-    companion object {
-        /** The app_metadata key the signing key is kept under. */
-        const val KEY_NAME = "image_key"
-        private const val ALGORITHM = "HmacSHA256"
-        private const val SIGNATURE_BYTES = 16
-        private const val KEY_BYTES = 32
-
-        /** The signer under the stored key, which is generated and stored on the first call. */
-        fun stored(
-            metadata: AppMetadata,
-            random: SecureRandom = SecureRandom(),
-        ): ImageSigner {
-            if (metadata.find(KEY_NAME) == null) {
-                val bytes = ByteArray(KEY_BYTES).also { random.nextBytes(it) }
-                metadata.putIfAbsent(KEY_NAME, Base64.getEncoder().encodeToString(bytes))
-            }
-            val key = checkNotNull(metadata.find(KEY_NAME)) { "image key missing after it was stored" }
-            return ImageSigner(Base64.getDecoder().decode(key))
-        }
-    }
+    ): Boolean
 }
 
 /** Serves the images Starve shows from its own cache, fetching each from its site once. */

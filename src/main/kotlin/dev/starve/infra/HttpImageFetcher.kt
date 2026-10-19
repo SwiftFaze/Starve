@@ -9,6 +9,7 @@ import dev.starve.domain.ImageRules
 import java.net.InetAddress
 import java.net.URI
 import java.net.UnknownHostException
+import java.net.http.HttpResponse
 
 /**
  * Fetches images for the proxy through [http], which must not follow redirects itself: each hop is followed here, at
@@ -21,38 +22,49 @@ class HttpImageFetcher(
     private val trustedHosts: Set<String> = emptySet(),
     private val resolve: (String) -> List<InetAddress> = { InetAddress.getAllByName(it).toList() },
 ) : ImageFetcher {
-    override fun fetch(url: String): ProxiedImage? {
-        var target = url
-        repeat(MAX_HOPS + 1) {
-            if (!FeedRules.isHttpUrl(target) || !reachable(target)) return null
-            val response =
-                try {
-                    http.get(target, ACCEPT)
-                } catch (_: FeedFetchException) {
-                    return null
-                }
-            val status = response.statusCode()
-            if (status !in REDIRECTS) return image(status, response.headers().firstValue("Content-Type").orElse(null), response.body())
-            val location = response.headers().firstValue("Location").orElse(null) ?: return null
-            target = FeedRules.absoluteHttpUrl(location, target) ?: return null
+    override fun fetch(url: String): ProxiedImage? = hop(url, 0)
+
+    /** [target], the [hops]th address on the way; a redirect is followed while hops are left. */
+    private fun hop(
+        target: String,
+        hops: Int,
+    ): ProxiedImage? {
+        val allowed = hops <= MAX_HOPS && FeedRules.isHttpUrl(target) && reachable(target)
+        val response = if (allowed) get(target) else null
+        return when {
+            response == null -> null
+            response.statusCode() in REDIRECTS -> next(response, target)?.let { hop(it, hops + 1) }
+            else -> image(response)
         }
-        return null
     }
 
-    private fun image(
-        status: Int,
-        contentType: String?,
-        body: ByteArray,
-    ): ProxiedImage? {
-        val type = ImageRules.acceptedType(contentType)
-        val ok = status in OK && type != null && body.isNotEmpty() && body.size <= ImageRules.MAX_BYTES
+    private fun get(target: String): HttpResponse<ByteArray>? =
+        try {
+            http.get(target, ACCEPT)
+        } catch (_: FeedFetchException) {
+            null
+        }
+
+    /** Where a redirect from [from] points, made absolute; null when it points nowhere usable. */
+    private fun next(
+        response: HttpResponse<ByteArray>,
+        from: String,
+    ): String? = FeedRules.absoluteHttpUrl(response.headers().firstValue("Location").orElse(null), from)
+
+    private fun image(response: HttpResponse<ByteArray>): ProxiedImage? {
+        val type = ImageRules.acceptedType(response.headers().firstValue("Content-Type").orElse(null))
+        val body = response.body()
+        val ok = response.statusCode() in OK && type != null && body.isNotEmpty() && body.size <= ImageRules.MAX_BYTES
         return if (ok) ProxiedImage(body, checkNotNull(type)) else null
     }
 
-    /** Whether every address [url]'s host resolves to may be fetched; an unknown host may not. */
+    /** Whether [url]'s host is trusted, or every address it resolves to may be fetched; an unknown host may not. */
     private fun reachable(url: String): Boolean {
-        val host = URI(url.trim()).host ?: return false
-        if (host.lowercase() in trustedHosts) return true
+        val host = URI(url.trim()).host?.lowercase()
+        return host != null && (host in trustedHosts || resolvesPublic(host))
+    }
+
+    private fun resolvesPublic(host: String): Boolean {
         val addresses =
             try {
                 resolve(host.removePrefix("[").removeSuffix("]"))

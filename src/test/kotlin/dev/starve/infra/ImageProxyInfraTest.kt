@@ -175,7 +175,9 @@ class ImageProxyInfraTest {
 
     @Test
     fun `post html has its images and links rewritten and nothing else`() {
-        val html = "<p>Hi <a href=\"https://a.example/?utm_source=x\">a</a></p><img src=\"https://a.example/i.png\" alt=\"i\">"
+        val html =
+            "<p>Hi <a href=\"https://a.example/?utm_source=x\">a</a></p>" +
+                "<img src=\"https://a.example/i.png\" alt=\"i\">"
 
         val rewritten = JsoupHtmlLinks.rewrite(html, { "/img/$it" }, { it.substringBefore('?') })
 
@@ -211,7 +213,7 @@ class ImageProxyInfraTest {
         )
 
         assertEquals(
-            setOf("https://a.test/icon.png", "https://cdn.test/t.png", "https://cdn.test/b1.png", "https://cdn.test/b2.png"),
+            setOf("https://a.test/icon.png") + listOf("t", "b1", "b2").map { "https://cdn.test/$it.png" },
             JdbcImageReferences(jdbc).all(),
         )
         (dataSource as AutoCloseable).close()

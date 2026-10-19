@@ -16,7 +16,19 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.server.ResponseStatusException
 
 class ImageLinksTest {
-    private val signer = ImageSigner(ByteArray(32) { 7 })
+    private val signer =
+        object : ImageSigner {
+            override fun sign(
+                username: String,
+                url: String,
+            ) = "sig-$username-${url.length}"
+
+            override fun verifies(
+                username: String,
+                url: String,
+                signature: String,
+            ) = signature == sign(username, url)
+        }
     private val links = ImageLinks(signer) { html, image, link -> "${image(html)}|${link(html)}" }
 
     private fun signIn(username: String) {
@@ -89,7 +101,8 @@ class ImageLinksTest {
         assertEquals(HttpStatus.OK, response.statusCode)
         assertEquals("image/svg+xml", response.headers.contentType.toString())
         assertEquals("max-age=31536000, private, immutable", response.headers.cacheControl)
-        assertEquals("default-src 'none'; style-src 'unsafe-inline'; sandbox", response.headers.getFirst("Content-Security-Policy"))
+        val policy = response.headers.getFirst("Content-Security-Policy")
+        assertEquals("default-src 'none'; style-src 'unsafe-inline'; sandbox", policy)
         assertArrayEquals(byteArrayOf(1), response.body)
     }
 

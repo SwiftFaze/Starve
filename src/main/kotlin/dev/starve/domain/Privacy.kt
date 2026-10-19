@@ -42,19 +42,20 @@ object TrackingParams {
      * fragment. A URL that does not parse, or has no query, comes back as it was.
      */
     fun strip(url: String): String {
-        val uri =
-            try {
-                URI(url)
-            } catch (_: URISyntaxException) {
-                return url
-            }
-        val query = uri.rawQuery ?: return url
-        val kept = query.split('&').filter { it.isNotEmpty() && !isTracking(it.substringBefore('=')) }
-        if (kept.size == query.split('&').size) return url
-        val head = url.substringBefore('?')
-        val fragment = uri.rawFragment?.let { "#$it" }.orEmpty()
-        return head + (if (kept.isEmpty()) "" else "?" + kept.joinToString("&")) + fragment
+        val uri = parsed(url)
+        val pieces = uri?.rawQuery?.split('&').orEmpty()
+        val kept = pieces.filter { it.isNotEmpty() && !isTracking(it.substringBefore('=')) }
+        if (uri == null || kept.size == pieces.size) return url
+        val query = if (kept.isEmpty()) "" else "?" + kept.joinToString("&")
+        return url.substringBefore('?') + query + uri.rawFragment?.let { "#$it" }.orEmpty()
     }
+
+    private fun parsed(url: String): URI? =
+        try {
+            URI(url)
+        } catch (_: URISyntaxException) {
+            null
+        }
 }
 
 /** Which addresses the server may fetch images from on a user's behalf: never the home network or itself. */

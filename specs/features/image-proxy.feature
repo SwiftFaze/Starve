@@ -95,10 +95,10 @@ Feature: Images come through Starve, and links out carry no tracking
   Scenario: Opening an item drops the tracking parameters from its link
     Given the source "Blog" has an unread item "Story" with the link "https://example.com/post?utm_source=rss&id=7&fbclid=abc" published 1 days ago
     When I open the item "Story"
-    Then the response redirects to "https://example.com/post?id=7"
+    Then the response redirects to the address "https://example.com/post?id=7"
 
   Scenario: Links in the reader lose their tracking parameters
-    Given the source "Blog" has an item "Post" with the link "https://example.com/post?utm_medium=feed&id=7" and the stored body "<p><a href=\"https://other.example/x?gclid=1&amp;q=a\">x</a></p>" published 1 days ago
+    Given the source "Blog" has an item "Post" with the link "https://example.com/post?utm_medium=feed&id=7" and the stored body "<p><a href='https://other.example/x?gclid=1&amp;q=a' target='_blank' rel='noopener noreferrer'>x</a></p>" published 1 days ago
     When I request the reader of the item "Post" via htmx
     Then the reader has an "Open original" link to "https://example.com/post?id=7"
     And the reader body links to "https://other.example/x?q=a" opening in a new tab with rel "noopener noreferrer"

@@ -5,6 +5,7 @@ import dev.starve.application.ProxiedImage
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.FileTime
 import java.security.MessageDigest
 import java.time.Clock
@@ -23,11 +24,9 @@ class DiskImageCache(
 ) : ImageCache {
     override fun find(url: String): ProxiedImage? {
         val name = nameOf(url)
-        val file = EXTENSIONS.values.map { dir.resolve("$name.$it") }.firstOrNull { Files.isRegularFile(it) } ?: return null
+        val file = EXTENSIONS.values.map { dir.resolve("$name.$it") }.firstOrNull { Files.isRegularFile(it) }
         return try {
-            val image = ProxiedImage(Files.readAllBytes(file), typeOf(file))
-            Files.setLastModifiedTime(file, FileTime.from(clock.instant()))
-            image
+            file?.let { ProxiedImage(Files.readAllBytes(it), typeOf(it)) }?.also { touch(checkNotNull(file)) }
         } catch (_: IOException) {
             null
         }
@@ -42,8 +41,8 @@ class DiskImageCache(
         val file = dir.resolve("${nameOf(url)}.$extension")
         val partial = Files.createTempFile(dir, "partial-", ".tmp")
         Files.write(partial, image.bytes)
-        Files.move(partial, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-        Files.setLastModifiedTime(file, FileTime.from(clock.instant()))
+        Files.move(partial, file, StandardCopyOption.REPLACE_EXISTING)
+        touch(file)
     }
 
     override fun prune(
@@ -52,7 +51,8 @@ class DiskImageCache(
     ): Int {
         if (!Files.isDirectory(dir)) return 0
         val kept = keep.mapTo(HashSet(), ::nameOf)
-        val (wanted, unwanted) = dir.listDirectoryEntries().filter { Files.isRegularFile(it) }.partition { it.nameWithoutExtension in kept }
+        val files = dir.listDirectoryEntries().filter { Files.isRegularFile(it) }
+        val (wanted, unwanted) = files.partition { it.nameWithoutExtension in kept }
         unwanted.forEach(Files::deleteIfExists)
         var total = wanted.sumOf(Files::size)
         val overflow =
@@ -63,13 +63,20 @@ class DiskImageCache(
         return unwanted.size + overflow.size
     }
 
+    /** Marks [file] as used now, which keeps it from being the first to go over the cap. */
+    private fun touch(file: Path) {
+        Files.setLastModifiedTime(file, FileTime.from(clock.instant()))
+    }
+
     private fun typeOf(file: Path): String = EXTENSIONS.entries.first { it.value == file.extension }.key
 
-    private fun nameOf(url: String): String =
-        MessageDigest.getInstance("SHA-256").digest(url.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+    private fun nameOf(url: String): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(url.toByteArray(Charsets.UTF_8))
+        return digest.joinToString("") { "%02x".format(it) }
+    }
 
     private companion object {
-        /** The extension each served media type is stored under; the two icon types share one, read back as the first. */
+        /** The extension each served media type is stored under; the two icon types share one, read as the first. */
         val EXTENSIONS =
             linkedMapOf(
                 "image/jpeg" to "jpg",

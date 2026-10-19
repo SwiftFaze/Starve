@@ -15,7 +15,10 @@ import java.time.Instant
 class ImageProxySteps {
     private val app = World.app
 
-    @Given("the source {string} has an unread item {string} whose stored thumbnail is {string} on the feed server's numeric address")
+    @Given(
+        "the source {string} has an unread item {string} whose stored thumbnail is {string} " +
+            "on the feed server's numeric address",
+    )
     fun thumbnailOnNumericAddress(
         source: String,
         title: String,
@@ -74,9 +77,19 @@ class ImageProxySteps {
         val headers = World.response.headers()
         assertEquals(type, headers.firstValue("Content-Type").orElse(""))
         val cache = headers.firstValue("Cache-Control").orElse("")
-        assertTrue(cache.contains("max-age=31536000") && cache.contains("private") && cache.contains("immutable"), cache)
+        assertTrue(listOf("max-age=31536000", "private", "immutable").all { cache.contains(it) }, cache)
         assertTrue(headers.firstValue("Content-Security-Policy").orElse("").contains("sandbox"))
     }
+
+    @Then("the response redirects to the address {string}")
+    fun redirectsToAddress(address: String) =
+        assertEquals(
+            address,
+            World.response
+                .headers()
+                .firstValue("Location")
+                .orElse(null),
+        )
 
     @Then("the response has the header {string} set to {string}")
     fun responseHeader(
