@@ -157,16 +157,17 @@ audio.
 
 ## Grouping sources
 
-On **Sources** you can create groups (1 to 50 characters, unique ignoring case),
-rename and delete them. Each source belongs to at most one group, chosen from the
-selector beside it; "Ungrouped" clears it. Deleting a group ungroups its sources
-and keeps their items.
+On **Sources** the subscriptions are filed by group: each group's heading has its
+sources under it, and the ungrouped ones come last. **New group** creates one (1 to
+50 characters, unique ignoring case); click a group's name to rename it. Each source
+belongs to at most one group, chosen under the source's **Settings**; "Ungrouped"
+clears it. Deleting a group ungroups its sources and keeps their items.
 
 ## Keyword tags
 
-A group gathers sources; a **tag** gathers posts about a topic from any source. Under
-the groups on **Sources**, give a tag a name and its terms, comma-separated, e.g.
-`AI, LLM, OpenAI, GPT*`. Terms match whole words in post titles, so `AI` finds "AI in
+A group gathers sources; a **tag** gathers posts about a topic from any source. In the
+Tags column on **Sources**, open **New tag** and give it a name and its terms,
+comma-separated, e.g. `AI, LLM, OpenAI, GPT*`. Terms match whole words in post titles, so `AI` finds "AI in
 schools" but not "Said". A term of several words is a phrase, and a trailing `*`
 matches every word it starts (`GPT*` finds "GPT4o"). Tick **Match the body too** to
 search post text as well, and pick **Only within group** to keep the tag to one
