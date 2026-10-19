@@ -91,6 +91,14 @@ class SourcesPlayingSteps {
         regions.forEach { assertFalse(region(it).contains("id=\"dock\""), "#$it holds the dock") }
     }
 
+    @Then("the page has a reader pane outside everything a page tab swaps")
+    fun readerOutsideTabRegions() {
+        assertTrue(body().contains("<aside id=\"reader\""), "no reader pane in ${body()}")
+        tabs().flatMap { regionIds(it) }.toSet().forEach {
+            assertFalse(region(it).contains("id=\"reader\""), "#$it holds the reader pane")
+        }
+    }
+
     // ---- Sources forms -------------------------------------------------------------------
 
     @Then("the add-a-source form submits via htmx into the page content")

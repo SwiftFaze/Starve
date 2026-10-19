@@ -10,7 +10,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-private const val LOGIN_URL = "http://localhost/login"
+private const val LOGIN_URL = "/login"
 
 class DeletedUserSessionTest : SecurityTestBase() {
     private fun signedIn(username: String) = MockHttpSession().also { login(username, session = it) }

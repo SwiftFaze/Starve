@@ -28,7 +28,7 @@ class SecurityAccessTest : SecurityTestBase() {
         mvc
             .perform(get(path))
             .andExpect(status().isFound)
-            .andExpect(redirectedUrl("http://localhost/login"))
+            .andExpect(redirectedUrl("/login"))
     }
 
     @ParameterizedTest
@@ -78,7 +78,18 @@ class SecurityAccessTest : SecurityTestBase() {
 
         val result = login(ADMIN, session = session)
 
-        assertEquals("http://localhost/sources", result.response.redirectedUrl)
+        assertEquals("/sources", result.response.redirectedUrl)
+    }
+
+    @Test
+    fun `the page a login returns to keeps its query and drops the scheme and host`() {
+        withAccounts()
+        val session = MockHttpSession()
+        mvc.perform(get("/feed").queryParam("group", "3").session(session).header("Sec-Fetch-Dest", "document"))
+
+        val result = login(ADMIN, session = session)
+
+        assertEquals("/feed?group=3", result.response.redirectedUrl)
     }
 
     @Test
@@ -98,7 +109,7 @@ class SecurityAccessTest : SecurityTestBase() {
         val session = MockHttpSession()
         mvc.perform(get("/sources").session(session).header("Accept", "text/html,*/*;q=0.8"))
 
-        assertEquals("http://localhost/sources", login(ADMIN, session = session).response.redirectedUrl)
+        assertEquals("/sources", login(ADMIN, session = session).response.redirectedUrl)
     }
 
     @ParameterizedTest

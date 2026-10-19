@@ -18,13 +18,16 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.AuthenticationEntryPoint
+import org.springframework.security.web.RedirectStrategy
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler
 import org.springframework.security.web.authentication.WebAuthenticationDetails
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache
 import org.springframework.security.web.util.matcher.RequestMatcher
 import org.springframework.web.filter.OncePerRequestFilter
+import java.net.URI
 import java.util.Locale
 
 /** Raised instead of a password check while a username and client address are blocked. */
@@ -178,6 +181,25 @@ fun pageOnlyRequestCache() =
     }
 
 /**
+ * After a login, the page the visitor was opening, else the timeline. Spring saves that page as an absolute URL built
+ * from the request; sent on as a path, it keeps the scheme the browser is on behind a TLS proxy, like every redirect.
+ */
+fun loginSuccessHandler() =
+    SavedRequestAwareAuthenticationSuccessHandler().apply {
+        setDefaultTargetUrl("/feed")
+        setRequestCache(pageOnlyRequestCache())
+        setRedirectStrategy(
+            RedirectStrategy { _, response, url -> response.sendRedirect(pathOf(url)) },
+        )
+    }
+
+/** The path and query of [url], which is always one of Starve's own pages here. */
+private fun pathOf(url: String): String {
+    val uri = URI.create(url)
+    return uri.rawPath + (uri.rawQuery?.let { "?$it" } ?: "")
+}
+
+/**
  * A GET the browser makes to show a page: its fetch metadata names a document, or, from a client that sends none,
  * it asks for HTML.
  */
@@ -191,7 +213,9 @@ private fun asksForHtml(request: HttpServletRequest) = request.getHeader("Accept
 
 /** A browser is sent to /login; an htmx request is told to load /login as a whole page. */
 fun loginEntryPoint(): AuthenticationEntryPoint {
-    val browser = LoginUrlAuthenticationEntryPoint("/login")
+    // Relative, like every other redirect (server.tomcat.use-relative-redirects): behind a TLS proxy whose
+    // X-Forwarded-Proto is missing or untrusted, an absolute one would send the browser to http://.
+    val browser = LoginUrlAuthenticationEntryPoint("/login").apply { setFavorRelativeUris(true) }
     return AuthenticationEntryPoint { request, response, exception: AuthenticationException ->
         if (isHtmxRequest(request)) {
             redirectTo(request, response, "/login")

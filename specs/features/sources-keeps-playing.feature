@@ -18,14 +18,18 @@ Feature: Sources keeps the player deck playing
   source, set group, remove, create, rename and delete group) submitting via
   htmx into the page content and still working as a plain form without
   JavaScript; the outcome message of a Sources form landing inside the swapped
-  page content; the Import link staying a plain link.
+  page content; the Import link staying a plain link; a directly loaded
+  Sources page carrying the timeline's empty reader pane outside its page
+  content, as the timeline does, so its Timeline tab lands on a timeline that
+  can reopen the open post and open others (without it, every post click there
+  failed until a reload).
   Supersedes: the "visiting Sources" and "the Sources page" exclusions of
   docked-player.feature (everything else there is unchanged), and the
   page-switch half of theme-switch.feature's shutter, which replaced the whole
   body on a tab click.
   Out of scope: playback surviving a browser reload, opening an item
   ("/items/{id}/open") or the Import page, which stay full page loads (its
-  upload form is a multipart post); the reader pane; what the browser does
+  upload form is a multipart post); what the reader pane shows; what the browser does
   (the music really playing on, the shutter's sweep, Back and Forward restoring
   the page behind the dock): browser behaviour HTTP-level tests cannot see,
   covered by the human playtest.
@@ -68,6 +72,10 @@ Feature: Sources keeps the player deck playing
     And the page has a theme switch
     And the page loads the deck script
     And the page loads the htmx script
+
+  Scenario: Loading Sources directly carries the timeline's reader pane outside the page content
+    When I request "/sources"
+    Then the page has a reader pane outside everything a page tab swaps
 
   Scenario Outline: An htmx request for a page answers with the complete page to select from
     Given the source "Tube" has an unread item "Clip" with the link "https://www.youtube.com/watch?v=dQw4w9WgXcQ" published 1 days ago

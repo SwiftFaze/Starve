@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-private const val LOGIN_URL = "http://localhost/login"
+private const val LOGIN_URL = "/login"
 private const val FRIEND = "amy"
 private val ROW = Regex("<li class=\"user\".*?</li>", RegexOption.DOT_MATCHES_ALL)
 private const val TEMPORARY = "[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}"
