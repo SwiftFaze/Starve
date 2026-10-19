@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.44](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.43...v1.1.0-beta.44) (2026-10-19)
+
+
+### Bug Fixes
+
+* set display type in Archivo Expanded and drop the Akira font ([0fa6454](https://github.com/SwiftFaze/Starve/commit/0fa6454ba371e2fc575ce3dcd712890df2bd5c21))
+* set display type in Archivo Expanded and drop the Akira font ([ccad18a](https://github.com/SwiftFaze/Starve/commit/ccad18a02af2781482a82a8b09eb6ab6decaa058))
+
 ## [1.1.0-beta.43](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.42...v1.1.0-beta.43) (2026-10-19)
 
 
