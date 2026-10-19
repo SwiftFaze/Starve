@@ -275,8 +275,15 @@
         </dialog>
       </th:block>
     </main>
+    <!-- The timeline's panes, empty and kept out of sight here (deck.js marks the body away), so the Timeline tab,
+         which swaps only the sheet, lands on a timeline that can reopen and open posts. -->
+    <aside id="reader" class="reader" aria-label="Reader"></aside>
+    <div class="video-splitter" role="separator" aria-orientation="horizontal" aria-controls="reader"
+         aria-label="Resize panels" tabindex="0"></div>
     <div class="splitter" role="separator" aria-orientation="vertical" aria-controls="sheet"
          aria-label="Resize list" tabindex="0"></div>
+    <div class="splitter-2" role="separator" aria-orientation="vertical"
+         aria-label="Resize the middle panel" tabindex="0"></div>
   </div>
   <section id="dock" class="dock" aria-label="Now playing" aria-live="polite"></section>
 </body>

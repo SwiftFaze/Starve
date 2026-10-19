@@ -2,6 +2,10 @@ server:
   forward-headers-strategy: native
   mime-mappings:
     webmanifest: application/manifest+json
+  tomcat:
+    # A redirect names only the path, so the browser keeps the scheme it is on even when a TLS proxy's
+    # X-Forwarded-Proto is missing or untrusted (an absolute http:// one is blocked as mixed content).
+    use-relative-redirects: true
 
 starve:
   db:

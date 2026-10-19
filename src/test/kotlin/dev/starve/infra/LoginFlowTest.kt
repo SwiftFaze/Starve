@@ -18,7 +18,7 @@ import java.util.Base64
 
 private const val THIRTY_DAYS = 30 * 24 * 60 * 60
 private const val BLOCKING_FAILURES = 5
-private const val LOGIN_PAGE = "http://localhost/login"
+private const val LOGIN_PAGE = "/login"
 
 class LoginFlowTest : SecurityTestBase() {
     private fun MvcResult.redirect() = response.redirectedUrl

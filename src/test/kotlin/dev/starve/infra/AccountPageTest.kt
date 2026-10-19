@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirec
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 private const val NEW_PASSWORD = "battery staple two"
-private const val LOGIN_URL = "http://localhost/login"
+private const val LOGIN_URL = "/login"
 private const val BLOCKING_FAILURES = 5
 
 class AccountPageTest : SecurityTestBase() {

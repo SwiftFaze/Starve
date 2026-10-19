@@ -20,7 +20,7 @@ class SettingsAccessTest : SecurityTestBase() {
     fun `an anonymous visitor to settings is sent to the login page`(path: String) {
         withAccounts()
 
-        mvc.perform(get(path)).andExpect(status().isFound).andExpect(redirectedUrl("http://localhost/login"))
+        mvc.perform(get(path)).andExpect(status().isFound).andExpect(redirectedUrl("/login"))
     }
 
     @Test
@@ -30,7 +30,7 @@ class SettingsAccessTest : SecurityTestBase() {
         mvc
             .perform(post("/settings/signups").param("allow", "true"))
             .andExpect(status().isFound)
-            .andExpect(redirectedUrl("http://localhost/login"))
+            .andExpect(redirectedUrl("/login"))
 
         assertFalse(signups.enabled())
     }

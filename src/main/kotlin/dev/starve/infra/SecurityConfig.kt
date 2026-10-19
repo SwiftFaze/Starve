@@ -130,7 +130,7 @@ class SecurityConfig {
             .loginPage("/login")
             .loginProcessingUrl("/login")
             .failureHandler(LoginFailureHandler())
-            .defaultSuccessUrl("/feed", false)
+            .successHandler(loginSuccessHandler())
             .permitAll()
     }
 
