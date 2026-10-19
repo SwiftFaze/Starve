@@ -1623,12 +1623,21 @@
   // Sources swaps its whole sheet after every change; each column keeps its scroll position across it.
   var columnScroll = null;
 
+  // A source's Settings stay open too, so choosing its group or interval leaves them where they were.
+  var openSettings = [];
+
   document.addEventListener('htmx:beforeSwap', function () {
     var columns = document.querySelectorAll('.sources-split .column-body');
     columnScroll = columns.length ? Array.prototype.map.call(columns, function (column) { return column.scrollTop; }) : null;
+    openSettings = Array.prototype.map.call(document.querySelectorAll('details.settings[open]'), function (fold) { return fold.id; });
   });
 
   document.addEventListener('htmx:afterSettle', function () {
+    openSettings.forEach(function (id) {
+      var fold = document.getElementById(id);
+      if (fold) fold.open = true;
+    });
+    openSettings = [];
     if (!columnScroll) return;
     var saved = columnScroll;
     columnScroll = null;

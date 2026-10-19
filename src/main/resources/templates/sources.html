@@ -52,15 +52,22 @@
       <p id="message" class="message" th:if="${message}" th:attr="role=${error} ? 'alert' : 'status'" th:text="${message}">Subscribed to Boiler Room</p>
 
       <div class="sources-split">
-      <section class="subscriptions" aria-labelledby="subs-title">
+      <!-- The roster, filed by group: each group's head names it (and is where it is renamed), with its sources under
+           it; the sources in no group come last. A row is the source and its health; its controls fold out under it. -->
+      <section class="subscriptions" aria-labelledby="subs-title"
+               th:with="ungrouped=${sources.?[groupId == null]},failing=${#lists.size(sources.?[error != null])}">
       <div class="column-head">
       <div class="sheet-head">
         <h2 class="sheet-title" id="subs-title">Subscriptions</h2>
+        <p class="sheet-count" th:unless="${#lists.isEmpty(sources)}"><th:block
+           th:text="${#lists.size(sources) == 1} ? '1 source' : |${#lists.size(sources)} sources|">6 sources</th:block><th:block
+           th:if="${failing > 0}"> · <strong th:text="|${failing} failing|">1 failing</strong></th:block></p>
       </div>
 
+      <div class="adders">
       <form class="add add-source" method="post" th:action="@{/sources}" hx-post="/sources"
             hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-        <label class="field-label" for="add-url">Add a source</label>
+        <label class="field-label visually-hidden" for="add-url">Add a source</label>
         <div class="field-row">
           <input class="field" id="add-url" type="text" name="url" inputmode="url" autocomplete="off"
                  spellcheck="false" placeholder="Paste a feed, channel or site URL" required
@@ -71,12 +78,146 @@
         </div>
         <p id="add-url-error" class="message" role="alert" th:if="${addError}" th:text="${addError}">That URL could not be fetched</p>
       </form>
-      </div>
-      <div class="column-body">
-      <p class="sheet-note" th:if="${#lists.isEmpty(sources)}">No subscriptions yet. Paste a URL under Add a source to start the roster.</p>
 
-      <ul id="source-list" class="roster" th:unless="${#lists.isEmpty(sources)}">
-        <li class="source" th:each="source : ${sources}" th:fragment="source-row"
+      <details class="fold new-group-fold">
+        <summary class="read-toggle">New group<svg class="caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M0 0h10L5 6z"/></svg></summary>
+        <form class="new-group fold-body" method="post" th:action="@{/groups}" hx-post="/groups"
+              hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+          <label class="field-label" for="new-group">Name the group</label>
+          <div class="field-row">
+            <input class="field" id="new-group" type="text" name="name" maxlength="200" autocomplete="off" placeholder="Music, Tech news…">
+            <button type="submit">Create group</button>
+          </div>
+        </form>
+      </details>
+      </div>
+      </div>
+
+      <div class="column-body">
+      <p class="sheet-note" th:if="${#lists.isEmpty(sources)}">No subscriptions yet. Paste a URL above to start the roster.</p>
+
+      <ul id="group-list" class="shelves" th:unless="${#lists.isEmpty(groups)}">
+        <li class="group" th:each="group : ${groups}" th:attr="data-group=${group.name}"
+            th:with="rows=${sources.?[groupId == __${group.id}__]}">
+          <div class="shelf-head">
+            <h3 class="visually-hidden" th:text="${group.name}">Music</h3>
+            <form class="rename" method="post" th:action="@{/groups/{id}/rename(id=${group.id})}"
+                  th:attr="hx-post=@{/groups/{id}/rename(id=${group.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+              <input class="field shelf-name" type="text" name="name" maxlength="200" required th:value="${group.name}"
+                     th:style="|--chars: ${#strings.length(group.name)}|"
+                     th:attr="aria-label=|Name of the group ${group.name}|">
+              <button type="submit">Rename</button>
+            </form>
+            <span class="members" th:text="${#lists.size(rows) == 1} ? '1 source' : |${#lists.size(rows)} sources|">2 sources</span>
+            <a class="read-toggle shelf-delete" th:href="|/sources?delete-group=${group.id}|"
+               th:attr="hx-get=|/sources?delete-group=${group.id}|,aria-label=|Delete the group ${group.name}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Delete</a>
+          </div>
+          <ul class="roster" th:unless="${#lists.isEmpty(rows)}">
+            <th:block th:replace="~{:: source-row}"></th:block>
+          </ul>
+          <p class="shelf-note" th:if="${#lists.isEmpty(rows)}">No sources here yet. Move one in from its Settings.</p>
+        </li>
+      </ul>
+
+      <section class="shelf ungrouped" aria-labelledby="ungrouped-title" th:unless="${#lists.isEmpty(ungrouped)}"
+               th:with="rows=${ungrouped}">
+        <div class="shelf-head" th:classappend="${#lists.isEmpty(groups)} ? 'visually-hidden'">
+          <h3 class="shelf-title" id="ungrouped-title" th:text="${#lists.isEmpty(groups)} ? 'All sources' : 'Ungrouped'">Ungrouped</h3>
+          <span class="members" th:text="${#lists.size(rows) == 1} ? '1 source' : |${#lists.size(rows)} sources|">1 source</span>
+        </div>
+        <ul id="source-list" class="roster">
+          <th:block th:replace="~{:: source-row}"></th:block>
+        </ul>
+      </section>
+      </div>
+      </section>
+
+      <!-- Tags are keyword views across sources: they add a view to the timeline and never move an item out of its
+           group. A tag reads as its name, what it matches and its terms; its form waits behind Edit. -->
+      <section class="tag-sheet" aria-labelledby="tags-title">
+        <div class="column-head">
+        <div class="sheet-head">
+          <h2 class="sheet-title" id="tags-title">Tags</h2>
+        </div>
+        <details class="fold new-tag-fold" th:open="${tagName != null}">
+          <summary class="read-toggle">New tag<svg class="caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M0 0h10L5 6z"/></svg></summary>
+          <form class="new-tag tag-form fold-body" method="post" th:action="@{/tags}" hx-post="/tags"
+                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+            <div class="tag-field">
+              <label class="field-label" for="new-tag">Name</label>
+              <input class="field" id="new-tag" type="text" name="name" maxlength="200" autocomplete="off" th:value="${tagName}">
+            </div>
+            <div class="tag-field">
+              <label class="field-label" for="new-tag-group">Only within group</label>
+              <select class="field" id="new-tag-group" name="group">
+                <option value="">Any group</option>
+                <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
+                        th:selected="${group.id == tagGroup}">Group</option>
+              </select>
+            </div>
+            <div class="tag-field wide">
+              <label class="field-label" for="new-tag-terms">Terms</label>
+              <input class="field" id="new-tag-terms" type="text" name="terms" maxlength="2000" autocomplete="off"
+                     placeholder="AI, LLM, GPT*" aria-describedby="new-tag-hint" th:value="${tagTerms}">
+              <p class="hint" id="new-tag-hint">Whole words, comma-separated. End one with * to match every word it
+                starts, as in GPT*.</p>
+            </div>
+            <label class="check wide"><input type="checkbox" name="body" value="1" th:checked="${tagBody}"> Match the body too</label>
+            <div class="tag-actions wide"><button type="submit">Create tag</button></div>
+          </form>
+        </details>
+        </div>
+        <div class="column-body">
+        <p class="sheet-note" th:if="${#lists.isEmpty(tags)}">No tags yet. A tag lists every post on a topic, whichever
+          source it comes from, beside the groups on the timeline.</p>
+        <ul id="tag-list" class="roster tag-list" th:unless="${#lists.isEmpty(tags)}">
+          <li class="tag" th:each="tag : ${tags}" th:attr="data-tag=${tag.name},data-terms=${tag.termsText}"
+              th:with="scope=${tag.groupId == null} ? null : ${groups.^[id == __${tag.groupId}__]}">
+            <div class="tag-head">
+              <h3 class="tag-title" th:text="${tag.name}">AI</h3>
+              <span class="tag-scope" th:text="|${tag.matchBody ? 'Titles and bodies' : 'Titles'} · ${scope == null ? 'any group' : scope.name}|">Titles and bodies · any group</span>
+            </div>
+            <p class="terms" th:attr="aria-label=|Terms: ${tag.termsText}|"><span class="term" th:each="term : ${tag.terms}"
+               th:text="${term}" aria-hidden="true">GPT*</span></p>
+            <details class="fold tag-edit">
+              <summary class="read-toggle" th:attr="aria-label=|Edit the tag ${tag.name}|">Edit<svg class="caret" viewBox="0 0 10 6"
+                       aria-hidden="true"><path d="M0 0h10L5 6z"/></svg></summary>
+              <form class="tag-form fold-body" method="post" th:action="@{/tags/{id}(id=${tag.id})}"
+                    th:attr="hx-post=@{/tags/{id}(id=${tag.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+                <div class="tag-field">
+                  <label class="field-label" th:for="|tag-${tag.id}-name|">Name</label>
+                  <input class="field" type="text" name="name" maxlength="200" th:id="|tag-${tag.id}-name|" th:value="${tag.name}">
+                </div>
+                <div class="tag-field">
+                  <label class="field-label" th:for="|tag-${tag.id}-group|">Only within group</label>
+                  <select class="field" name="group" th:id="|tag-${tag.id}-group|">
+                    <option value="">Any group</option>
+                    <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
+                            th:selected="${group.id == tag.groupId}">Group</option>
+                  </select>
+                </div>
+                <div class="tag-field wide">
+                  <label class="field-label" th:for="|tag-${tag.id}-terms|">Terms</label>
+                  <input class="field" type="text" name="terms" maxlength="2000" th:id="|tag-${tag.id}-terms|" th:value="${tag.termsText}">
+                </div>
+                <label class="check wide"><input type="checkbox" name="body" value="1" th:checked="${tag.matchBody}"> Match the body too</label>
+                <div class="tag-actions wide">
+                  <button type="submit">Save</button>
+                  <a class="read-toggle" th:href="|/sources?delete-tag=${tag.id}|"
+                     th:attr="hx-get=|/sources?delete-tag=${tag.id}|,aria-label=|Delete the tag ${tag.name}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Delete</a>
+                </div>
+              </form>
+            </details>
+          </li>
+        </ul>
+        </div>
+      </section>
+      </div>
+
+      <!-- One subscription. The roster draws it under its group, and a fetching row asks for itself alone again
+           (sources :: source-row), so it lives here once and is drawn nowhere by itself. -->
+      <template th:remove="all">
+        <li class="source" th:fragment="source-row" th:each="source : ${rows ?: sources}"
             th:attr="data-title=${source.title},hx-get=${source.fetching} ? |/sources/${source.id}/row|,hx-trigger=${source.fetching} ? 'every 2s',hx-swap=${source.fetching} ? 'outerHTML'">
           <span class="cat" th:text="|SRC ${#numbers.formatInteger(source.id, 4)}|">SRC 0007</span>
           <div class="body" th:title="${source.url}">
@@ -99,129 +240,50 @@
             <p class="stats" th:title="${source.stats.text}"><span class="tag mark" th:each="mark : ${source.stats.marks}"
               th:text="${mark}">Quiet</span><th:block th:text="${source.stats.text}">Last post 3 days ago · 2/week · 10 unread</th:block></p>
           </div>
-          <div class="actions">
-            <a class="toggle feed-link" th:href="${source.url}" target="_blank" rel="noopener noreferrer"
-               th:attr="aria-label=|Open the feed of ${source.title}|" th:title="${source.url}"><svg class="icon"
-               viewBox="0 0 16 16" aria-hidden="true"><path
-               d="M2 2.5a11.5 11.5 0 0 1 11.5 11.5h-2A9.5 9.5 0 0 0 2 4.5zm0 4.25A7.25 7.25 0 0 1 9.25 14h-2A5.25 5.25 0 0 0 2 8.75zM2 11h3v3H2z"/></svg></a>
-            <form class="regroup" method="post" th:action="@{/sources/{id}/group(id=${source.id})}"
-                  th:attr="hx-post=@{/sources/{id}/group(id=${source.id})}"
-                  hx-trigger="change, submit" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-              <select class="field" name="group" th:attr="aria-label=|Group of ${source.title}|">
-                <option value="">Ungrouped</option>
-                <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
-                        th:selected="${group.id == source.groupId}">Group</option>
-              </select>
-              <button type="submit">Set group</button>
-            </form>
-            <form class="regroup interval" method="post" th:action="@{/sources/{id}/interval(id=${source.id})}"
-                  th:attr="hx-post=@{/sources/{id}/interval(id=${source.id})}"
-                  hx-trigger="change, submit" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-              <select class="field" name="interval" th:attr="aria-label=|How often to fetch ${source.title}|">
-                <option value="" th:text="${defaultInterval}">Default (every 30 minutes)</option>
-                <option th:each="choice : ${intervals}" th:value="${choice.name()}" th:text="${choice.label}"
-                        th:selected="${choice == source.interval}">Daily</option>
-              </select>
-              <button type="submit">Set interval</button>
-            </form>
-            <form class="fetch-now" method="post" th:action="@{/sources/{id}/fetch(id=${source.id})}"
-                  th:attr="hx-post=@{/sources/{id}/fetch(id=${source.id})}" hx-target="closest li" hx-swap="outerHTML">
-              <button type="submit" class="toggle" th:disabled="${source.fetching}" title="Fetch now"
-                      th:attr="aria-label=|Fetch ${source.title} now|"><svg class="icon" viewBox="0 0 16 16"
-                      aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2v3.5H10"/></svg></button>
-            </form>
-            <a class="read-toggle" th:href="|/sources?remove=${source.id}|"
-               th:attr="hx-get=|/sources?remove=${source.id}|,aria-label=|Remove ${source.title}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Remove</a>
-          </div>
-        </li>
-      </ul>
-      </div>
-      </section>
-
-      <section class="group-sheet" aria-labelledby="groups-title">
-        <div class="column-head">
-        <div class="sheet-head">
-          <h2 class="sheet-title" id="groups-title">Groups</h2>
-        </div>
-        <form class="new-group" method="post" th:action="@{/groups}" hx-post="/groups"
-              hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-          <label class="field-label" for="new-group">New group</label>
-          <div class="field-row">
-            <input class="field" id="new-group" type="text" name="name" maxlength="200" autocomplete="off">
-            <button type="submit">Create group</button>
-          </div>
-        </form>
-        </div>
-        <div class="column-body">
-        <p class="sheet-note" th:if="${#lists.isEmpty(groups)}">No groups yet. Create one to filter the timeline by it.</p>
-        <ul id="group-list" class="roster" th:unless="${#lists.isEmpty(groups)}">
-          <li class="group" th:each="group : ${groups}" th:attr="data-group=${group.name}">
-            <form class="rename" method="post" th:action="@{/groups/{id}/rename(id=${group.id})}"
-                  th:attr="hx-post=@{/groups/{id}/rename(id=${group.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-              <input class="field" type="text" name="name" maxlength="200" th:value="${group.name}" aria-label="Group name">
-              <button type="submit">Rename</button>
-            </form>
-            <span class="members" th:with="n=${#lists.size(sources.?[groupId == __${group.id}__])}"
-                  th:text="${n == 1} ? '1 source' : |${n} sources|">3 sources</span>
-            <a class="read-toggle" th:href="|/sources?delete-group=${group.id}|"
-               th:attr="hx-get=|/sources?delete-group=${group.id}|,aria-label=|Delete the group ${group.name}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Delete</a>
-          </li>
-        </ul>
-
-        <!-- Tags are keyword views across sources: they add a view to the timeline and never move an item out of its
-             group. Each row is its own edit form. -->
-        <section class="tag-block" aria-labelledby="tags-title">
-          <div class="sheet-head">
-            <h2 class="sheet-title" id="tags-title">Tags</h2>
-          </div>
-          <form class="new-tag tag-form" method="post" th:action="@{/tags}" hx-post="/tags"
-                hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-            <label class="field-label" for="new-tag">New tag</label>
-            <input class="field" id="new-tag" type="text" name="name" maxlength="200" autocomplete="off" th:value="${tagName}">
-            <label class="field-label" for="new-tag-terms">Terms</label>
-            <input class="field" id="new-tag-terms" type="text" name="terms" maxlength="2000" autocomplete="off"
-                   placeholder="AI, LLM, GPT*" aria-describedby="new-tag-hint" th:value="${tagTerms}">
-            <p class="hint" id="new-tag-hint">Whole words, comma-separated. End one with * to match every word it
-              starts, as in GPT*.</p>
-            <label class="check"><input type="checkbox" name="body" value="1" th:checked="${tagBody}"> Match the body too</label>
-            <label class="field-label" for="new-tag-group">Only within group</label>
-            <div class="field-row">
-              <select class="field" id="new-tag-group" name="group">
-                <option value="">Any group</option>
-                <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
-                        th:selected="${group.id == tagGroup}">Group</option>
-              </select>
-              <button type="submit">Create tag</button>
-            </div>
-          </form>
-          <p class="sheet-note" th:if="${#lists.isEmpty(tags)}">No tags yet. Create one to see every post on a topic,
-            whichever source it comes from.</p>
-          <ul id="tag-list" class="roster" th:unless="${#lists.isEmpty(tags)}">
-            <li class="tag" th:each="tag : ${tags}" th:attr="data-tag=${tag.name},data-terms=${tag.termsText}">
-              <form class="tag-form" method="post" th:action="@{/tags/{id}(id=${tag.id})}"
-                    th:attr="hx-post=@{/tags/{id}(id=${tag.id})}" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
-                <input class="field tag-name" type="text" name="name" maxlength="200" th:value="${tag.name}"
-                       th:attr="aria-label=|Name of the tag ${tag.name}|">
-                <input class="field" type="text" name="terms" maxlength="2000" th:value="${tag.termsText}"
-                       th:attr="aria-label=|Terms of the tag ${tag.name}|">
-                <label class="check"><input type="checkbox" name="body" value="1" th:checked="${tag.matchBody}"> Match the body too</label>
-                <div class="field-row">
-                  <select class="field" name="group" th:attr="aria-label=|Group the tag ${tag.name} is limited to|">
-                    <option value="">Any group</option>
-                    <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
-                            th:selected="${group.id == tag.groupId}">Group</option>
-                  </select>
-                  <button type="submit">Save</button>
-                  <a class="read-toggle" th:href="|/sources?delete-tag=${tag.id}|"
-                     th:attr="hx-get=|/sources?delete-tag=${tag.id}|,aria-label=|Delete the tag ${tag.name}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Delete</a>
-                </div>
+          <details class="fold settings" th:id="|settings-${source.id}|">
+            <summary class="read-toggle" th:attr="aria-label=|Settings of ${source.title}|">Settings<svg class="caret"
+                     viewBox="0 0 10 6" aria-hidden="true"><path d="M0 0h10L5 6z"/></svg></summary>
+            <div class="actions fold-body">
+              <form class="regroup" method="post" th:action="@{/sources/{id}/group(id=${source.id})}"
+                    th:attr="hx-post=@{/sources/{id}/group(id=${source.id})}"
+                    hx-trigger="change, submit" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+                <span class="field-label" aria-hidden="true">Group</span>
+                <select class="field" name="group" th:attr="aria-label=|Group of ${source.title}|">
+                  <option value="">Ungrouped</option>
+                  <option th:each="group : ${groups}" th:value="${group.id}" th:text="${group.name}"
+                          th:selected="${group.id == source.groupId}">Group</option>
+                </select>
+                <button type="submit">Set group</button>
               </form>
-            </li>
-          </ul>
-        </section>
-        </div>
-      </section>
-      </div>
+              <form class="regroup interval" method="post" th:action="@{/sources/{id}/interval(id=${source.id})}"
+                    th:attr="hx-post=@{/sources/{id}/interval(id=${source.id})}"
+                    hx-trigger="change, submit" hx-target="#sheet" hx-select="#sheet" hx-select-oob="#bar,#series,#panel" hx-swap="outerHTML">
+                <span class="field-label" aria-hidden="true">How often</span>
+                <select class="field" name="interval" th:attr="aria-label=|How often to fetch ${source.title}|">
+                  <option value="" th:text="${defaultInterval}">Default (every 30 minutes)</option>
+                  <option th:each="choice : ${intervals}" th:value="${choice.name()}" th:text="${choice.label}"
+                          th:selected="${choice == source.interval}">Daily</option>
+                </select>
+                <button type="submit">Set interval</button>
+              </form>
+              <div class="row-tools">
+                <a class="toggle feed-link" th:href="${source.url}" target="_blank" rel="noopener noreferrer"
+                   th:attr="aria-label=|Open the feed of ${source.title}|" th:title="${source.url}"><svg class="icon"
+                   viewBox="0 0 16 16" aria-hidden="true"><path
+                   d="M2 2.5a11.5 11.5 0 0 1 11.5 11.5h-2A9.5 9.5 0 0 0 2 4.5zm0 4.25A7.25 7.25 0 0 1 9.25 14h-2A5.25 5.25 0 0 0 2 8.75zM2 11h3v3H2z"/></svg></a>
+                <form class="fetch-now" method="post" th:action="@{/sources/{id}/fetch(id=${source.id})}"
+                      th:attr="hx-post=@{/sources/{id}/fetch(id=${source.id})}" hx-target="closest li" hx-swap="outerHTML">
+                  <button type="submit" class="toggle" th:disabled="${source.fetching}" title="Fetch now"
+                          th:attr="aria-label=|Fetch ${source.title} now|"><svg class="icon" viewBox="0 0 16 16"
+                          aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2v3.5H10"/></svg></button>
+                </form>
+                <a class="read-toggle" th:href="|/sources?remove=${source.id}|"
+                   th:attr="hx-get=|/sources?remove=${source.id}|,aria-label=|Remove ${source.title}|" hx-target="#sheet" hx-select="#sheet" hx-swap="outerHTML">Remove</a>
+              </div>
+            </div>
+          </details>
+        </li>
+      </template>
 
       <!-- What cannot be undone asks first. The dialog is drawn open, so it works without scripts; deck.js
            makes it modal, and Escape or a click on the veil is Cancel. Focus starts on Cancel. -->
