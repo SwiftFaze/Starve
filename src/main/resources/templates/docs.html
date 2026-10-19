@@ -133,11 +133,14 @@ java -jar target/starve-*.jar</code></pre>
                 reads or watches.</li>
               <li>What you read, star and save is stored in the database, because the feed needs it, and never
                 leaves your server.</li>
-              <li>The server only reaches out to fetch your sources: their feeds, article pages, icons and
-                SoundCloud track details.</li>
-              <li>In the browser, thumbnails and post images load straight from the sites that publish them, and
-                playing a video or track loads YouTube's privacy-enhanced player (<code>youtube-nocookie.com</code>)
-                or SoundCloud's widget, so that service sees the play.</li>
+              <li>The server only reaches out to fetch your sources: their feeds, article pages, icons, the images
+                it shows you and SoundCloud track details.</li>
+              <li>In the browser, every thumbnail, icon and post image comes from Starve itself, which fetches each
+                one once and keeps it in an <code>images</code> folder beside the database. Links out lose their
+                tracking parameters (<code>utm_*</code>, <code>fbclid</code> and the like), and no page sends a
+                referrer.</li>
+              <li>Playing a video, track or episode still reaches its platform: YouTube's privacy-enhanced player
+                (<code>youtube-nocookie.com</code>), SoundCloud's widget, or the podcast's own audio file.</li>
             </ul>
           </section>
 

@@ -120,6 +120,9 @@ goes through `TimelineService` to `ItemRepository.timeline` and `markAllRead`, a
 Keyword tags (`domain/Tag.kt`, `tags` table, V20) store only terms, so `TagRules.matchExpression` builds a quoted,
 column-filtered match at query time (`{title}` or `{title body}`) and nothing is written per item.
 
+Images reach the browser only through `/images` (`web/ImageLinks`, put in every model as `images`): links are signed per username by `ImageSigner` (`infra/HmacImageSigner`), and `ImageProxyService` serves `infra/DiskImageCache` or fetches through `infra/HttpImageFetcher`, which refuses local addresses (`AddressRules`) at every hop.
+`ImageCacheService.prune` runs with the retention purge. `TrackingParams.strip` cleans links out and body links (`HtmlLinks`).
+
 ## Bulk import
 
 `ImportService` takes the uploaded bytes, picks OPML (starts with `<`) or Takeout

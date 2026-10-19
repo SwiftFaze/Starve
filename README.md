@@ -143,6 +143,18 @@ none falls back to its site's favicon: the page's icon link, else `/favicon.ico`
 The favicon is looked up during polling (checked again weekly) and read from the
 source at render time, so it is never copied onto items.
 
+Your browser never loads these images from the sites that publish them: every
+thumbnail, icon and post image goes through Starve's own `/images` route, which
+fetches each one once and keeps it in an `images` folder beside the database. Each
+image link is signed for the account viewing it, so the route only fetches what
+Starve itself put on that person's page. It refuses addresses on your own network,
+anything that is not an image, and images over 5 MB. Images no stored post or
+source shows any more are dropped daily, along with the least recently viewed once
+the folder passes `starve.images.cache-max-size`. Links out lose their tracking
+parameters (`utm_*`, `fbclid`, `gclid`, `mc_cid` and the like), and no page sends
+a referrer. Players still reach their platforms: YouTube, SoundCloud and podcast
+audio.
+
 ## Grouping sources
 
 On **Sources** you can create groups (1 to 50 characters, unique ignoring case),
@@ -356,6 +368,7 @@ variables (`STARVE_POLL_INTERVAL=PT15M`). Durations use ISO-8601.
 | `starve.apple-podcasts.hosts` | `podcasts.apple.com` | hosts of Apple Podcasts show links |
 | `starve.apple-podcasts.lookup-url-template` | `https://itunes.apple.com/lookup?id={key}` | lookup naming a show's feed; `{key}` is its numeric id |
 | `starve.reader.feed-only-hosts` | `github.com,www.github.com,bsky.app` | hosts whose short posts are shown from the feed, never by fetching their page |
+| `starve.images.cache-max-size` | `500MB` | the image cache beside the database is trimmed to this, least recently viewed first |
 | `starve.retention.max-age` | `P90D` | items first seen longer ago are purged |
 | `starve.retention.interval` | `PT24H` | delay between retention purges |
 | `starve.scheduling.enabled` | `true` | `false` turns off background polling and purging |
