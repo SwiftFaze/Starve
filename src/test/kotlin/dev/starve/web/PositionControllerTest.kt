@@ -11,7 +11,8 @@ import org.springframework.web.server.ResponseStatusException
 
 class PositionControllerTest {
     private val saved = mutableListOf<Long?>()
-    private val controller = PositionController(ResumeService { _, id, seconds -> (id == 1L).also { if (it) saved += seconds } })
+    private val controller =
+        PositionController(ResumeService { _, id, seconds -> (id == 1L).also { if (it) saved += seconds } })
 
     private fun status(action: () -> Unit) = assertThrows(ResponseStatusException::class.java) { action() }.statusCode
 

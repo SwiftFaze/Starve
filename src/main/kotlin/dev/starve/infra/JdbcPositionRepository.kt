@@ -12,5 +12,9 @@ class JdbcPositionRepository(
         owner: Long,
         id: Long,
         seconds: Long?,
-    ): Boolean = jdbc.sql("UPDATE items SET play_position = ? WHERE id = ? AND $OWNED").params(seconds, id, owner).update() > 0
+    ): Boolean =
+        jdbc
+            .sql("UPDATE items SET play_position = ? WHERE id = ? AND $OWNED")
+            .params(seconds, id, owner)
+            .update() > 0
 }

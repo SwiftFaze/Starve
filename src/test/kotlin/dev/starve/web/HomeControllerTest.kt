@@ -667,7 +667,9 @@ class HomeControllerTest {
         val model = ConcurrentModel()
         val stopped = row(2).copy(playable = true, position = 2472)
 
-        controller(TimelineItems(listOf(stopped, row(3).copy(playable = true)))).home(OWNER, TimelineQuery(), null, model)
+        val items = TimelineItems(listOf(stopped, row(3).copy(playable = true)))
+
+        controller(items).home(OWNER, TimelineQuery(), null, model)
 
         val (resumed, fresh) = (model.getAttribute("items") as List<*>).map { it as TimelineItemView }
         assertEquals("41:12", resumed.resume)
