@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.47](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.46...v1.1.0-beta.47) (2026-10-19)
+
+
+### Bug Fixes
+
+* keep the page's scheme behind a TLS proxy and give Sources a reader pane ([34d6368](https://github.com/SwiftFaze/Starve/commit/34d6368e6cf206c21559a41db6e0f2a5885bc469))
+* keep the page's scheme behind a TLS proxy and give Sources a reader pane ([70224a5](https://github.com/SwiftFaze/Starve/commit/70224a52ac1ddecb0a8e0dc1807bf9d23d30b762)), closes [#185](https://github.com/SwiftFaze/Starve/issues/185)
+
 ## [1.1.0-beta.46](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.45...v1.1.0-beta.46) (2026-10-19)
 
 
