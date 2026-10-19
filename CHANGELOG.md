@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0-beta.43](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.42...v1.1.0-beta.43) (2026-10-19)
+
+
+### Features
+
+* play podcast episodes in the deck ([#181](https://github.com/SwiftFaze/Starve/issues/181)) ([4da9719](https://github.com/SwiftFaze/Starve/commit/4da97196d38e0fce6cea40451748964943f018b7))
+
 ## [1.1.0-beta.42](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.41...v1.1.0-beta.42) (2026-10-18)
 
 
