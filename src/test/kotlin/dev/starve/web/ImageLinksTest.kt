@@ -8,8 +8,10 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -116,5 +118,13 @@ class ImageLinksTest {
         signIn("bea")
         assertEquals(HttpStatus.NOT_FOUND, status { controller(image).image(url, signer.sign("rob", url)) })
         assertEquals(HttpStatus.NOT_FOUND, status { controller(null).image(url, signer.sign("bea", url)) })
+    }
+
+    @Test
+    fun `every page's model gets the image links, and none where they are not wired`() {
+        val factory = DefaultListableBeanFactory()
+        assertNull(ImageLinksModel(factory.getBeanProvider(ImageLinks::class.java)).images())
+        factory.registerSingleton("links", links)
+        assertSame(links, ImageLinksModel(factory.getBeanProvider(ImageLinks::class.java)).images())
     }
 }

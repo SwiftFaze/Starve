@@ -38,6 +38,7 @@ class ImageProxyInfraTest {
 
     private fun fetcher(
         trusted: Set<String> = setOf("localhost"),
+        maxBytes: Int = 1_000,
         resolve: (String) -> List<InetAddress> = { InetAddress.getAllByName(it).toList() },
     ): HttpImageFetcher {
         val timeout = Duration.ofSeconds(2)
@@ -47,7 +48,7 @@ class ImageProxyInfraTest {
                 .connectTimeout(timeout)
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build()
-        return HttpImageFetcher(BoundedHttp(client, timeout, "test"), trusted, resolve)
+        return HttpImageFetcher(BoundedHttp(client, timeout, "test"), trusted, resolve, maxBytes)
     }
 
     // ---- fetching -----------------------------------------------------------------------
@@ -108,6 +109,31 @@ class ImageProxyInfraTest {
     }
 
     @Test
+    fun `an image up to the size limit is fetched, and one byte more is not`() {
+        server.route("/a.png", Route.Icon)
+
+        assertEquals("image/png", fetcher(maxBytes = 4).fetch("${server.baseUrl}/a.png")?.contentType)
+        assertNull(fetcher(maxBytes = 3).fetch("${server.baseUrl}/a.png"))
+    }
+
+    @Test
+    fun `an untrusted host is fetched only when every address it resolves to is public`() {
+        server.route("/a.png", Route.Icon)
+        val public = InetAddress.getByName("93.184.216.34")
+        val local = InetAddress.getByName("10.0.0.1")
+        val asked = mutableListOf<String>()
+        val url = "${server.baseUrl}/a.png"
+
+        val allPublic = fetcher(trusted = emptySet()) { listOf(public).also { _ -> asked += it } }
+        assertEquals("image/png", allPublic.fetch(url)?.contentType)
+        assertEquals(listOf("localhost"), asked)
+        assertNull(fetcher(trusted = emptySet()) { listOf(public, local) }.fetch(url))
+        assertNull(fetcher(trusted = emptySet()) { listOf(local, public) }.fetch(url))
+        assertNull(fetcher(trusted = emptySet()) { emptyList() }.fetch(url))
+        assertNull(fetcher(trusted = emptySet()) { throw java.net.UnknownHostException(it) }.fetch(url))
+    }
+
+    @Test
     fun `a host whose addresses are all public is fetched, one with any local address is not`() {
         val asked = mutableListOf<String>()
         val mixed =
@@ -146,8 +172,9 @@ class ImageProxyInfraTest {
     @Test
     fun `pruning removes what is no longer referenced, then the least recently used over the cap`() {
         val dir = tmp.resolve("images")
-        listOf("old", "mid", "new", "gone").forEachIndexed { index, name ->
-            val storedAt = Clock.fixed(clock.instant().plusSeconds(index.toLong()), ZoneOffset.UTC)
+        // Stored newest first, so only the stored time (not the file's own) can tell them apart.
+        mapOf("gone" to 3, "new" to 2, "mid" to 1, "old" to 0).forEach { (name, second) ->
+            val storedAt = Clock.fixed(clock.instant().plusSeconds(second.toLong()), ZoneOffset.UTC)
             DiskImageCache(dir, storedAt).store("https://a.example/$name.png", ProxiedImage(ByteArray(10), "image/png"))
         }
         val cache = DiskImageCache(dir, clock)
@@ -160,6 +187,21 @@ class ImageProxyInfraTest {
         assertEquals(10, cache.find("https://a.example/mid.png")?.bytes?.size)
         assertEquals(10, cache.find("https://a.example/new.png")?.bytes?.size)
         assertEquals(0, DiskImageCache(tmp.resolve("none"), clock).prune(emptySet(), 0))
+    }
+
+    @Test
+    fun `serving an image makes it the most recently used`() {
+        val dir = tmp.resolve("images")
+        listOf("a", "b").forEachIndexed { second, name ->
+            val storedAt = Clock.fixed(clock.instant().plusSeconds(second.toLong()), ZoneOffset.UTC)
+            DiskImageCache(dir, storedAt).store("https://a.example/$name.png", ProxiedImage(ByteArray(10), "image/png"))
+        }
+        DiskImageCache(dir, Clock.fixed(clock.instant().plusSeconds(9), ZoneOffset.UTC)).find("https://a.example/a.png")
+
+        DiskImageCache(dir, clock).prune(setOf("a", "b").map { "https://a.example/$it.png" }.toSet(), 10)
+
+        assertEquals(10, DiskImageCache(dir, clock).find("https://a.example/a.png")?.bytes?.size)
+        assertNull(DiskImageCache(dir, clock).find("https://a.example/b.png"))
     }
 
     @Test

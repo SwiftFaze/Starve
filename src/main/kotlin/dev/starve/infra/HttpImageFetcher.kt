@@ -21,6 +21,7 @@ class HttpImageFetcher(
     private val http: BoundedHttp,
     private val trustedHosts: Set<String> = emptySet(),
     private val resolve: (String) -> List<InetAddress> = { InetAddress.getAllByName(it).toList() },
+    private val maxBytes: Int = ImageRules.MAX_BYTES,
 ) : ImageFetcher {
     override fun fetch(url: String): ProxiedImage? = hop(url, 0)
 
@@ -54,7 +55,7 @@ class HttpImageFetcher(
     private fun image(response: HttpResponse<ByteArray>): ProxiedImage? {
         val type = ImageRules.acceptedType(response.headers().firstValue("Content-Type").orElse(null))
         val body = response.body()
-        val ok = response.statusCode() in OK && type != null && body.isNotEmpty() && body.size <= ImageRules.MAX_BYTES
+        val ok = response.statusCode() in OK && type != null && body.isNotEmpty() && body.size <= maxBytes
         return if (ok) ProxiedImage(body, checkNotNull(type)) else null
     }
 

@@ -40,5 +40,12 @@ class HmacImageSignerTest {
 
         assertEquals(key, metadata.find(HmacImageSigner.KEY_NAME))
         assertEquals(first.sign("rob", "u"), second.sign("rob", "u"))
+        assertTrue(
+            java.util.Base64
+                .getDecoder()
+                .decode(key)
+                .any { it != 0.toByte() },
+            "a random key, not zeros",
+        )
     }
 }
