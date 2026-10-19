@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0-beta.48](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.47...v1.1.0-beta.48) (2026-10-19)
+
+
+### Features
+
+* file Sources by group, with tags as compact views beside them ([00320cd](https://github.com/SwiftFaze/Starve/commit/00320cd6b508dc82799fa6c787b911f8b0adee1e))
+* file Sources by group, with tags as compact views beside them ([5904325](https://github.com/SwiftFaze/Starve/commit/5904325ef80445a717288083a9d0470c89cb6fd8))
+
 ## [1.1.0-beta.47](https://github.com/SwiftFaze/Starve/compare/v1.1.0-beta.46...v1.1.0-beta.47) (2026-10-19)
 
 
