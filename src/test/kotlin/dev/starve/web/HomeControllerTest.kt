@@ -661,4 +661,20 @@ class HomeControllerTest {
         assertEquals("home :: end", view)
         assertEquals(ListEnd(3, "every 30 minutes", "/feed/end?show=all&group=1"), model.getAttribute("end"))
     }
+
+    @Test
+    fun `a row stopped part way offers to resume there, and others to play`() {
+        val model = ConcurrentModel()
+        val stopped = row(2).copy(playable = true, position = 2472)
+
+        val items = TimelineItems(listOf(stopped, row(3).copy(playable = true)))
+
+        controller(items).home(OWNER, TimelineQuery(), null, model)
+
+        val (resumed, fresh) = (model.getAttribute("items") as List<*>).map { it as TimelineItemView }
+        assertEquals("41:12", resumed.resume)
+        assertEquals("Resume 41:12", resumed.playLabel)
+        assertNull(fresh.resume)
+        assertEquals("Play", fresh.playLabel)
+    }
 }

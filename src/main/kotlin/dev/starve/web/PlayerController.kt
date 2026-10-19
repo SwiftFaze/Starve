@@ -57,6 +57,8 @@ class PlayerController(
                 }
                 model.addAttribute("item", result.item.toView())
                 model.addAttribute("star", StarPlace.DECK.view(result.item.id, result.item.favourite))
+                model.addAttribute("resume", result.item.position)
+                model.addAttribute("elapsed", result.item.position?.let(::playTime))
             }
         }
         return "player :: content"

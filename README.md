@@ -314,6 +314,12 @@ audio streams straight from the publisher. An episode without art of its own sho
 the show's. If the file will not load, the deck says so and links to the episode's
 page. Episodes stored before this release keep their link out.
 
+Whatever plays remembers where it stopped, on the server, so it resumes there on any
+device: the item's **Play** then reads, say, **Resume 41:12**. The deck saves the
+position every 10 seconds of play, on pause, on **Eject** and when another item takes
+its place. A play barely started (under 5 seconds), or stopped within the last 10
+seconds, starts from the beginning next time.
+
 On a desktop a playing YouTube video gets a panel of its own beside the list and any open
 post. Drag a panel's title bar onto another panel to split it on that side (left, right,
 top or bottom), onto its middle to swap the two, or onto an edge of the window to give it

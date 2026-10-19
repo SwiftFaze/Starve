@@ -41,7 +41,7 @@
     document.querySelectorAll('.item.playing').forEach(function (row) {
       row.classList.remove('playing');
       var play = row.querySelector('.play');
-      if (play) { play.textContent = 'Play'; play.setAttribute('aria-pressed', 'false'); }
+      if (play) { play.textContent = play.dataset.label || 'Play'; play.setAttribute('aria-pressed', 'false'); }
     });
     layout();
     markDetail();
@@ -55,6 +55,8 @@
 
   // Eject removes the focused button, so focus goes back to the row it was playing.
   window.stopPlayer = function (button) {
+    savePosition(true);
+    playingItem = null;
     forget('starve.open.play');
     forget('starve.open.at');
     var target = document.querySelector('.item.playing .play') || document.getElementById('sheet');
@@ -663,8 +665,16 @@
 
   var resumeAt = null;
 
+  // Where the server says this item's playback last stopped (on any device): it plays on from there.
+  var startAt = 0;
+
   function resume(current) {
-    if (resumeAt === null || current !== state) return;
+    if (current !== state) return;
+    if (resumeAt === null) {
+      if (startAt > 0) current.seek(startAt);
+      startAt = 0;
+      return;
+    }
     var at = resumeAt;
     resumeAt = null;
     if (at > 0) current.seek(at);
@@ -745,6 +755,37 @@
     pause.setAttribute('aria-label', state.playing ? 'Pause' : 'Play');
     current.classList.toggle('paused', !state.playing);
     markDetail();
+    if (state.playing) savePosition(false);
+    else if (wasPlaying) savePosition(true);
+    wasPlaying = state.playing;
+  }
+
+  // ---- Where playback stopped, kept on the server so the item resumes there on any device ------------
+  //
+  // Sent every 10 seconds of play, on pause, at the end (which the server takes as finished), on Eject and when
+  // another item takes the deck. A save that fails (offline) changes nothing about playback.
+
+  var SAVE_EVERY = 10;
+  var playingItem = null;
+  var savedAt = -1;
+  var wasPlaying = false;
+
+  function savePosition(final) {
+    if (!state || !playingItem || !(state.position > 0)) return;
+    var at = Math.floor(state.position);
+    if (!final && Math.abs(at - savedAt) < SAVE_EVERY) return;
+    savedAt = at;
+    var token = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+    var form = 'at=' + at + (state.duration > 0 ? '&duration=' + Math.floor(state.duration) : '');
+    try {
+      fetch('/items/' + playingItem + '/position', {
+        method: 'POST',
+        keepalive: true,
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-TOKEN': token ? token[1] : '' },
+        body: form
+      }).catch(function () { /* offline: playback goes on */ });
+    } catch (e) { /* no fetch: playback goes on */ }
   }
 
   function enable() {
@@ -1576,9 +1617,15 @@
 
   function start() {
     var current = player();
+    savePosition(true);
     state = null;
+    playingItem = null;
+    savedAt = -1;
+    wasPlaying = false;
     if (!current) return;
-    store('starve.open.play', itemNumber(current.dataset.item));
+    playingItem = itemNumber(current.dataset.item);
+    startAt = Number(current.dataset.resume) || 0;
+    store('starve.open.play', playingItem);
     body.dataset.playing = current.dataset.kind;
     var video = current.querySelector('.ratio-16x9 iframe');
     var audio = current.querySelector('.sc-frame');

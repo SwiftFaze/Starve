@@ -71,7 +71,7 @@ class JdbcItemRepository(
         jdbc
             .sql(
                 "SELECT i.id, i.link, i.title, s.title AS source_title, i.thumbnail_url, " +
-                    "i.favourited_at IS NOT NULL AS is_favourite, i.audio_url, i.audio_duration " +
+                    "i.favourited_at IS NOT NULL AS is_favourite, i.audio_url, i.audio_duration, i.play_position " +
                     "FROM items i JOIN sources s ON s.id = i.source_id WHERE i.id = ? AND s.owner_id = ?",
             ).params(id, owner)
             .query { rs, _ ->
@@ -83,6 +83,7 @@ class JdbcItemRepository(
                     rs.getString("thumbnail_url"),
                     favourite = rs.getInt("is_favourite") == 1,
                     audio = rs.audio(),
+                    position = rs.getLong("play_position").takeUnless { rs.wasNull() },
                 )
             }.optional()
             .orElse(null)
@@ -214,7 +215,7 @@ internal fun JdbcClient.pageRows(
 internal const val TIMELINE_COLUMNS =
     "i.id, s.title AS source_title, i.title, i.published_at, i.thumbnail_url, i.link, s.favicon_url, " +
         "i.read_at IS NOT NULL AS is_read, i.favourited_at IS NOT NULL AS is_favourite, " +
-        "i.later_at IS NOT NULL AS is_later, i.audio_url"
+        "i.later_at IS NOT NULL AS is_later, i.audio_url, i.play_position"
 
 /** The tables a timeline row query reads, with the source join. */
 internal const val TIMELINE_FROM = "FROM items i JOIN sources s ON s.id = i.source_id"
@@ -232,6 +233,7 @@ internal fun ResultSet.toTimelineItem() =
         getString("favicon_url"),
         getInt("is_favourite") == 1,
         getInt("is_later") == 1,
+        getLong("play_position").takeUnless { wasNull() },
     )
 
 /**

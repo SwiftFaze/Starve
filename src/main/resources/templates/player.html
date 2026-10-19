@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="content">
-<div class="player" th:attr="data-item=${item.catalogueNumber},data-kind=${kind},data-duration=${duration}">
+<div class="player" th:attr="data-item=${item.catalogueNumber},data-kind=${kind},data-duration=${duration},data-resume=${resume}">
   <div class="now">
     <img class="now-art" th:if="${item.thumbnailUrl}" th:src="${item.thumbnailUrl}" alt="">
     <span class="now-art now-blank" th:unless="${item.thumbnailUrl}" aria-hidden="true"
@@ -22,7 +22,7 @@
       <svg class="icon icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg>
       <svg class="icon icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2l10 6-10 6z"/></svg>
     </button>
-    <time class="elapsed">0:00</time>
+    <time class="elapsed" th:text="${elapsed} ?: '0:00'">0:00</time>
     <div class="wave" style="--progress: 0">
       <svg class="bars" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true">
         <rect th:each="height, bar : ${waveform}" width="3"
