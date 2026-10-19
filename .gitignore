@@ -26,7 +26,7 @@ Thumbs.db
 # impeccable skill: platform binary is installed per machine, not versioned (19 MB, Windows-only)
 /.claude/skills/impeccable/scripts/bin/
 
-# Akira Expanded (demo, personal-use licence): self-hosted locally, never redistributed in this public repo
+# Akira Expanded (personal-use licence) is no longer used; this keeps any leftover local copy out of this public repo
 /src/main/resources/static/fonts/akira-expanded*
 
 # impeccable design tooling: throwaway decision sketches, review captures and per-machine settings

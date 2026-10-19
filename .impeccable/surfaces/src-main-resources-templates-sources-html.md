@@ -17,7 +17,7 @@ Decisions (user, 2026-10-12): rows start with `SRC` + zero-padded source id; the
 
 THESIS: The Sources page is the label's roster: the same catalogue sheet as the timeline, listing who the label carries instead of what it released. It refuses the settings-page default of stacked fieldsets and bullet lists.
 
-OWN-WORLD: Inherited unchanged: off-white paper, ink, signal orange sleeve; Akira Expanded throughout, outline cut for the sheet heading; square corners; 1px rules between rows, 2px for structure; outlined controls that invert on hover; fields square, 1.5px ink stroke, paper ground.
+OWN-WORLD: Inherited unchanged: off-white paper, ink, signal orange sleeve; Archivo Expanded throughout, outline cut for the sheet heading; square corners; 1px rules between rows, 2px for structure; outlined controls that invert on hover; fields square, 1.5px ink stroke, paper ground.
 
 STORY: The owner sees how many sources the label carries and whether any are failing, pastes a URL in the sleeve and reads the result, then scans the roster by number, files sources into groups and prunes.
 
